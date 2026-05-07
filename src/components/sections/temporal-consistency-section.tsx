@@ -207,9 +207,7 @@ export function TemporalConsistencySection() {
         <div className="mt-6 grid grid-cols-1 gap-12 lg:grid-cols-5 lg:items-start lg:gap-16">
           <div className="lg:col-span-2">
             <h2 className="font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-              Identity is not a moment<span className="text-cyan">.</span>
-              <br />
-              It is a pattern<span className="text-cyan">.</span>
+              Identity is a pattern<span className="text-cyan">.</span>
             </h2>
             <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
               The protocol measures behavioral drift across sessions:

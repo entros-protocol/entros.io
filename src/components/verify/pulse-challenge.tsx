@@ -233,23 +233,25 @@ export function PulseChallenge({
         </p>
         <div
           ref={svgContainerRef}
-          className="mx-auto h-[160px] w-[160px] rounded-xl border border-solana-green/50 bg-surface/30 flex items-center justify-center touch-none cursor-crosshair"
+          className="mx-auto h-[200px] w-[200px] md:h-[240px] md:w-[240px] rounded-2xl border border-solana-green/50 bg-surface/30 flex items-center justify-center touch-none cursor-crosshair"
         >
           <svg viewBox="0 0 200 200" className="h-full w-full">
             <path
               d={svgPath}
               fill="none"
               stroke="var(--color-solana-green)"
-              strokeWidth="1.5"
-              strokeOpacity={0.4}
+              strokeWidth="3"
+              strokeOpacity={0.7}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
             {tracePath && (
               <path
                 d={tracePath}
                 fill="none"
-                stroke="var(--color-solana-green)"
-                strokeWidth="2"
-                strokeOpacity="0.8"
+                stroke="var(--color-cyan)"
+                strokeWidth="3"
+                strokeOpacity="0.95"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />

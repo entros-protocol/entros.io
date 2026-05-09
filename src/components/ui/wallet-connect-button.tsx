@@ -33,17 +33,46 @@ function useMediaQuery(query: string): boolean {
 }
 
 /**
- * Mobile-only hint. Mobile browser wallet connection is limited across the
- * Solana ecosystem during devnet (wallets default to mainnet, developer
- * mode is buried, devnet SOL is hard to acquire on mobile). Walletless
- * mode covers the mobile demo path; full mobile wallet support arrives
- * with the Solana Mobile app on Seeker.
+ * Mobile-only hint. Branches by platform: Android can use the Solana Mobile
+ * Wallet Adapter to connect Phantom Mobile, but only if the wallet's
+ * Developer Settings → Testnet Mode is on (otherwise the dApp's
+ * `chain: "solana:devnet"` request gets silently rejected and the connect
+ * flow looks like a dead-end). iOS has no MWA equivalent during devnet, so
+ * the original "limited during devnet" copy still holds there.
  */
 function MobileWalletHint() {
   const { connected } = useWallet();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  // SSR mismatch guard: initialize to false on server + first client render,
+  // promote to the real value in useEffect. Same pattern useMediaQuery uses.
+  const [isAndroid, setIsAndroid] = useState(false);
+  useEffect(() => {
+    setIsAndroid(/Android/i.test(navigator.userAgent));
+  }, []);
 
   if (!isMobile || connected) return null;
+
+  if (isAndroid) {
+    return (
+      <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">
+        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+        <p className="text-left">
+          On Android: enable Developer Settings in Phantom (Settings →
+          Developer Settings → Testnet Mode → Solana Devnet) before
+          connecting, and fund the wallet from the{" "}
+          <a
+            href="https://faucet.solana.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-cyan underline hover:text-foreground transition-colors"
+          >
+            Solana faucet
+          </a>
+          .
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">

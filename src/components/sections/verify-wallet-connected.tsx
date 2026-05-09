@@ -17,6 +17,7 @@ import {
 import { ResetBaselineDialog } from "@/components/verify/reset-baseline-dialog";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { usePulse } from "@/components/providers/pulse-provider";
+import { useWalletError } from "@/components/providers/wallet-provider";
 import { Wallet } from "lucide-react";
 
 function commitmentToHex(bytes: Uint8Array): string {
@@ -37,6 +38,32 @@ function commitmentToHex(bytes: Uint8Array): string {
 // catches drift, but pre-flight false-negatives waste a capture cycle.
 const RESET_COOLDOWN_SECS = 7 * 24 * 60 * 60;
 
+// Soft-reject retry budget (master-list #94). When attemptsUsed < MAX_ATTEMPTS
+// and the server returns a user-recoverable reason, the client routes to
+// soft_failed (retry available) instead of failed (hard stop). Capped to
+// bound bot retry benefit per wallet — the server-side per-wallet cap
+// (master-list #94 C4) enforces this across wallet refreshes; this client
+// counter just drives the UX inside a session.
+const MAX_ATTEMPTS = 3;
+
+// Set of safe-to-reveal validator reasons that route to the soft-fail
+// retry UX instead of the hard-fail page. Must stay in sync with
+// `entros-validation::ReasonCode::safe_label` (the server-side allowlist)
+// and `SOFT_HINT` keys in `step-views.tsx` (the client-side hint
+// dictionary). Drift in either direction means a soft-rejectable reason
+// either escapes to hard-fail (annoying for the user) or slips into
+// soft-fail without a hint (confusing). The trailing entry
+// `validation_unavailable` is a client-side reason emitted by pulse-sdk
+// when /validate-features is unreachable (network failure, timeout,
+// abort) — treated as transient.
+const RETRYABLE_REASONS: ReadonlySet<string> = new Set([
+  "variance_floor",
+  "entropy_bounds",
+  "temporal_coupling_low",
+  "phrase_content_mismatch",
+  "validation_unavailable",
+]);
+
 export function VerifyWalletConnected({
   state,
   dispatch,
@@ -47,6 +74,11 @@ export function VerifyWalletConnected({
   const { connected, wallet, publicKey, disconnect } = useWallet();
   const { connection } = useConnection();
   const pulse = usePulse();
+  // Wallet adapter error surface (e.g., Phantom devnet mismatch, Android MWA
+  // dead-ends). Latest message is rendered as a banner above the Connect
+  // button; clears automatically when the wallet successfully connects.
+  const { lastError: walletError, clearError: clearWalletError } =
+    useWalletError();
   const touchRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<PulseSession | null>(null);
   const [audioLevel, setAudioLevel] = useState(0);
@@ -75,15 +107,9 @@ export function VerifyWalletConnected({
   // capture-completion handler can choose between verify vs reset paths
   // without reading the reducer state (which may race the handler).
   const intentRef = useRef<"verify" | "reset">("verify");
-  // Soft-reject retry budget (master-list #94). Counts attempts taken in the
-  // current session—incremented at the top of handleStart, reset to 0 on
-  // RESET / VERIFICATION_SUCCESS. When attemptsUsed < MAX_ATTEMPTS and the
-  // server returns a user-recoverable reason, we route to soft_failed (retry
-  // available) instead of failed (hard stop). Capped to bound bot retry
-  // benefit per wallet—the server-side per-wallet cap (master-list #94 C4)
-  // enforces this across wallet refreshes; this client counter just drives
-  // the UX inside a session.
-  const MAX_ATTEMPTS = 3;
+  // Per-session retry counter (incremented at the top of handleStart, reset
+  // to 0 on RESET / VERIFICATION_SUCCESS). The cap and retryable-reason set
+  // are hoisted to module scope at the top of this file.
   const attemptsUsedRef = useRef(0);
 
   // Microphone permission pre-flight. Browsers that previously denied
@@ -102,6 +128,15 @@ export function VerifyWalletConnected({
   useEffect(() => {
     setHasMotion(navigator.maxTouchPoints > 0);
   }, []);
+  // Drop the surfaced wallet error once the wallet successfully connects.
+  // Keeps the banner from lingering after a retry that resolved the issue
+  // (e.g., user toggled Phantom to devnet and reconnected). `clearWalletError`
+  // is stable across the provider's lifetime (memoized with []), so it
+  // doesn't belong in the dep array.
+  useEffect(() => {
+    if (connected) clearWalletError();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clearWalletError is provider-stable
+  }, [connected]);
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.permissions?.query) {
       return;
@@ -186,14 +221,17 @@ export function VerifyWalletConnected({
     intentRef.current = intent;
     setRequesting(true);
     setChallengePhrase(null);
+    // Reset the voiced-frame counter before any await so a synchronous
+    // throw in startMotion / challenge fetch can't leak the previous
+    // attempt's count into the rejection-path override evaluation in
+    // handleCaptureComplete.
+    voicedFramesRef.current = 0;
     // Count this attempt against the (intent-scoped) session budget.
     // Soft-fail / hard-fail routing in handleCaptureComplete reads from
     // this counter.
     attemptsUsedRef.current += 1;
 
     try {
-      voicedFramesRef.current = 0;
-
       // Fire the challenge fetch in parallel with sensor setup. We do NOT
       // await this before requesting motion permission: `DeviceMotionEvent
       // .requestPermission()` on iOS consumes the active user-gesture token,
@@ -346,23 +384,6 @@ export function VerifyWalletConnected({
       setTimeout(() => reject(new Error("Proof generation timed out. Please try again.")), PROOF_TIMEOUT_MS)
     );
 
-    // Set of safe-to-reveal validator reasons that route to the soft-fail
-    // retry UX instead of the hard-fail page. Must stay in sync with
-    // `entros-validation::ReasonCode::safe_label` (the server-side allowlist)
-    // and `SOFT_HINT` keys in `step-views.tsx` (the client-side hint
-    // dictionary). Drift in either direction means a soft-rejectable reason
-    // either escapes to hard-fail (annoying for the user) or slips into
-    // soft-fail without a hint (confusing).
-    const RETRYABLE_REASONS = new Set([
-      "variance_floor",
-      "entropy_bounds",
-      "temporal_coupling_low",
-      "phrase_content_mismatch",
-      // Client-side reason emitted by pulse-sdk when /validate-features is
-      // unreachable (network failure, timeout, abort). Treated as transient.
-      "validation_unavailable",
-    ]);
-
     Promise.race([proofPromise, timeoutPromise])
       .then((result) => {
         dispatch({ type: "PROOF_COMPLETE" });
@@ -388,9 +409,27 @@ export function VerifyWalletConnected({
           });
           return;
         }
+        // Override the generic failure copy ONLY when our local observation
+        // is unambiguous: the audio callback never saw a single voiced frame
+        // across the whole 12-second capture. That binary client-side
+        // signal — "the user could not have produced audible speech" — is
+        // independent of whatever reason the server actually rejected on,
+        // so the override doesn't reveal whether the underlying server
+        // rejection was acoustic-content (TtsDetected) or
+        // identity-collision (SybilMatch). Both reasons are deliberately
+        // returned without a safe label by the validator to keep the
+        // detection layers opaque to attackers; mapping a "low but
+        // non-zero" voicing count to a mic-specific message would leak
+        // that the failure was acoustic. Strict zero keeps the override
+        // honest.
+        let errorMessage = result.error ?? "Verification failed";
+        if (!reason && voicedFramesRef.current === 0) {
+          errorMessage =
+            "Microphone audio too quiet. Check that the right microphone is selected, that it isn't muted at the OS level, and that audio is reaching the page.";
+        }
         dispatch({
           type: "VERIFICATION_FAILED",
-          error: result.error ?? "Verification failed",
+          error: errorMessage,
         });
       })
       .catch((err: Error) => {
@@ -419,6 +458,23 @@ export function VerifyWalletConnected({
           Connect your Solana wallet to verify with full self-custody. You sign
           the verification transaction directly.
         </p>
+        {walletError && (
+          <div className="mx-auto max-w-sm rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
+            <div className="flex items-start gap-2">
+              <p className="flex-1 text-left text-xs text-foreground/70 leading-relaxed">
+                Wallet didn&apos;t connect: {walletError}
+              </p>
+              <button
+                type="button"
+                onClick={clearWalletError}
+                className="text-xs text-foreground/40 hover:text-foreground transition-colors"
+                aria-label="Dismiss wallet error"
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+        )}
         <WalletConnectButton className="!rounded-full !border !border-border !bg-surface !text-foreground !font-mono !text-sm" />
       </div>
     );

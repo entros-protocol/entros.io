@@ -314,6 +314,18 @@ function isMicrophonePermissionError(error: string): boolean {
   );
 }
 
+// Microphone reached the page but the audio coming through was effectively
+// silent — input device muted at the OS level, wrong default device selected,
+// gain too low, or browser-quirk processing returning a near-zero stream.
+// verify-wallet-connected.tsx synthesizes "Microphone audio too quiet. ..."
+// when the local voiced-frame counter stays below the validator's voicing-
+// ratio floor on a server-rejected attempt with no specific safe reason.
+// Routed before isMicrophonePermissionError so the more specific condition
+// wins; the substrings are disjoint anyway.
+function isMicrophoneTooQuietError(error: string): boolean {
+  return error.toLowerCase().includes("microphone audio too quiet");
+}
+
 // Motion sensor permission denied. iOS 13+ requires explicit consent via
 // DeviceMotionEvent.requestPermission() — denial surfaces as our synthetic
 // "Motion permission denied" string from verify-wallet-connected.tsx.
@@ -335,10 +347,18 @@ type FailureKind =
   | { kind: "stale-blockhash" }
   | { kind: "rate-limited" }
   | { kind: "permission-denied"; device: "microphone" | "motion" }
+  | { kind: "microphone-too-quiet" }
   | { kind: "generic"; message: string };
 
 function categorizeFailure(error: string, canResetBaseline: boolean): FailureKind {
   if (isRelayerError(error)) return { kind: "relayer-down" };
+  // Quiet-mic detection routes BEFORE permission-denied so a captured-but-
+  // silent stream surfaces its own actionable copy ("check input device + OS
+  // mute") rather than the permission-recovery instructions, which don't
+  // apply when the browser already granted access.
+  if (isMicrophoneTooQuietError(error)) {
+    return { kind: "microphone-too-quiet" };
+  }
   // Permission denials route before generic categories. Both surfaces are
   // browser-state issues the user can fix directly; the generic "Verification
   // failed" copy would misrepresent the cause and bury the actionable fix.
@@ -366,6 +386,30 @@ function categorizeFailure(error: string, canResetBaseline: boolean): FailureKin
 }
 
 const FAUCET_URL = "https://faucet.solana.com";
+
+// Browser-aware recovery copy for the microphone permission-denied surface.
+// Each major browser hides the per-site mic permission control in a different
+// place: Chrome/Edge/Brave (lock icon → site settings), Firefox (shield icon →
+// edit settings), Safari (Settings → Websites → Microphone). UA sniff is
+// fragile in general but acceptable here — only used to render instruction
+// copy, not to gate behavior. Brave/Vivaldi/Opera all UA as Chrome and the
+// Chrome-style instructions match their UIs closely enough.
+function micRecoveryFootnote(): string {
+  if (typeof navigator === "undefined") {
+    return "Allow microphone access in your browser, then refresh and try again.";
+  }
+  const ua = navigator.userAgent.toLowerCase();
+  // Firefox iOS uses "FxiOS" rather than "firefox" in its UA token; treat
+  // both as the Firefox surface so iOS Firefox users see Firefox-shaped
+  // recovery copy instead of the Chrome fallback.
+  if (ua.includes("firefox") || ua.includes("fxios")) {
+    return "In Firefox, click the shield icon in the address bar → Edit settings → set Microphone to Allow. Then refresh this page.";
+  }
+  if (ua.includes("safari") && !ua.includes("chrome")) {
+    return "In Safari, open Settings → Websites → Microphone → entros.io → set to Allow. Then refresh this page.";
+  }
+  return "Click the lock icon in your address bar, set Microphone to Allow, then refresh this page and try again.";
+}
 
 export function FailedView({
   error,
@@ -471,8 +515,7 @@ export function FailedView({
         title = "Microphone access needed";
         body =
           "Your browser blocked microphone access. Verification needs to hear your voice for the 12-second capture.";
-        footnote =
-          "Click the lock icon in your address bar, set Microphone to Allow, then refresh this page and try again.";
+        footnote = micRecoveryFootnote();
       } else {
         title = "Motion sensor access needed";
         body =
@@ -480,6 +523,13 @@ export function FailedView({
         footnote =
           "On iOS, allow motion access when prompted (or in Safari Settings → Privacy → Motion & Orientation Access). Then refresh this page and try again.";
       }
+      break;
+    case "microphone-too-quiet":
+      title = "We couldn't hear you";
+      body =
+        "The microphone was active but no voice was detected during the recording. Your mic might be muted, set to the wrong device, or the input volume is too low.";
+      footnote =
+        "Check your OS sound settings — input device and input volume — then try again.";
       break;
     case "generic":
       title = "Verification failed";

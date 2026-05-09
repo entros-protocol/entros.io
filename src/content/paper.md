@@ -9,7 +9,7 @@
 
 ## Abstract
 
-The proliferation of sophisticated AI and bot networks necessitates robust methods for verifying human uniqueness and liveness in digital ecosystems. Existing Proof-of-Personhood (PoP) solutions rely on centralized authorities, invasive static biometrics, or socially-correlatable data, creating vulnerabilities in privacy, security, and accessibility. We introduce the Entros Protocol, a decentralized framework for PoP and Self-Sovereign Identity built on Solana. The core innovation is *temporal consistency*: the assertion that human identity is best proven not by a static secret, but by the bounded, chaotic drift of biological and behavioral patterns over time. The framework captures multi-modal behavioral data (voice prosody, hand tremor, touch dynamics) during a configurable behavioral challenge, extracts a 134-dimensional feature vector, and produces a 256-bit locality-sensitive hash via SimHash. A Groth16 zero-knowledge proof verifies that consecutive fingerprints fall within a bounded Hamming distance without revealing either value. Attestations are anchored to non-transferable identity tokens (SPL Token-2022) with progressive Trust Scores. We provide formal security definitions, analyze the protocol against replay, synthesis, and Sybil attacks, introduce a graduated trust model distinguishing first-time liveness checks from sustained temporal consistency, and present benchmarks from a working implementation deployed on Solana devnet.
+The proliferation of sophisticated AI and bot networks necessitates robust methods for verifying human uniqueness and liveness in digital ecosystems. Existing Proof-of-Personhood (PoP) solutions rely on centralized authorities, invasive static biometrics, or socially-correlatable data, creating vulnerabilities in privacy, security, and accessibility. We introduce the Entros Protocol, a decentralized framework for PoP and Self-Sovereign Identity built on Solana. The core innovation is *temporal consistency*: the assertion that human identity is best proven not by a static secret, but by the bounded, chaotic drift of biological and behavioral patterns over time. The framework captures multi-modal behavioral data (voice prosody, hand tremor, touch dynamics) during a configurable behavioral challenge, extracts a 308-dimensional feature vector, and produces a 256-bit locality-sensitive hash via SimHash. A Groth16 zero-knowledge proof verifies that consecutive fingerprints fall within a bounded Hamming distance without revealing either value. Attestations are anchored to non-transferable identity tokens (SPL Token-2022) with progressive Trust Scores. We provide formal security definitions, analyze the protocol against replay, synthesis, and Sybil attacks, introduce a graduated trust model distinguishing first-time liveness checks from sustained temporal consistency, and present benchmarks from a working implementation deployed on Solana devnet.
 
 **Keywords:** *Proof-of-Personhood (PoP), Decentralized Identity (DID), Behavioral Biometrics, Zero-Knowledge Proofs, Groth16, SimHash, Liveness Detection, Temporal Consistency, Solana.*
 
@@ -27,7 +27,7 @@ Instead of asking *"What is your secret?"*, the protocol asks *"Are you still yo
 
 #### **1.1. Contributions**
 
-1. A multi-modal behavioral capture protocol (the *Liveness Interlock*) that extracts a 134-dimensional feature vector from voice, motion, and touch data captured simultaneously over a configurable window.
+1. A multi-modal behavioral capture protocol (the *Liveness Interlock*) that extracts a 308-dimensional feature vector from voice, motion, and touch data captured simultaneously over a configurable window.
 2. A locality-sensitive hashing pipeline (*SimHash*) that produces a 256-bit *Temporal Fingerprint* where intra-person Hamming distance is bounded (~20–65 bits) while inter-person distance approaches random (~128 bits).
 3. A Groth16 zero-knowledge circuit that proves two Poseidon-committed fingerprints fall within a bounded Hamming distance, without revealing either fingerprint.
 4. A non-transferable on-chain identity token (the *Entros Anchor*) with a progressive Trust Score that rewards sustained temporal consistency over time.
@@ -84,7 +84,7 @@ Three sensor streams are captured simultaneously over a configurable window (def
 
 #### **2.4. Feature Extraction**
 
-Raw time-series data is distilled into a 134-dimensional feature vector `v ∈ ℝ^134` through three parallel pipelines.
+Raw time-series data is distilled into a 308-dimensional feature vector `v ∈ ℝ^308` through three parallel pipelines.
 
 **Speaker Features (`v_audio ∈ ℝ^44`)**
 
@@ -108,7 +108,7 @@ Touch coordinate velocity and acceleration, pressure statistics, contact area st
 
 **Normalization.** Each modality group is independently z-score normalized (μ = 0, σ = 1) to ensure equal contribution regardless of raw magnitude. Non-finite values are sanitized to zero.
 
-**Concatenation.** The three vectors are concatenated: `v_fused = [v_audio ‖ v_kin ‖ v_touch] ∈ ℝ^134`.
+**Concatenation.** The three vectors are concatenated: `v_fused = [v_audio ‖ v_kin ‖ v_touch] ∈ ℝ^308`.
 
 **SimHash [2].** The fused vector is projected onto 256 deterministic random hyperplanes `{h_1, …, h_256}`. The Temporal Fingerprint is:
 
@@ -248,11 +248,11 @@ Walletless mode is a secondary liveness tier for use cases that need a captcha-e
 
 #### **6.3. Synthetic Data Attacks**
 
-**Claim 1 (Multi-Modal Synthesis Difficulty).** *An adversary must simultaneously synthesize realistic data across all three modalities (voice, motion, touch) such that the fused 134-dimensional feature vector produces a SimHash fingerprint within Hamming distance δ_max of the target.*
+**Claim 1 (Multi-Modal Synthesis Difficulty).** *An adversary must simultaneously synthesize realistic data across all three modalities (voice, motion, touch) such that the fused 308-dimensional feature vector produces a SimHash fingerprint within Hamming distance δ_max of the target.*
 
 The defense is layered:
 
-**Feature-level.** The 134-dimensional feature vector captures involuntary biological processes: vocal jitter/shimmer from laryngeal muscle micro-contractions, kinematic jerk from neuromuscular control loops, touch pressure from fingertip biomechanics. Each dimension presents a distinct synthesis challenge. Jitter measures, for instance, capture perturbation rates that TTS engines produce with unnaturally low variance [11].
+**Feature-level.** The 308-dimensional feature vector captures involuntary biological processes: vocal jitter/shimmer from laryngeal muscle micro-contractions, kinematic jerk from neuromuscular control loops, touch pressure from fingertip biomechanics. Each dimension presents a distinct synthesis challenge. Jitter measures, for instance, capture perturbation rates that TTS engines produce with unnaturally low variance [11].
 
 **Cross-modal correlation.** SimHash projects the concatenated vector onto shared hyperplanes. Each output bit depends on features from all modalities jointly. An adversary cannot spoof modalities independently—the cross-modal correlations must be consistent.
 
@@ -280,7 +280,7 @@ Entros's Sybil resistance operates through three independent layers, each raisin
 
 * **Economic deterrence.** Each verification costs the user SOL. Each wallet requires funding. Maintaining thousands of fake identities over months requires sustained capital expenditure that scales linearly with the attack surface.
 * **Temporal deterrence.** Trust Score rewards consistency over time. Weekly re-verifications across months carry more weight than bulk verifications in a single session. A bot farm must maintain each identity's behavioral signature across sessions and days, compounding the operational cost per identity.
-* **Behavioral fingerprint comparison.** The server-side registry compares each new verification's SimHash fingerprint against existing entries. One person operating multiple wallets produces clustered fingerprints that the registry detects. The discriminative power of the 134-feature behavioral fingerprint is being empirically calibrated through data collection from diverse users.
+* **Behavioral fingerprint comparison.** The server-side registry compares each new verification's SimHash fingerprint against existing entries. One person operating multiple wallets produces clustered fingerprints that the registry detects. The discriminative power of the 308-feature behavioral fingerprint is being empirically calibrated through data collection from diverse users.
 
 These layers are complementary. Economic cost makes Sybil farming expensive. Temporal requirements make it slow. Behavioral comparison makes it detectable. An attacker must defeat all three simultaneously. The fingerprint registry's effectiveness improves as empirical data informs threshold calibration, and the architecture supports evolution toward probabilistic risk scoring as the user population grows.
 
@@ -298,7 +298,7 @@ Raw biometric data is destroyed after feature extraction. On-chain, only the Pos
 
 The protocol does not claim to make spoofing impossible. It claims to make sustained spoofing *economically irrational* relative to the value it extracts. The defense is layered:
 
-* **Feature-level:** Realistic multi-modal sensor data across 134 dimensions is hard to synthesize.
+* **Feature-level:** Realistic multi-modal sensor data across 308 dimensions is hard to synthesize.
 * **Circuit-level:** Replays (d_H = 0) and imposters (d_H > δ_max) are rejected.
 * **Entropy scoring:** Low-entropy synthetic data is flagged before hashing.
 * **Economic:** Each verification costs SOL. Each wallet requires funding. Trust Score rewards months of consistency over bursts.
@@ -329,7 +329,7 @@ The protocol implements a two-level validation architecture:
 
 **Level 1 (client-side, deterministic).** The Groth16 proof, as currently implemented. Provides mathematical certainty that the Hamming distance constraint is satisfied.
 
-**Level 2 (server-side, statistical).** The 134-dimensional feature vector is transmitted alongside the proof to a validation server. The server applies statistical analysis using models inaccessible to the client: cross-modality correlation coefficients (real humans exhibit involuntary correlations between voice, motion, and touch that independent synthetic generators do not reproduce), per-feature entropy distributions (synthetic data exhibits entropy profiles outside expected human ranges), and jitter variance ratio analysis (text-to-speech engines produce unnaturally low jitter variance compared to natural speech [11]). The server-side models constitute a shared secret: the adversary cannot reverse-engineer the validation criteria.
+**Level 2 (server-side, statistical).** The 308-dimensional feature vector is transmitted alongside the proof to a validation server. The server applies statistical analysis using models inaccessible to the client: cross-modality correlation coefficients (real humans exhibit involuntary correlations between voice, motion, and touch that independent synthetic generators do not reproduce), per-feature entropy distributions (synthetic data exhibits entropy profiles outside expected human ranges), and jitter variance ratio analysis (text-to-speech engines produce unnaturally low jitter variance compared to natural speech [11]). The server-side models constitute a shared secret: the adversary cannot reverse-engineer the validation criteria.
 
 This architecture preserves the core privacy property. The feature vector is a fixed-size statistical summary (means, variances, spectral coefficients)—not raw time-series data. It cannot be used to reconstruct the original audio, motion, or touch signals. The ZK proof continues to ensure the fingerprint itself is never revealed. The feature vector provides a complementary signal for provenance validation without compromising the zero-knowledge property of the identity proof.
 
@@ -358,7 +358,7 @@ The attack taxonomy spans eight tiers ordered by sophistication. Results for the
 | T3a | Unconstrained feature optimization | 1,000 | 0% |
 | T3b | Constrained feature optimization | 9,000 | 0% |
 
-T1 exercises trivial procedural synthesis (sine-wave harmonics with additive noise). T2 extends this with four waveform strategies (harmonic, sawtooth, filtered noise, pulse train), four motion patterns (tremor, Brownian, circular, static), and parameter sampling across the full human voice range (80–350 Hz fundamental). T3 reconstructs the SimHash hyperplanes from the open-source SDK constants and uses hill-climbing optimization to craft 134-dimensional feature vectors targeting valid fingerprint distances, optionally constrained to published human feature ranges.
+T1 exercises trivial procedural synthesis (sine-wave harmonics with additive noise). T2 extends this with four waveform strategies (harmonic, sawtooth, filtered noise, pulse train), four motion patterns (tremor, Brownian, circular, static), and parameter sampling across the full human voice range (80–350 Hz fundamental). T3 reconstructs the SimHash hyperplanes from the open-source SDK constants and uses hill-climbing optimization to craft 308-dimensional feature vectors targeting valid fingerprint distances, optionally constrained to published human feature ranges.
 
 T3b applies distributional constraints derived from published voice science norms, maintaining physiologically plausible feature values throughout the optimization. Inter-feature consistency checks (e.g., perturbation measure ratios inherent to vocal fold mechanics) prevent the optimizer from producing individually plausible but structurally impossible feature combinations.
 
@@ -382,7 +382,7 @@ T4 (modern voice cloning via XTTS-v2, F5-TTS), T5 (coupled cross-modal synthesis
 
 **Formal frameworks for proof of personhood.** Choudhuri et al. [19] provide the first rigorous cryptographic formalization of proof of personhood, defining ideal functionalities for Sybil-resistance, authenticated personhood, and unlinkability. Their framework assumes trusted authorities issue personhood credentials. Entros derives personhood from behavioral biometrics without a trusted issuer, which is more decentralized but harder to formalize under their model. Mapping Entros's security properties to this framework is identified as future work.
 
-**Regulatory positioning.** Proof-of-personhood systems that transmit or store biometric data have faced enforcement actions under GDPR and regional biometric-data laws, with cited concerns including collection, storage, and cross-border transfer of biometric templates. Entros's architecture is designed to avoid these triggers by construction: raw biometric data never leaves the user's device, and only a 134-dimensional statistical summary and a zero-knowledge proof are transmitted. This places Entros's data flows closer to a standard web analytics fingerprint than to a biometric collection pipeline.
+**Regulatory positioning.** Proof-of-personhood systems that transmit or store biometric data have faced enforcement actions under GDPR and regional biometric-data laws, with cited concerns including collection, storage, and cross-border transfer of biometric templates. Entros's architecture is designed to avoid these triggers by construction: raw biometric data never leaves the user's device, and only a 308-dimensional statistical summary and a zero-knowledge proof are transmitted. This places Entros's data flows closer to a standard web analytics fingerprint than to a biometric collection pipeline.
 
 ---
 
@@ -397,7 +397,7 @@ The protocol fee treasury is live on devnet, collecting 0.005 SOL per verificati
 Benchmarks measured on Chrome 132 (M1 MacBook Pro) and Safari (iPhone 15 Pro Max):
 
 * Behavioral capture: 7,000–12,000 ms (configurable)
-* Feature extraction (134 dimensions): ~45 ms
+* Feature extraction (308 dimensions): ~45 ms
 * SimHash (256-bit): <1 ms
 * Poseidon commitment: ~3 ms
 * Groth16 proof generation (WASM): ~850 ms

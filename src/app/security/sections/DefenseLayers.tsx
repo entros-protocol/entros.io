@@ -9,7 +9,7 @@ const tiers = [
     name: "TIER 1",
     label: "Statistical distribution checks",
     description:
-      "Server-side validation of the 134-dimensional feature vector extracted from each verification. Multiple independent checks verify that the statistical properties of extracted features are consistent with human physiology, not synthetic generation. Specific checks and threshold values are not published.",
+      "Server-side validation of the 308-dimensional feature vector extracted from each verification. Multiple independent checks verify that the statistical properties of extracted features are consistent with human physiology, not synthetic generation. Specific checks and threshold values are not published.",
   },
   {
     name: "TIER 2",

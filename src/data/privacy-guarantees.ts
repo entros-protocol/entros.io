@@ -17,7 +17,7 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "file-lock",
     title: "Minimal data transmission",
     description:
-      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, and a compact statistical summary (134 derived features). Raw sensor data and the behavioral fingerprint never cross the network.",
+      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, and a compact statistical summary (308 derived features). Raw sensor data and the behavioral fingerprint never cross the network.",
   },
   {
     icon: "eye-off",

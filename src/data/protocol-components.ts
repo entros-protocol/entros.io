@@ -71,7 +71,7 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "Validation Service",
     subtitle: "Proprietary defense layer",
     description:
-      "A private Rust crate that analyzes the 134-dimensional statistical feature summary for synthetic artifacts, cross-modality inconsistencies, and Sybil patterns. The defense layer—proprietary because the asymmetry between attackers and defenders demands it. The protocol is open so you can trust it. The validation is private so attackers can't bypass it.",
+      "A private Rust crate that analyzes the 308-dimensional statistical feature summary for synthetic artifacts, cross-modality inconsistencies, and Sybil patterns. The defense layer—proprietary because the asymmetry between attackers and defenders demands it. The protocol is open so you can trust it. The validation is private so attackers can't bypass it.",
     highlights: [
       "TTS and synthetic data detection",
       "Cross-wallet fingerprint registry (Sybil detection)",

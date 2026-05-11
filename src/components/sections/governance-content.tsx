@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   ShieldCheck,
   Settings,
@@ -6,7 +7,29 @@ import {
   ExternalLink,
   Bot,
   Layers,
+  ArrowRight,
 } from "lucide-react";
+
+const sybilIncidents = [
+  {
+    year: "2022",
+    actor: "Mango Markets",
+    summary:
+      "The exploiter who drained $47M voted through Mango's own governance to keep most of the take. Their balance cleared quorum.",
+  },
+  {
+    year: "2023",
+    actor: "Synthetify",
+    summary:
+      "Ten self-funded proposals moved roughly $230K out of the Synthetify treasury. Each one cleared the proposal threshold on bought-in tokens.",
+  },
+  {
+    year: "2025",
+    actor: "Jupiter Jupuary",
+    summary:
+      "The Jupiter team filtered 750,000+ wallets out of Jupuary distribution after the fact. Every Sybil filter ran downstream of the airdrop.",
+  },
+];
 
 const steps = [
   {
@@ -160,6 +183,55 @@ export function GovernanceContent() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* What's at stake—named incidents that prove the gap.
+          Three-card row with year tag, named protocol, and one-line
+          incident summary. Closes with a pointer to the deeper Realms
+          case study without repeating its content. */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+            // WHAT&apos;S AT STAKE
+          </span>
+
+          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            The gap is on the record<span className="text-cyan">.</span>
+          </h2>
+
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+            Three Solana protocols, three years, three different
+            codebases, one missing primitive. Every ballot read the token
+            balance; none of them read the human.
+          </p>
+
+          <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
+            {sybilIncidents.map((incident) => (
+              <div
+                key={incident.actor}
+                className="flex flex-col bg-background p-8 md:p-10"
+              >
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
+                  {incident.year}
+                </p>
+                <h3 className="mt-6 font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+                  {incident.actor}
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-foreground/65">
+                  {incident.summary}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <Link
+            href="/case-studies/realms"
+            className="mt-10 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.15em] text-cyan transition-colors hover:text-foreground"
+          >
+            Full case study
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </section>
 

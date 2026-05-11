@@ -7,42 +7,19 @@ The shortest path to a verified-human gate. Wrap any component in `<EntrosGate>`
 
 This is the **Tier 3 read-only path** — you're gating access against existing on-chain Anchors, not running verification yourself. If you instead want a button that takes a user from "unverified wallet" to "verified human" in one click, that's the **Tier 1 path** — see [Verification flow](/docs/integrate/verification-flow) for the `<EntrosVerify />` drop-in component.
 
-## Install
+> **Prerequisite.** `EntrosGate` depends on the Solana wallet adapter providers (`ConnectionProvider`, `WalletProvider`, `WalletModalProvider`). The component throws at render time without them. Step 2 below sets them up — do that first if your app doesn't already have a wallet adapter wiring at the root.
+
+## 1. Install
 
 ```bash
-npm install @entros/pulse-sdk @solana/wallet-adapter-react @solana/web3.js
+npm install @entros/pulse-sdk @solana/wallet-adapter-react @solana/wallet-adapter-react-ui @solana/web3.js
 ```
 
-The SDK is published as `@entros/pulse-sdk` on npm. It declares `@solana/wallet-adapter-react`, `@solana/web3.js`, and `@coral-xyz/anchor` as optional peers.
+The SDK is published as `@entros/pulse-sdk` on npm. It declares `@solana/wallet-adapter-react`, `@solana/web3.js`, and `@coral-xyz/anchor` as optional peers. `EntrosGate` also renders `WalletMultiButton` in its disconnected-state fallback, which is why `@solana/wallet-adapter-react-ui` is on the install list.
 
-## Add the gate component
+## 2. Set up the wallet adapter providers
 
-`EntrosGate` is published as a single-file React component you copy into your project. The canonical source is in the entros.io repo at [`src/components/ui/entros-gate.tsx`](https://github.com/entros-protocol/entros.io/blob/main/src/components/ui/entros-gate.tsx)—copy it into your own `components/` directory. A standalone npm package is on the [near-term roadmap](/docs/roadmap/near-term).
-
-## Wrap your protected component
-
-```tsx title="app/protected/page.tsx"
-import { EntrosGate } from "@/components/ui/entros-gate";
-
-export default function ProtectedPage() {
-  return (
-    <EntrosGate minTrustScore={100}>
-      <h1>You're verified.</h1>
-      <p>This view only renders for wallets above the threshold.</p>
-    </EntrosGate>
-  );
-}
-```
-
-That's the integration. `EntrosGate` does three things:
-
-1. Reads the wallet's Anchor PDA on Solana.
-2. Compares the on-chain Trust Score against `minTrustScore`.
-3. Renders children if the score passes, otherwise a fallback prompt linking to `/verify`.
-
-## Required app providers
-
-`EntrosGate` reads from a `useWallet()` and `useConnection()` hook upstream. If your app already has the standard Solana wallet adapter setup, you're done. Otherwise add the providers once at your app root.
+`EntrosGate` reads from `useWallet()` and `useConnection()`, and its fallback renders `WalletMultiButton`. All three need provider wrappers at the app root. If your app already has the standard Solana wallet adapter setup, skip to Step 3. Otherwise:
 
 ```tsx title="app/providers.tsx"
 "use client";
@@ -65,6 +42,53 @@ export function SolanaProviders({ children }: { children: React.ReactNode }) {
 }
 ```
 
+Mount `SolanaProviders` once around your app in `app/layout.tsx`:
+
+```tsx title="app/layout.tsx"
+import { SolanaProviders } from "./providers";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <SolanaProviders>{children}</SolanaProviders>
+      </body>
+    </html>
+  );
+}
+```
+
+You also need the wallet-adapter-ui stylesheet imported once. Add it to your global CSS or root layout:
+
+```ts
+import "@solana/wallet-adapter-react-ui/styles.css";
+```
+
+## 3. Add the gate component
+
+`EntrosGate` is published as a single-file React component you copy into your project. The canonical source is in the entros.io repo at [`src/components/ui/entros-gate.tsx`](https://github.com/entros-protocol/entros.io/blob/main/src/components/ui/entros-gate.tsx)—copy it into your own `components/` directory. A standalone npm package is on the [near-term roadmap](/docs/roadmap/near-term).
+
+## 4. Wrap your protected component
+
+```tsx title="app/protected/page.tsx"
+import { EntrosGate } from "@/components/ui/entros-gate";
+
+export default function ProtectedPage() {
+  return (
+    <EntrosGate minTrustScore={100}>
+      <h1>You're verified.</h1>
+      <p>This view only renders for wallets above the threshold.</p>
+    </EntrosGate>
+  );
+}
+```
+
+That's the integration. `EntrosGate` does three things:
+
+1. Reads the wallet's Anchor PDA on Solana.
+2. Compares the on-chain Trust Score against `minTrustScore`.
+3. Renders children if the score passes, otherwise a fallback prompt linking to `/verify`.
+
 ## Setting the threshold
 
 `minTrustScore` is a `number` between 0 and 65535 (the on-chain Trust Score is stored as `u16`). The right value depends on the stakes of the gated action.
@@ -80,7 +104,7 @@ Higher thresholds shift the cost curve more steeply against bot farms; lower thr
 
 ## What the user sees
 
-If the connected wallet has no Anchor: a prompt linking to `/verify` (configurable via the `verifyHref` prop).
+If the connected wallet has no Anchor: a prompt linking to `https://entros.io/verify` by default (configurable via the `verifyHref` prop if you self-host the verification flow).
 If the wallet has an Anchor below threshold: a re-verify prompt.
 If the wallet meets the threshold: your component, no further interaction.
 

@@ -35,7 +35,7 @@ const COMPONENT_CODE = `"use client";
  *
  * Renders children only when the connected wallet has an Entros Anchor with
  * trustScore >= minTrustScore. Otherwise renders a fallback (default: a
- * verification prompt linking to /verify, or a custom node via the
+ * verification prompt linking to https://entros.io/verify, or a custom node via the
  * \`fallback\` prop).
  *
  * This component has zero internal UI dependencies. It uses only:
@@ -91,7 +91,7 @@ export function EntrosGate({
   children,
   fallback,
   loadingFallback,
-  verifyHref = "/verify",
+  verifyHref = "https://entros.io/verify",
 }: EntrosGateProps) {
   const { publicKey, connected } = useWallet();
   const { connection } = useConnection();

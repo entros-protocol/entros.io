@@ -75,6 +75,150 @@ export function TokenContent() {
             volume. Each step compounds the next.
           </p>
 
+          {/* Labeled diagram — five nodes in a horizontal flow with
+              connector arrows between, and a dashed return arrow under
+              the row signaling the loop. ViewBox keeps the layout
+              proportional across breakpoints. */}
+          <div className="mt-16 hidden overflow-hidden border border-border md:block">
+            <svg
+              viewBox="0 0 1200 320"
+              className="block w-full"
+              role="img"
+              aria-label="Token revenue flywheel diagram. Five steps from user verification through treasury, token buy, validator rewards, and security improvements, looping back to user verification."
+            >
+              <defs>
+                <marker
+                  id="flywheel-arrow"
+                  viewBox="0 0 10 10"
+                  refX="8"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto"
+                >
+                  <path
+                    d="M 0 0 L 10 5 L 0 10 z"
+                    style={{ fill: "var(--color-cyan)" }}
+                  />
+                </marker>
+              </defs>
+
+              {/* Nodes */}
+              {flywheel.map((step, i) => {
+                const cx = 120 + i * 240;
+                return (
+                  <g key={step.step}>
+                    <circle
+                      cx={cx}
+                      cy={130}
+                      r="46"
+                      style={{
+                        fill: "var(--color-background)",
+                        stroke: "var(--color-cyan)",
+                        strokeOpacity: 0.5,
+                      }}
+                      strokeWidth="1"
+                    />
+                    <text
+                      x={cx}
+                      y={138}
+                      textAnchor="middle"
+                      style={{
+                        fill: "var(--color-cyan)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 20,
+                        letterSpacing: "0.1em",
+                      }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </text>
+                    <text
+                      x={cx}
+                      y={208}
+                      textAnchor="middle"
+                      style={{
+                        fill: "var(--color-foreground)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 13,
+                      }}
+                    >
+                      {step.step}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Connector arrows between consecutive nodes */}
+              {[0, 1, 2, 3].map((i) => {
+                const x1 = 120 + i * 240 + 52;
+                const x2 = 120 + (i + 1) * 240 - 56;
+                return (
+                  <line
+                    key={i}
+                    x1={x1}
+                    y1={130}
+                    x2={x2}
+                    y2={130}
+                    style={{
+                      stroke: "var(--color-cyan)",
+                      strokeOpacity: 0.5,
+                    }}
+                    strokeWidth="1"
+                    markerEnd="url(#flywheel-arrow)"
+                  />
+                );
+              })}
+
+              {/* Return loop — node 5 back to node 1 */}
+              <path
+                d="M 1080 178 Q 1080 268 940 268 L 260 268 Q 120 268 120 178"
+                fill="none"
+                style={{ stroke: "var(--color-cyan)", strokeOpacity: 0.35 }}
+                strokeWidth="1"
+                strokeDasharray="4,4"
+                markerEnd="url(#flywheel-arrow)"
+              />
+
+              {/* Loop label */}
+              <text
+                x={600}
+                y={290}
+                textAnchor="middle"
+                style={{
+                  fill: "var(--color-foreground)",
+                  fillOpacity: 0.5,
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}
+              >
+                THE LOOP
+              </text>
+            </svg>
+          </div>
+
+          {/* Mobile fallback — vertical stack with arrow glyphs */}
+          <ol className="mt-16 space-y-2 border border-border p-6 md:hidden">
+            {flywheel.map((step, i) => (
+              <li
+                key={step.step}
+                className="flex items-center gap-3 font-mono text-xs"
+              >
+                <span className="text-cyan">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="text-foreground/80">{step.step}</span>
+                {i < flywheel.length - 1 && (
+                  <span className="ml-auto text-cyan/50">↓</span>
+                )}
+                {i === flywheel.length - 1 && (
+                  <span className="ml-auto text-cyan/35">↺</span>
+                )}
+              </li>
+            ))}
+          </ol>
+
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-5">
             {flywheel.map((step, i) => (
               <div

@@ -5,6 +5,8 @@ description: Wrap any React component with EntrosGate to require a verified huma
 
 `EntrosGate` is a route guard. It reads the connected wallet's Anchor PDA, compares the Trust Score against a threshold, and renders children only if the threshold is met.
 
+> **Prerequisite.** `EntrosGate` depends on the Solana wallet adapter providers (`ConnectionProvider`, `WalletProvider`, `WalletModalProvider`). The component throws at render time without them. See [Set up the wallet adapter providers](/docs/quickstart/next-js#2-set-up-the-wallet-adapter-providers) in the Next.js quickstart for the snippet.
+
 ## The full surface
 
 ```tsx
@@ -12,7 +14,7 @@ description: Wrap any React component with EntrosGate to require a verified huma
   minTrustScore={250}
   fallback={<NotVerifiedView />}
   loadingFallback={<Spinner />}
-  verifyHref="/verify"
+  verifyHref="https://entros.io/verify"
 >
   <ProtectedContent />
 </EntrosGate>
@@ -24,7 +26,7 @@ description: Wrap any React component with EntrosGate to require a verified huma
 | `children` | `ReactNode` | yes |—| What to render when the wallet passes the gate |
 | `fallback` | `ReactNode` | no | built-in prompt | What to render when the wallet fails the gate |
 | `loadingFallback` | `ReactNode` | no | minimal spinner | What to render while the PDA is being fetched |
-| `verifyHref` | `string` | no | `/verify` | Where the built-in fallback links unverified users |
+| `verifyHref` | `string` | no | `https://entros.io/verify` | Where the built-in fallback links unverified users |
 
 ## Three render states
 
@@ -57,12 +59,9 @@ The `fallback` prop is rendered for both "below threshold" and "no Anchor on fil
 
 ## Self-host the verify route
 
-`verifyHref` defaults to `/verify`, which assumes you've either:
+`verifyHref` defaults to `https://entros.io/verify`, the canonical hosted verification flow. Unverified users land on entros.io, complete the 12-second behavioral capture, mint or update their Anchor, and return to your app on the next gate read.
 
-- Linked to `entros.io/verify` from your own app, or
-- Built your own verification surface using the Pulse SDK at the route `/verify`
-
-If you're hosting the verification flow yourself, set `verifyHref` to your route. If you're routing users to the canonical site, use `verifyHref="https://entros.io/verify"`.
+If you're hosting the verification flow yourself (e.g., a self-hosted `/verify` route built on `@entros/pulse-sdk`), set `verifyHref` to your route — for example `verifyHref="/verify"` for a same-origin route, or `verifyHref="https://your-app.com/verify"` for an absolute URL.
 
 For an in-app verification trigger that doesn't redirect, drop in [`<EntrosVerify />`](/docs/integrate/verification-flow) — the popup-pattern component from `@entros/verify`. The user verifies in a popup window without leaving your page; on success the gate's read of the on-chain Anchor will pass on next render.
 

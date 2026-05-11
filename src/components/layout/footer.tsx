@@ -26,6 +26,12 @@ export function Footer() {
           <Link href="/security" className="transition-colors hover:text-foreground">
             Security
           </Link>
+          <Link href="/roadmap" className="transition-colors hover:text-foreground">
+            Roadmap
+          </Link>
+          <Link href="/press" className="transition-colors hover:text-foreground">
+            Press
+          </Link>
         </div>
 
         <div className="flex flex-col gap-2 text-sm text-muted">

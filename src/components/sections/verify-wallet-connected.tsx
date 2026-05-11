@@ -581,7 +581,7 @@ export function VerifyWalletConnected({
           </button>
         </div>
         <p className="text-center text-xs text-muted">
-          Raw data stays on your device. Only the ZK proof and a statistical summary leave.
+          Raw data is never stored. Only the ZK proof and a statistical summary persist.
         </p>
       </div>
     );

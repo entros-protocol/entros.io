@@ -12,7 +12,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Technology",
   description:
-    "How Entros verification works. Twelve seconds of speaking and tracing—feature extraction, ZK proof generation, and on-chain verification run automatically. Raw recordings never leave your device.",
+    "How Entros verification works. Twelve seconds of speaking and tracing—feature extraction, ZK proof generation, and on-chain verification run automatically. Raw recordings are processed locally and never stored.",
   path: "/technology",
 });
 

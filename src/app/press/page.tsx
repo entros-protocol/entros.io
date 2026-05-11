@@ -55,7 +55,7 @@ const blurbs = [
   {
     length: "Long",
     chars: "3 sentences · 520 chars",
-    text: "Entros is the temporal identity layer for Solana. The user proves they are a returning human through twelve seconds of voice, motion, and touch captured on-device, with raw biometric data never leaving the device and a zero-knowledge proof landing on-chain. The user's Trust Score compounds across re-verifications, and Agent Anchor binds AI operators on the 8004 registry to the verified humans behind them.",
+    text: "Entros is the temporal identity layer for Solana. The user proves they are a returning human through twelve seconds of voice, motion, and touch captured on-device, with raw biometric data never persisted and a zero-knowledge proof landing on-chain. The user's Trust Score compounds across re-verifications, and Agent Anchor binds AI operators on the 8004 registry to the verified humans behind them.",
   },
 ];
 

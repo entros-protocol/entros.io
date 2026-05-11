@@ -6,7 +6,7 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "Pulse SDK",
     subtitle: "Client-side capture and proving",
     description:
-      "A TypeScript library that runs on the user's phone or browser. It captures sensor data, extracts features, generates the TBH commitment, and produces the ZK proof. Raw biometric data never leaves this library—only derived statistical features and the proof are transmitted.",
+      "A TypeScript library that runs on the user's phone or browser. It captures sensor data, extracts features, generates the TBH commitment, and produces the ZK proof. Raw biometric data is discarded after feature extraction—only derived statistical features and the proof are retained.",
     highlights: [
       "Browser and React Native support",
       "Audio, IMU, and touch capture in parallel",

@@ -479,9 +479,9 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
         </button>
       </div>
       <p className="text-center text-xs text-muted">
-        Raw data stays on your device.
+        Raw data is never stored.
         <br />
-        Only the proof and a statistical summary leave.
+        Only the proof and a statistical summary persist.
       </p>
     </div>
   );

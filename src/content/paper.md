@@ -2,7 +2,7 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** May 10, 2026
+**Updated:** May 11, 2026
 **Word Count:** Approx. 6500
 
 ---
@@ -58,7 +58,7 @@ The Temporal-Biometric Hash (TBH) pipeline must satisfy five properties:
 
 The protocol issues a nonce-seeded challenge consisting of two components:
 
-**Phonetic phrase.** A 5-word phrase drawn uniformly at random from a curated 1,357-word neutral-vocabulary English dictionary (e.g., *"elephant mountain coffee yellow bicycle"*). The vocabulary, combinatorial structure (1357⁵ ≈ 4.7 × 10¹⁵ phrases), and rationale for choosing real words over nonsense syllables are discussed in §2.2.1.
+**Phonetic phrase.** A 5-word phrase drawn uniformly at random from a curated 1,357-word neutral-vocabulary English dictionary (e.g., *"elephant mountain coffee yellow bicycle"*). The vocabulary, combinatorial structure (1357⁵ ≈ 4.6 × 10¹⁵ phrases), and rationale for choosing real words over nonsense syllables are discussed in §2.2.1.
 
 **Lissajous curve.** A parametric curve `γ(t) = (A sin(at + δ), B sin(bt))` with random parameters `a, b, δ`. The user traces this curve on-screen, producing kinematic data shaped by involuntary motor control patterns.
 
@@ -72,7 +72,7 @@ The original protocol design (June 2025 – April 2026) specified a 70-syllable 
 
 **ASR accuracy is vocabulary-dependent and asymmetric in the defender's favor.** The protocol's content-binding check requires the validation server to verify that the audio matches the issued phrase. Both Whisper [30] and Wav2Vec2-Phoneme [31] exhibit substantially higher error rates on out-of-distribution input than on natural language. Whisper's autoregressive decoder hallucinates training-corpus filler ("Thanks for watching") on nonsense input—observed at ~30 % false-reject rate on clean human speech of nonsense syllables. Wav2Vec2-Phoneme operates in the right primitive (CTC forced alignment, not transcription) but its baseline phoneme error rate of 10–15 % on out-of-distribution phonotactics compounds against the per-phoneme matching metric, yielding a discrimination gap of only 10–15 percentage points between right and wrong content—too narrow to threshold reliably. On real English words, Whisper-tiny.en operates in its training distribution with WER ≈ 5–6 % on LibriSpeech test-clean, and word-level Levenshtein on a curated dictionary gives a discrete signal whose collision probability between two random 5-word phrases is < 0.1 %.
 
-**Curated real-word vocabulary.** The shipped implementation uses a 1,357-word neutral-vocabulary English dictionary curated by length (4–8 letters), syllable count (1–3), VADER-positive sentiment, hand-blocklist content safety filters, and homophone/substring-collision pruning. The combinatorial defense remains: 1,357⁵ ≈ 4.7 × 10¹⁵ unique 5-word phrases, infeasible to pre-synthesize. The discrimination gap on the shipped Whisper-tiny.en + word-level Levenshtein pipeline is approximately 95 percentage points (mean right-phrase distance 0.07 vs. mean wrong-content distance 1.0 across calibration trials)—an order-of-magnitude improvement over the v2 phoneme-level pipeline. Per-session unpredictability is preserved by uniform random sampling from the public dictionary; per Kerckhoffs's principle, the protocol's security depends on nonce freshness, the content-binding check itself, and the orthogonal Tier 1 acoustic and Tier 2 cross-modal defenses (§6.3, §5.2.4)—not on the secrecy of the vocabulary.
+**Curated real-word vocabulary.** The shipped implementation uses a 1,357-word neutral-vocabulary English dictionary curated by length (4–8 letters), syllable count (1–3), VADER-positive sentiment, hand-blocklist content safety filters, and homophone/substring-collision pruning. The combinatorial defense remains: 1,357⁵ ≈ 4.6 × 10¹⁵ unique 5-word phrases, infeasible to pre-synthesize. The discrimination gap on the shipped Whisper-tiny.en + word-level Levenshtein pipeline is approximately 95 percentage points (mean right-phrase distance 0.07 vs. mean wrong-content distance 1.0 across calibration trials)—an order-of-magnitude improvement over the v2 phoneme-level pipeline. Per-session unpredictability is preserved by uniform random sampling from the public dictionary; per Kerckhoffs's principle, the protocol's security depends on nonce freshness, the content-binding check itself, and the orthogonal Tier 1 acoustic and Tier 2 cross-modal defenses (§6.3, §5.2.4)—not on the secrecy of the vocabulary.
 
 #### **2.3. Multi-Modal Data Acquisition**
 

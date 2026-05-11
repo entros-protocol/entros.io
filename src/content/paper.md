@@ -2,7 +2,7 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** May 8, 2026
+**Updated:** May 10, 2026
 **Word Count:** Approx. 6500
 
 ---
@@ -28,7 +28,7 @@ Instead of asking *"What is your secret?"*, the protocol asks *"Are you still yo
 #### **1.1. Contributions**
 
 1. A multi-modal behavioral capture protocol (the *Liveness Interlock*) that extracts a 308-dimensional feature vector from voice, motion, and touch data captured simultaneously over a configurable window.
-2. A locality-sensitive hashing pipeline (*SimHash*) that produces a 256-bit *Temporal Fingerprint* where intra-person Hamming distance is bounded (~20–65 bits) while inter-person distance approaches random (~128 bits).
+2. A locality-sensitive hashing pipeline (*SimHash*) that produces a 256-bit *Temporal Fingerprint* where intra-person Hamming distance is bounded and inter-person distance is wider, with continuous calibration against the verified user population to maintain the discrimination gap. Operational thresholds are part of the validation service's adversarial-resistance posture and are not published.
 3. A Groth16 zero-knowledge circuit that proves two Poseidon-committed fingerprints fall within a bounded Hamming distance, without revealing either fingerprint.
 4. A non-transferable on-chain identity token (the *Entros Anchor*) with a progressive Trust Score that rewards sustained temporal consistency over time.
 5. A graduated trust model that honestly distinguishes first-time liveness checks from sustained behavioral consistency, with integrator-controlled trust thresholds.
@@ -86,27 +86,51 @@ Three sensor streams are captured simultaneously over a configurable window (def
 
 Raw time-series data is distilled into a 308-dimensional feature vector `v ∈ ℝ^308` through three parallel pipelines.
 
-**Speaker Features (`v_audio ∈ ℝ^44`)**
+**Speaker Features (`v_audio ∈ ℝ^170`)**
 
-**Fundamental frequency and perturbation.** F0 statistics and delta, jitter measures (local, RAP, PPQ5, DDP), shimmer measures (local, APQ3, APQ5, DDA), and harmonics-to-noise ratio (HNR). These capture physiological characteristics of the vocal tract and laryngeal control. F0 is trivial for TTS engines to match, but jitter and shimmer measure involuntary micro-perturbations that synthetic speech produces with unnaturally low or uniform values. HNR detects synthetic audio because TTS engines produce unnaturally clean signals without the breath noise present in real speech.
+**Pre-processing.** Audio is captured at 16 kHz and normalized to RMS 0.05 at the SDK source so amplitude features and downstream spectral features are stable across mic gains and device hardware. A pre-emphasis filter with coefficient 0.97 is applied before MFCC framing.
 
-**Formant ratios and spectral shape.** Formant frequency ratios (F1/F2, F2/F3) via linear predictive coding (LPC) analysis [9], and Long-Term Average Spectrum (LTAS) statistics (spectral centroid, rolloff, flatness, spread) capture vocal tract resonance geometry.
+**Fundamental frequency, perturbation, and LTAS (44 features).** F0 statistics and delta, jitter measures (local, RAP, PPQ5, DDP), shimmer measures (local, APQ3, APQ5, DDA), harmonics-to-noise ratio (HNR), voicing ratio, amplitude moments, and Long-Term Average Spectrum (LTAS) statistics (spectral centroid, rolloff, flatness, spread). F0 is trivial for TTS engines to match, but jitter and shimmer measure involuntary micro-perturbations that synthetic speech produces with unnaturally low or uniform values. HNR detects synthetic audio because TTS engines produce unnaturally clean signals without the breath noise present in real speech.
 
-**Statistical condensing.** Voicing ratio, amplitude entropy, and per-feature moments (mean, variance, skewness, kurtosis) over the capture window produce the fixed-size vector `v_audio`.
+**MFCCs and delta-MFCCs (72 features).** Mel-Frequency Cepstral Coefficients capture vocal-tract spectral envelope shape across mel-warped frequency bands. Per-coefficient statistics (mean, variance, skewness, kurtosis) over the capture window are computed for the 12 cepstral coefficients C1–C12, plus their temporal first derivatives over the same window. MFCCs and delta-MFCCs are the dominant speaker-discrimination signal in modern speech-recognition literature.
 
-**Kinematic Features (`v_kin ∈ ℝ^54`)**
+**LPC coefficient statistics (24 features).** Linear predictive coding [9] reduces each frame to coefficients describing the vocal tract's all-pole filter. Per-coefficient mean and variance over 12 LPC coefficients capture the acoustic resonance system independent of the spoken content.
 
-**Jerk and jounce analysis.** The third (jerk) and fourth (jounce) time derivatives of pointer coordinates are computed. Involuntary human movements exhibit characteristic high-frequency jerk signatures that scripted movements lack.
+**Formant trajectories (16 features).** F1/F2/F3 absolute formant frequencies and their per-trajectory derivatives, plus selected formant bandwidths. Absolute formant frequencies carry vocal-tract length information directly tied to the speaker's anatomy.
 
-**Path dynamics.** Path curvature, directional entropy, speed and acceleration profiles, micro-correction frequency, pause ratios, path efficiency, segment length distribution, speed jitter variance, normalized path length, and angle autocorrelation. These features capture habitual motor control patterns unique to each individual [10].
+**Voice quality (9 features).** Cepstral peak prominence (CPP) restricted to the F0 quefrency band, spectral tilt, H1-H2 harmonic ratio, and sub-band energy ratios. These features distinguish breathy, creaky, and modal phonation modes which are stable per speaker.
 
-**Touch Features (`v_touch ∈ ℝ^36`)**
+**Pitch contour shape (5 features).** Discrete cosine transform coefficients of the F0 contour over voiced regions encode prosodic curve shape independent of absolute pitch.
 
-Touch coordinate velocity and acceleration, pressure statistics, contact area statistics, path jerk, and per-signal jitter variance. These features reflect fine motor control patterns of the fingertip or stylus.
+**Kinematic Features (`v_kin ∈ ℝ^81`)**
+
+**Jerk, jounce, and path dynamics (54 features).** The third (jerk) and fourth (jounce) time derivatives of pointer coordinates, plus path curvature, directional entropy, speed and acceleration profiles, micro-correction frequency, pause ratios, path efficiency, segment length distribution, speed jitter variance, normalized path length, and angle autocorrelation. Involuntary human movements exhibit characteristic high-frequency jerk signatures that scripted movements lack. These features capture habitual motor control patterns unique to each individual [10].
+
+**FFT band energies (12 features).** Cooley-Tukey FFT band energy across four frequency bands (0–2, 2–6, 6–12, 12–30 Hz) for each of three accelerometer axes.
+
+**Physiological tremor peak (2 features).** Peak frequency and amplitude in the 4–12 Hz band of the motion magnitude—the band where physiological hand tremor concentrates.
+
+**Cross-axis covariance (6 features).** Pairwise covariance for six selected IMU axis pairs captures coupled motor patterns that uncoupled per-axis features miss.
+
+**Direction-reversal and angular dynamics (7 features).** Per-axis direction-reversal rate (mean and variance per accelerometer axis), mean angular velocity, and magnitude autocorrelation at lags 1, 5, 10, 25.
+
+**Touch Features (`v_touch ∈ ℝ^57`)**
+
+**Velocity, acceleration, pressure, contact area (36 features).** Touch coordinate velocity and acceleration, pressure statistics, contact area statistics, path jerk, and per-signal jitter variance. These features reflect fine motor control patterns of the fingertip or stylus.
+
+**Pressure dynamics (4 features).** Pressure first-derivative mean, variance, skewness, kurtosis capture how the user's grip changes through a stroke.
+
+**Contact and area dynamics (4 features).** Contact aspect ratio mean and variance, area first-derivative mean and variance.
+
+**Path geometry (3 features).** Trajectory curvature mean, variance, and skewness over voiced motion frames.
+
+**Velocity autocorrelation (3 features).** Touch velocity autocorrelation at lags 1, 3, 5.
+
+**Inter-touch and stroke statistics (7 features).** Inter-touch gap mean / variance / skew / kurtosis (4), path efficiency (1), per-stroke total path length mean and variance (2).
 
 #### **2.5. Feature Fusion and SimHash**
 
-**Normalization.** Each modality group is independently z-score normalized (μ = 0, σ = 1) to ensure equal contribution regardless of raw magnitude. Non-finite values are sanitized to zero.
+**Normalization.** The feature vector is normalized through a multi-stage server-side pipeline so that each feature contributes meaningfully to the SimHash projection regardless of its natural unit magnitude, identity-bearing anatomical features stay dominant, and session-noise features do not drive the bit pattern. Non-finite values are sanitized to zero. Specific normalization parameters form part of the validation service's adversarial-resistance posture and are not published—disclosing them would let attackers craft synthetic features that pass normalization while evading the discrimination the pipeline is designed to enforce.
 
 **Concatenation.** The three vectors are concatenated: `v_fused = [v_audio ‖ v_kin ‖ v_touch] ∈ ℝ^308`.
 
@@ -143,7 +167,7 @@ where `s` is a 248-bit random salt, and `pack_lo/hi` pack the 256 bits into two 
 
 #### **3.1. Circuit Definition**
 
-The Hamming distance circuit is a Groth16 [4] arithmetic circuit over BN254 with ~1,996 R1CS constraints. It proves three statements simultaneously:
+The Hamming distance circuit is a Groth16 [4] arithmetic circuit over BN254 with ~2,010 R1CS constraints. It proves three statements simultaneously:
 
 1. `Poseidon(pack(F_T_new), s_new) = c_new`
 2. `Poseidon(pack(F_T_prev), s_prev) = c_prev`
@@ -388,7 +412,7 @@ T4 (modern voice cloning via XTTS-v2, F5-TTS), T5 (coupled cross-modal synthesis
 
 ### **8. Implementation and Benchmarks**
 
-The protocol is deployed on Solana devnet with six components: three Anchor/Rust on-chain programs with full constraint validation and on-chain Trust Score; a Groth16/Circom circuit (1,996 constraints) with trusted setup; the Pulse SDK (TypeScript, published on npm, 60 SDK tests including an 8-phase adversarial pen test harness); a server-side validation service (Rust, 32 tests); an executor node (Rust, live on Railway) providing the relayer API with rate limiting and commitment registry; and a demo application (Next.js on Vercel) with walletless and wallet-connected flows. A Realms DAO voter weight plugin (38 tests) provides governance integration. Total test coverage: 155 tests across all repos.
+The protocol is deployed on Solana devnet with six components: three Anchor/Rust on-chain programs with full constraint validation and on-chain Trust Score; a Groth16/Circom circuit (2,010 constraints) with trusted setup; the Pulse SDK (TypeScript, published on npm, 60 SDK tests including an 8-phase adversarial pen test harness); a server-side validation service (Rust, 32 tests); an executor node (Rust, live on Railway) providing the relayer API with rate limiting and commitment registry; and a demo application (Next.js on Vercel) with walletless and wallet-connected flows. A Realms DAO voter weight plugin (38 tests) provides governance integration. Total test coverage: 155 tests across all repos.
 
 The protocol fee treasury is live on devnet, collecting 0.005 SOL per verification. The fee is deducted atomically within the batched verification transaction and is admin-adjustable. Treasury balance is publicly auditable on Solana Explorer.
 

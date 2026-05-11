@@ -7,13 +7,13 @@ export const features: Feature[] = [
     description:
       "Voice, motion, and touch is captured simultaneously on your device. A unique random challenge each session.",
     benefit:
-      "Behavioral entropy scoring detects synthetic data patterns. Raw data stays on your device—only derived statistical features are validated server-side.",
+      "Behavioral entropy scoring detects synthetic data patterns. Raw data is never persisted—only derived statistical features are validated server-side.",
   },
   {
     icon: "proof",
     title: "The Proof",
     description:
-      "A ZK proof that your behavioral fingerprint is consistent with your previous verification. No raw biometric data crosses the wire.",
+      "A ZK proof that your behavioral fingerprint is consistent with your previous verification. No raw biometric data persists or is exposed.",
     benefit:
       "Groth16 proof with minimum distance constraint blocks perfect replay attacks.",
   },

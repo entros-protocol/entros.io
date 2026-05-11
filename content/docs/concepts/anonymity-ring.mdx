@@ -3,7 +3,7 @@ title: Anonymity Ring
 description: The off-chain validation layer that runs sanity and synthesis checks before a verification settles on-chain.
 ---
 
-The Anonymity Ring is the off-chain layer between the device's capture and the on-chain settlement. Its job is to inspect the 134-feature behavioral summary that arrives from the SDK and decide whether the captured signal is plausibly human before the proof is allowed to settle.
+The Anonymity Ring is the off-chain layer between the device's capture and the on-chain settlement. Its job is to inspect the 308-feature behavioral summary that arrives from the SDK and decide whether the captured signal is plausibly human before the proof is allowed to settle.
 
 ## What runs in the layer today
 
@@ -18,7 +18,7 @@ Public adversarial waves T1 through T3 produced 14,000+ attempts, all rejected. 
 
 ## What the layer sees and does not see
 
-The validator receives only what the device transmits: the 134-number summary, the proof, the new commitment, and the audio for the phrase challenge. It does not receive raw motion or touch traces, and the audio is not retained after phrase validation completes. The transcription of the spoken phrase is logged for adversarial-wave debugging, since text alone carries no biometric content; raw audio waveforms are not.
+The validator receives only what the device transmits: the 308-number summary, the proof, the new commitment, and the audio for the phrase challenge. It does not receive raw motion or touch traces, and the audio is not retained after phrase validation completes. The transcription of the spoken phrase is logged for adversarial-wave debugging, since text alone carries no biometric content; raw audio waveforms are not.
 
 ## What the proof attests, what the validator attests
 

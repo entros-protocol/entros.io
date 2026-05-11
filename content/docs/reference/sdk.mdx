@@ -28,16 +28,20 @@ The current published version is `1.5.3`. Install with `npm install @entros/puls
 | `DEFAULT_THRESHOLD` | `96` | Default Hamming distance threshold |
 | `DEFAULT_MIN_DISTANCE` | `3` | Default minimum distance for replay defense |
 | `FINGERPRINT_BITS` | `256` | Behavioral fingerprint width in bits |
-| `SPEAKER_FEATURE_COUNT` | `44` | Number of voice features extracted |
+| `SPEAKER_FEATURE_COUNT` | `170` | Number of voice features extracted (44 legacy + 72 MFCC + 24 LPC + 16 formant trajectories + 9 voice quality + 5 pitch contour DCT) |
+| `MOTION_FEATURE_COUNT` | `81` | Number of motion features extracted (54 legacy + 27 v2 additions: FFT band energy, tremor peak, cross-axis covariance, magnitude autocorrelation) |
+| `TOUCH_FEATURE_COUNT` | `57` | Number of touch features extracted (36 legacy + 21 v2 additions: pressure derivatives, contact aspect ratio, curvature, gap distribution, path efficiency) |
+
+The fused vector emitted by the SDK to the validator has dimension `SPEAKER_FEATURE_COUNT + MOTION_FEATURE_COUNT + TOUCH_FEATURE_COUNT = 308`.
 
 ## Capture and feature extraction
 
 | Export | Signature | Purpose |
 | --- | --- | --- |
-| `extractSpeakerFeatures` | `(audio) => Promise<number[]>` | 44 voice prosody features |
+| `extractSpeakerFeatures` | `(audio) => Promise<number[]>` | 170 voice features: F0 statistics, jitter, shimmer, HNR, MFCCs and delta-MFCCs, LPC coefficients, formant trajectories (F1/F2/F3), voice quality (CPP, spectral tilt, H1-H2, sub-bands), pitch contour DCT, LTAS |
 | `extractSpeakerFeaturesDetailed` | `(audio) => Promise<{ features, f0Contour }>` | Voice features plus pitch contour |
-| `extractMotionFeatures` | `(samples) => number[]` | 54 motion features from IMU samples |
-| `extractTouchFeatures` | `(samples) => number[]` | 36 touch features |
+| `extractMotionFeatures` | `(samples) => number[]` | 81 motion features from IMU samples (jerk/jounce, FFT band energy, tremor peak, cross-axis covariance, magnitude autocorrelation) |
+| `extractTouchFeatures` | `(samples) => number[]` | 57 touch features (velocity, acceleration, pressure derivatives, contact aspect ratio, curvature, gap distribution, path efficiency, per-stroke length stats) |
 | `extractMouseDynamics` | `(samples) => number[]` | Pointer-based touch dynamics |
 | `extractAccelerationMagnitude` | `(samples, frameCount) => number[]` | Frame-aligned acceleration magnitudes |
 | `fuseFeatures` | `(audio, motion, touch) => number[]` | Concatenate the three feature streams |

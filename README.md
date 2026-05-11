@@ -4,8 +4,7 @@
 
 **Behavioral proof-of-personhood on Solana.**
 
-Prove you're human in 12 seconds, on your device.
-Vouch for the AI agents you operate.
+Prove you're human in 12 seconds, on your device. Vouch for the AI agents you operate.<br />
 Build Trust. Gate any Solana dApp.
 
 [Home](https://entros.io) · [Demo](https://entros.io/verify) · [Paper](https://entros.io/paper) · [Docs](https://entros.io/docs) · [Security](https://entros.io/security)
@@ -16,7 +15,7 @@ Build Trust. Gate any Solana dApp.
 
 ## What
 
-Speak a server-issued challenge phrase—five words drawn at random from a curated 1,357-word dictionary (1,357⁵ ≈ 4.6 × 10¹⁵ possible combinations, fresh on every verification). The Pulse SDK captures your voice prosody and the involuntary motion of your input device—mouse, trackpad, touchscreen, or gyroscope—for twelve seconds. It extracts a 134-feature statistical signature locally and hashes it into a Poseidon commitment. Your first verification registers that commitment as your baseline; an Entros Anchor—a non-transferable Token-2022—mints to your wallet. Every re-verification generates a Groth16 ZK proof binding the new commitment to your previous one. **Raw biometric data never leaves your device.** Only the proof and the statistical summary do.
+Speak a server-issued challenge phrase—five words drawn at random from a curated 1,357-word dictionary (1,357⁵ ≈ 4.6 × 10¹⁵ possible combinations, fresh on every verification). The Pulse SDK captures your voice prosody and the involuntary motion of your input device—mouse, trackpad, touchscreen, or gyroscope—for twelve seconds. It extracts a 308-feature statistical signature locally (170 audio—F0 statistics, jitter, shimmer, HNR, MFCCs and delta-MFCCs, LPC coefficients, formant trajectories, voice-quality metrics, pitch-contour DCT, LTAS; 81 motion; 57 touch) and hashes it into a Poseidon commitment. Your first verification registers that commitment as your baseline; an Entros Anchor—a non-transferable Token-2022—mints to your wallet. Every re-verification generates a Groth16 ZK proof binding the new commitment to your previous one. **Raw biometric data never leaves your device.** Only the proof and the statistical summary do.
 
 ## Who
 
@@ -35,7 +34,7 @@ The first verification is fully hardened on its own. Every capture, first or rep
 - **Sybil registry scan.** Your fingerprint is checked against every other verified user's, regardless of wallet. Biological collisions across wallets are caught.
 - **Calibration-attack noise.** Controlled noise on borderline outcomes near every threshold check, designed to defeat attackers probing for boundary-crafted inputs.
 
-T1–T3: 16,000+ adversarial attempts, 0% pass rate. T4a (pre-recorded human voice + procedural motion): 100% pass counterfactual → 0% pass after four progressive defense waves. T4b through T7 queued for the continuous red team program.
+T1–T3: 16,000+ adversarial attempts, 0% pass rate. T4a (pre-recorded human voice + procedural motion): 100% pass counterfactual → 0% pass after four progressive defense waves. T4b through T8 queued for the continuous red team program.
 
 **Re-verification adds temporal consistency.** Every subsequent capture produces a Poseidon commitment; a Groth16 ZK circuit proves the Hamming distance to your previous on-chain commitment is below a threshold (similar enough to be you) AND above a floor (different enough to be fresh, not a replay). A bot that perfectly cloned your one capture still fails: the next capture has to drift naturally—not be identical, not be wildly different. Trust Score starts at zero on first verification—the baseline is registered, not trusted—and accrues with each successful re-verification. Integrators gate on Trust Score, not on the binary "verified" flag.
 
@@ -70,7 +69,7 @@ This repo (`entros.io`) is the website, the verification dApp, and the documenta
 |---|---|
 | [`entros.io`](https://github.com/entros-protocol/entros.io) | **This repo**—website, verification dApp, docs, paper |
 | [`protocol-core`](https://github.com/entros-protocol/protocol-core) | Three Anchor programs: identity mint, ZK verifier, registry |
-| [`circuits`](https://github.com/entros-protocol/circuits) | Groth16 Hamming-distance circuit (~1,996 constraints) |
+| [`circuits`](https://github.com/entros-protocol/circuits) | Groth16 Hamming-distance circuit (~2,010 constraints) |
 | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) | Client SDK: capture → fingerprint → prove → submit. npm [`@entros/pulse-sdk`](https://www.npmjs.com/package/@entros/pulse-sdk) |
 | [`entros-verify`](https://github.com/entros-protocol/entros-verify) | Drop-in popup component. npm [`@entros/verify`](https://www.npmjs.com/package/@entros/verify) |
 | [`executor-node`](https://github.com/entros-protocol/executor-node) | Off-chain relayer: feature validation, SAS attestation, on-chain submit |

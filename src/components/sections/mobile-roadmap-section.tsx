@@ -17,9 +17,9 @@ export function MobileRoadmapSection() {
         </h2>
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
           A Solana Mobile app is in development for the Solana dApp
-          Store, targeting Seeker. Native sensor access unlocks
-          stronger biometric signals than browsers allow, and Trust
-          Score carries across every dApp in the mobile ecosystem.
+          Store, targeting Seeker. Native sensor APIs extend the
+          biometric surface, and Trust Score carries across every
+          dApp in the mobile ecosystem.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">

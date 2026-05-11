@@ -18,6 +18,12 @@ const technologyDropdown: DropdownItem[] = [
     description:
       "Continuous red team audit, transparent results.",
   },
+  {
+    label: "Mainnet Roadmap",
+    href: "/roadmap",
+    description:
+      "What gates the flip from devnet to mainnet.",
+  },
 ];
 
 const solutionsDropdown: DropdownItem[] = [
@@ -35,6 +41,11 @@ const solutionsDropdown: DropdownItem[] = [
     label: "Governance",
     href: "/governance",
     description: "Sybil-resistant DAO voting and DAO oversight.",
+  },
+  {
+    label: "Realms Case Study",
+    href: "/case-studies/realms",
+    description: "Verified-human governance on Realms, live on devnet.",
   },
   {
     label: "Integrate",

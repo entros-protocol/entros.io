@@ -10,6 +10,7 @@ const sections = [
     items: [
       { label: "How It Works", href: "/technology" },
       { label: "Security Program", href: "/security" },
+      { label: "Mainnet Roadmap", href: "/roadmap" },
     ],
   },
   {
@@ -25,6 +26,7 @@ const sections = [
       { label: "Use Cases", href: "/solutions" },
       { label: "Agent Anchor", href: "/agents" },
       { label: "Governance", href: "/governance" },
+      { label: "Realms Case Study", href: "/case-studies/realms" },
       { label: "Integrate", href: "/integrate" },
       { label: "Stats", href: "/stats" },
     ],

@@ -24,6 +24,9 @@ const entries: Entry[] = [
   { path: "/agents", changeFrequency: "weekly", priority: 0.7 },
   { path: "/governance", changeFrequency: "weekly", priority: 0.7 },
   { path: "/stats", changeFrequency: "weekly", priority: 0.6 },
+  { path: "/roadmap", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/press", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/case-studies/realms", changeFrequency: "monthly", priority: 0.7 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

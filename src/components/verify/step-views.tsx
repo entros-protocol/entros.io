@@ -288,11 +288,59 @@ function extractCooldownUnlockDate(error: string): Date | null {
 }
 
 // Catch-all for any other on-chain Anchor program revert (proof-from-
-// future, missing receipt, malformed accounts, etc.). Routes to a
-// friendly "verification failed" surface instead of leaking the raw
-// `{"InstructionError":[N,{"Custom":N}]}` JSON.
+// future, missing receipt, malformed accounts, etc.). Routes to the
+// validation-rejected surface alongside opaque validator rejections so
+// the user-facing copy is identical across the two paths — telling an
+// attacker whether the validator or the chain caught them would itself
+// be a calibration signal.
 function isProgramRevertError(error: string): boolean {
   return error.includes("InstructionError") || /"Custom":\s*\d+/.test(error);
+}
+
+// Opaque rejections come from two sources that we deliberately collapse
+// into one user-facing message:
+//   1. The validator service returns `safe_reason=null` for anti-probing
+//      categories (sybil match, TTS detection, advanced biometric checks).
+//      The SDK propagates the response as "Feature validation failed" or
+//      whatever generic body the validator returned.
+//   2. The wallet adapter throws a raw Solana RPC error
+//      (`-32002 SendTransactionPreflightFailure` plus the `@solana/errors`
+//      decode prompt plus the base58 transaction blob) when on-chain
+//      preflight rejects before reaching a typed Custom code.
+// Today both paths leak into the generic bucket and render the error
+// string verbatim. Routing them through `validation-rejected` instead
+// surfaces deliberate "the system rejected this attempt" UX without
+// revealing which layer or which check caught the rejection.
+function isOpaqueRejectionError(error: string): boolean {
+  const e = error.toLowerCase();
+  return (
+    // Validator anti-probing rejections. The validation service returns
+    // `safe_reason=None` for sybil-match / TTS-detected / advanced
+    // biometric checks (deliberate opacity posture from the categorization
+    // sprint), with the user-facing error body set to a generic phrase.
+    // Matching "verification failed" specifically catches the sybil and
+    // related cases that surfaced after #98 shipped; "validation failed"
+    // and "feature validation" cover the SDK-side fallback wording.
+    e.includes("verification failed") ||
+    e.includes("verification rejected") ||
+    e.includes("feature validation") ||
+    e.includes("validation rejected") ||
+    e.includes("validation failed") ||
+    // Solana RPC and wallet-adapter raw error formats. Phantom / Solflare
+    // / Backpack surface these verbatim when simulation rejects before
+    // pulse-sdk's confirmAndCheck wrapper runs. Routing them through
+    // validation-rejected delivers the same polished surface as opaque
+    // validator rejections — distinguishing the two would itself reveal
+    // calibration information to an attacker (whether the validator or
+    // the chain caught them). Specific user-actionable Custom codes
+    // (6011 stale-baseline, 6012 cooldown) route earlier in the
+    // categorizer so they retain their dedicated surfaces.
+    e.includes("-32002") ||
+    e.includes("sendtransactionpreflightfailure") ||
+    e.includes("@solana/errors") ||
+    e.includes("custom program error") ||
+    e.includes("transaction simulation failed")
+  );
 }
 
 // Microphone permission denied. Surface paths:
@@ -341,7 +389,7 @@ type FailureKind =
   | { kind: "missing-baseline"; canReset: boolean }
   | { kind: "stale-baseline"; canReset: boolean }
   | { kind: "cooldown-active" }
-  | { kind: "program-revert" }
+  | { kind: "validation-rejected" }
   | { kind: "insufficient-sol" }
   | { kind: "user-rejection" }
   | { kind: "stale-blockhash" }
@@ -375,13 +423,22 @@ function categorizeFailure(error: string, canResetBaseline: boolean): FailureKin
   if (isUserRejectionError(error)) return { kind: "user-rejection" };
   if (isStaleBlockhashError(error)) return { kind: "stale-blockhash" };
   if (isRateLimitedError(error)) return { kind: "rate-limited" };
-  // Specific Custom codes route before the generic program-revert bucket
-  // so each gets its own user-actionable surface.
+  // Specific Custom codes route before the opaque-rejection bucket so
+  // each gets its own user-actionable surface — cooldowns and stale
+  // baselines reveal protocol-state the user needs to act on, not
+  // biometric-check outcomes, so surfacing them doesn't help an attacker
+  // calibrate.
   if (isPrevCommitmentMismatchError(error)) {
     return { kind: "stale-baseline", canReset: canResetBaseline };
   }
   if (isResetCooldownError(error)) return { kind: "cooldown-active" };
-  if (isProgramRevertError(error)) return { kind: "program-revert" };
+  // Opaque rejections and generic program reverts collapse into the same
+  // user-facing surface. Distinguishing them would tell an attacker
+  // whether the validator or the on-chain layer caught them, which is
+  // itself calibration information.
+  if (isOpaqueRejectionError(error) || isProgramRevertError(error)) {
+    return { kind: "validation-rejected" };
+  }
   return { kind: "generic", message: error };
 }
 
@@ -480,10 +537,10 @@ export function FailedView({
         "Or verify from the device that holds the original baseline.";
       break;
     }
-    case "program-revert":
-      title = "Verification failed";
+    case "validation-rejected":
+      title = "Verification rejected";
       body =
-        "The on-chain program rejected this verification. Please try again.";
+        "Validation rejected this attempt. Please try again, or contact support if this persists.";
       break;
     case "insufficient-sol":
       // MAINNET TODO (master-list #124): rewrite devnet-specific copy + CTA.
@@ -532,8 +589,21 @@ export function FailedView({
         "Check your OS sound settings — input device and input volume — then try again.";
       break;
     case "generic":
+      // Friendly-text passthrough. The catch-block sanitizer in
+      // verify-wallet-connected.tsx has already stripped raw RPC noise,
+      // base58 blobs, and `@solana/errors` decode prompts before this
+      // string arrives, so anything that lands here is a state-machine
+      // or SDK message that was deliberately written to be readable —
+      // "Proof generation timed out. Please try again.", "Audio
+      // recording too short.", etc. Display it directly. Fall back to
+      // the static "something unexpected" copy only when the sanitized
+      // message is empty (which means the original error had no useful
+      // user-facing content).
       title = "Verification failed";
-      body = failure.message;
+      body =
+        failure.message.trim().length > 0
+          ? failure.message
+          : "We hit an unexpected error during verification. Please try again, or contact support if this persists.";
       break;
   }
 

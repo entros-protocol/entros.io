@@ -66,6 +66,37 @@ const RETRYABLE_REASONS: ReadonlySet<string> = new Set([
   "validation_unavailable",
 ]);
 
+// Defense-in-depth sanitizer for any error string about to be dispatched
+// into the failure UI. The categorizer in step-views already routes the
+// known leaky patterns (-32002, @solana/errors decode prompts, base58
+// transaction blobs) into the validation-rejected surface that renders
+// safe static copy — but if a future error class slips past the
+// categorizer, this sanitizer strips the developer-facing decode hint
+// and replaces long base58 sequences before the string can reach the
+// generic-fallback render path. Preserves substrings the categorizer
+// relies on for routing (`-32002`, `SendTransactionPreflightFailure`,
+// `Custom`, `InstructionError`).
+function sanitizeErrorMessage(message: string): string {
+  // Strip @solana/errors developer-facing decode hints.
+  let sanitized = message.replace(/Decode this error by running[^\n]*/gi, "");
+  // Replace labeled transaction blobs (sig=..., Tx: ..., etc.) with a
+  // placeholder while preserving the surrounding routing-relevant
+  // substrings the categorizer needs.
+  sanitized = sanitized.replace(
+    /(?:Tx|tx|Transaction|sig)[:=]\s*[1-9A-HJ-NP-Za-km-z]{30,}/g,
+    "[transaction]",
+  );
+  // Replace any standalone long base58 sequence (chunk hashes, transaction
+  // signatures, raw account addresses serialized verbatim) with a placeholder.
+  sanitized = sanitized.replace(/\b[1-9A-HJ-NP-Za-km-z]{40,}\b/g, "[blob]");
+  // Strip stack-trace frames so multi-line errors render as a single
+  // user-readable sentence rather than a wall of internal call sites.
+  sanitized = sanitized.replace(/^\s+at\s.*$/gm, "");
+  // Collapse runs of blank lines left behind by the stack-strip pass.
+  sanitized = sanitized.replace(/\n{2,}/g, "\n");
+  return sanitized.trim();
+}
+
 export function VerifyWalletConnected({
   state,
   dispatch,
@@ -439,13 +470,13 @@ export function VerifyWalletConnected({
         }
         dispatch({
           type: "VERIFICATION_FAILED",
-          error: errorMessage,
+          error: sanitizeErrorMessage(errorMessage),
         });
       })
       .catch((err: Error) => {
         dispatch({
           type: "VERIFICATION_FAILED",
-          error: err.message ?? "Unexpected error",
+          error: sanitizeErrorMessage(err.message ?? "Unexpected error"),
         });
       });
   }

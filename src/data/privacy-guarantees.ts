@@ -11,7 +11,7 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "database",
     title: "No raw biometric storage",
     description:
-      "Raw audio, motion, and touch data are never persisted after the Temporal Fingerprint is computed. No server-side database holds voice samples or movement traces. Your encrypted fingerprint stays on your device for re-verification.",
+      "Raw audio, motion, and touch data are never persisted after the Temporal Fingerprint is computed. No server-side database holds voice samples or movement traces. Your encrypted fingerprint is cached locally for fast re-verification and held on chain in a wallet-keyed AES-256-GCM blob—recoverable from any device by the wallet that wrote it, opaque to everyone else. The blob holds only a one-way hash of the behavioral summary plus a random salt; raw audio, motion, and touch are never inside it.",
   },
   {
     icon: "file-lock",

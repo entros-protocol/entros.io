@@ -438,9 +438,9 @@ export function FailedView({
         "This is a devnet demo. End-to-end verification will be available when the relayer is deployed.";
       break;
     case "missing-baseline":
-      title = "Baseline missing on this device";
+      title = "Baseline can't be recovered here";
       body =
-        "Your Entros Anchor exists on-chain, but the encrypted baseline that proves continuity is not on this device. You can reset your baseline to re-enroll from this device.";
+        "Your Entros Anchor exists on chain, but the encrypted baseline couldn't be restored to this browser—either it was never written (older anchor) or your wallet can't decrypt it. Reset the baseline to re-enroll from here.";
       if (failure.canReset && onResetBaseline) {
         secondaryAction = {
           label: "Reset baseline",
@@ -453,7 +453,7 @@ export function FailedView({
     case "stale-baseline":
       title = "Baseline out of sync";
       body =
-        "Your Entros Anchor on-chain doesn't match the baseline on this device. Reset your baseline to re-enroll from this device.";
+        "Your on-chain Entros Anchor doesn't match the recovered baseline—usually after a reset on another device. Reset here to re-enroll, or verify from the device that holds the matching baseline.";
       if (failure.canReset && onResetBaseline) {
         secondaryAction = {
           label: "Reset baseline",

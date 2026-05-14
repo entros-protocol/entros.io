@@ -38,8 +38,8 @@ export function PopupBaselineStale({
         </p>
         <p className="mx-auto mt-2 max-w-xs text-xs leading-relaxed text-foreground/55">
           This wallet&apos;s on-chain identity doesn&apos;t match the
-          baseline on this device. Reset to re-enroll, then return here to
-          verify.
+          recovered baseline—usually after a reset on another device.
+          Reset to re-enroll, then return here to verify.
         </p>
       </div>
       <div className="flex flex-col-reverse items-center gap-2 sm:flex-row sm:justify-center">

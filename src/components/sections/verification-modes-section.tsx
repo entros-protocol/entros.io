@@ -32,7 +32,7 @@ export function VerificationModesSection() {
               Wallet-connected verification
             </h3>
             <p className="mt-5 text-base leading-relaxed text-foreground/65">
-              Connect a Solana wallet. Your Entros Anchor (non-transferable Token-2022) is tied to that wallet. Behavioral fingerprint stored on your device, commitment stored on-chain. Trust Score accumulates over time and is visible to every integrator on-chain. This is the persistent, portable identity. Each wallet requires funded SOL, and re-verification costs compound, making bot farms economically unsustainable at scale.
+              Connect a Solana wallet. Your Entros Anchor (non-transferable Token-2022) is tied to that wallet. The behavioral fingerprint stays encrypted with AES-256-GCM in a wallet-keyed on-chain blob—only your wallet's signature unlocks it, on any browser or device. The blob holds a one-way hash, not raw biometrics. Commitment and Trust Score live on chain, visible to every integrator. This is the persistent, portable identity. Each wallet requires funded SOL, and re-verification costs compound, making bot farms economically unsustainable at scale.
             </p>
           </div>
         </div>

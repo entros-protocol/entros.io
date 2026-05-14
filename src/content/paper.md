@@ -2,7 +2,7 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** May 11, 2026
+**Updated:** May 14, 2026
 **Word Count:** Approx. 6500
 
 ---
@@ -316,7 +316,7 @@ These layers are complementary. Economic cost makes Sybil farming expensive. Tem
 
 Raw biometric data is destroyed after feature extraction. On-chain, only the Poseidon commitment is stored—computationally hiding under standard assumptions.
 
-**SimHash reversibility.** Recent work has demonstrated pre-image attacks on locality-sensitive hashes [21], showing that SimHash fingerprints contain recoverable information about the original input. Entros's architecture addresses this at two levels: (1) the SimHash fingerprint is never transmitted or stored on-chain—only the Poseidon commitment is public, and the ZK proof reveals nothing beyond the Hamming distance range; (2) the fingerprint stored locally for re-verification is encrypted with AES-256-GCM using a non-extractable `CryptoKey` in IndexedDB, requiring device-level compromise to access. SimHash is not relied upon as a privacy-preserving representation; the Poseidon commitment provides that property.
+**SimHash reversibility.** Recent work has demonstrated pre-image attacks on locality-sensitive hashes [21], showing that SimHash fingerprints contain recoverable information about the original input. Entros's architecture addresses this at two levels: (1) the SimHash fingerprint is never transmitted or stored on-chain—only the Poseidon commitment is public, and the ZK proof reveals nothing beyond the Hamming distance range; (2) the fingerprint stored locally for re-verification is encrypted with AES-256-GCM using a non-extractable `CryptoKey` in IndexedDB, requiring device-level compromise to access. In wallet-connected mode, an additional copy is held on chain in a per-wallet PDA as AES-256-GCM ciphertext keyed to a deterministic Ed25519 `signMessage` signature over a domain-separated payload; only the wallet that wrote it can derive the key and decrypt, making the baseline recoverable across devices while remaining opaque to all other observers. The blob's plaintext is a 32-byte SimHash fingerprint plus a 32-byte commitment salt—64 bytes total. It contains neither raw sensor data nor the 308 statistical features; both are destroyed earlier in the pipeline. Even if decrypted under wallet compromise, the SimHash is non-invertible to the original feature vector, and the original feature vector is itself a statistical summary rather than a recording. The symmetric encryption is quantum-resistant under standard assumptions about Grover's algorithm on AES-256; the wallet-signature-derived key derivation is not, sharing the same post-quantum migration concern as every Ed25519-based Solana primitive. SimHash is not relied upon as a privacy-preserving representation; the Poseidon commitment provides that property.
 
 #### **6.6. Economic Sustainability of Attacks**
 

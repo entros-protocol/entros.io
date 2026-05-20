@@ -1,6 +1,17 @@
 # Entros Protocol — Security & Quality Audit Tracker
 
-Last updated: 2026-05-03
+Last updated: 2026-05-20
+
+**Recent activity (2026-05-20):** Server-side verification-freshness gate
+added on `/attest`. The executor now reads the wallet's on-chain
+`IdentityState.last_verification_timestamp` and rejects attestation
+requests when the timestamp is older than the configured freshness
+window (or implausibly far in the future — clock-skew guard). The
+pulse-sdk already enforced the same gate client-side via the wallet-
+confirmation handler; this lands the check at the executor boundary so
+it holds regardless of the caller. The SAS attestation contract is
+unchanged — same request format, same response format, same `verifiedAt`
+semantics. No public-API or wire-protocol breaking changes.
 
 **Recent activity (2026-05-03, late):** Cross-wallet Sybil registry
 retention extended to 30 days. The registry is the real-time short-window

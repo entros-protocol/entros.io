@@ -160,8 +160,12 @@ export function PulseChallenge({
     return () => clearInterval(decay);
   }, []);
 
+  // 0.008 matches the speech-presence threshold used by voicedFramesRef in
+  // verify-wallet-connected.tsx and verify-walletless.tsx, so the in-capture
+  // hint and the post-hoc "audio too quiet" failure label agree on what
+  // counts as voice rather than ambient noise.
   useEffect(() => {
-    if (audioLevel > 0.005) {
+    if (audioLevel > 0.008) {
       lastVoicedAtRef.current = Date.now();
     }
   }, [audioLevel]);
@@ -356,10 +360,10 @@ export function PulseChallenge({
         </div>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1.5" role="status" aria-live="polite">
         {audioHintVisible && (
           <p className="text-center text-xs text-warning">
-            We can&apos;t hear you. Try moving closer to your microphone.
+            Microphone audio is too quiet. Try speaking up or moving closer.
           </p>
         )}
         <p className="text-center text-xs text-muted">

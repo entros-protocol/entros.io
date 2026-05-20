@@ -50,6 +50,9 @@ export function PulseChallenge({
   const completedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
+  const [audioHintVisible, setAudioHintVisible] = useState(false);
+  const lastVoicedAtRef = useRef<number | null>(null);
+  const captureStartedAtRef = useRef<number | null>(null);
 
   const phrase = providedPhrase;
   const lissajousPoints = useMemo(() => {
@@ -156,6 +159,27 @@ export function PulseChallenge({
     const decay = setInterval(() => setTouchLevel((prev) => prev * 0.9), 100);
     return () => clearInterval(decay);
   }, []);
+
+  useEffect(() => {
+    if (audioLevel > 0.005) {
+      lastVoicedAtRef.current = Date.now();
+    }
+  }, [audioLevel]);
+
+  useEffect(() => {
+    if (!captureStarted) return;
+    captureStartedAtRef.current = Date.now();
+    const interval = setInterval(() => {
+      const captureStart = captureStartedAtRef.current;
+      if (captureStart == null) return;
+      if (Date.now() - captureStart < 2000) return;
+      const lastVoiced = lastVoicedAtRef.current;
+      const quietFor =
+        lastVoiced == null ? Date.now() - captureStart : Date.now() - lastVoiced;
+      setAudioHintVisible(quietFor >= 2000);
+    }, 500);
+    return () => clearInterval(interval);
+  }, [captureStarted]);
 
   useEffect(() => {
     const el = svgContainerRef.current;
@@ -332,9 +356,16 @@ export function PulseChallenge({
         </div>
       </div>
 
-      <p className="text-center text-xs text-muted">
-        All sensors recording simultaneously. Raw data is never stored.
-      </p>
+      <div className="space-y-1.5">
+        {audioHintVisible && (
+          <p className="text-center text-xs text-warning">
+            We can&apos;t hear you. Try moving closer to your microphone.
+          </p>
+        )}
+        <p className="text-center text-xs text-muted">
+          All sensors recording simultaneously. Raw data is never stored.
+        </p>
+      </div>
     </div>
   );
 }

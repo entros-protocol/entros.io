@@ -321,7 +321,7 @@ export function PulseChallenge({
                   key={i}
                   className="w-1 bg-solana-green/60 rounded-full"
                   style={{
-                    height: `${3 + normalizedTouch * 24 * offset}px`,
+                    height: `${3 + normalizedTouch * 32 * offset}px`,
                     transition: "height 120ms ease-out",
                   }}
                 />

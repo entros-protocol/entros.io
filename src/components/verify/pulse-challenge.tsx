@@ -52,6 +52,8 @@ export function PulseChallenge({
   onCompleteRef.current = onComplete;
   const [audioHintVisible, setAudioHintVisible] = useState(false);
   const lastVoicedAtRef = useRef<number | null>(null);
+  const firstVoicedAtRef = useRef<number | null>(null);
+  const hasSpokenEnoughRef = useRef(false);
   const captureStartedAtRef = useRef<number | null>(null);
 
   const phrase = providedPhrase;
@@ -163,10 +165,21 @@ export function PulseChallenge({
   // 0.008 matches the speech-presence threshold used by voicedFramesRef in
   // verify-wallet-connected.tsx and verify-walletless.tsx, so the in-capture
   // hint and the post-hoc "audio too quiet" failure label agree on what
-  // counts as voice rather than ambient noise.
+  // counts as voice rather than ambient noise. Once voiced samples span at
+  // least 1500ms (i.e. the user has actually spoken a phrase rather than a
+  // single ambient spike), hasSpokenEnoughRef latches true and the hint is
+  // suppressed for the rest of the capture — natural pauses after finishing
+  // the phrase shouldn't re-trigger the warning.
   useEffect(() => {
     if (audioLevel > 0.008) {
-      lastVoicedAtRef.current = Date.now();
+      const now = Date.now();
+      if (firstVoicedAtRef.current == null) {
+        firstVoicedAtRef.current = now;
+      }
+      lastVoicedAtRef.current = now;
+      if (!hasSpokenEnoughRef.current && now - firstVoicedAtRef.current >= 1500) {
+        hasSpokenEnoughRef.current = true;
+      }
     }
   }, [audioLevel]);
 
@@ -174,6 +187,11 @@ export function PulseChallenge({
     if (!captureStarted) return;
     captureStartedAtRef.current = Date.now();
     const interval = setInterval(() => {
+      if (hasSpokenEnoughRef.current) {
+        setAudioHintVisible(false);
+        clearInterval(interval);
+        return;
+      }
       const captureStart = captureStartedAtRef.current;
       if (captureStart == null) return;
       if (Date.now() - captureStart < 2000) return;
@@ -360,12 +378,14 @@ export function PulseChallenge({
         </div>
       </div>
 
-      <div className="space-y-1.5" role="status" aria-live="polite">
-        {audioHintVisible && (
-          <p className="text-center text-xs text-warning">
-            Microphone audio is too quiet. Try speaking up or moving closer.
-          </p>
-        )}
+      <div className="space-y-1.5">
+        <div className="min-h-[1rem]" role="status" aria-live="polite">
+          {audioHintVisible && (
+            <p className="text-center text-xs text-warning">
+              Microphone audio is too quiet. Try speaking up or moving closer.
+            </p>
+          )}
+        </div>
         <p className="text-center text-xs text-muted">
           All sensors recording simultaneously. Raw data is never stored.
         </p>

@@ -50,6 +50,11 @@ export function PulseChallenge({
   const completedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
+  const [audioHintVisible, setAudioHintVisible] = useState(false);
+  const lastVoicedAtRef = useRef<number | null>(null);
+  const firstVoicedAtRef = useRef<number | null>(null);
+  const hasSpokenEnoughRef = useRef(false);
+  const captureStartedAtRef = useRef<number | null>(null);
 
   const phrase = providedPhrase;
   const lissajousPoints = useMemo(() => {
@@ -156,6 +161,47 @@ export function PulseChallenge({
     const decay = setInterval(() => setTouchLevel((prev) => prev * 0.9), 100);
     return () => clearInterval(decay);
   }, []);
+
+  // 0.008 matches the speech-presence threshold used by voicedFramesRef in
+  // verify-wallet-connected.tsx and verify-walletless.tsx, so the in-capture
+  // hint and the post-hoc "audio too quiet" failure label agree on what
+  // counts as voice rather than ambient noise. Once voiced samples span at
+  // least 1500ms (i.e. the user has actually spoken a phrase rather than a
+  // single ambient spike), hasSpokenEnoughRef latches true and the hint is
+  // suppressed for the rest of the capture — natural pauses after finishing
+  // the phrase shouldn't re-trigger the warning.
+  useEffect(() => {
+    if (audioLevel > 0.008) {
+      const now = Date.now();
+      if (firstVoicedAtRef.current == null) {
+        firstVoicedAtRef.current = now;
+      }
+      lastVoicedAtRef.current = now;
+      if (!hasSpokenEnoughRef.current && now - firstVoicedAtRef.current >= 1500) {
+        hasSpokenEnoughRef.current = true;
+      }
+    }
+  }, [audioLevel]);
+
+  useEffect(() => {
+    if (!captureStarted) return;
+    captureStartedAtRef.current = Date.now();
+    const interval = setInterval(() => {
+      if (hasSpokenEnoughRef.current) {
+        setAudioHintVisible(false);
+        clearInterval(interval);
+        return;
+      }
+      const captureStart = captureStartedAtRef.current;
+      if (captureStart == null) return;
+      if (Date.now() - captureStart < 2000) return;
+      const lastVoiced = lastVoicedAtRef.current;
+      const quietFor =
+        lastVoiced == null ? Date.now() - captureStart : Date.now() - lastVoiced;
+      setAudioHintVisible(quietFor >= 2000);
+    }, 500);
+    return () => clearInterval(interval);
+  }, [captureStarted]);
 
   useEffect(() => {
     const el = svgContainerRef.current;
@@ -332,9 +378,18 @@ export function PulseChallenge({
         </div>
       </div>
 
-      <p className="text-center text-xs text-muted">
-        All sensors recording simultaneously. Raw data is never stored.
-      </p>
+      <div className="space-y-1.5">
+        <div className="min-h-[1rem]" role="status" aria-live="polite">
+          {audioHintVisible && (
+            <p className="text-center text-xs text-warning">
+              Microphone audio is too quiet. Try speaking up or moving closer.
+            </p>
+          )}
+        </div>
+        <p className="text-center text-xs text-muted">
+          All sensors recording simultaneously. Raw data is never stored.
+        </p>
+      </div>
     </div>
   );
 }

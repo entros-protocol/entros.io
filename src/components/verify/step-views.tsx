@@ -1,6 +1,18 @@
 "use client";
 
-import { CheckCircle, AlertCircle, ExternalLink, Loader2, RefreshCcw } from "lucide-react";
+import { useState } from "react";
+import {
+  CheckCircle,
+  AlertCircle,
+  Check,
+  Copy,
+  ExternalLink,
+  Loader2,
+  RefreshCcw,
+  Share2,
+} from "lucide-react";
+
+import { buildShareUrl, buildTwitterIntent } from "@/lib/share";
 
 const STAGE_SUBTITLES: Record<string, string> = {
   "Extracting features...": "Analyzing voice, motion, and touch data",
@@ -70,6 +82,9 @@ export function VerifiedView({
   onReset,
   title = "Verified",
   tryAgainLabel = "Verify again",
+  walletPubkey,
+  trustScore,
+  showShare = false,
 }: {
   commitment: string;
   txSignature?: string;
@@ -79,7 +94,40 @@ export function VerifiedView({
   title?: string;
   /** Label for the action that starts a new verification cycle. */
   tryAgainLabel?: string;
+  /** Connected wallet pubkey (base58). Required to render the share row. */
+  walletPubkey?: string;
+  /** Trust score from the latest IdentityState read. Null/undefined while
+   * fetching or if the read failed; both the OG card and tweet copy
+   * gracefully omit the score in that case. */
+  trustScore?: number | null;
+  /** Caller-controlled gate. Off for the baseline-reset flow so the share
+   * row never appears there. */
+  showShare?: boolean;
 }) {
+  const [copied, setCopied] = useState(false);
+  const canShare = showShare && Boolean(walletPubkey);
+
+  function handleShareToX() {
+    if (!walletPubkey) return;
+    const intent = buildTwitterIntent(walletPubkey, trustScore ?? null);
+    window.open(intent, "_blank", "noopener,noreferrer");
+  }
+
+  function handleCopyLink() {
+    if (!walletPubkey) return;
+    const url = buildShareUrl(walletPubkey, trustScore ?? null, "copy");
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      })
+      .catch(() => {
+        // Clipboard write rejected by the browser permission model. No
+        // recovery UI — the share-to-X button is still available.
+      });
+  }
+
   return (
     <div className="text-center space-y-6">
       <CheckCircle className="mx-auto h-12 w-12 text-cyan" />
@@ -115,6 +163,31 @@ export function VerifiedView({
       >
         {tryAgainLabel}
       </button>
+      {canShare && (
+        <div className="flex justify-center gap-3">
+          <button
+            type="button"
+            onClick={handleShareToX}
+            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            Share to X
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            aria-label={copied ? "Link copied" : "Copy share link"}
+            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+          >
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-cyan" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
+            {copied ? "Copied" : "Copy link"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

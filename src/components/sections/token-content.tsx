@@ -19,7 +19,7 @@ export function TokenContent() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
+                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
                   // PROTOCOL FEE
                 </span>
 
@@ -39,7 +39,7 @@ export function TokenContent() {
                     <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
                       {protocolFee.amount}
                     </p>
-                    <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                    <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
                       {protocolFee.destination}
                     </p>
                   </div>
@@ -62,7 +62,7 @@ export function TokenContent() {
       {/* Revenue Flywheel */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
             // REVENUE FLYWHEEL
           </span>
 
@@ -210,7 +210,7 @@ export function TokenContent() {
                 </span>
                 <span className="text-foreground/80">{step.step}</span>
                 {i < flywheel.length - 1 && (
-                  <span className="ml-auto text-cyan/50">↓</span>
+                  <span className="ml-auto text-cyan/80" aria-hidden="true">↓</span>
                 )}
                 {i === flywheel.length - 1 && (
                   <span className="ml-auto text-cyan/35">↺</span>
@@ -248,7 +248,7 @@ export function TokenContent() {
       {/* Token Distribution */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
             // TOKEN DISTRIBUTION
           </span>
 
@@ -290,7 +290,7 @@ export function TokenContent() {
       {/* Token Utility */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
             // TOKEN UTILITY
           </span>
 
@@ -331,7 +331,7 @@ export function TokenContent() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
+                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
                   // LAUNCH
                 </span>
 
@@ -342,46 +342,46 @@ export function TokenContent() {
             </div>
 
             <div className="lg:col-span-7">
-              <dl className="border border-border">
+              <div className="border border-border">
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
                   <Rocket className="h-5 w-5 text-cyan" strokeWidth={1.5} />
                   <div>
-                    <dt className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
+                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       {launchDetails.mechanism}
-                    </dt>
-                    <dd className="mt-2 text-sm leading-relaxed text-foreground/65">
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
                       {launchDetails.airdrop}
-                    </dd>
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
                   <Lock className="h-5 w-5 text-cyan" strokeWidth={1.5} />
                   <div>
-                    <dt className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
+                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       {launchDetails.standard}
-                    </dt>
-                    <dd className="mt-2 text-sm leading-relaxed text-foreground/65">
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
                       Supply fixed at genesis. Confidential Balances for
                       private staking.
-                    </dd>
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
                   <TrendingUp className="h-5 w-5 text-cyan" strokeWidth={1.5} />
                   <div>
-                    <dt className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
+                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Revenue-backed from day one
-                    </dt>
-                    <dd className="mt-2 text-sm leading-relaxed text-foreground/65">
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
                       The protocol generates SOL revenue before the token
                       launches. Treasury accumulates real value. The token
                       amplifies the flywheel.
-                    </dd>
+                    </p>
                   </div>
                 </div>
-              </dl>
+              </div>
             </div>
           </div>
         </div>

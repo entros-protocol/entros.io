@@ -94,7 +94,7 @@ export default function Press() {
       <section>
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-10">
           <div className="lg:col-span-5">
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+            <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
               // PRESS KIT
             </span>
 
@@ -150,7 +150,7 @@ export default function Press() {
                   <div className="font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
                     {stat.value}
                   </div>
-                  <p className="mt-3 font-mono text-xs uppercase tracking-[0.15em] text-foreground/50">
+                  <p className="mt-3 font-mono text-xs uppercase tracking-[0.15em] text-foreground/65">
                     {stat.label}
                   </p>
                 </div>
@@ -163,7 +163,7 @@ export default function Press() {
       {/* Descriptions — short / medium / long for journalists to paste */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
             // DESCRIPTIONS
           </span>
 
@@ -186,7 +186,7 @@ export default function Press() {
                   <p className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                     {blurb.length}
                   </p>
-                  <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/50">
+                  <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/65">
                     {blurb.chars}
                   </p>
                 </div>
@@ -202,7 +202,7 @@ export default function Press() {
       {/* Logo assets — preview cards with download links */}
       <section id="assets" className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
             // BRAND ASSETS
           </span>
 
@@ -237,7 +237,7 @@ export default function Press() {
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground">
                   {asset.name}
                 </h3>
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/50">
+                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/65">
                   {asset.format}
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-foreground/60">
@@ -261,7 +261,7 @@ export default function Press() {
       {/* Public artifacts */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
             // PUBLIC ARTIFACTS
           </span>
 
@@ -283,7 +283,7 @@ export default function Press() {
                   i < artifacts.length - 1 ? "border-b border-border" : ""
                 }`}
               >
-                <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground/50">
+                <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground/65">
                   {artifact.label}
                 </p>
                 <p className="font-mono text-sm text-foreground/80 md:text-base">
@@ -314,7 +314,7 @@ export default function Press() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
+                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
                   // CONTACT
                 </span>
 
@@ -325,24 +325,24 @@ export default function Press() {
             </div>
 
             <div className="lg:col-span-7">
-              <dl className="border border-border">
+              <div className="border border-border">
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
                   <Mail
                     className="h-5 w-5 text-cyan"
                     strokeWidth={1.5}
                   />
                   <div>
-                    <dt className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
+                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Press inquiries
-                    </dt>
-                    <dd className="mt-2">
+                    </p>
+                    <div className="mt-2">
                       <a
                         href="mailto:contact@entros.io"
                         className="font-mono text-sm text-cyan transition-colors hover:text-foreground md:text-base"
                       >
                         contact@entros.io
                       </a>
-                    </dd>
+                    </div>
                   </div>
                 </div>
 
@@ -352,17 +352,17 @@ export default function Press() {
                     strokeWidth={1.5}
                   />
                   <div>
-                    <dt className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
+                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Engineering
-                    </dt>
-                    <dd className="mt-2 text-sm leading-relaxed text-foreground/65 md:text-base">
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/65 md:text-base">
                       File issues, ask code questions, and start
                       integration conversations on GitHub. Every repo
                       under the org is public.
-                    </dd>
+                    </p>
                   </div>
                 </div>
-              </dl>
+              </div>
             </div>
           </div>
         </div>

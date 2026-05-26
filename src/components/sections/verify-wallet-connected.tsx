@@ -138,6 +138,17 @@ export function VerifyWalletConnected({
   // verifications inside the same 24h slice into one contribution, so
   // verifying twice within 24h is a UX surprise unless we flag it.
   const [lastVerificationTimestamp, setLastVerificationTimestamp] = useState<number | null>(null);
+  // Trust score read from IdentityState offset 60 immediately after a
+  // successful verification, used to populate the post-verify share card's
+  // OG image + tweet copy. Keyed by the verification's tx signature so
+  // that when the user resets and re-verifies the previous score doesn't
+  // leak into the new share card during the brief refetch window. Reading
+  // it as the derived `trustScore` (below) returns null whenever the
+  // stored tx doesn't match the current verification.
+  const [scoreForTx, setScoreForTx] = useState<{
+    tx: string;
+    score: number;
+  } | null>(null);
   // Server-issued challenge phrase (master-list #89). Fetched from the
   // executor's /challenge endpoint during handleStart so the PulseChallenge
   // displays the authoritative phrase the validation service will
@@ -251,6 +262,48 @@ export function VerifyWalletConnected({
       cancelled = true;
     };
   }, [publicKey, connected, connection]);
+
+  // After a successful verification (NOT a baseline reset), read the
+  // updated trust score from IdentityState so the post-verify share card
+  // can render it. The effect is scoped to a derived signal that flips
+  // only on the verified→txSignature transition, so it can't refire on
+  // unrelated re-renders. Explicit "confirmed" commitment avoids reading
+  // pre-tx state during the brief window after VERIFICATION_SUCCESS
+  // dispatches but before the RPC's account cache catches up.
+  const verifySuccessTx =
+    state.step === "verified" && state.intent === "verify"
+      ? state.txSignature ?? null
+      : null;
+  useEffect(() => {
+    if (!verifySuccessTx || !publicKey) return;
+    let cancelled = false;
+    const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
+    const [identityPda] = PublicKey.findProgramAddressSync(
+      [new TextEncoder().encode("identity"), publicKey.toBuffer()],
+      programId,
+    );
+    connection
+      .getAccountInfo(identityPda, "confirmed")
+      .then((account: { data: Uint8Array } | null) => {
+        if (cancelled || !account || account.data.length < 62) return;
+        const view = new DataView(
+          account.data.buffer,
+          account.data.byteOffset,
+          account.data.byteLength,
+        );
+        setScoreForTx({ tx: verifySuccessTx, score: view.getUint16(60, true) });
+      })
+      .catch(() => {
+        /* silent — share card omits the score when the fetch fails */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [verifySuccessTx, publicKey, connection]);
+  const trustScore =
+    scoreForTx && verifySuccessTx && scoreForTx.tx === verifySuccessTx
+      ? scoreForTx.score
+      : null;
 
   async function handleStart(intent: "verify" | "reset" = "verify") {
     if (startingRef.current) return;
@@ -676,6 +729,9 @@ export function VerifyWalletConnected({
         }
         tryAgainLabel={wasReset ? "Verify now" : "Verify again"}
         onReset={handleReset}
+        walletPubkey={publicKey?.toBase58()}
+        trustScore={trustScore}
+        showShare={!wasReset}
       />
     );
   }

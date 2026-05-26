@@ -17,7 +17,7 @@ export default function Token() {
       {/* Hero—centered, ASCII orbit full-width below the copy. */}
       <section>
         <div className="mx-auto max-w-5xl px-6 pt-32 pb-2 text-center md:pt-40">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
             // ENTROS TOKEN
           </span>
 

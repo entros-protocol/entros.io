@@ -115,7 +115,11 @@ export function AsciiFlow({ className }: AsciiFlowProps) {
                   : tier === 3
                     ? "text-cyan/75"
                     : "text-cyan";
-            html += `<span class="${cls}">`;
+            // aria-hidden on each span. The parent <pre aria-hidden> sets the
+            // ARIA inheritance for screen readers, but axe-core's color-contrast
+            // rule walks innerHTML-injected children and doesn't always honor
+            // inherited aria-hidden when the spans are inserted post-render.
+            html += `<span class="${cls}" aria-hidden="true">`;
           }
           html += tier === 4 ? "0" : "1";
           lastTier = tier;

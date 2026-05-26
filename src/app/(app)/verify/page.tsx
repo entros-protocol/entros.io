@@ -36,15 +36,23 @@ export async function generateMetadata({
   const ogParams = new URLSearchParams({ wallet });
   if (score != null && score > 0) ogParams.set("score", String(score));
   const ogImageUrl = `${SITE_URL}/api/og/anchor?${ogParams.toString()}`;
+  // Share-variant title sits below the unfurled image on Twitter / Slack /
+  // Discord. Generic "Verify | Entros Protocol" would repeat the cold
+  // landing-page framing; "Verified human..." is the right framing for a
+  // personal share. Description stays on the baseMetadata default so the
+  // surrounding copy complements the image (which carries the score).
+  const shareTitle = "Verified human on Entros Protocol";
 
   return {
     ...baseMetadata,
+    title: shareTitle,
     // Share URLs are user-shared variants, not canonical destinations. The
     // canonical inherited from baseMetadata (alternates.canonical = "/verify")
     // points search engines at the parameterless URL, preventing duplicates.
     robots: { index: false, follow: true },
     openGraph: {
       ...baseMetadata.openGraph,
+      title: shareTitle,
       images: [
         {
           url: ogImageUrl,
@@ -56,6 +64,7 @@ export async function generateMetadata({
     },
     twitter: {
       ...baseMetadata.twitter,
+      title: shareTitle,
       card: "summary_large_image",
       images: [ogImageUrl],
     },

@@ -138,6 +138,16 @@ export function VerifiedView({
         <p className="mt-1 text-sm text-muted">{subtitle}</p>
       </div>
       <div className="mx-auto max-w-sm space-y-3">
+        {showShare && typeof trustScore === "number" && (
+          <div className="rounded-lg border border-cyan/30 bg-cyan/[0.04] p-5 text-center">
+            <p className="text-xs font-mono uppercase tracking-widest text-cyan/80 mb-2">
+              Your Trust Score
+            </p>
+            <p className="font-display text-5xl font-medium text-cyan tabular-nums leading-none">
+              {trustScore}
+            </p>
+          </div>
+        )}
         <div className="rounded-lg border border-border bg-surface/50 p-4">
           <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">
             Commitment

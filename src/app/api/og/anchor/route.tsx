@@ -8,7 +8,7 @@ const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 function truncateWallet(pubkey: string): string {
   if (pubkey.length <= 12) return pubkey;
-  return `${pubkey.slice(0, 4)}...${pubkey.slice(-4)}`;
+  return `${pubkey.slice(0, 4)}…${pubkey.slice(-4)}`;
 }
 
 function parseScore(raw: string | null): number | null {

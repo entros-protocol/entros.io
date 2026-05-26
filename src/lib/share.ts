@@ -13,7 +13,13 @@ export function buildShareUrl(
   if (typeof score === "number" && score > 0) {
     params.set("s", String(score));
   }
-  params.set("utm_source", source);
+  // utm_source is only useful for attribution we can't get otherwise. X
+  // already exposes referrer = twitter.com so adding utm_source there is
+  // both redundant and noisy in the visible tweet URL. Keep it for the
+  // copy-link path (paste destinations are unknowable without the tag).
+  if (source !== "twitter") {
+    params.set("utm_source", source);
+  }
   return `${SITE_URL}/verify?${params.toString()}`;
 }
 

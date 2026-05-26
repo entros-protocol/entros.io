@@ -96,6 +96,18 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Tree-shake the heavy icon and animation packages so marketing routes
+  // only ship the components they actually render. Without this, the
+  // entire lucide-react index is bundled even when a page uses three icons.
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "motion",
+      "@radix-ui/react-icons",
+    ],
+    optimizeCss: true,
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "github.com" },

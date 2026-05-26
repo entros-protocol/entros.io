@@ -277,21 +277,10 @@ export function VerifyWalletConnected({
   useEffect(() => {
     if (!verifySuccessTx || !publicKey) return;
     let cancelled = false;
-    const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
-    const [identityPda] = PublicKey.findProgramAddressSync(
-      [new TextEncoder().encode("identity"), publicKey.toBuffer()],
-      programId,
-    );
-    connection
-      .getAccountInfo(identityPda, "confirmed")
-      .then((account: { data: Uint8Array } | null) => {
-        if (cancelled || !account || account.data.length < 62) return;
-        const view = new DataView(
-          account.data.buffer,
-          account.data.byteOffset,
-          account.data.byteLength,
-        );
-        setScoreForTx({ tx: verifySuccessTx, score: view.getUint16(60, true) });
+    fetchIdentityState(publicKey.toBase58(), connection)
+      .then((identity) => {
+        if (cancelled || !identity) return;
+        setScoreForTx({ tx: verifySuccessTx, score: identity.trustScore });
       })
       .catch(() => {
         /* silent — share card omits the score when the fetch fails */

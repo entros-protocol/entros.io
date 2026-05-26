@@ -160,7 +160,11 @@ export function AsciiFingerprint({ className }: AsciiFingerprintProps) {
                       ? "text-cyan/80 dark:text-cyan/75"
                       : "text-cyan";
             }
-            html += `<span class="${cls}">`;
+            // aria-hidden on each generated span: axe-core's color-contrast
+            // rule walks innerHTML-injected children and doesn't reliably
+            // honor the parent <pre aria-hidden>. Same rationale as the
+            // ascii-flow patch.
+            html += `<span class="${cls}" aria-hidden="true">`;
           }
           html += charBuf[idx] === 1 ? "1" : "0";
           lastKey = key;

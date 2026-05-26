@@ -99,13 +99,10 @@ const nextConfig: NextConfig = {
   // Tree-shake the heavy icon and animation packages so marketing routes
   // only ship the components they actually render. Without this, the
   // entire lucide-react index is bundled even when a page uses three icons.
+  // Only list packages that are actual dependencies — motion is the new
+  // package name for framer-motion and is what package.json depends on.
   experimental: {
-    optimizePackageImports: [
-      "lucide-react",
-      "framer-motion",
-      "motion",
-      "@radix-ui/react-icons",
-    ],
+    optimizePackageImports: ["lucide-react", "motion"],
     optimizeCss: true,
   },
   images: {

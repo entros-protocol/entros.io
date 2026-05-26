@@ -92,7 +92,10 @@ function buildFrameHtml(frame: string): string {
           : tier === 3
             ? "text-cyan/80 dark:text-cyan/75"
             : "text-cyan/60 dark:text-cyan/50";
-      html += `<span class="${cls}">`;
+      // aria-hidden on each generated span: axe-core's color-contrast rule
+      // walks innerHTML-injected children and doesn't reliably honor the
+      // parent <pre aria-hidden>. Same rationale as the ascii-flow patch.
+      html += `<span class="${cls}" aria-hidden="true">`;
     }
     html += glyph;
     lastTier = tier;

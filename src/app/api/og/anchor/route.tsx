@@ -25,19 +25,24 @@ function parseWallet(raw: string | null): string | null {
   return raw;
 }
 
+// Module-scoped so warm edge instances reuse the resolved ArrayBuffers
+// across requests. First request on a cold instance pays the fetch + parse
+// cost (~10ms); subsequent requests see the already-resolved promise.
+const fontsPromise = Promise.all([
+  fetch(new URL("./_fonts/Geist-Regular.ttf", import.meta.url)).then((r) =>
+    r.arrayBuffer()
+  ),
+  fetch(new URL("./_fonts/JetBrainsMono-Regular.ttf", import.meta.url)).then(
+    (r) => r.arrayBuffer()
+  ),
+]);
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const wallet = parseWallet(url.searchParams.get("wallet"));
   const score = parseScore(url.searchParams.get("score"));
 
-  const [geistRegular, jetbrainsMono] = await Promise.all([
-    fetch(new URL("./_fonts/Geist-Regular.ttf", import.meta.url)).then((r) =>
-      r.arrayBuffer()
-    ),
-    fetch(new URL("./_fonts/JetBrainsMono-Regular.ttf", import.meta.url)).then(
-      (r) => r.arrayBuffer()
-    ),
-  ]);
+  const [geistRegular, jetbrainsMono] = await fontsPromise;
 
   const showScore = score != null && score > 0;
   const walletDisplay = wallet ? truncateWallet(wallet) : null;

@@ -7,6 +7,7 @@ import { PrivacySection } from "@/components/sections/privacy-section";
 import { SecurityModelSection } from "@/components/sections/security-model-section";
 import { VerificationModesSection } from "@/components/sections/verification-modes-section";
 import { ResearchValidationSection } from "@/components/sections/research-validation-section";
+import { FAQSection } from "@/components/sections/faq-section";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
@@ -81,6 +82,7 @@ export default function Technology() {
       <SecurityModelSection />
       <VerificationModesSection />
       <ResearchValidationSection />
+      <FAQSection />
 
       {/* Footer CTA */}
       <section className="border-t border-border">

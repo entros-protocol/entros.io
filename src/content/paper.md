@@ -2,7 +2,7 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** May 14, 2026
+**Updated:** May 31, 2026
 **Word Count:** Approx. 6500
 
 ---
@@ -216,11 +216,11 @@ Users pay a small protocol fee (~0.005 SOL) per verification. This is trivial fo
 
 #### **4.3. Validation Cycle**
 
-The protocol fee from each verification is collected into the protocol treasury. The treasury purchases Entros from the open market and distributes rewards to honest validators, creating buy pressure proportional to real verification volume.
+The protocol fee from each verification is collected into the protocol treasury. The treasury purchases Entros from the open market, creating buy pressure proportional to real verification demand. Validator rewards are distributed in proportion to validation accuracy, measured against independent ground-truth benchmarks, rather than verification throughput, so a validator cannot increase yield by relaxing its acceptance of borderline captures.
 
 #### **4.4. Slashing**
 
-The design specifies a probabilistic audit mechanism: a configurable fraction of successful validations would trigger a secondary audit by an independent Anonymity Ring, with disagreement resulting in slashing of the primary Ring's stakes. This mechanism is specified but not yet implemented in the current devnet deployment.
+The design specifies a probabilistic audit mechanism: a configurable fraction of validations is re-scored against independent ground-truth benchmarks, with divergence from the audited outcome resulting in slashing. The audit is benchmarked against ground truth rather than inter-validator agreement by design, so that correlated drift—the whole set relaxing its threshold together under sustained load—is detectable, not just an individual outlier. Reward is weighted by audited accuracy, not verification throughput. This mechanism is specified but not yet implemented in the current devnet deployment.
 
 ---
 

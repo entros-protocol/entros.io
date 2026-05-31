@@ -29,8 +29,8 @@ export default function Token() {
 
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
             Protocol fees, validator staking, treasury revenue. The Entros
-            token is the economic substrate that turns verification volume
-            into network security.
+            token is the economic substrate that turns genuine verification
+            demand into network security.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">

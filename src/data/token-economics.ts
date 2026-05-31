@@ -35,17 +35,17 @@ export const flywheel: FlyWheelStep[] = [
   {
     step: "Treasury buys Entros",
     description:
-      "Protocol revenue is used to purchase Entros tokens on the open market, creating sustained buy pressure proportional to verification volume.",
+      "Protocol revenue is used to purchase Entros tokens on the open market, creating sustained buy pressure proportional to genuine verification demand.",
   },
   {
     step: "Validators earn",
     description:
-      "Entros tokens are distributed as staking rewards to validators who run the server-side validation service, incentivizing honest and high-quality validation.",
+      "Entros tokens are distributed to validators in proportion to validation accuracy, scored against ground-truth benchmarks, not to raw verification count. Honest, high-quality validation is what earns; volume alone does not.",
   },
   {
     step: "Security improves",
     description:
-      "More validators and better validation attract more integrations, driving more verifications and more revenue. The flywheel compounds.",
+      "More validators and stricter validation attract more integrations, driving more genuine verifications and more revenue. The flywheel compounds on quality, not volume.",
   },
 ];
 
@@ -86,7 +86,7 @@ export const tokenUtilities: TokenUtility[] = [
   {
     title: "Validator Staking",
     description:
-      "Stake Entros to run a validation node in the server-side verification network. Staked validators earn protocol fees proportional to their stake and performance.",
+      "Stake Entros to run a validation node in the server-side verification network. Staked validators earn in proportion to stake and validation accuracy, scored against ground-truth benchmarks, so passing borderline captures to lift throughput does not increase yield.",
   },
   {
     title: "Governance",

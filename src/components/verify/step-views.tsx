@@ -295,6 +295,14 @@ function isMissingBaselineError(error: string): boolean {
   return error.includes("baseline is missing");
 }
 
+// A different wallet signed the baseline key-derivation prompt than the one
+// connected (propagated from the SDK's complete()). The on-chain baseline is
+// intact — route to a no-reset surface. Contract: the matched phrase is emitted
+// verbatim by pulse-sdk pulse.ts complete() and survives sanitizeErrorMessage.
+function isWalletMismatchError(error: string): boolean {
+  return error.includes("different wallet signed");
+}
+
 // Wallet has zero (or insufficient) SOL. Phantom/Solflare/Backpack all
 // surface variants of the runtime simulation error verbatim. Match the
 // stable substrings the runtime uses, not the wrapper text.
@@ -484,6 +492,7 @@ function isMotionPermissionError(error: string): boolean {
 
 type FailureKind =
   | { kind: "relayer-down" }
+  | { kind: "wallet-mismatch" }
   | { kind: "missing-baseline"; canReset: boolean }
   | { kind: "stale-baseline"; canReset: boolean }
   | { kind: "cooldown-active" }
@@ -513,6 +522,11 @@ function categorizeFailure(error: string, canResetBaseline: boolean): FailureKin
   }
   if (isMotionPermissionError(error)) {
     return { kind: "permission-denied", device: "motion" };
+  }
+  // Route before missing-baseline: a wallet-signature mismatch is NOT a missing
+  // baseline (the on-chain baseline is intact), so this surface must not reset.
+  if (isWalletMismatchError(error)) {
+    return { kind: "wallet-mismatch" };
   }
   if (isMissingBaselineError(error)) {
     return { kind: "missing-baseline", canReset: canResetBaseline };
@@ -591,6 +605,13 @@ export function FailedView({
         "The Entros relayer service is not running. Verification requires a live relayer connected to Solana devnet.";
       footnote =
         "This is a devnet demo. End-to-end verification will be available when the relayer is deployed.";
+      break;
+    case "wallet-mismatch":
+      title = "Wrong wallet signed";
+      body =
+        "A different wallet signed than the one you connected—another wallet extension likely intercepted the signature prompt. Your on-chain baseline is intact. Sign with your connected wallet, or disable other wallet extensions (or unset their default), then try again.";
+      footnote =
+        "No reset needed—this is a wallet-selection issue, not a baseline problem.";
       break;
     case "missing-baseline":
       title = "Baseline can't be recovered here";

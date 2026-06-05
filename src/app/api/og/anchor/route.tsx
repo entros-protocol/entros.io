@@ -1,6 +1,13 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+// Node runtime, not Edge: this route bundles next/og's rendering WASM (~1 MB)
+// plus two embedded fonts, which exceeds Vercel's 1 MB Edge Function size cap
+// (deploy fails with "Edge Function size is 1.17 MB"). Node functions have a
+// far larger size limit and next/og renders identically there. The
+// `fetch(new URL('./_fonts/...', import.meta.url))` font loading below works
+// on both runtimes. OG cards are CDN-cached, so the slightly slower Node cold
+// start is immaterial.
+export const runtime = "nodejs";
 
 const WIDTH = 1200;
 const HEIGHT = 630;

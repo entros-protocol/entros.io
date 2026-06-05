@@ -1,15 +1,12 @@
 import { ImageResponse } from "next/og";
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 
 // Node runtime, not Edge: this route bundles next/og's rendering WASM (~1 MB)
-// plus two embedded fonts, which exceeds Vercel's 1 MB Edge Function size cap
-// (deploy fails with "Edge Function size is 1.17 MB"). Node functions have a
-// far larger size limit and next/og renders identically there. Fonts are read
-// with `readFile(fileURLToPath(new URL(...)))`, not `fetch(new URL(...))`,
-// because Node's fetch can't read the `file://` asset URL that bundling
-// produces (it 500s) — readFile can. OG cards are CDN-cached, so the slightly
-// slower Node cold start is immaterial.
+// plus the fonts, which exceeds Vercel's 1 MB Edge Function size cap (deploy
+// fails with "Edge Function size is 1.17 MB"). Node functions have a far larger
+// limit and next/og renders identically there. Fonts live in /public and are
+// fetched over HTTP from the request's own origin at runtime: on Node,
+// fetch(file://) of a bundled asset 500s and fileURLToPath of it throws at
+// build, so the public HTTP asset is the reliable cross-runtime path.
 export const runtime = "nodejs";
 
 const WIDTH = 1200;
@@ -35,22 +32,26 @@ function parseWallet(raw: string | null): string | null {
   return raw;
 }
 
-// Module-scoped so warm Node instances reuse the resolved font buffers across
-// requests. First request on a cold instance pays the read cost (~ms);
-// subsequent requests see the already-resolved promise.
-const fontsPromise = Promise.all([
-  readFile(fileURLToPath(new URL("./_fonts/Geist-Regular.ttf", import.meta.url))),
-  readFile(
-    fileURLToPath(new URL("./_fonts/JetBrainsMono-Regular.ttf", import.meta.url)),
-  ),
-]);
+// Fetched once and cached so warm instances don't refetch. Loaded lazily
+// inside the handler (not at module scope) so nothing runs during build-time
+// page-data collection.
+let cachedFonts: [ArrayBuffer, ArrayBuffer] | null = null;
+async function loadFonts(origin: string): Promise<[ArrayBuffer, ArrayBuffer]> {
+  if (cachedFonts) return cachedFonts;
+  const [geist, mono] = await Promise.all([
+    fetch(`${origin}/fonts/Geist-Regular.ttf`).then((r) => r.arrayBuffer()),
+    fetch(`${origin}/fonts/JetBrainsMono-Regular.ttf`).then((r) => r.arrayBuffer()),
+  ]);
+  cachedFonts = [geist, mono];
+  return cachedFonts;
+}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const wallet = parseWallet(url.searchParams.get("wallet"));
   const score = parseScore(url.searchParams.get("score"));
 
-  const [geistRegular, jetbrainsMono] = await fontsPromise;
+  const [geistRegular, jetbrainsMono] = await loadFonts(url.origin);
 
   const showScore = score != null && score > 0;
   const walletDisplay = wallet ? truncateWallet(wallet) : null;
@@ -83,7 +84,7 @@ export async function GET(request: Request) {
           <span>entros</span>
           <span
             style={{
-              display: "inline-block",
+              display: "flex",
               width: 8,
               height: 8,
               backgroundColor: "#22D3E6",
@@ -169,7 +170,7 @@ export async function GET(request: Request) {
                   color: "#22D3E6",
                 }}
               >
-                {score}
+                {String(score)}
               </div>
             </div>
           )}

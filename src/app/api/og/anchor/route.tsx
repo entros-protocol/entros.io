@@ -1,12 +1,15 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 
 // Node runtime, not Edge: this route bundles next/og's rendering WASM (~1 MB)
 // plus two embedded fonts, which exceeds Vercel's 1 MB Edge Function size cap
 // (deploy fails with "Edge Function size is 1.17 MB"). Node functions have a
-// far larger size limit and next/og renders identically there. The
-// `fetch(new URL('./_fonts/...', import.meta.url))` font loading below works
-// on both runtimes. OG cards are CDN-cached, so the slightly slower Node cold
-// start is immaterial.
+// far larger size limit and next/og renders identically there. Fonts are read
+// with `readFile(fileURLToPath(new URL(...)))`, not `fetch(new URL(...))`,
+// because Node's fetch can't read the `file://` asset URL that bundling
+// produces (it 500s) — readFile can. OG cards are CDN-cached, so the slightly
+// slower Node cold start is immaterial.
 export const runtime = "nodejs";
 
 const WIDTH = 1200;
@@ -32,15 +35,13 @@ function parseWallet(raw: string | null): string | null {
   return raw;
 }
 
-// Module-scoped so warm edge instances reuse the resolved ArrayBuffers
-// across requests. First request on a cold instance pays the fetch + parse
-// cost (~10ms); subsequent requests see the already-resolved promise.
+// Module-scoped so warm Node instances reuse the resolved font buffers across
+// requests. First request on a cold instance pays the read cost (~ms);
+// subsequent requests see the already-resolved promise.
 const fontsPromise = Promise.all([
-  fetch(new URL("./_fonts/Geist-Regular.ttf", import.meta.url)).then((r) =>
-    r.arrayBuffer()
-  ),
-  fetch(new URL("./_fonts/JetBrainsMono-Regular.ttf", import.meta.url)).then(
-    (r) => r.arrayBuffer()
+  readFile(fileURLToPath(new URL("./_fonts/Geist-Regular.ttf", import.meta.url))),
+  readFile(
+    fileURLToPath(new URL("./_fonts/JetBrainsMono-Regular.ttf", import.meta.url)),
   ),
 ]);
 

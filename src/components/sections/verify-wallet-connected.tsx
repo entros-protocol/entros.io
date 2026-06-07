@@ -76,9 +76,29 @@ const RETRYABLE_REASONS: ReadonlySet<string> = new Set([
 // generic-fallback render path. Preserves substrings the categorizer
 // relies on for routing (`-32002`, `SendTransactionPreflightFailure`,
 // `Custom`, `InstructionError`).
-function sanitizeErrorMessage(message: string): string {
+function safeStringify(value: unknown): string {
+  try {
+    const json = JSON.stringify(value);
+    return json && json !== "{}" ? json : String(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function sanitizeErrorMessage(message: unknown): string {
+  // Defense-in-depth: callers pass a string today, but coerce anything else
+  // (e.g. a wallet adapter throwing a bare {InstructionError:[...]} object)
+  // into a categorizer-readable string rather than throwing on `.replace` or
+  // rendering "[object Object]". JSON preserves the `"Custom":<code>` substring
+  // the step-views categorizer routes on.
+  let sanitized =
+    typeof message === "string"
+      ? message
+      : message instanceof Error && typeof message.message === "string"
+        ? message.message
+        : safeStringify(message);
   // Strip @solana/errors developer-facing decode hints.
-  let sanitized = message.replace(/Decode this error by running[^\n]*/gi, "");
+  sanitized = sanitized.replace(/Decode this error by running[^\n]*/gi, "");
   // Replace labeled transaction blobs (sig=..., Tx: ..., etc.) with a
   // placeholder while preserving the surrounding routing-relevant
   // substrings the categorizer needs.

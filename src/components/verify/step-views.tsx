@@ -357,6 +357,16 @@ function isPrevCommitmentMismatchError(error: string): boolean {
   return /"Custom":\s*6011\b/.test(error);
 }
 
+// pulse-sdk 3.6.0+ pre-flight stale-baseline check: when the local baseline
+// has fallen behind the on-chain verification chain (a verify landed from
+// another origin/device) AND can't be re-synced from the on-chain
+// EncryptedBaseline, the SDK fails BEFORE submitting — no wasted signature or
+// fee — with this stable phrase. Same user-actionable surface as an on-chain
+// 6011 revert: reset to re-sync.
+function isStaleBaselineMessage(error: string): boolean {
+  return error.toLowerCase().includes("out of sync with your on-chain identity");
+}
+
 // Code 6012 is `ResetCooldownActive` from entros-anchor. The 7-day
 // cooldown after a successful baseline reset has not elapsed. Until it
 // does, no further reset can land. Distinct from program-revert because
@@ -540,7 +550,7 @@ function categorizeFailure(error: string, canResetBaseline: boolean): FailureKin
   // baselines reveal protocol-state the user needs to act on, not
   // biometric-check outcomes, so surfacing them doesn't help an attacker
   // calibrate.
-  if (isPrevCommitmentMismatchError(error)) {
+  if (isPrevCommitmentMismatchError(error) || isStaleBaselineMessage(error)) {
     return { kind: "stale-baseline", canReset: canResetBaseline };
   }
   if (isResetCooldownError(error)) return { kind: "cooldown-active" };

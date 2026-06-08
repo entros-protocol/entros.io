@@ -171,6 +171,16 @@ function categorizeError(error: string): EmbedErrorReason {
   if (e.includes('"custom"') || e.includes("instructionerror")) {
     return "validation_failed";
   }
+  // pulse-sdk 3.7.0 drift-too-high (recoverable capture-quality retry) and the
+  // opaque replay-floor rejection ("Verification rejected"). Both mean the
+  // verification didn't pass — map to validation_failed rather than the
+  // catch-all unknown, so integrators receive a meaningful bucket.
+  if (
+    e.includes("closely match your usual pattern") ||
+    e.includes("verification rejected")
+  ) {
+    return "validation_failed";
+  }
   return "unknown";
 }
 

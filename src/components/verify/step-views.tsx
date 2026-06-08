@@ -367,6 +367,18 @@ function isStaleBaselineMessage(error: string): boolean {
   return error.toLowerCase().includes("out of sync with your on-chain identity");
 }
 
+// pulse-sdk 3.7.0+ pre-flight Hamming bounds check: when the new behavioral
+// fingerprint drifts past the circuit's max-distance ceiling (an interrupted or
+// rushed capture), the SDK fails BEFORE proving — no wasted proof, no second
+// signature — with this stable phrase. Recoverable by retrying with a clean
+// capture, so it routes to its own friendly "try again" surface rather than the
+// opaque validation-rejected bucket. The drift ceiling is published in the
+// paper, so naming the goal reveals nothing an attacker can't already read.
+// Guarded by a pulse-sdk source-string test to prevent silent copy drift.
+function isDriftTooHighError(error: string): boolean {
+  return error.toLowerCase().includes("closely match your usual pattern");
+}
+
 // Code 6012 is `ResetCooldownActive` from entros-anchor. The 7-day
 // cooldown after a successful baseline reset has not elapsed. Until it
 // does, no further reset can land. Distinct from program-revert because
@@ -513,6 +525,7 @@ type FailureKind =
   | { kind: "rate-limited" }
   | { kind: "permission-denied"; device: "microphone" | "motion" }
   | { kind: "microphone-too-quiet" }
+  | { kind: "drift-too-high" }
   | { kind: "generic"; message: string };
 
 function categorizeFailure(error: string, canResetBaseline: boolean): FailureKind {
@@ -554,6 +567,10 @@ function categorizeFailure(error: string, canResetBaseline: boolean): FailureKin
     return { kind: "stale-baseline", canReset: canResetBaseline };
   }
   if (isResetCooldownError(error)) return { kind: "cooldown-active" };
+  // Drift-too-high is a recoverable capture-quality issue (an interrupted or
+  // rushed capture pushed the fingerprint past the consistency ceiling). It
+  // gets its own friendly "try again" surface, ahead of the opaque bucket.
+  if (isDriftTooHighError(error)) return { kind: "drift-too-high" };
   // Opaque rejections and generic program reverts collapse into the same
   // user-facing surface. Distinguishing them would tell an attacker
   // whether the validator or the on-chain layer caught them, which is
@@ -717,6 +734,11 @@ export function FailedView({
       footnote =
         "Check your OS sound settings — input device and input volume — then try again.";
       break;
+    case "drift-too-high":
+      title = "Let's try that again";
+      body =
+        "This capture didn't closely match your usual pattern. That often happens after an interrupted or rushed recording. Try again with a steady, uninterrupted capture.";
+      break;
     case "generic":
       // Friendly-text passthrough. The catch-block sanitizer in
       // verify-wallet-connected.tsx has already stripped raw RPC noise,
@@ -738,7 +760,11 @@ export function FailedView({
 
   return (
     <div className="text-center space-y-6">
-      <AlertCircle className="mx-auto h-12 w-12 text-danger" />
+      {failure.kind === "drift-too-high" ? (
+        <RefreshCcw className="mx-auto h-12 w-12 text-cyan" strokeWidth={1.5} />
+      ) : (
+        <AlertCircle className="mx-auto h-12 w-12 text-danger" />
+      )}
       <div>
         <p className="font-sans text-xl font-semibold text-foreground">{title}</p>
         <p className="mt-1 text-sm text-muted">{body}</p>

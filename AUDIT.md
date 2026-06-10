@@ -1,6 +1,24 @@
 # Entros Protocol — Security & Quality Audit Tracker
 
-Last updated: 2026-05-20
+Last updated: 2026-06-10
+
+**Recent activity (2026-06-10):** Independent pre-mainnet security review.
+We commissioned an independent security review spanning the protocol's
+on-chain programs, proving system, off-chain services, and the verification
+pipeline, and completed our own verification pass on every finding. Its
+conclusion matches our public framing: the protocol is sound as a liveness and
+economic-friction layer with a graduated Trust Score. The review identified a
+set of pre-mainnet hardening items—across the binding between off-chain
+validation and on-chain issuance, key custody and decentralization, the
+proving-system trusted setup, and population-scale substantiation of the
+uniqueness claim. Remediation is underway: the highest-severity item—the
+binding between off-chain validation and on-chain issuance—is now implemented
+and verified in code, with deployment to devnet to follow. Key custody and
+decentralization, the trusted-setup ceremony, and population-scale
+substantiation of the uniqueness claim remain in progress. The live deployment
+is devnet. We log each item here as it closes, and will not assert
+mainnet-grade personhood properties until the full set is remediated, deployed,
+and independently re-validated.
 
 **Recent activity (2026-05-20):** Server-side verification-freshness gate
 added on `/attest`. The executor now reads the wallet's on-chain

@@ -27,7 +27,7 @@ const FINDINGS = [
   {
     title: "Touch-IMU Shockwave Is a Liveness Signal",
     source: "Device physics, BioMoTouch 2025",
-    body: "Physical touch produces measurable hardware responses that programmatic touch injection does not. Scripted emulators, headless browsers, and automation frameworks generate valid coordinates without triggering the corresponding sensor responses.",
+    body: "Physical touch produces a measurable hardware response in a device's motion sensors. A signal generated without genuine physical interaction cannot reproduce it.",
   },
 ];
 

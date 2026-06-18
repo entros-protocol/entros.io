@@ -3,7 +3,7 @@ const taxonomy = [
   { tier: "T2", attackClass: "Parameter-varied procedural", tests: "Tier 1 statistical consistency checks" },
   { tier: "T3", attackClass: "Feature-space optimization with source access", tests: "Tier 1 distributional realism" },
   { tier: "T4a", attackClass: "Pre-recorded human voice + procedural motion/touch", tests: "Cross-modal temporal coupling (Tier 2)" },
-  { tier: "T4b", attackClass: "Modern voice cloning (XTTS-v2, F5-TTS, API-based)", tests: "Tier 1 TTS artifact detection" },
+  { tier: "T4b", attackClass: "Real-time synthesized voice (XTTS-v2, Kokoro, streaming TTS)", tests: "TTS artifact detection + content binding + Sybil registry" },
   { tier: "T5", attackClass: "Coupled cross-modal synthesis", tests: "Tier 2 temporal coupling" },
   { tier: "T6", attackClass: "Targeted human-mimicry / identity theft", tests: "Hamming distance gate + Sybil registry" },
   { tier: "T7", attackClass: "Replay with adversarial perturbation", tests: "Min-distance floor + commitment registry" },

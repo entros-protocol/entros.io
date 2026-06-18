@@ -117,11 +117,11 @@ export function LatestResults() {
                         </tr>
                       )}
                       {/* Mobile-only: FRONTIER scene marks the seam
-                          between the closed T4a study (Waves 1–4) and
-                          the next-phase queued tiers starting at T4b.
+                          between the closed studies (T4a Waves 1–4, T4b)
+                          and the next-phase queued tiers starting at T5.
                           Hidden on desktop where the same scene lives
                           stacked beside the table. */}
-                      {row.tier === "T4a—Wave 4" && (
+                      {row.tier === "T4b" && (
                         <tr className="lg:hidden">
                           <td colSpan={5} className="py-6">
                             <AsciiFrontierScene
@@ -146,7 +146,7 @@ export function LatestResults() {
         <div className="mt-16 grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-2">
           <div className="bg-background p-8">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
-              // T4A—TWO-WAVE STUDY
+              // T4A—FOUR-WAVE STUDY
             </p>
             <p className="mt-4 text-sm leading-relaxed text-foreground/70">
               {t4aNote}

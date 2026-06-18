@@ -70,10 +70,11 @@ export const campaignResults: CampaignResult[] = [
   },
   {
     tier: "T4b",
-    description: "Real-time synthesized voice (XTTS-v2, F5-TTS, streaming TTS)",
-    attempts: "—",
-    passRate: "queued",
-    status: "next-phase",
+    description: "Real-time synthesized voice speaking the issued challenge phrase, across two independent TTS model families (Kokoro-82M, XTTS-v2) and 58 distinct synthetic voices, paired with procedural motion/touch—full production stack",
+    attempts: "200",
+    passRate: "0%",
+    status: "closed · 2026-06",
+    note: "Synthesized voice that correctly speaks the challenge phrase clears the audio-texture checks; the layered stack closes it regardless. 0% reached the chain at production scale across both model families. Higher-fidelity synthesis did not improve end-to-end success—it evades the texture checks more but is less stable at reproducing the exact phrase.",
   },
   {
     tier: "T5",
@@ -105,7 +106,7 @@ export const campaignResults: CampaignResult[] = [
   },
 ];
 
-export const lastUpdated = "April 26, 2026";
+export const lastUpdated = "June 18, 2026";
 
 export const t4aNote =
   "T4a was designed as a multi-wave study to measure each defense layer's specific contribution against one canonical attack class. Wave 1 ran with temporal enforcement in log-only mode to establish the counterfactual baseline (100% pass). Wave 2 enabled cross-modal temporal coupling enforcement (10% pass—the 90 percentage-point reduction isolates that layer's contribution). Wave 3 enabled phrase content binding on top of temporal enforcement (0% pass—the final closure of the pre-recorded-arbitrary-content attack class). Wave 4 confirmed the result at scale (1,000 attempts, 0% pass, 95% CI [0%, 0.37%]). Combined defense stack drops T4a from 100% to 0%.";

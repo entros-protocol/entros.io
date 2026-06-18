@@ -18,8 +18,8 @@ export const metadata = pageMetadata({
 
 const heroStats = [
   { value: "17,000+", label: "Adversarial attempts" },
-  { value: "0%", label: "T1–T4a pass rate" },
-  { value: "4 tiers", label: "Hardened" },
+  { value: "0%", label: "T1–T4 production pass rate" },
+  { value: "4 tiers", label: "Closed (T1–T4)" },
   { value: "Live", label: "Continuous testing" },
 ];
 

@@ -45,7 +45,7 @@ type State =
   // auto-close. The wire still emits `validation_failed`.
   | { step: "failed-baseline-stale" };
 
-const PROOF_TIMEOUT_MS = 60_000;
+const PROOF_TIMEOUT_MS = 120_000;
 
 /**
  * SDK-emitted reason code signaling that the validator's

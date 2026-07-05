@@ -486,7 +486,7 @@ export function VerifyWalletConnected({
 
     dispatch({ type: "CAPTURE_DONE" });
 
-    const PROOF_TIMEOUT_MS = 60_000;
+    const PROOF_TIMEOUT_MS = 120_000;
     const proofPromise =
       intentRef.current === "reset"
         ? session.completeReset(wallet?.adapter, connection, (stage) => {

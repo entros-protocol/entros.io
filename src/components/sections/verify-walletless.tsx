@@ -123,7 +123,7 @@ export function VerifyWalletless({
 
     dispatch({ type: "CAPTURE_DONE" });
 
-    const PROOF_TIMEOUT_MS = 60_000;
+    const PROOF_TIMEOUT_MS = 120_000;
     const proofPromise = session.complete(undefined, undefined, (stage) => {
       setProcessingStage(stage);
     });

@@ -345,6 +345,9 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
 
     Promise.race([proofPromise, timeoutPromise])
       .then(async (result) => {
+        if (result.compositeRiskScore !== undefined) {
+          console.log(`[Entros] Embed popup verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`);
+        }
         if (!result.success) {
           // `validation_unavailable` is the SDK's signal for an unreachable
           // validator — surfaces as network_error. Other reason codes are

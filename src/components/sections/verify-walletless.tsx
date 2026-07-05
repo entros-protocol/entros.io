@@ -133,6 +133,9 @@ export function VerifyWalletless({
 
     Promise.race([proofPromise, timeoutPromise])
       .then((result) => {
+        if (result.compositeRiskScore !== undefined) {
+          console.log(`[Entros] Walletless verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`);
+        }
         if (result.success) {
           dispatch({
             type: "VERIFICATION_SUCCESS",

@@ -502,6 +502,9 @@ export function VerifyWalletConnected({
     Promise.race([proofPromise, timeoutPromise])
       .then((result) => {
         dispatch({ type: "PROOF_COMPLETE" });
+        if (result.compositeRiskScore !== undefined) {
+          console.log(`[Entros] Verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`);
+        }
         if (result.success) {
           attemptsUsedRef.current = 0;
           dispatch({

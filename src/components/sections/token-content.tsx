@@ -1,5 +1,5 @@
 import { SolanaIcon } from "@/lib/solana-icon";
-import { Shield, Vote, Layers, Rocket, TrendingUp, Lock } from "lucide-react";
+import { Shield, Vote, Layers, Rocket, TrendingUp, Lock, Flame, AlertTriangle } from "lucide-react";
 import {
   protocolFee,
   flywheel,
@@ -321,6 +321,69 @@ export function TokenContent() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Economic Hardening & Slashing */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
+              <div className="lg:relative">
+                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
+                  // ECONOMIC HARDENING
+                </span>
+
+                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
+                  Slashing & incentive alignment<span className="text-cyan">.</span>
+                </h2>
+                
+                <p className="mt-6 text-sm leading-relaxed text-foreground/65 max-w-md">
+                  Validators are financially incentivized to act honestly. Lazy validation or collusion results in severe economic penalties.
+                </p>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <div className="border border-border">
+                <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
+                  <Flame className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <div>
+                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
+                      Ground-Truth Honey-pots
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+                      The protocol continuously serves validators randomly interspersed, pre-calibrated test challenges (ground-truth captures with known human/bot status). Node accuracy is evaluated in real-time.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
+                  <AlertTriangle className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <div>
+                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
+                      Asymmetric Slashing
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+                      A validator earning a tiny protocol fee per verification stands to lose their entire staked amount (minimum 5,000 ENTROS) if they validate inaccurately, accept bots, or reject real users.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
+                  <Shield className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <div>
+                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
+                      Multi-Party Consensus
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+                      Verification requests require validation receipts from randomized validator quorums. A single colluding node cannot unilaterally approve a bot or forge a valid on-chain attestation.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

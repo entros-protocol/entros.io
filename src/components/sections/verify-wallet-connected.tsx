@@ -64,6 +64,7 @@ const RETRYABLE_REASONS: ReadonlySet<string> = new Set([
   "temporal_coupling_low",
   "phrase_content_mismatch",
   "validation_unavailable",
+  "captcha_required",
 ]);
 
 // Defense-in-depth sanitizer for any error string about to be dispatched

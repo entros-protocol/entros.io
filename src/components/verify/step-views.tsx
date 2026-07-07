@@ -222,6 +222,8 @@ const SOFT_HINT: Record<string, string> = {
     "Read the phrase clearly at a normal pace, exactly as shown.",
   validation_unavailable:
     "We couldn't reach the verification service. Check your connection and try again.",
+  captcha_required:
+    "Liveness pattern anomaly detected. Please complete this dynamic voice/motion challenge to verify your identity.",
 };
 
 const SOFT_HINT_FALLBACK =

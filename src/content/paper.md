@@ -236,11 +236,11 @@ The on-chain data structure stores: `owner` (Pubkey), `creation_timestamp` (i64)
 
 The Trust Score is a function of the temporal pattern of verifications, not their count. Repeat verifications within the same rolling 24-hour window collapse into a single contribution; once the 52-slot window saturates, additional same-window verifications reduce the score by displacing older history. Sustained verification across distinct days over months is the only path to a high score. The formula combines three components:
 
-**Recency-weighted count.** The 52-slot timestamp window is first deduplicated by 24-hour bucket: timestamps sharing a `floor((now - ts) / 86400)` value collapse to the most recent occurrence (a sliding 24-hour slice from `now`, not a UTC calendar day), so only one verification per rolling 24-hour period contributes. Each remaining unique-day timestamp contributes `3000 / (30 + d_i)` where `d_i` is the floor-days since that verification, scaled by `base_trust_increment / 100` (currently 1.0 in deployed config). Once the window is full, same-day re-verification reduces the score: the new entry shifts the array—dropping slot 51's contribution—then collapses into today's existing 24-hour bucket, yielding net loss of one historical contribution with no offsetting gain.
+**Recency-weighted count (continuous decay).** The 52-slot timestamp window is first deduplicated by 24-hour bucket (sliding 24-hour slice from `now`), so only one verification per rolling 24-hour period contributes. Each remaining unique-day timestamp contributes points using a continuous decay function of the exact elapsed seconds: `300_000 / (3000 + days_since_scaled)` where `days_since_scaled = elapsed_seconds * 100 / 86400` (representing days multiplied by 100 for a continuous 14.4-minute resolution decay), scaled by `base_trust_increment / 100`. This smooth decay eliminates the sharp 24h bucket boundary and prevents timing exploits.
 
-**Regularity bonus.** The standard deviation of inter-verification gaps is computed. Lower variance yields a higher bonus (up to 20 points), rewarding regular spacing.
+**Regularity bonus (deprecated).** The regularity bonus is set to 0. The legacy model rewarded low gap variance, which inadvertently paid for the precision of machine cron jobs; deprecating it removes this automated script reward vector.
 
-**Age bonus.** `⌊√min(age_days, 365)⌋ × 2`, using deterministic integer square root. Diminishing returns prevent gaming via old unused accounts.
+**Age bonus.** `⌊√min(age_days, 365)⌋ × 4`, using deterministic integer square root. Doubling the weight of the age/span bonus rewards active human longevity over high-frequency checks.
 
 The score is capped at a configurable maximum (currently 10,000) and computed on-chain during the `update_anchor` instruction, reading parameters from a cross-program PDA.
 
@@ -296,7 +296,7 @@ Each wallet maps to exactly one Entros Anchor (enforced by PDA derivation). Crea
 2. k independent behavioral profiles, each sustained across regular re-verifications
 3. k × m verification fees over m re-verification cycles
 
-The Trust Score penalizes new accounts (age bonus starts at 0) and irregular patterns (regularity bonus requires consistent spacing). An adversary maintaining 1,000 identities to Trust Score > 500 over thirteen weeks at weekly cadence pays 65 SOL in protocol fees (1,000 × 13 × 0.005 SOL) plus ~13 SOL in one-time per-identity Solana account rent (1,000 × ~0.013 SOL for mint, ATA, IdentityState, and per-verification records), for a total of ~78 SOL—in addition to the per-identity compute of generating temporally consistent multi-modal sensor data that survives the active detection stack for the campaign duration. The defense is not absolute: a single high-value airdrop allocation may exceed this fee. Asymmetry compounds over time. The attacker pays continuously against an evolving detection stack, with no advance knowledge of which targets will materialise—most lucrative airdrops are unannounced, forcing speculative deployment months before any chance of recoupment. The equilibrium shifts against sustained Sybil farming at scale, not against any single attack.
+The Trust Score penalizes new accounts (age bonus starts at 0) and requires sustained active history (age/span bonus rewards duration of engagement). An adversary maintaining 1,000 identities to Trust Score > 500 over thirteen weeks at weekly cadence pays 65 SOL in protocol fees (1,000 × 13 × 0.005 SOL) plus ~13 SOL in one-time per-identity Solana account rent (1,000 × ~0.013 SOL for mint, ATA, IdentityState, and per-verification records), for a total of ~78 SOL—in addition to the per-identity compute of generating temporally consistent multi-modal sensor data that survives the active detection stack for the campaign duration. The defense is not absolute: a single high-value airdrop allocation may exceed this fee. Asymmetry compounds over time. The attacker pays continuously against an evolving detection stack, with no advance knowledge of which targets will materialise—most lucrative airdrops are unannounced, forcing speculative deployment months before any chance of recoupment. The equilibrium shifts against sustained Sybil farming at scale, not against any single attack.
 
 #### **6.4.1. Layered Sybil Resistance**
 
@@ -448,13 +448,13 @@ The mobile application, targeting the Solana dApp Store, is the production targe
 
 The Entros Protocol presents a framework for Proof-of-Personhood through temporal behavioral consistency. By measuring bounded, chaotic drift in multi-modal biometric signals over time, it provides graduated trust guarantees that static biometrics and session-level captcha cannot.
 
-The protocol is honest about its limitations. First-time verification is a liveness check, not a temporal consistency proof. The graduated trust model makes this explicit rather than presenting a false binary. The defense against sophisticated synthesis attacks is economic, not absolute—sustained spoofing at scale costs more than it extracts.
+The protocol is precise about what it proves. First-time verification is a liveness check; temporal consistency compounds over repeated sessions, and the graduated trust model makes that explicit rather than presenting a false binary. The defense against sophisticated synthesis is economic: sustained spoofing at scale costs more than it extracts.
 
 **Future work:**
 
 * Multi-contributor trusted setup ceremony for Groth16 Phase 2 before mainnet.
 * External security audit of all on-chain programs, the ZK circuit, and the executor node.
-* Entros utility token: SPL Token-2022 with Confidential Balances for validator staking, capacity tiers, and governance.
+* Full on-chain token economics: validator staking, capacity tiers, and governance wired to the SPL Token-2022 mint with Confidential Balances.
 * Cross-chain deployment to Ethereum L2s after Solana mainnet stabilizes.
 * Formal analysis of SimHash collision probability bounds under adversarial feature distributions.
 * Cross-wallet fingerprint comparison is implemented in the server-side validation layer. The executor maintains a registry of SimHash fingerprints and compares each new verification against existing entries. If the Hamming distance between a new fingerprint and any existing entry falls below δ_max, the verification is flagged as a potential duplicate identity. Empirical investigation of the persistence of involuntary behavioral features across deliberate behavioral modification is ongoing.

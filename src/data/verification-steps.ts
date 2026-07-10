@@ -54,7 +54,7 @@ export const verificationSteps: VerificationStep[] = [
     description:
       "Proof verified on Solana. Anchor updated. Progressive Trust Score recalculated from verification history.",
     detail:
-      "The statistical feature summary is validated server-side by proprietary models that detect synthetic data, then the ZK proof is verified on-chain. Both must pass. The server sees only derived statistics (means, variances, spectral coefficients)—never raw recordings. On success, the Anchor stores the verification timestamp in a rolling history. Trust Score recalculates using recency weighting and regularity analysis.",
+      "The statistical feature summary is validated server-side by proprietary models that detect synthetic data, then the ZK proof is verified on-chain. Both must pass. The server sees only derived statistics (means, variances, spectral coefficients)—never raw recordings. On success, the Anchor stores the verification timestamp in a rolling history. Trust Score recalculates using recency weighting and cadence analysis.",
     icon: "check-circle",
   },
 ];

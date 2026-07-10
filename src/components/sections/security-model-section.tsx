@@ -12,7 +12,7 @@ const DEFENSES = [
   {
     title: "Progressive Trust Score",
     description:
-      "Trust Score rewards consistency over time, not volume. 100 verifications in one day scores lower than weekly verifications over 3 months. Recency weighting and regularity bonuses make bot farming slow and expensive.",
+      "Trust Score rewards consistency over time, not volume. 100 verifications in one day scores lower than weekly verifications over 3 months. Recency weighting and cadence analysis make bot farming slow and expensive.",
   },
   {
     title: "Per-Session Randomness",

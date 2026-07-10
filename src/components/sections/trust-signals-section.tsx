@@ -18,7 +18,7 @@ export function TrustSignalsSection() {
 
         <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Live on devnet,
-          building toward mainnet<span className="text-cyan">.</span>
+          proven in the open<span className="text-cyan">.</span>
         </h2>
 
         <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2">

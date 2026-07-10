@@ -1,15 +1,15 @@
 ---
-title: Mobile (in progress)
-description: Native Solana Mobile integration. Coming soon.
+title: Mobile
+description: Native Solana Mobile integration for Seeker.
 ---
 
-The native mobile build is in active development. The capture pipeline benefits from richer sensor surfaces on mobile—IMU at higher sampling rates, native microphone access without browser permission flows, and integration with Solana Mobile's Mobile Wallet Adapter for a single-tap verification path.
+The native mobile build runs the full verification pipeline on-device. It draws on richer sensor surfaces than the browser: IMU at higher sampling rates, native microphone access without browser permission flows, and Solana Mobile's Mobile Wallet Adapter for a single-tap verification path.
 
-## What's planned
+## What it includes
 
 - React Native package distributed alongside `@entros/pulse-sdk`
 - Native iOS and Android builds with platform-specific sensor pipelines
-- Solana Mobile (Seeker) deep integration—Mobile Wallet Adapter, Seed Vault for keypair handling
+- Solana Mobile (Seeker) deep integration: Mobile Wallet Adapter, Seed Vault for keypair handling
 - Background re-verification reminders tied to score decay
 
 ## Why mobile matters for the protocol
@@ -19,4 +19,4 @@ The strongest behavioral signal lives on the device a user holds in their hand. 
 ## Where to look next
 
 - [Roadmap: Near-term](/docs/roadmap/near-term)—the mobile sprint timeline
-- This page will be replaced with the integration guide when the native build ships.
+- The full integration guide publishes with the mobile release.

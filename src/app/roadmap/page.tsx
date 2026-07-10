@@ -3,9 +3,9 @@ import { ArrowRight, KeyRound, ShieldCheck, Wrench } from "lucide-react";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
-  title: "Mainnet Roadmap",
+  title: "Roadmap",
   description:
-    "What gates Entros mainnet. A public trusted setup ceremony, an external security audit, and the operational lift. Devnet today, mainnet earned.",
+    "Entros is live on devnet with a shipped SDK and proven red-team results. The token funds the path to mainnet: a public trusted setup ceremony and an external security audit.",
   path: "/roadmap",
 });
 
@@ -13,21 +13,21 @@ const gates = [
   {
     Icon: KeyRound,
     label: "Trusted setup ceremony",
-    window: "June 2026 target window",
+    window: "Public ceremony",
     description:
       "Multiple participants run the ceremony in sequence, each contributing random entropy and destroying it after use. The resulting verifying key replaces the one currently compiled into entros-verifier. The math holds when one participant is honest about the destruction step. Ecosystem builders and integrators sign up to participate; contributors fill the remaining slots.",
   },
   {
     Icon: ShieldCheck,
     label: "External security audit",
-    window: "July–August 2026 target window",
+    window: "Independent audit",
     description:
       "An established Solana audit firm reviews the three on-chain programs and the on-chain proof flow. entros-verifier carries the highest stakes; entros-registry handles fees and validator staking; entros-anchor mints the non-transferable token. The firm publishes its report on completion, with findings remediated in public.",
   },
   {
     Icon: Wrench,
     label: "Operational lift",
-    window: "Pre-flip",
+    window: "Launch prep",
     description:
       "Paid RPC capacity, a hardware-wallet upgrade authority, treasury backup and recovery procedures, monitoring, an incident-response runbook, and a partner integrator on standby for the first live mainnet verification. Each item is small. The items run in sequence.",
   },
@@ -36,28 +36,33 @@ const gates = [
 const timeline = [
   {
     window: "May 2026",
-    title: "Submission shipped",
-    body: "The devnet pilot is open at entros.io/verify. Three Anchor programs run live. The Solana Attestation Service issues an attestation on every verification. Realms voter-weight plugin and Agent Anchor for the 8004 registry both ship.",
+    title: "Devnet pilot live",
+    body: "The devnet pilot is open at entros.io/verify. Three Anchor programs run live. The Solana Attestation Service issues an attestation on every verification. The Realms voter-weight plugin and Agent Anchor for the 8004 registry both ship.",
   },
   {
-    window: "June 2026",
-    title: "Ceremony window",
-    body: "Recruit participants from across the ecosystem. Run the multi-party setup. Recompile entros-verifier against the new key. Publish the log and hash chain at entros.io/ceremony.",
+    window: "Now",
+    title: "$ENTROS launch",
+    body: "The token launches to fund the path to mainnet and align the community from day one. Validator staking, fee-share, and governance activate in phases as the network decentralizes.",
   },
   {
-    window: "July–August 2026",
-    title: "External audit window",
-    body: "Four to eight weeks of active review, then one to two weeks of fix verification. The audit firm publishes its final report; we publish the patch trail alongside.",
+    window: "Next",
+    title: "Trusted setup ceremony",
+    body: "Participants from across the ecosystem run the multi-party setup, each contributing entropy. We recompile entros-verifier against the new key and publish the log and hash chain at entros.io/ceremony.",
   },
   {
-    window: "August–September 2026",
-    title: "Mainnet deploy",
-    body: "The team deploys all three programs under a hardware-wallet upgrade authority. Smoke tests run from web, mobile, and a partner integrator's staging environment. The treasury and incident procedures get tested against real flow.",
+    window: "Then",
+    title: "External security audit",
+    body: "An established Solana firm reviews the three programs and the proof flow. The firm publishes its final report and we publish the patch trail alongside.",
   },
   {
-    window: "September 2026",
-    title: "Public mainnet launch",
-    body: "Public announcement. Partner co-announcements. Token-related launches stay deferred until adoption and community involvement support them.",
+    window: "Launch",
+    title: "Mainnet launch",
+    body: "The three programs deploy under a hardware-wallet upgrade authority, with a partner integrator on the first live verification. The treasury and incident procedures run against real flow.",
+  },
+  {
+    window: "After launch",
+    title: "Decentralized validator network",
+    body: "VRF-selected validator cohorts stake $ENTROS, earn a share of verification fees, and govern protocol parameters. The Anonymity Ring opens to permissionless operation.",
   },
 ];
 
@@ -85,17 +90,16 @@ export default function Roadmap() {
             </span>
 
             <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-              Devnet today<span className="text-cyan">.</span>
+              The proof works<span className="text-cyan">.</span>
               <br />
-              Mainnet earned<span className="text-cyan">.</span>
+              Now we scale it<span className="text-cyan">.</span>
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Three items gate the flip from devnet to mainnet: a public
-              trusted setup ceremony, an external security audit, and the
-              operational lift to run a treasury and incident response on
-              live infrastructure. Each is a public artifact. None gets
-              shortcut.
+              Entros is live on devnet: three programs, a shipped SDK, and a
+              pipeline that already blocks recorded-voice replay and collapses
+              synthetic sybil farms in our own red-team. The token funds the
+              path to mainnet. Here is the plan.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -168,18 +172,17 @@ export default function Roadmap() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // THE THREE GATES
+            // HARDENING TO MAINNET
           </span>
 
           <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            What gates the flip<span className="text-cyan">.</span>
+            How we get to mainnet<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            The first gate is a cryptographic ceremony. The second is an
-            independent review. The third is the operational work to run
-            real money on real infrastructure. Each clears before the next
-            begins.
+            Three pieces of work take Entros to mainnet: a public cryptographic
+            ceremony, an independent audit, and the operational lift to run
+            real value on live infrastructure. Each ships in public.
           </p>
 
           <div className="mt-16 border-t border-border">
@@ -222,12 +225,11 @@ export default function Roadmap() {
           </span>
 
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            The path from devnet to mainnet<span className="text-cyan">.</span>
+            The path to mainnet<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Each date is a target window. The decision criteria below
-            govern the flip itself.
+            Where Entros has been, where it is now, and what comes next.
           </p>
 
           <ol className="mt-16 border-t border-border">
@@ -260,16 +262,16 @@ export default function Roadmap() {
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // DECISION GATES
+                  // LAUNCH CRITERIA
                 </span>
 
                 <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  What clears the flip<span className="text-cyan">.</span>
+                  What mainnet needs<span className="text-cyan">.</span>
                 </h2>
 
                 <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                  The calendar moves around the checklist. If an item is
-                  missing on the target date, the flip waits.
+                  Each item ships before mainnet. Concrete, public, and
+                  checked off in the open.
                 </p>
               </div>
             </div>
@@ -301,32 +303,24 @@ export default function Roadmap() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // WHY WAIT
+            // BUILT RIGHT
           </span>
 
           <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            The cost of going early<span className="text-cyan">.</span>
+            Mainnet, done properly<span className="text-cyan">.</span>
           </h2>
 
           <div className="mt-8 space-y-6 text-base leading-relaxed text-foreground/70 md:text-lg">
             <p>
-              Shipping mainnet ahead of the ceremony leaves the verifying
-              key compiled from a single-party setup. Whoever ran that
-              setup holds the keys to forge proofs against the deployed
-              verifier. On devnet that matters to nobody. On mainnet, with
-              users paying fees and integrators reading attestations as
-              authoritative, that is a protocol-ending vulnerability.
+              The multi-party ceremony matters because a single-party setup
+              lets whoever ran it forge proofs against the verifier. The audit
+              matters because a bug in the cryptographic anchor should surface
+              under contract with an audit firm, not under live traffic. So we
+              do both, in public, before mainnet carries real value.
             </p>
             <p>
-              Shipping mainnet ahead of the audit means a bug in the
-              cryptographic anchor only surfaces under live traffic. We
-              would rather find the bug under contract with an audit firm
-              than under contract with our integrators.
-            </p>
-            <p>
-              The label change from devnet to mainnet is worth less than
-              the integrity of what the label points at. Entros runs on
-              devnet until the gates clear.
+              This is the work that makes an identity protocol worth building
+              on. The token funds it, and the community grows alongside it.
             </p>
           </div>
         </div>
@@ -336,9 +330,9 @@ export default function Roadmap() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
           <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-            Devnet today<span className="text-cyan">.</span>
+            The proof works<span className="text-cyan">.</span>
             <br />
-            Mainnet earned<span className="text-cyan">.</span>
+            Now we scale it<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
@@ -362,7 +356,7 @@ export default function Roadmap() {
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "
             >
-              Try the devnet pilot
+              Try it live
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>

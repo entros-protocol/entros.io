@@ -64,7 +64,7 @@ Initial public release. Capture, feature extraction, hashing, proof generation, 
 
 ### entros-registry
 
-- `ProtocolConfig` initialized on devnet. Validator registration is gated until the Anonymity Ring transitions to permissionless operation.
+- `ProtocolConfig` initialized on devnet. Validator registration activates as the Anonymity Ring transitions to permissionless operation.
 - `ProtocolConfig` extended with `validator_pubkey` (offset 77, +32 bytes; LEN 77→109) for the mint-receipt binding above. Migration handled by the admin-only `set_validator_pubkey` instruction with a realloc + raw-byte write so accounts initialized at the legacy 69-byte size are upgraded in place.
 
 ## Where to look next

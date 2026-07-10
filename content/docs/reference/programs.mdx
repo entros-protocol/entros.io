@@ -84,7 +84,7 @@ Protocol-level configuration, validator stake, and treasury. Configures the prot
 | `update_protocol_config` | Authority-only updates to fee, expiry, score caps |
 | `set_validator_pubkey` | Authority-only write of the validator pubkey used for the mint-receipt binding (entros-anchor 6015–6021). Reallocs the protocol config to the post-binding layout the first time it runs. |
 | `migrate_admin` | Emergency administrative migration of the protocol authority |
-| `register_validator` | Stake to join the Anonymity Ring (gated until ring decentralizes) |
+| `register_validator` | Stake to join the Anonymity Ring (activates as the ring decentralizes) |
 | `compute_trust_score` | Read-only preview of what a score would be given a verification history |
 | `unstake_validator` | Exit the validator set after the unbonding period |
 | `withdraw_treasury` | Authority-only treasury withdrawal |

@@ -10,7 +10,7 @@ const sections = [
     items: [
       { label: "How It Works", href: "/technology" },
       { label: "Security Program", href: "/security" },
-      { label: "Mainnet Roadmap", href: "/roadmap" },
+      { label: "Roadmap", href: "/roadmap" },
     ],
   },
   {

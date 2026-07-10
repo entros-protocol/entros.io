@@ -19,10 +19,10 @@ const technologyDropdown: DropdownItem[] = [
       "Continuous red team audit, transparent results.",
   },
   {
-    label: "Mainnet Roadmap",
+    label: "Roadmap",
     href: "/roadmap",
     description:
-      "What gates the flip from devnet to mainnet.",
+      "Where Entros is, and where it's headed.",
   },
 ];
 

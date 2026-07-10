@@ -7,14 +7,14 @@ The medium-term arc is decentralization. Today the protocol is operated by the t
 
 ## Anonymity Ring decentralization
 
-The validation engine that runs all four tiers of checks is implemented and live today. What's deferred is the multi-validator deployment topology around that engine. The decentralization plan:
+The validation engine that runs all four tiers of checks is implemented and live today. The next step is the multi-validator deployment topology around that engine. The decentralization plan:
 
 - **Validator entry.** Stake against the registry program, run the validator binary, sign verification outcomes.
 - **Slashable stake.** Validators that sign off on verifications later proven to be synthesized lose stake. Slashing conditions are defined in the registry program and enforced by an independent challenge process.
 - **Aggregated signatures.** A threshold of validator signatures is required for a verification to settle. The threshold and validator set size are configurable through the registry.
 - **Economic incentives.** A share of protocol fees flows to validators based on participation and accuracy.
 
-The transition is gated on the external audit landing and on the check stack reaching a maturity bar where iteration can happen on a slower cadence than current operation supports.
+Decentralization follows the external audit, once the check stack settles into a slower iteration cadence than day-one operation needs.
 
 ### The validator distribution question
 
@@ -34,7 +34,7 @@ The fee waterfall has three eventual phases:
 - **Burn signal.** Months 6–12. 70% to treasury, 30% burned as a deflationary signal on the Entros utility token, while validators are still being onboarded.
 - **Steady state.** Month 12+. 50% to treasury, 30% to validators, 20% burned. Validator share scales with the size and activity of the ring.
 
-Numbers above are the current public plan. They are subject to the audit findings and the integrator-pilot data and may be updated through the [RFC process](/docs/roadmap/how-to-influence) before steady state begins.
+These numbers are the current public plan, refined through the [RFC process](/docs/roadmap/how-to-influence) as audit and integrator-pilot data come in.
 
 ## Multi-chain reads
 
@@ -60,7 +60,7 @@ The medium-term architectural shift is from binary gating to **probabilistic sco
 
 This is the same direction every production identity system has converged on — Aadhaar uses iris and fingerprint plus demographics; Worldcoin uses iris plus the orb-network Sybil layer; behavioral systems supplement with device signals. Entros's contribution is occupying the **behavioral temporal consistency** slot in that ensemble, complementary to anatomical and document-based approaches rather than replacing them.
 
-Calibration of the new scoring system depends on empirical fingerprint distributions across a substantially larger and more diverse user population than the current pilot. The work is gated on that data; the design publishes as it stabilizes.
+Calibration of the new scoring system uses empirical fingerprint distributions across a larger and more diverse population than the current pilot. The design publishes as that data comes in.
 
 ## Where to look next
 

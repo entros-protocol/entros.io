@@ -262,7 +262,7 @@ not fix these in isolation.
 ## entros-validation (private service)
 
 Closed-source server-side validation microservice on Railway. Receives the
-134-dimensional feature vector plus cross-modal sensor data from the
+308-dimensional feature vector plus cross-modal sensor data from the
 executor and applies Tier 1 statistical checks and Tier 2 coupling
 signals. Attack code, specific checks, thresholds, and per-check logic are
 kept private per responsible-disclosure convention.

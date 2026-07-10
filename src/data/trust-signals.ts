@@ -10,9 +10,9 @@ export const trustSignals: TrustSignal[] = [
   {
     icon: "shield",
     name: "Security Audit",
-    description: "Scheduled for mainnet launch.",
+    description: "Continuously red-teamed, 0% production pass.",
     detail:
-      "Anchor constraints, PDA validation, and compute-budget tested. External firm review before mainnet.",
+      "17,000+ adversarial attempts across four tiers, 0% got through. Anchor constraints, PDA validation, and compute budget tested. External firm review ahead of mainnet.",
     href: "/security",
   },
   {

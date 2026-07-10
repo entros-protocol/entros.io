@@ -438,9 +438,9 @@ export function TokenContent() {
                       Revenue-backed from day one
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      The protocol generates SOL revenue before the token
-                      launches. Treasury accumulates real value. The token
-                      amplifies the flywheel.
+                      Every verification pays a protocol fee. That revenue
+                      backs the token, so it stands on a working mechanism
+                      rather than pure speculation.
                     </p>
                   </div>
                 </div>

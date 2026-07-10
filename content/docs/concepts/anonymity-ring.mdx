@@ -29,9 +29,9 @@ Two complementary claims:
 
 Both must hold for a verification to settle. The proof catches replay against a different Anchor; the validator catches synthesized captures and out-of-distribution submissions.
 
-## What "decentralized" means here, and what's deferred
+## What "decentralized" means here, and what comes next
 
-Today the validator runs as a single off-chain service operated by the Entros team. The check stack itself—the engine that runs all of the above tiers—is implemented and live. What is not yet live is the multi-validator deployment topology around that engine: VRF-selected validator cohorts, BLS-aggregated signed sign-off, slashable stake.
+The check stack that runs all of the above tiers is implemented and live today, operated by the Entros team. The next step is the multi-validator deployment topology around that engine: VRF-selected validator cohorts, BLS-aggregated sign-off, and slashable stake.
 
 The decentralization plan is to spin up a permissionless validator set in which each node runs the same check stack independently, signs its outcome, and aggregates with the rest of a selected cohort. This is post-mainnet work; the validator economics live in the [registry program](/docs/reference/programs) and activate when the multi-validator architecture comes online.
 

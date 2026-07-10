@@ -216,7 +216,7 @@ Users pay a small protocol fee (~0.005 SOL) per verification. This is trivial fo
 
 #### **4.3. Validation Cycle**
 
-The protocol fee from each verification is collected into the protocol treasury. The treasury purchases Entros from the open market, creating buy pressure proportional to real verification demand. Validator rewards are distributed in proportion to validation accuracy, measured against independent ground-truth benchmarks, rather than verification throughput, so a validator cannot increase yield by relaxing its acceptance of borderline captures.
+The protocol fee from each verification is collected into the protocol treasury on-chain. As the validator network decentralizes, a share of fees is distributed to validators in proportion to validation accuracy, measured against independent ground-truth benchmarks rather than verification throughput, so a validator cannot increase yield by relaxing its acceptance of borderline captures.
 
 #### **4.4. Slashing**
 

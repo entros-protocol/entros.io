@@ -3,7 +3,7 @@ import { Shield, Vote, Layers, Rocket, TrendingUp, Lock, Flame, AlertTriangle } 
 import {
   protocolFee,
   flywheel,
-  tokenDistribution,
+  supplyPrinciples,
   tokenUtilities,
   launchDetails,
 } from "@/data/token-economics";
@@ -67,12 +67,13 @@ export function TokenContent() {
           </span>
 
           <h2 className="mt-6 max-w-5xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Verification volume drives token value<span className="text-cyan">.</span>
+            Real usage drives real demand<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Five steps. Protocol revenue scales linearly with verification
-            volume. Each step compounds the next.
+            Protocol revenue scales with genuine human verification, and the
+            token secures the network that earns it. Each step compounds the
+            next.
           </p>
 
           {/* Labeled diagram — five nodes in a horizontal flow with
@@ -84,7 +85,7 @@ export function TokenContent() {
               viewBox="0 0 1200 320"
               className="block w-full"
               role="img"
-              aria-label="Token revenue flywheel diagram. Five steps from user verification through treasury, token buy, validator rewards, and security improvements, looping back to user verification."
+              aria-label="Token flywheel diagram. Five steps from human verification through protocol revenue, integrator adoption, token-secured validation, and a compounding network, looping back to human verification."
             >
               <defs>
                 <marker
@@ -245,41 +246,33 @@ export function TokenContent() {
         </div>
       </section>
 
-      {/* Token Distribution */}
+      {/* Supply — fair launch */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // TOKEN DISTRIBUTION
+            // SUPPLY
           </span>
 
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Allocation at genesis<span className="text-cyan">.</span>
+            A fair launch<span className="text-cyan">.</span>
           </h2>
 
-          <div className="mt-12 border border-border">
-            {tokenDistribution.map((allocation, i) => (
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+            No VC allocation. No team unlock cliff. One launch, open to
+            everyone, including us.
+          </p>
+
+          <div className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
+            {supplyPrinciples.map((principle) => (
               <div
-                key={allocation.name}
-                className={`grid grid-cols-1 items-center gap-6 px-6 py-6 md:grid-cols-[1fr_2fr_auto] md:gap-10 md:px-8 ${
-                  i < tokenDistribution.length - 1 ? "border-b border-border" : ""
-                }`}
+                key={principle.title}
+                className="flex flex-col bg-background p-8 md:p-10"
               >
-                <div>
-                  <p className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
-                    {allocation.name}
-                  </p>
-                  <p className="mt-1 font-mono text-[11px] text-foreground/45">
-                    {allocation.vesting}
-                  </p>
-                </div>
-                <div className="h-1.5 overflow-hidden bg-foreground/[0.06]">
-                  <div
-                    className="h-full bg-cyan"
-                    style={{ width: `${(allocation.percentage / 30) * 100}%` }}
-                  />
-                </div>
-                <p className="font-display text-2xl font-medium tracking-tight text-cyan md:text-3xl md:min-w-[5rem] md:text-right">
-                  {allocation.percentage}%
+                <h3 className="font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+                  {principle.title}
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-foreground/65">
+                  {principle.description}
                 </p>
               </div>
             ))}
@@ -366,7 +359,7 @@ export function TokenContent() {
                       Asymmetric Slashing
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      A validator earning a tiny protocol fee per verification stands to lose their entire staked amount (minimum 5,000 ENTROS) if they validate inaccurately, accept bots, or reject real users.
+                      A validator earning a small fee per verification stands to lose their entire stake if they validate inaccurately, accept bots, or reject real users. The penalty dwarfs the reward, so honest validation is the only rational strategy.
                     </p>
                   </div>
                 </div>
@@ -435,12 +428,12 @@ export function TokenContent() {
                   <TrendingUp className="h-5 w-5 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      Revenue-backed from day one
+                      Real revenue behind it
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Every verification pays a protocol fee. That revenue
-                      backs the token, so it stands on a working mechanism
-                      rather than pure speculation.
+                      Every verification pays a SOL fee into the on-chain
+                      treasury. Unlike a memecoin, the network behind the token
+                      earns from genuine human usage.
                     </p>
                   </div>
                 </div>

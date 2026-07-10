@@ -28,13 +28,13 @@ The choice is a tradeoff between trust assumption and adversarial cost. The prot
 
 ## Validator economics
 
-The fee waterfall has three eventual phases:
+Protocol fees are collected in SOL and accrue in the on-chain treasury. The split evolves as the validator network decentralizes:
 
-- **Bootstrap.** Months 0–6 of post-mainnet operation. 100% of fees flow to the protocol treasury for ecosystem and security work.
-- **Burn signal.** Months 6–12. 70% to treasury, 30% burned as a deflationary signal on the Entros utility token, while validators are still being onboarded.
-- **Steady state.** Month 12+. 50% to treasury, 30% to validators, 20% burned. Validator share scales with the size and activity of the ring.
+- **Today.** Fees fund protocol operations and security while the team runs validation.
+- **As validators onboard.** A share of fees routes to validators, weighted by validation accuracy against ground-truth benchmarks, never by throughput, so honest validation is what earns.
+- **Steady state.** Governance sets the fee split between the treasury and the validator set as the ring grows.
 
-These numbers are the current public plan, refined through the [RFC process](/docs/roadmap/how-to-influence) as audit and integrator-pilot data come in.
+The split is the current public plan, refined through the [RFC process](/docs/roadmap/how-to-influence) as audit and integrator-pilot data come in.
 
 ## Multi-chain reads
 

@@ -14,7 +14,7 @@ export function HeroSection() {
   // re-enters the desktop split-layout by source order: text left, spiral
   // right. Desktop layout is unchanged from the original.
   return (
-    <section className="relative mx-auto flex w-full max-w-7xl flex-col-reverse gap-12 px-6 pt-28 pb-6 md:pt-36 md:pb-12 lg:min-h-[calc(100vh-4rem)] lg:flex-row lg:items-center lg:gap-12 lg:pt-24 lg:pb-24">
+    <section className="relative mx-auto flex min-h-svh w-full max-w-7xl flex-col-reverse justify-center gap-16 px-6 pt-28 pb-6 md:pt-36 md:pb-12 lg:min-h-[calc(100vh-4rem)] lg:flex-row lg:justify-normal lg:items-center lg:gap-12 lg:pt-24 lg:pb-24">
       {/* Left column—copy + CTAs */}
       <div className="relative z-10 flex flex-col lg:w-1/2 lg:max-w-2xl">
         <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
@@ -78,14 +78,11 @@ export function HeroSection() {
           of growing to fill all available vertical space — without this,
           the spiral would consume most of the mobile viewport and push
           headline + CTAs below the fold. */}
-      <div className="relative flex h-[200px] items-center justify-center sm:h-[360px] md:h-[400px] lg:h-[440px] lg:w-1/2 lg:flex-1 xl:h-[480px]">
-        {/* `rotate-90 lg:rotate-0` orients the spiral sideways on mobile so
-            its visual axis runs horizontally (fits the screen's wider
-            dimension). Desktop stays at 0° so the split-hero layout is
-            unchanged. The CSS box bounds are identical post-rotation
-            (square 80×80 ASCII grid), so layout doesn't shift — only the
-            rendered orientation does. */}
-        <AsciiSpiral className="opacity-95 rotate-90 lg:rotate-0" />
+      <div className="relative flex h-[200px] max-w-[75%] items-center justify-center sm:h-[360px] md:h-[400px] lg:h-[440px] lg:w-1/2 lg:max-w-none lg:flex-1 xl:h-[480px]">
+        {/* Spiral renders upright on every breakpoint. (Previously rotated
+            90° on mobile, which left the animating, oversized <pre> being
+            repainted while rotated — janky and visually clipped on phones.) */}
+        <AsciiSpiral className="opacity-95" />
       </div>
     </section>
   );

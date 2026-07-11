@@ -139,7 +139,12 @@ export function AsciiFlow({ className }: AsciiFlowProps) {
       "(prefers-reduced-motion: reduce)"
     ).matches;
 
+    // Paint the first frame immediately (avoids a flash of empty). The
+    // render() call self-schedules a rAF via its own tail, so cancel that
+    // one and let the single controlled loop below own the animation —
+    // otherwise two rAF loops run at once, and reduced-motion is ignored.
     render(performance.now() + FRAME_INTERVAL_MS + 1);
+    cancelAnimationFrame(rafId);
 
     if (reduceMotion) return;
 

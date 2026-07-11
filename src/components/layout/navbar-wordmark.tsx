@@ -52,7 +52,9 @@ export function NavbarWordmark() {
   return (
     <Link
       href="/"
-      style={{ fontFamily: "var(--font-wordmark)" }}
+      style={{
+        fontFamily: "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
+      }}
       className="inline-flex items-baseline text-xl tracking-tight text-foreground"
       aria-label="entros — home"
     >

@@ -1,6 +1,8 @@
 # Entros Protocol — Security & Quality Audit Tracker
 
-Last updated: 2026-05-20
+Last updated: 2026-07-10
+
+**Recent activity (2026-07-10): entros-mobile upgraded to v3 308-feature pipeline.** Ported all mathematical feature extraction (radix-2 FFT, MFCC delta stats, LPC/formant tracking, voice quality, pitch contour shape DCT) and kinematic/touch layers to the React Native app. Parity validated via 64/64 green local Jest tests and clean typechecking (`tsc --noEmit`). Checked off item #179 in the master list.
 
 **Recent activity (2026-05-20):** Server-side verification-freshness gate
 added on `/attest`. The executor now reads the wallet's on-chain

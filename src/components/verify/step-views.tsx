@@ -346,7 +346,8 @@ function isStaleBlockhashError(error: string): boolean {
 // Surfacing a distinct title prevents the "Verification failed" generic
 // page when the user is just being told to wait.
 function isRateLimitedError(error: string): boolean {
-  return error.toLowerCase().includes("too many");
+  const e = error.toLowerCase();
+  return e.includes("too many") || e.includes("recently verified") || e.includes("different wallet");
 }
 
 // pulse-sdk 1.5.0+ surfaces on-chain Anchor reverts as:
@@ -711,9 +712,14 @@ export function FailedView({
         "Your transaction expired before reaching Solana. The network was slow—try again.";
       break;
     case "rate-limited":
-      title = "Too many attempts";
-      body =
-        "This wallet has reached its retry limit for the current window. Please wait an hour before trying again.";
+      if (error.toLowerCase().includes("recently verified") || error.toLowerCase().includes("different wallet")) {
+        title = "Device cooldown active";
+        body = error;
+      } else {
+        title = "Too many attempts";
+        body =
+          "This wallet has reached its retry limit for the current window. Please wait an hour before trying again.";
+      }
       break;
     case "permission-denied":
       if (failure.device === "microphone") {

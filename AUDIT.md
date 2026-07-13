@@ -1,6 +1,8 @@
 # Entros Protocol — Security & Quality Audit Tracker
 
-Last updated: 2026-07-10
+Last updated: 2026-07-13
+
+**Recent activity (2026-07-13): Cross-Wallet Verification Defense & Cool-Down (Item #142) implemented.** Hardened baseline storage in `pulse-sdk` to isolate local envelopes under wallet-specific keys (`entros-protocol-verification-data_${walletAddress}`) and added a matching-commitment legacy migration path, resolving multi-wallet signature friction and key-corruption recovery. Introduced a relayer-side `CrossWalletCooldownTracker` in `executor-node` enforcing IP-subnet (IPv4 `/24`, IPv6 `/48`) + User-Agent fingerprint cooldown limits (default 24h, observe-only by default for NAT/shared-network safety) with dynamic custom error mappings on `entros.io`. Fully verified via 290/290 pulse-sdk tests, 175/175 executor tests, and Next.js clean compilation.
 
 **Recent activity (2026-07-10): entros-mobile upgraded to v3 308-feature pipeline.** Ported all mathematical feature extraction (radix-2 FFT, MFCC delta stats, LPC/formant tracking, voice quality, pitch contour shape DCT) and kinematic/touch layers to the React Native app. Parity validated via 64/64 green local Jest tests and clean typechecking (`tsc --noEmit`). Checked off item #179 in the master list.
 

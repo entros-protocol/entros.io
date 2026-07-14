@@ -1,6 +1,8 @@
 # Entros Protocol — Security & Quality Audit Tracker
 
-Last updated: 2026-07-13
+Last updated: 2026-07-14
+
+**Recent activity (2026-07-14): Phase A (UX Stabilization & Account Versioning) implemented and optimized.** Stabilized the phrase-content binding UX in `entros-validation` by collapsing consecutive duplicate observed words and introducing a zero-allocation Metaphone phonetic alignment dynamic programming matching algorithm. This prevents false-rejections from Whisper stutters and accents without weakening liveness defenses. Extended `IdentityState` in `entros-anchor` with `projection_version` and `last_rebaseline_timestamp` fields. Implemented the `rebaseline_anchor` instruction to support migrating user commitments to new version spaces without losing trust score, age, or verification count, protected by wallet signature, validator humanness receipt, and 7-day cooldown. Verified via 207 unit tests in `entros-validation` and 36 Anchor integration tests in `protocol-core`.
 
 **Recent activity (2026-07-13): Cross-Wallet Verification Defense & Cool-Down (Item #142) implemented.** Hardened baseline storage in `pulse-sdk` to isolate local envelopes under wallet-specific keys (`entros-protocol-verification-data_${walletAddress}`) and added a matching-commitment legacy migration path, resolving multi-wallet signature friction and key-corruption recovery. Introduced a relayer-side `CrossWalletCooldownTracker` in `executor-node` enforcing IP-subnet (IPv4 `/24`, IPv6 `/48`) + User-Agent fingerprint cooldown limits (default 24h, observe-only by default for NAT/shared-network safety) with dynamic custom error mappings on `entros.io`. Fully verified via 290/290 pulse-sdk tests, 175/175 executor tests, and Next.js clean compilation.
 

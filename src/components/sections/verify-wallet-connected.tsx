@@ -31,14 +31,7 @@ function commitmentToHex(bytes: Uint8Array): string {
   );
 }
 
-// Mirrors `RESET_COOLDOWN_SECS` in `entros_anchor::lib.rs`. The on-chain
-// program rejects a second reset within this window with Custom error
-// 6012 (`ResetCooldownActive`); the pre-flight check below surfaces the
-// same constraint before the user spends a capture session on a
-// verification destined to revert. If the on-chain constant changes,
-// update this number too — the post-submit branch in step-views still
-// catches drift, but pre-flight false-negatives waste a capture cycle.
-const RESET_COOLDOWN_SECS = 7 * 24 * 60 * 60;
+import { RESET_COOLDOWN_SECS, evaluateResetCooldown } from "@/lib/cooldown";
 
 // Soft-reject retry budget (master-list #94). When attemptsUsed < MAX_ATTEMPTS
 // and the server returns a user-recoverable reason, the client routes to
@@ -334,10 +327,13 @@ export function VerifyWalletConnected({
     // attempt's count into the rejection-path override evaluation in
     // handleCaptureComplete.
     voicedFramesRef.current = 0;
-    // Count this attempt against the (intent-scoped) session budget.
-    // Soft-fail / hard-fail routing in handleCaptureComplete reads from
-    // this counter.
-    attemptsUsedRef.current += 1;
+    // Fire reset cooldown pre-flight in parallel with iOS gesture-bound motion setup.
+    // Awaiting RPC network I/O before startMotion() drops the iOS gesture token,
+    // so we launch the fetch here and await it after motion setup completes.
+    const cooldownPromise: Promise<boolean> =
+      intent === "reset" && publicKey
+        ? checkResetCooldown(publicKey)
+        : Promise.resolve(false);
 
     try {
       // Fire the challenge fetch in parallel with sensor setup. We do NOT
@@ -395,6 +391,22 @@ export function VerifyWalletConnected({
         session.skipMotion();
       }
 
+      // Check the parallel cooldown pre-flight now that motion setup has consumed
+      // the gesture token. If on cooldown, stop motion and exit before mic/touch start.
+      const isCooldownActive = await cooldownPromise;
+      if (isCooldownActive) {
+        try {
+          await session.stopMotion();
+        } catch {
+          /* cleanup */
+        }
+        return;
+      }
+
+      // Count this attempt against the (intent-scoped) session budget only
+      // after confirming we are not blocked by an active reset cooldown.
+      attemptsUsedRef.current += 1;
+
       // Audio second—getUserMedia works without a gesture on secure origins
       try {
         let audioFrameCount = 0;
@@ -437,35 +449,35 @@ export function VerifyWalletConnected({
     }
   }
 
+  async function checkResetCooldown(pubKey: PublicKey): Promise<boolean> {
+    try {
+      const identity = await fetchIdentityState(pubKey.toBase58(), connection);
+      if (identity) {
+        const result = evaluateResetCooldown(identity.lastResetTimestamp);
+        if (result.isCooldownActive && result.syntheticError) {
+          dispatch({
+            type: "VERIFICATION_FAILED",
+            error: result.syntheticError,
+          });
+          return true;
+        }
+      }
+    } catch {
+      // Pre-flight fetch failed (network blip, RPC hiccup). Fall through—
+      // the user will see the on-chain revert if cooldown actually applies.
+    }
+    return false;
+  }
+
   async function handleResetBaselineClick() {
     if (!publicKey) {
       setResetDialogOpen(true);
       return;
     }
 
-    try {
-      const identity = await fetchIdentityState(publicKey.toBase58(), connection);
-      if (identity && identity.lastResetTimestamp > 0) {
-        const now = Math.floor(Date.now() / 1000);
-        const elapsed = now - identity.lastResetTimestamp;
-        if (elapsed < RESET_COOLDOWN_SECS) {
-          // Synthesize an error string the categorizer in step-views
-          // recognizes as 6012, with the unlock timestamp encoded so the
-          // FailedView can render a specific date instead of generic copy.
-          const unlockTs = identity.lastResetTimestamp + RESET_COOLDOWN_SECS;
-          const unlockIso = new Date(unlockTs * 1000).toISOString();
-          dispatch({
-            type: "VERIFICATION_FAILED",
-            error: `Reset on cooldown. {"InstructionError":[0,{"Custom":6012}]} unlock_at=${unlockIso}`,
-          });
-          return;
-        }
-      }
-    } catch {
-      // Pre-flight fetch failed (network blip, RPC hiccup). Fall through
-      // to the dialog—the user will see the on-chain revert if cooldown
-      // actually applies. Same UX as before this pre-flight existed.
-    }
+    const isCooldownActive = await checkResetCooldown(publicKey);
+    if (isCooldownActive) return;
+
     setResetDialogOpen(true);
   }
 

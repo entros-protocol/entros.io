@@ -6,6 +6,60 @@ import { Shield, Code, Settings, Copy, Check, Info, Sparkles, ExternalLink } fro
 type ThemeColor = "cyan" | "indigo" | "emerald" | "purple" | "pink";
 type PaymentMode = "user-pays" | "walletless";
 
+export function generateAnchorCode(riskCeiling: number = 0.75): string {
+  return `use anchor_lang::prelude::*;
+use entros_registry::state::IdentityState;
+
+#[program]
+pub mod my_airdrop {
+    use super::*;
+
+    pub fn claim_tokens(ctx: Context<ClaimTokens>) -> Result<()> {
+        let identity = &ctx.accounts.identity_state;
+        let clock = Clock::get()?;
+
+        // Verify the attestation was issued within the last 24 hours
+        require!(
+            identity.last_verification_timestamp >= clock.unix_timestamp - 86400,
+            AirdropError::AttestationExpired
+        );
+
+        // Enforce the custom trust score threshold configured in your sandbox
+        require!(
+            identity.trust_score >= ${Math.round((1 - riskCeiling) * 100)},
+            AirdropError::InsufficientTrustScore
+        );
+
+        // Execute token distribution
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct ClaimTokens<'info> {
+    #[account(mut)]
+    pub claimant: Signer<'info>,
+
+    /// CHECK: Evaluated Sync PDA derived from claimant's pubkey
+    #[account(
+        seeds = [b"identity", claimant.key().as_ref()],
+        bump,
+        seeds::program = entros_registry::ID,
+    )]
+    pub identity_state: Account<'info, IdentityState>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[error_code]
+pub enum AirdropError {
+    #[msg("Validation attestation has expired. Re-verify liveness.")]
+    AttestationExpired,
+    #[msg("Composite risk score is too high to claim tokens.")]
+    InsufficientTrustScore,
+}`;
+}
+
 export function IntegrateSandboxClient() {
   // Config state variables
   const [riskCeiling, setRiskCeiling] = useState<number>(0.75);
@@ -83,59 +137,7 @@ export default function AirdropClaim() {
 }`;
   };
 
-  const getAnchorCode = () => {
-    return `use anchor_lang::prelude::*;
-use entros_registry::state::IdentityState;
-
-#[program]
-pub mod my_airdrop {
-    use super::*;
-
-    pub fn claim_tokens(ctx: Context<ClaimTokens>) -> Result<()> {
-        let identity = &ctx.accounts.identity_state;
-        let clock = Clock::get()?;
-
-        // Verify the attestation was issued within the last 24 hours
-        require!(
-            identity.last_verified >= clock.unix_timestamp - 86400,
-            AirdropError::AttestationExpired
-        );
-
-        // Enforce the custom trust score threshold configured in your sandbox
-        require!(
-            identity.trust_score >= ${Math.round((1 - riskCeiling) * 100)},
-            AirdropError::InsufficientTrustScore
-        );
-
-        // Execute token distribution
-        Ok(())
-    }
-}
-
-#[derive(Accounts)]
-pub struct ClaimTokens<'info> {
-    #[account(mut)]
-    pub claimant: Signer<'info>,
-
-    /// CHECK: Evaluated Sync PDA derived from claimant's pubkey
-    #[account(
-        seeds = [b"identity", claimant.key().as_ref()],
-        bump,
-        seeds::program = entros_registry::ID,
-    )]
-    pub identity_state: Account<'info, IdentityState>,
-    
-    pub system_program: Program<'info, System>,
-}
-
-#[error_code]
-pub enum AirdropError {
-    #[msg("Validation attestation has expired. Re-verify liveness.")]
-    AttestationExpired,
-    #[msg("Composite risk score is too high to claim tokens.")]
-    InsufficientTrustScore,
-}`;
-  };
+  const getAnchorCode = () => generateAnchorCode(riskCeiling);
 
   const getSdkCode = () => {
     return `import { Connection, PublicKey } from "@solana/web3.js";

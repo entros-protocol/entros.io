@@ -7,6 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "test": "../pulse-sdk/node_modules/.bin/vitest run test",
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {

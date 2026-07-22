@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   randomLissajousParams,
   generateLissajousPoints,
+  type LissajousParams,
 } from "@entros/pulse-sdk";
 
 const CAPTURE_DURATION_S = 12;
@@ -24,20 +25,15 @@ export function PulseChallenge({
   audioLevel = 0,
   hasMotion = true,
   phrase: providedPhrase,
+  curve,
 }: {
   onComplete: () => void;
   touchRef?: React.RefObject<HTMLDivElement | null>;
   audioLevel?: number;
   hasMotion?: boolean;
-  /**
-   * Server-issued challenge phrase. The verify flow fetches this through the
-   * `/api/relay-challenge` same-origin proxy. Required — if absent, the
-   * parent component must fail the verification before rendering this
-   * component. Earlier versions silently fell back to client-generated
-   * nonsense syllables, which produced a broken UX (gibberish words shown
-   * to users) and bypassed phrase content binding server-side.
-   */
   phrase: string;
+  /** Server-issued Lissajous curve parameters for touch challenge binding. */
+  curve?: LissajousParams;
 }) {
   const [countdown, setCountdown] = useState(3);
   const [captureStarted, setCaptureStarted] = useState(false);
@@ -58,9 +54,9 @@ export function PulseChallenge({
 
   const phrase = providedPhrase;
   const lissajousPoints = useMemo(() => {
-    const params = randomLissajousParams();
+    const params: LissajousParams = curve ?? randomLissajousParams();
     return generateLissajousPoints(params);
-  }, []);
+  }, [curve]);
 
   // Anchor positions for the lissajous curve in the 200×200 viewBox. Each
   // entry places a 100×100 curve box. Corner anchors fill one quadrant;
@@ -68,6 +64,9 @@ export function PulseChallenge({
   // the historical curve dimensions so velocity-derivative features stay
   // at the same scale across all five anchors.
   const lissajousAnchor = useMemo(() => {
+    if (curve?.anchorX != null && curve?.anchorY != null) {
+      return { x: curve.anchorX, y: curve.anchorY, size: 100 };
+    }
     const anchors = [
       { x: 0, y: 0 },
       { x: 100, y: 0 },
@@ -78,7 +77,7 @@ export function PulseChallenge({
     const arr = new Uint32Array(1);
     crypto.getRandomValues(arr);
     return { ...anchors[arr[0]! % anchors.length]!, size: 100 };
-  }, []);
+  }, [curve]);
 
   const svgPath = useMemo(() => {
     if (lissajousPoints.length === 0) return "";

@@ -17,10 +17,13 @@
  *   - No browser cache of "request headers without the auth key"
  *   - API key never appears in any client bundle (security upgrade)
  */
+import type { LissajousParams } from "@entros/pulse-sdk";
+
 export interface ChallengeResponse {
   nonce: Uint8Array;
   phrase: string;
   expiresIn: number;
+  curve?: LissajousParams;
 }
 
 export async function fetchChallengeViaProxy(
@@ -53,6 +56,14 @@ export async function fetchChallengeViaProxy(
     nonce: number[];
     expires_in: number;
     phrase: string;
+    curve?: {
+      a: number;
+      b: number;
+      delta: number;
+      points: number;
+      anchor_x?: number;
+      anchor_y?: number;
+    };
   };
 
   if (!Array.isArray(body.nonce) || body.nonce.length !== 32) {
@@ -62,9 +73,21 @@ export async function fetchChallengeViaProxy(
     throw new Error("Relay returned empty challenge phrase");
   }
 
+  const curve: LissajousParams | undefined = body.curve
+    ? {
+        a: body.curve.a,
+        b: body.curve.b,
+        delta: body.curve.delta,
+        points: body.curve.points ?? 200,
+        anchorX: body.curve.anchor_x,
+        anchorY: body.curve.anchor_y,
+      }
+    : undefined;
+
   return {
     nonce: Uint8Array.from(body.nonce),
     phrase: body.phrase,
     expiresIn: body.expires_in,
+    curve,
   };
 }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { type PulseSession, PROGRAM_IDS, fetchIdentityState } from "@entros/pulse-sdk";
+import { type PulseSession, type LissajousParams, PROGRAM_IDS, fetchIdentityState } from "@entros/pulse-sdk";
 import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
@@ -171,6 +171,7 @@ export function VerifyWalletConnected({
   // that case and phrase content binding skips server-side (Tier 1 still
   // runs).
   const [challengePhrase, setChallengePhrase] = useState<string | null>(null);
+  const [challengeCurve, setChallengeCurve] = useState<LissajousParams | undefined>(undefined);
   const startingRef = useRef(false);
   const voicedFramesRef = useRef(0);
   // Intent is tracked alongside the state-machine mirror so the
@@ -322,6 +323,7 @@ export function VerifyWalletConnected({
     intentRef.current = intent;
     setRequesting(true);
     setChallengePhrase(null);
+    setChallengeCurve(undefined);
     // Reset the voiced-frame counter before any await so a synchronous
     // throw in startMotion / challenge fetch can't leak the previous
     // attempt's count into the rejection-path override evaluation in
@@ -344,9 +346,9 @@ export function VerifyWalletConnected({
       // Awaiting happens after audio/motion/touch permissions resolve but
       // before START_CAPTURE; null → fail the verification with a clear
       // error rather than silently fall back to nonsense.
-      const challengePromise: Promise<string | null> = publicKey
+      const challengePromise: Promise<{ phrase: string; curve?: LissajousParams } | null> = publicKey
         ? fetchChallengeViaProxy(publicKey.toBase58())
-            .then((c) => c.phrase)
+            .then((c) => ({ phrase: c.phrase, curve: c.curve }))
             .catch((err: unknown) => {
               if (process.env.NODE_ENV === "development") {
                 const msg = err instanceof Error ? err.message : String(err);
@@ -432,15 +434,16 @@ export function VerifyWalletConnected({
       // silent fallback to client-generated nonsense produced a broken
       // UX (users saw gibberish syllables) and bypassed phrase content
       // binding server-side.
-      const phrase = await challengePromise;
-      if (!phrase) {
+      const challenge = await challengePromise;
+      if (!challenge || !challenge.phrase) {
         dispatch({
           type: "VERIFICATION_FAILED",
           error: "Verification service unavailable. Please refresh and try again.",
         });
         return;
       }
-      setChallengePhrase(phrase);
+      setChallengePhrase(challenge.phrase);
+      setChallengeCurve(challenge.curve);
 
       dispatch({ type: "START_CAPTURE", intent });
     } finally {
@@ -722,6 +725,7 @@ export function VerifyWalletConnected({
         audioLevel={audioLevel}
         hasMotion={hasMotion}
         phrase={challengePhrase}
+        curve={challengeCurve}
       />
     );
   }

@@ -162,14 +162,10 @@ export function PulseChallenge({
     return () => clearInterval(decay);
   }, []);
 
-  // 0.008 matches the speech-presence threshold used by voicedFramesRef in
-  // verify-wallet-connected.tsx and verify-walletless.tsx, so the in-capture
-  // hint and the post-hoc "audio too quiet" failure label agree on what
-  // counts as voice rather than ambient noise. Once voiced samples span at
-  // least 1500ms (i.e. the user has actually spoken a phrase rather than a
-  // single ambient spike), hasSpokenEnoughRef latches true and the hint is
-  // suppressed for the rest of the capture — natural pauses after finishing
-  // the phrase shouldn't re-trigger the warning.
+  // Speech-presence threshold (0.008 RMS) aligns with voicedFramesRef across
+  // verification components. Once voiced samples span at least 800ms between
+  // first and last voiced sample, hasSpokenEnoughRef latches true and suppresses
+  // the quiet warning for the remainder of the capture session.
   useEffect(() => {
     if (audioLevel > 0.008) {
       const now = Date.now();
@@ -177,8 +173,9 @@ export function PulseChallenge({
         firstVoicedAtRef.current = now;
       }
       lastVoicedAtRef.current = now;
-      if (!hasSpokenEnoughRef.current && now - firstVoicedAtRef.current >= 1500) {
+      if (!hasSpokenEnoughRef.current && now - firstVoicedAtRef.current >= 800) {
         hasSpokenEnoughRef.current = true;
+        setAudioHintVisible(false);
       }
     }
   }, [audioLevel]);
@@ -187,6 +184,13 @@ export function PulseChallenge({
     if (!captureStarted) return;
     captureStartedAtRef.current = Date.now();
     const interval = setInterval(() => {
+      // Check if user spoke enough before evaluating quiet duration
+      if (firstVoicedAtRef.current != null && lastVoicedAtRef.current != null) {
+        if (lastVoicedAtRef.current - firstVoicedAtRef.current >= 800) {
+          hasSpokenEnoughRef.current = true;
+        }
+      }
+
       if (hasSpokenEnoughRef.current) {
         setAudioHintVisible(false);
         clearInterval(interval);

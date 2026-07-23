@@ -5,7 +5,7 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "smartphone",
     title: "On-device processing",
     description:
-      "Sensor capture, feature extraction, hashing, and proof generation all run on the user's device. No raw biometric recordings are transmitted or stored server-side.",
+      "Sensor capture, feature extraction, hashing, and proof generation all run on the user's device. The only raw signal that leaves is the spoken-phrase audio, sent to the validator for transcription and discarded immediately after — never stored. Raw motion and touch never leave the device.",
   },
   {
     icon: "database",
@@ -17,7 +17,7 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "file-lock",
     title: "Minimal data transmission",
     description:
-      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, and a compact statistical summary (308 derived features). Raw sensor data and the behavioral fingerprint never cross the network.",
+      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, a compact statistical summary (308 derived features), and the spoken-phrase audio used for transcription (discarded after, never stored). The behavioral fingerprint never crosses the network; raw motion and touch never leave the device.",
   },
   {
     icon: "eye-off",

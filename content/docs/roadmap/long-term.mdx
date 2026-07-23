@@ -21,7 +21,7 @@ The threat surface evolves. Generative models for voice, motion, and touch will 
 
 ## What stays constant
 
-- **Privacy by architecture.** Raw biometric data does not leave the device. This is not a feature of the current implementation; it is a property the protocol makes hard to violate. Every future version is built on the same constraint.
+- **Privacy by architecture.** Raw motion and touch never leave the device; the spoken-phrase audio leaves only for transcription and is discarded immediately, never stored. This is not a feature of the current implementation; it is a property the protocol makes hard to violate. Every future version is built on the same constraint.
 - **The bounded question.** The protocol answers "is this the same human, returning, over time" and nothing more. It does not turn into a KYC service, a credit-scoring service, or a real-world-identity directory. The scope is the load-bearing claim.
 - **Open programs, open SDK, open research.** The on-chain primitives, client SDK, circuits, and research paper are auditable in source. The server-side validation pipeline is closed-source per responsible-disclosure convention; its threat model and aggregate red-team results are public. Every adversarial result is published. Every reference number in this documentation can be traced to a public artefact.
 

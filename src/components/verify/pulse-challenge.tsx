@@ -5,6 +5,7 @@ import {
   randomLissajousParams,
   generateLissajousPoints,
   type LissajousParams,
+  type CurveTracePoint,
 } from "@entros/pulse-sdk";
 
 const CAPTURE_DURATION_S = 12;
@@ -27,7 +28,7 @@ export function PulseChallenge({
   phrase: providedPhrase,
   curve,
 }: {
-  onComplete: () => void;
+  onComplete: (outline: CurveTracePoint[]) => void;
   touchRef?: React.RefObject<HTMLDivElement | null>;
   audioLevel?: number;
   hasMotion?: boolean;
@@ -41,6 +42,7 @@ export function PulseChallenge({
   const [tracePath, setTracePath] = useState("");
   const [touchLevel, setTouchLevel] = useState(0);
   const traceRef = useRef<string[]>([]);
+  const outlineRef = useRef<CurveTracePoint[]>([]);
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const lastTouchPos = useRef<{ x: number; y: number } | null>(null);
   const completedRef = useRef(false);
@@ -127,7 +129,7 @@ export function PulseChallenge({
         if (next >= CAPTURE_DURATION_S && !completedRef.current) {
           completedRef.current = true;
           clearInterval(interval);
-          setTimeout(() => onCompleteRef.current(), 300);
+          setTimeout(() => onCompleteRef.current(outlineRef.current), 300);
         }
         return next;
       });
@@ -150,6 +152,11 @@ export function PulseChallenge({
       setTouchLevel((prev) => prev * 0.6 + vel * 0.02);
     }
     lastTouchPos.current = { x, y };
+
+    // Raw {x,y,t} for the curve-trace outline — viewBox-200 coords (same frame as
+    // the reference curve); timestamps are used only for equal-time resampling in
+    // the SDK before send. Parallel to the render-only SVG-string trace below.
+    outlineRef.current.push({ x, y, t: performance.now() });
 
     const cmd = traceRef.current.length === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
     traceRef.current.push(cmd);

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { type PulseSession, type LissajousParams, PROGRAM_IDS, fetchIdentityState } from "@entros/pulse-sdk";
+import { type PulseSession, type LissajousParams, type CurveTracePoint, PROGRAM_IDS, fetchIdentityState } from "@entros/pulse-sdk";
 import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
@@ -492,7 +492,7 @@ export function VerifyWalletConnected({
     await handleStart("reset");
   }
 
-  async function handleCaptureComplete() {
+  async function handleCaptureComplete(outline: CurveTracePoint[]) {
     const session = sessionRef.current;
     if (!session) return;
 
@@ -510,7 +510,7 @@ export function VerifyWalletConnected({
           })
         : session.complete(wallet?.adapter, connection, (stage) => {
             setProcessingStage(stage);
-          });
+          }, outline);
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("Proof generation timed out. Please try again.")), PROOF_TIMEOUT_MS)
     );

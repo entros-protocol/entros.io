@@ -37,8 +37,8 @@ export default function Technology() {
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
               A signed challenge in, a zero-knowledge proof out. The
-              pipeline runs on your device, end to end—the protocol
-              never sees the signal that produced the answer.
+              pipeline runs on your device, end to end—your behavioral
+              fingerprint never leaves it.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

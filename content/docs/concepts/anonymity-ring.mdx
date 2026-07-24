@@ -18,7 +18,7 @@ Public adversarial waves T1 through T3 produced 14,000+ attempts, all rejected. 
 
 ## What the layer sees and does not see
 
-The validator receives only what the device transmits: the 308-number summary, the proof, the new commitment, and the audio for the phrase challenge. It does not receive raw motion or touch traces, and the audio is not retained after phrase validation completes. The transcription of the spoken phrase is logged for adversarial-wave debugging, since text alone carries no biometric content; raw audio waveforms are not.
+The validator receives only what the device transmits: the 308-number summary, the proof, the new commitment, the audio for the phrase challenge, and a coarse, downsampled outline of the traced curve for the liveness check. It does not receive raw motion recordings or the full-resolution touch stream, and the audio is not retained after phrase validation completes. The transcription of the spoken phrase is logged for adversarial-wave debugging, since text alone carries no biometric content; raw audio waveforms are not.
 
 ## What the proof attests, what the validator attests
 

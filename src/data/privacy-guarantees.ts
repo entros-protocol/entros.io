@@ -5,7 +5,7 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "smartphone",
     title: "On-device processing",
     description:
-      "Sensor capture, feature extraction, hashing, and proof generation all run on the user's device. The only raw signal that leaves is the spoken-phrase audio, sent to the validator for transcription and discarded immediately after — never stored. Raw motion and touch never leave the device.",
+      "Sensor capture, feature extraction, hashing, and proof generation all run on the user's device. What leaves is the spoken-phrase audio — sent for transcription and discarded immediately after, never stored — and a coarse, downsampled outline of the traced curve for the liveness check. Raw motion recordings and the full-resolution touch stream never leave the device.",
   },
   {
     icon: "database",
@@ -17,7 +17,7 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "file-lock",
     title: "Minimal data transmission",
     description:
-      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, a compact statistical summary (308 derived features), and the spoken-phrase audio used for transcription (discarded after, never stored). The behavioral fingerprint never crosses the network; raw motion and touch never leave the device.",
+      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, a compact statistical summary (308 derived features), the spoken-phrase audio used for transcription (discarded after, never stored), and a coarse outline of the traced curve for the liveness check. The behavioral fingerprint never crosses the network; raw motion recordings and the full-resolution touch stream never leave the device.",
   },
   {
     icon: "eye-off",

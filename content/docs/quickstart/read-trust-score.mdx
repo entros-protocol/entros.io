@@ -44,7 +44,7 @@ async function readTrustScore(
 }
 ```
 
-Returns `null` if the wallet has never verified. Returns a number in `[0, 65535]` otherwise.
+Returns `null` if the wallet has never verified. Returns a number in `[0, 10000]` otherwise, where 10000 is the configured ceiling and scores today top out near 720.
 
 ## Use it server-side
 

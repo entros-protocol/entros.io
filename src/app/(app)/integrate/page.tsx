@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Integrate",
   description:
-    "Drop the EntrosVerify component into any Solana app in five lines, or wire the Pulse SDK directly for custom UX. Read on-chain attestations for free—no escrow, no API keys, no billing.",
+    "Drop the EntrosVerify component into any Solana app in five lines, or wire the Pulse SDK directly for custom UX. Reading on-chain attestations is free and needs no account with us.",
   path: "/integrate",
 });
 
@@ -27,7 +27,7 @@ export default function Integrate() {
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-            Drop in <code className="font-mono text-cyan">{`<EntrosVerify />`}</code> for the five-line path, or wire the Pulse SDK directly for custom UX. Read on-chain attestations for free—no escrow, no API keys, no billing relationship.
+            Drop in <code className="font-mono text-cyan">{`<EntrosVerify />`}</code> for the five-line path, or wire the Pulse SDK directly for custom UX. Reading on-chain attestations is free and needs no account with us.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">

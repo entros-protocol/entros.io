@@ -17,20 +17,16 @@ export default function Token() {
       {/* Hero—centered, ASCII orbit full-width below the copy. */}
       <section>
         <div className="mx-auto max-w-5xl px-6 pt-32 pb-2 text-center md:pt-40">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // ENTROS TOKEN
-          </span>
-
-          <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
             The economic layer
             <br />
             of verified humanity<span className="text-cyan">.</span>
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-            Protocol fees, validator staking, treasury revenue. The Entros
-            token is the economic substrate that turns genuine verification
-            demand into network security.
+            Protocol fees, validator staking, treasury revenue.
+            <br />
+            $ENTROS turns genuine verification demand into network security.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -62,7 +58,10 @@ export default function Token() {
         </div>
 
         <div className="flex h-[225px] items-start justify-center pb-4 sm:h-[270px] md:h-[300px] md:pb-6 lg:h-[330px] xl:h-[360px]">
-          <AsciiFlow className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] xl:text-[9px]" />
+          <AsciiFlow
+            brand="$ENTROS"
+            className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] xl:text-[9px]"
+          />
         </div>
       </section>
 
@@ -72,9 +71,9 @@ export default function Token() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
           <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-            Real humans<span className="text-cyan">.</span>
+            $ENTROS
             <br />
-            Real demand<span className="text-cyan">.</span>
+            Identity on chain<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

@@ -5,19 +5,19 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "smartphone",
     title: "On-device processing",
     description:
-      "Sensor capture, feature extraction, hashing, and proof generation all run on the user's device. What leaves is the spoken-phrase audio — sent for transcription and discarded immediately after, never stored — and a coarse, downsampled outline of the traced curve for the liveness check. Raw motion recordings and the full-resolution touch stream never leave the device.",
+      "Sensor capture, feature extraction, hashing, and proof generation run on the user's device. Raw motion and touch recordings stay in device memory and are destroyed once features are computed. The only recording that leaves is the spoken phrase, transcribed on arrival and discarded.",
   },
   {
     icon: "database",
     title: "No raw biometric storage",
     description:
-      "Raw audio, motion, and touch data are never persisted after the Temporal Fingerprint is computed. No server-side database holds voice samples or movement traces. Your encrypted fingerprint is cached locally for fast re-verification and held on chain in a wallet-keyed AES-256-GCM blob—recoverable from any device by the wallet that wrote it, opaque to everyone else. The blob holds only a one-way hash of the behavioral summary plus a random salt; raw audio, motion, and touch are never inside it.",
+      "Raw audio, motion, and touch are never persisted after the Temporal Fingerprint is computed. No server-side database holds voice samples or movement traces. The fingerprint is cached locally for fast re-verification and held on chain in a wallet-keyed AES-256-GCM blob, recoverable from any device by the wallet that wrote it and opaque to everyone else. That blob holds a one-way hash of the behavioral summary and a random salt, nothing more.",
   },
   {
     icon: "file-lock",
     title: "Minimal data transmission",
     description:
-      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, a compact statistical summary (308 derived features), the spoken-phrase audio used for transcription (discarded after, never stored), and a coarse outline of the traced curve for the liveness check. The behavioral fingerprint never crosses the network; raw motion recordings and the full-resolution touch stream never leave the device.",
+      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, a 308-feature statistical summary, a coarse outline of the traced curve for the liveness check, and the spoken phrase audio used for transcription. Nothing else.",
   },
   {
     icon: "eye-off",

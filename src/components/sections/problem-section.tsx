@@ -19,8 +19,8 @@ export function ProblemSection() {
           becomes the foundational signal for airdrops, governance, and
           agent accountability. Static biometrics verify a moment.
           Entros is the behavioral layer—continuous proof-of-personhood
-          that runs in any browser, keeps raw data on the device, and
-          compounds trust across every dApp on Solana.
+          that runs in any browser and keeps raw data on the device,
+          compounding trust across every dApp on Solana.
         </p>
       </div>
     </section>

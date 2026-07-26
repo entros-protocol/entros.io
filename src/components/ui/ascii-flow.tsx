@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { buildWordMask, MASK_STRIDE } from "./ascii-font";
 
 const COLS = 96;
 const ROWS = 28;
@@ -19,11 +20,19 @@ interface Particle {
   speed: number;
 }
 
+/** Tier code for a brand cell that no particle is currently occupying. */
+const TIER_BRAND = 5;
+
 interface AsciiFlowProps {
   className?: string;
+  /**
+   * Word to emboss into the particle field. Rendered as a dim, static
+   * lattice that the flowing particles brighten as they pass through it.
+   */
+  brand?: string;
 }
 
-export function AsciiFlow({ className }: AsciiFlowProps) {
+export function AsciiFlow({ className, brand }: AsciiFlowProps) {
   const preRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
@@ -31,6 +40,34 @@ export function AsciiFlow({ className }: AsciiFlowProps) {
     if (!pre) return;
 
     const tierBuffer = new Uint8Array(COLS * ROWS);
+
+    // Brand mask, centered on the stream band. Stretched 2x horizontally
+    // (a monospace cell is far taller than wide) but left at 1x vertically
+    // so the word occupies only half the band height. The particle flow
+    // continues above and below it, which is what lets the shape read.
+    const brandMask = new Uint8Array(COLS * ROWS);
+    // Bounding box of the word. Particles inside it are thinned by a tier so
+    // the counters and inter-letter gaps stay legible; the field outside
+    // keeps its full density and brightness.
+    let boxY0 = -1;
+    let boxY1 = -1;
+    let boxX0 = -1;
+    let boxX1 = -1;
+    if (brand) {
+      const { cells, cols: wCols, rows: wRows } = buildWordMask(brand, 2, 1, 1);
+      const offX = Math.round((COLS - wCols) / 2);
+      const offY = Math.round((STREAM_Y_MIN + STREAM_Y_MAX) / 2 - wRows / 2);
+      boxY0 = offY;
+      boxY1 = offY + wRows - 1;
+      boxX0 = offX;
+      boxX1 = offX + wCols - 1;
+      for (const key of cells) {
+        const r = Math.floor(key / MASK_STRIDE) + offY;
+        const c = (key % MASK_STRIDE) + offX;
+        if (r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
+        brandMask[r * COLS + c] = 1;
+      }
+    }
     const yRange = STREAM_Y_MAX - STREAM_Y_MIN;
     const particles: Particle[] = new Array(PARTICLE_COUNT);
 
@@ -98,7 +135,22 @@ export function AsciiFlow({ className }: AsciiFlowProps) {
       let lastTier = -1;
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
-          const tier = tierBuffer[r * COLS + c]!;
+          const idx = r * COLS + c;
+          const particleTier = tierBuffer[idx]!;
+          const isBrand = brandMask[idx] === 1;
+          // The flow reveals the word rather than sitting on top of it. A
+          // brand cell carrying a particle lights to full; with no particle
+          // it holds a faint trace. The word surfaces continuously as the
+          // stream crosses it, and never outshines the substrate.
+          const inBox =
+            r >= boxY0 && r <= boxY1 && c >= boxX0 && c <= boxX1;
+          const tier = isBrand
+            ? particleTier === 0
+              ? TIER_BRAND
+              : 4
+            : inBox && particleTier > 0
+              ? particleTier - 1
+              : particleTier;
           if (tier === 0) {
             if (lastTier !== -1) html += "</span>";
             html += " ";
@@ -107,21 +159,29 @@ export function AsciiFlow({ className }: AsciiFlowProps) {
           }
           if (tier !== lastTier) {
             if (lastTier !== -1) html += "</span>";
+            // Substrate keeps its full palette; the brand only adds a faint
+            // resting trace. Legibility comes from the digit itself, not
+            // from making the word brighter than the field.
             const cls =
-              tier === 1
-                ? "text-cyan/25"
-                : tier === 2
-                  ? "text-cyan/50"
-                  : tier === 3
-                    ? "text-cyan/75"
-                    : "text-cyan";
+              tier === TIER_BRAND
+                ? "text-cyan/38"
+                : tier === 1
+                  ? "text-cyan/25"
+                  : tier === 2
+                    ? "text-cyan/50"
+                    : tier === 3
+                      ? "text-cyan/75"
+                      : "text-cyan";
             // aria-hidden on each span. The parent <pre aria-hidden> sets the
             // ARIA inheritance for screen readers, but axe-core's color-contrast
             // rule walks innerHTML-injected children and doesn't always honor
             // inherited aria-hidden when the spans are inserted post-render.
             html += `<span class="${cls}" aria-hidden="true">`;
           }
-          html += tier === 4 ? "0" : "1";
+          // Character weight is what carries the word. "0" is round and
+          // visually solid, "1" is a thin stroke, so an all-0 letterform
+          // separates from an all-1 field even at identical luminance.
+          html += isBrand ? "0" : "1";
           lastTier = tier;
         }
         if (lastTier !== -1) {
@@ -165,7 +225,7 @@ export function AsciiFlow({ className }: AsciiFlowProps) {
       cancelAnimationFrame(rafId);
       observer.disconnect();
     };
-  }, []);
+  }, [brand]);
 
   return (
     <pre

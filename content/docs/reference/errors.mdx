@@ -3,7 +3,7 @@ title: Errors
 description: Error codes returned by each on-chain program.
 ---
 
-Every program returns custom error codes via Anchor's `#[error_code]` macro. The codes start at 6000 and are assigned in declaration order; meanings are documented here. The error variants are append-only across versions, so existing codes are stable.
+Every program returns custom error codes via Anchor's `#[error_code]` macro. The codes start at 6000 and are assigned in declaration order; meanings are documented here. Declaration order can shift when a variant is added, so read the numbers from the program's IDL at the commit you build against rather than caching them across upgrades.
 
 ## entros-anchor errors
 
@@ -22,17 +22,21 @@ Every program returns custom error codes via Anchor's `#[error_code]` macro. The
 | 6010 | `CommitmentMismatch` | The proof's `commitment_new` does not match the submitted new commitment |
 | 6011 | `PrevCommitmentMismatch` | The proof's `commitment_prev` does not match the identity's current commitment |
 | 6012 | `ResetCooldownActive` | A `reset_identity_state` was attempted before the 7-day cooldown elapsed |
-| 6013 | `UnauthorizedNewWallet` | Caller is not authorized by the old identity to claim a new wallet |
-| 6014 | `ProofFromFuture` | The verification result's `verified_at` is in the future relative to the cluster clock |
-| 6015 | `MissingValidatorReceipt` | `mint_anchor` expected a preceding Ed25519 validator-signed receipt instruction; none was found |
-| 6016 | `ReceiptValidatorMismatch` | Mint receipt was signed by a key that does not match the registered validator pubkey |
-| 6017 | `ReceiptCommitmentMismatch` | Mint receipt commitment does not match the `mint_anchor` commitment argument |
-| 6018 | `ReceiptWalletMismatch` | Mint receipt wallet does not match the mint signer |
-| 6019 | `ReceiptExpired` | Mint receipt has aged past `MAX_RECEIPT_AGE_SECS` (5 minutes) |
-| 6020 | `ReceiptFromFuture` | Mint receipt `validated_at` is in the future relative to the cluster clock |
-| 6021 | `MalformedReceiptMessage` | Mint receipt message has malformed length, layout, or cross-instruction references |
+| 6013 | `RebaselineCooldownActive` | A `rebaseline_anchor` was attempted before its cooldown elapsed |
+| 6014 | `UnauthorizedNewWallet` | Caller is not authorized by the old identity to claim a new wallet |
+| 6015 | `ProofFromFuture` | The verification result's `verified_at` is in the future relative to the cluster clock |
+| 6016 | `MissingValidatorReceipt` | `mint_anchor` expected a preceding Ed25519 validator-signed receipt instruction; none was found |
+| 6017 | `ReceiptValidatorMismatch` | Mint receipt was signed by a key that does not match the registered validator pubkey |
+| 6018 | `ReceiptCommitmentMismatch` | Mint receipt commitment does not match the `mint_anchor` commitment argument |
+| 6019 | `ReceiptWalletMismatch` | Mint receipt wallet does not match the mint signer |
+| 6020 | `ReceiptExpired` | Mint receipt has aged past `MAX_RECEIPT_AGE_SECS` (5 minutes) |
+| 6021 | `ReceiptFromFuture` | Mint receipt `validated_at` is in the future relative to the cluster clock |
+| 6022 | `MalformedReceiptMessage` | Mint receipt message has malformed length, layout, or cross-instruction references |
+| 6023 | `IdentityStateNotFound` | The expected `IdentityState` PDA was not supplied or does not exist |
+| 6024 | `ValidatorNotConfigured` | No validator pubkey is registered in `ProtocolConfig` |
+| 6025 | `VerificationIntervalTooShort` | A re-verification was attempted within one hour of the previous one |
 
-The Receipt* family (6015–6021) only fires on the first-verification path. Re-verification (`update_anchor`) binds via the verifier-program `VerificationResult` PDA, not via the validator-signed mint receipt.
+The Receipt* family (6016–6022) only fires on the first-verification path. Re-verification (`update_anchor`) binds via the verifier-program `VerificationResult` PDA, not via the validator-signed mint receipt.
 
 ## entros-verifier errors
 
@@ -105,7 +109,7 @@ const result = await session.complete(wallet, connection);
 if (!result.success) {
   // result.error is one of:
   //   "Transaction failed on chain: {\"InstructionError\":[0,{\"Custom\":6011}]} (sig=...)"  // PrevCommitmentMismatch
-  //   "Transaction failed on chain: {\"InstructionError\":[1,{\"Custom\":6015}]} (sig=...)"  // MissingValidatorReceipt
+  //   "Transaction failed on chain: {\"InstructionError\":[1,{\"Custom\":6016}]} (sig=...)"  // MissingValidatorReceipt
   //   "Transaction failed on chain: {\"InstructionError\":[0,\"InsufficientFundsForRent\"]}"
   //   ...or a non-chain failure (network, wallet rejected, etc.)
   const customMatch = result.error?.match(/"Custom":(\d+)/);
@@ -125,14 +129,14 @@ if (!result.success) {
 A request to the executor's `/attest` endpoint now requires `wallet_address`, `nonce`, `signature`, and `message` together on every call. Missing any of those returns:
 
 ```json
-{ "error": "wallet_ownership_required" }
+{ "error": "wallet_ownership_required", "_padding": "..." }
 ```
 
-with HTTP 400. The signed message format is `Entros-ATTEST:{wallet_address}:{timestamp_secs}`. The walletless attestation path was removed—wallets that cannot sign should not call `/attest` at all.
+with HTTP 400. Omitting `wallet_address` is a different case: the request fails JSON extraction before the handler runs and returns HTTP 422 with a plain-text body, so match on the status code rather than the error field. The signed message format is `Entros-ATTEST:{wallet_address}:{timestamp_secs}`. The walletless attestation path was removed—wallets that cannot sign should not call `/attest` at all.
 
 ### Response padding
 
-Authenticated executor responses include an opaque `_padding` field of repeated ASCII characters that pads the JSON to a fixed byte length. Treat it as forward-compatible noise: ignore it on parse, do not surface it to users, do not assert on its content or length. It exists to defeat byte-length analysis of response classes.
+Most executor JSON responses include an opaque `_padding` field of repeated ASCII characters that pads the body toward a 256-byte floor. Bodies already over that floor ship an empty `_padding`, and `/status` is not padded at all. Treat it as forward-compatible noise: ignore it on parse, do not surface it to users, do not assert on its content or length. It exists to defeat byte-length analysis of response classes.
 
 ## Where to look next
 

@@ -26,7 +26,7 @@ export function HeroSection() {
 
         <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
           Behavioral ZK-proofs for humans. Agent Anchor for the AI operators
-          behind them. On-device, Solana-native, portable across every dApp.
+          behind them. On-device and Solana-native, portable across every dApp.
         </p>
 
         <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

@@ -90,16 +90,16 @@ export default function Roadmap() {
             </span>
 
             <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-              The proof works<span className="text-cyan">.</span>
+              Devnet today<span className="text-cyan">.</span>
               <br />
-              Now we scale it<span className="text-cyan">.</span>
+              Mainnet next<span className="text-cyan">.</span>
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
               Entros is live on devnet: three programs, a shipped SDK, and a
               pipeline that already blocks recorded-voice replay and collapses
               synthetic sybil farms in our own red-team. The token funds the
-              path to mainnet. Here is the plan.
+              path to mainnet.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -134,7 +134,7 @@ export default function Roadmap() {
           <div className="lg:col-span-4">
             <div className="border border-border p-6 md:p-8">
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                // GATES TO MAINNET
+                // GATES
               </p>
 
               <ol className="mt-8 space-y-6">
@@ -172,11 +172,11 @@ export default function Roadmap() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // HARDENING TO MAINNET
+            // THE THREE GATES
           </span>
 
           <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            How we get to mainnet<span className="text-cyan">.</span>
+            What still has to happen<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
@@ -225,11 +225,11 @@ export default function Roadmap() {
           </span>
 
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            The path to mainnet<span className="text-cyan">.</span>
+            From devnet to decentralized<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Where Entros has been, where it is now, and what comes next.
+            What has shipped, and what comes next.
           </p>
 
           <ol className="mt-16 border-t border-border">
@@ -266,12 +266,12 @@ export default function Roadmap() {
                 </span>
 
                 <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  What mainnet needs<span className="text-cyan">.</span>
+                  The go/no-go list<span className="text-cyan">.</span>
                 </h2>
 
                 <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                  Each item ships before mainnet. Concrete, public, and
-                  checked off in the open.
+                  The three gates above, restated as conditions anyone
+                  can check. Each one gets ticked off in the open.
                 </p>
               </div>
             </div>
@@ -303,11 +303,11 @@ export default function Roadmap() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // BUILT RIGHT
+            // RATIONALE
           </span>
 
           <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Mainnet, done properly<span className="text-cyan">.</span>
+            Why both, and why in public<span className="text-cyan">.</span>
           </h2>
 
           <div className="mt-8 space-y-6 text-base leading-relaxed text-foreground/70 md:text-lg">
@@ -319,8 +319,7 @@ export default function Roadmap() {
               do both, in public, before mainnet carries real value.
             </p>
             <p>
-              This is the work that makes an identity protocol worth building
-              on. The token funds it, and the community grows alongside it.
+              The token funds that work.
             </p>
           </div>
         </div>
@@ -330,9 +329,7 @@ export default function Roadmap() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
           <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-            The proof works<span className="text-cyan">.</span>
-            <br />
-            Now we scale it<span className="text-cyan">.</span>
+            The road to mainnet<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

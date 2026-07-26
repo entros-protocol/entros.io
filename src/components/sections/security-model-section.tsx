@@ -12,7 +12,7 @@ const DEFENSES = [
   {
     title: "Progressive Trust Score",
     description:
-      "Trust Score rewards consistency over time, not volume. 100 verifications in one day scores lower than weekly verifications over 3 months. Recency weighting and cadence analysis make bot farming slow and expensive.",
+      "Trust Score rewards consistency over time, not volume. 100 verifications in one day scores lower than weekly verifications over 3 months. Recency weighting and cadence analysis mean a score reflects sustained presence, not burst activity.",
   },
   {
     title: "Per-Session Randomness",
@@ -22,7 +22,7 @@ const DEFENSES = [
   {
     title: "Multi-Modal Capture",
     description:
-      "Three independent sensor streams record in parallel: microphone, pointer/touch digitizer, and device motion (where available). A bot needs to fake realistic voice, tremor, and touch pressure simultaneously. Spoofing one modality is feasible. Spoofing all three with consistent behavioral entropy is exponentially harder.",
+      "Three independent sensor streams record in parallel: microphone, pointer/touch digitizer, and device motion (where available). A bot needs to fake realistic voice, tremor, and touch pressure simultaneously. Spoofing one modality is feasible. Spoofing all three with consistent behavioral entropy is a substantially harder problem.",
   },
   {
     title: "Cross-Wallet Fingerprint Registry",
@@ -32,7 +32,7 @@ const DEFENSES = [
   {
     title: "Economic Disincentives",
     description:
-      "Each verification costs the user SOL. Each wallet requires funding. Server-side validation rejects synthetic data before it reaches the chain. Maintaining thousands of fake identities over months—funding wallets, paying per verification, building Trust Score across separate days—costs real money. The attacker pays for every attempt.",
+      "Verification costs SOL, and each wallet carries funding and account rent, so holding many Anchors carries continuing cost. This is a disincentive, not the gate. What decides whether a capture becomes an Anchor is the validator, and synthetic input never reaches the transaction.",
   },
 ];
 
@@ -55,10 +55,9 @@ export function SecurityModelSection() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Open protocol for trust. Private validation for security.
-          Synthetic data is rejected server-side before reaching the
-          chain. Users pay a small protocol fee per verification. Bots
-          pay real money at scale.
+          Synthetic input is rejected server-side before it ever reaches
+          the chain. Detection decides who gets an Anchor, and the checks
+          that make that call stay private.
         </p>
 
         <div className="mt-16 border-t border-border">

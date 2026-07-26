@@ -213,8 +213,8 @@ export function TemporalConsistencySection() {
               The protocol measures behavioral drift across sessions:
               small, involuntary changes in voice, motion, and touch
               that follow a bounded pattern unique to each person.
-              Verify once to register. Verify again to prove you are
-              still you. Each session strengthens the claim.
+              Verify once to register, then verify again to prove you
+              are still you. Each session strengthens the claim.
             </p>
           </div>
 

@@ -12,7 +12,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Security Program",
   description:
-    "Continuous adversarial testing against state-level synthesis attacks. Methodology public, defenses layered, results measured.",
+    "Continuous adversarial testing against state-level synthesis attacks. Every attack class against the verification pipeline, with attempt counts and measured pass rates.",
   path: "/security",
 });
 
@@ -44,7 +44,6 @@ export default function Security() {
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Methodology public, defenses layered, results measured.
               Every attack class against the verification pipeline,
               with attempt counts and pass rates rounded to prevent
               threshold inference.

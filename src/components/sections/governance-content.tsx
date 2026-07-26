@@ -201,9 +201,8 @@ export function GovernanceContent() {
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Three Solana protocols, three years, three different
-            codebases, one missing primitive. Every ballot read the token
-            balance; none of them read the human.
+            Three Solana protocols across three years. Every ballot read
+            the token balance; none of them read the human.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -259,7 +258,8 @@ export function GovernanceContent() {
               <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
                 Dormant wallets and scripted delegations stop counting.
                 Voting starts costing time and SOL per ballot, not just
-                a token balance. Spam-quorums become expensive to fake.
+                a token balance. Every wallet in a spam-quorum meets the
+                same live verification check.
               </p>
             </div>
 
@@ -413,11 +413,10 @@ export function GovernanceContent() {
           </h2>
 
           <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/70 md:text-lg">
-            Entros isn't meant to replace token-based governance. It
-            layers human verification on top of existing plugins. Chain
-            Entros with token-voter to require both holdings and human
-            presence. Chain with quadratic voting for verified-human
-            quadratic weights.
+            Entros layers human verification on top of the plugins a
+            realm already runs. Chain it with token-voter to require both
+            holdings and human presence, or with quadratic voting for
+            verified-human quadratic weights.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">

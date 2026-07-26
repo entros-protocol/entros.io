@@ -12,6 +12,7 @@ export const metadata = pageMetadata({
 
 interface PaperMeta {
   version?: string;
+  original?: string;
   updated?: string;
   wordCount?: string;
 }
@@ -32,6 +33,7 @@ export default function PaperPage() {
 
   const meta: PaperMeta = {
     version: headerRaw.match(/\*\*Document Version:\*\*\s*([^\n]+)/)?.[1]?.trim(),
+    original: headerRaw.match(/\*\*Original Date:\*\*\s*([^\n]+)/)?.[1]?.trim(),
     updated: headerRaw.match(/\*\*Updated:\*\*\s*([^\n]+)/)?.[1]?.trim(),
     wordCount: headerRaw.match(/\*\*Word Count:\*\*\s*([^\n]+)/)?.[1]?.trim(),
   };

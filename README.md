@@ -42,7 +42,7 @@ Replay, synthesis, and stitching each fail at least one of these checks. Defense
 
 ## Economics
 
-Users pay a small protocol fee (currently ~0.005 SOL, tunable as Solana economics evolve) per verification—deducted atomically inside the on-chain mint transaction, accrued to the protocol treasury, publicly auditable on Solana Explorer. Trivial cost for any human user. Real cost for bot farms at scale.
+Users pay a small protocol fee (currently ~0.005 SOL, tunable as Solana economics evolve) per verification—deducted atomically inside the on-chain mint transaction, accrued to the protocol treasury, publicly auditable on Solana Explorer. Trivial cost for any human user, and enough that an identity costs something to hold.
 
 **Total user cost per verification:**
 

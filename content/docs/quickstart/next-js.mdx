@@ -12,10 +12,10 @@ This is the **Tier 3 read-only path** — you're gating access against existing 
 ## 1. Install
 
 ```bash
-npm install @entros/pulse-sdk @solana/wallet-adapter-react @solana/wallet-adapter-react-ui @solana/web3.js
+npm install @entros/pulse-sdk @solana/wallet-adapter-react @solana/wallet-adapter-react-ui @solana/web3.js lucide-react
 ```
 
-The SDK is published as `@entros/pulse-sdk` on npm. It declares `@solana/wallet-adapter-react`, `@solana/web3.js`, and `@coral-xyz/anchor` as optional peers. `EntrosGate` also renders `WalletMultiButton` in its disconnected-state fallback, which is why `@solana/wallet-adapter-react-ui` is on the install list.
+The SDK is published as `@entros/pulse-sdk` on npm. It declares `@coral-xyz/anchor`, `@solana/spl-token`, `@solana/wallet-adapter-base` and `@solana/web3.js` as optional peers. `EntrosGate` renders `WalletMultiButton` in its disconnected-state fallback, which is why `@solana/wallet-adapter-react-ui` is on the install list, and it uses icons from `lucide-react`.
 
 ## 2. Set up the wallet adapter providers
 
@@ -91,16 +91,16 @@ That's the integration. `EntrosGate` does three things:
 
 ## Setting the threshold
 
-`minTrustScore` is a `number` between 0 and 65535 (the on-chain Trust Score is stored as `u16`). The right value depends on the stakes of the gated action.
+`minTrustScore` is a `number` between 0 and 10000, the ceiling set by `ProtocolConfig.max_trust_score`. Scores today top out near 720, so pick from the range below rather than from the ceiling. The right value depends on the stakes of the gated action.
 
 | Stakes | Suggested floor | Reasoning |
 | --- | --- | --- |
 | Comment / vote / join | 100 | Admits any wallet that has re-verified at least once |
 | Mint allowlist / referral reward | 300 | A handful of re-verifications across the first month |
-| Airdrop claim / governance | 700+ | Sustained behavior across multiple weeks |
-| High-value access | 1500+ | Months of consistent activity |
+| Airdrop claim / governance | 550+ | Presence across most of the 84-day window |
+| High-value access | 680+ | Every week filled, on an Anchor open close to a year |
 
-Higher thresholds shift the cost curve more steeply against bot farms; lower thresholds keep the protocol open to first-time humans. Pick deliberately.
+Higher thresholds require a longer verified history from every caller; lower thresholds keep the protocol open to first-time humans. Pick deliberately.
 
 ## What the user sees
 

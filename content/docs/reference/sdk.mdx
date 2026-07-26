@@ -3,9 +3,9 @@ title: SDK reference
 description: Public API surface of @entros/pulse-sdk.
 ---
 
-`@entros/pulse-sdk` is the client SDK. It captures behavioral signals on-device, extracts statistical features, hashes the result, generates a zero-knowledge proof, and submits to Solana. This page lists every public export, grouped by purpose.
+`@entros/pulse-sdk` is the client SDK. It captures behavioral signals on-device, extracts statistical features, hashes the result, generates a zero-knowledge proof, and submits to Solana. This page covers the exports most integrations use, grouped by purpose. The package's type declarations are the full surface.
 
-The current published version is `3.12.0`. Install with `npm install @entros/pulse-sdk`. See the [changelog](/docs/reference/changelog) for the upgrade path from earlier versions.
+The current published version is `3.16.0`. Install with `npm install @entros/pulse-sdk`. See the [changelog](/docs/reference/changelog) for the upgrade path from earlier versions.
 
 ## Top-level
 
@@ -63,7 +63,7 @@ The fused vector emitted by the SDK to the validator has dimension `SPEAKER_FEAT
 
 | Export | Signature | Purpose |
 | --- | --- | --- |
-| `prepareCircuitInput` | `(tbhNew, tbhPrev, threshold) => CircuitInput` | Format the inputs for the Hamming circuit |
+| `prepareCircuitInput` | `(tbhNew, tbhPrev, threshold?, minDistance?) => CircuitInput` | Format the inputs for the Hamming circuit |
 | `generateProof` | `(input, wasmUrl, zkeyUrl) => Promise<ProofResult>` | Run Groth16 proving |
 | `serializeProof` | `(proof, publicSignals) => SolanaProof` | Serialize to the verifier program's expected layout |
 | `toBigEndian32` | `(decStr) => Uint8Array` | Decimal-string to big-endian bytes |
@@ -101,8 +101,8 @@ The fused vector emitted by the SDK to the validator has dimension `SPEAKER_FEAT
 | `attestAgentOperator` | `(agentAsset: string, options: { wallet, connection, cluster? }) => Promise<{ success: boolean; signature?: string; error?: string }>` | Write the human-operator metadata for a registered agent |
 | `getAgentHumanOperator` | `(agentAsset: string, connection?, cluster?) => Promise<AgentHumanOperator \| null>` | Read the human-operator metadata. `AgentHumanOperator` fields: `{ anchorPda, trustScore, verifiedAt, wallet }` |
 | `fetchIdentityState` | `(wallet, connection) => Promise<IdentityState \| null>` | Read the full Anchor PDA |
-| `storeVerificationData` | `(data) => Promise<void>` | Persist verification state to local storage |
-| `loadVerificationData` | `() => Promise<StoredVerificationData \| null>` | Load persisted state |
+| `storeVerificationData` | `(data, walletAddress?) => Promise<void>` | Persist verification state to local storage. Pass the wallet address to keep multi-wallet state separate. |
+| `loadVerificationData` | `(walletAddress?) => Promise<StoredVerificationData \| null>` | Load persisted state for a wallet |
 
 ## Configuration
 

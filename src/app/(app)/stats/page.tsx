@@ -13,11 +13,7 @@ export default function Stats() {
     <>
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-10 md:pt-40 md:pb-12">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // PROTOCOL STATS
-          </span>
-
-          <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
             Protocol stats<span className="text-cyan">.</span>
           </h1>
 

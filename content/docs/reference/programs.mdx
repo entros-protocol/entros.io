@@ -24,6 +24,8 @@ Owns the Anchor identity state. Holds per-wallet `IdentityState` PDAs and Token-
 | `reset_identity_state` | Recovery path. Zeroes the score and clears the fingerprint commitment after a 7-day cooldown. Charges the fee. |
 | `authorize_new_wallet` | First step of wallet migration. Old + new wallets co-sign to record the successor and delegate the identity token. |
 | `migrate_identity` | Second step of wallet migration. The authorized new wallet completes the move; the old mint is closed. |
+| `set_encrypted_baseline` | Stores the wallet-encrypted baseline blob so a returning user can recover their baseline from chain. |
+| `rebaseline_anchor` | Re-commits the identity under a new projection version. Gated by its own cooldown. |
 
 ### Accounts
 
@@ -39,7 +41,7 @@ Owns the Anchor identity state. Holds per-wallet `IdentityState` PDAs and Token-
 4F97jNoxQzT2qRbkWpW3ztC3Nz2TtKj3rnKG8ExgnrfV
 ```
 
-Verifies Groth16 proofs of the Hamming-distance circuit. Invoked by the Anchor program during `mint_anchor` and `update_anchor`.
+Verifies Groth16 proofs of the Hamming-distance circuit. Its `verify_proof` instruction runs in the same transaction as `mint_anchor` or `update_anchor` and writes a `VerificationResult` PDA, which the Anchor program then reads through an account constraint bound to this program's ID. Neither program invokes the other.
 
 ### Instructions
 
@@ -82,7 +84,7 @@ Protocol-level configuration, validator stake, and treasury. Configures the prot
 | --- | --- |
 | `initialize_protocol` | One-time setup of the protocol config |
 | `update_protocol_config` | Authority-only updates to fee, expiry, score caps |
-| `set_validator_pubkey` | Authority-only write of the validator pubkey used for the mint-receipt binding (entros-anchor 6015–6021). Reallocs the protocol config to the post-binding layout the first time it runs. |
+| `set_validator_pubkey` | Authority-only write of the validator pubkey used for the mint-receipt binding (entros-anchor 6016–6022). Reallocs the protocol config to the post-binding layout the first time it runs. |
 | `migrate_admin` | Emergency administrative migration of the protocol authority |
 | `register_validator` | Stake to join the Anonymity Ring (activates as the ring decentralizes) |
 | `compute_trust_score` | Read-only preview of what a score would be given a verification history |
@@ -95,7 +97,7 @@ Protocol-level configuration, validator stake, and treasury. Configures the prot
 | --- | --- | --- |
 | `min_stake` | `u64` | Minimum validator stake (SOL on devnet today; transitions to $ENTROS as the ring decentralizes) |
 | `challenge_expiry` | `i64` | Seconds before an unconsumed challenge is invalid |
-| `max_trust_score` | `u16` | Cap on the score (default 65535) |
+| `max_trust_score` | `u16` | Cap on the score (10000 on devnet) |
 | `base_trust_increment` | `u16` | Per-verification increment baseline |
 | `verification_fee` | `u64` | Lamports charged per verification (default 5_000_000 = 0.005 SOL) |
 

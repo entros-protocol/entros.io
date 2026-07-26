@@ -31,7 +31,8 @@ export default function Governance() {
             A Realms voter-weight plugin gating governance on a recent,
             live behavioral verification. Each vote pays a presence
             cost in time and SOL. Dormant wallets, scripted delegations,
-            and unattended agents stay out. spl-governance compatible.
+            and unattended agents stay out.{" "}
+            <span className="block">spl-governance compatible.</span>
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">

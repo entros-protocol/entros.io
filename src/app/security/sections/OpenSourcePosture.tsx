@@ -33,11 +33,8 @@ export function OpenSourcePosture() {
         </h2>
 
         <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Entros is open-source where open-source matters for user
-          trust, and deliberately private where privacy protects
-          users. Same disclosure convention used across crypto
-          infrastructure projects—a mature implementation of
-          open-source values, not a departure from them.
+          The protocol layer is MIT licensed and auditable end to end.
+          The validation service and red-team harness stay closed.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-px border border-border bg-border lg:grid-cols-2">

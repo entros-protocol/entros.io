@@ -62,7 +62,7 @@ export const integrationPartners: IntegrationPartner[] = [
     category: "DeFi / Perps",
     description: "Integration surface: referral-multiplier and airdrop sybil filtering.",
     icon: "chart",
-    logoUrl: "https://github.com/drift-labs.png",
+    logoUrl: "https://github.com/driftprotocol.png",
   },
   {
     name: "Marinade",
@@ -90,6 +90,7 @@ export const integrationPartners: IntegrationPartner[] = [
     category: "Creator Distribution",
     description: "Integration surface: PoP gate on free-claim eligibility for bot-filtered drops.",
     icon: "palette",
+    logoUrl: "/logos/drip.webp",
   },
   {
     name: "Squads",

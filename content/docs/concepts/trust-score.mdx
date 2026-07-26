@@ -7,48 +7,47 @@ Trust Score is a single `u16` on the user's Anchor PDA. The number changes only 
 
 ## The shape of the score
 
-The score is the sum of three contributions, recomputed at every verification:
+The score sums two contributions, recomputed at every verification:
 
-1. **Recency-weighted verifications.** Each historical verification contributes a recency-decayed weight, summed across the rolling window.
-2. **Regularity bonus.** Consistent gaps between verifications add a small additional weight.
-3. **Age bonus.** The age of the oldest still-counting verification adds a square-root term, capped.
+1. **Weekly presence.** The protocol splits the last 84 days into twelve seven-day bins and checks whether each bin holds at least one verification. Recent weeks carry more weight than older ones.
+2. **Age bonus.** The age of the Anchor adds a square-root term, capped at one year.
 
-The initial mint of an Anchor sets the score to 0. The first re-verification recomputes the score from the formula and lands it at 100. From there, each subsequent re-verification grows the score along the recency curve described below; the rate of growth depends on cadence, not on a fixed step.
+The initial mint of an Anchor sets the score to 0. The first re-verification lands it at 100. From there the score tracks how many separate weeks you have shown up in, so the rate of growth depends on cadence rather than on a fixed step per verification.
 
 ## Decay shape
 
-Decay is hyperbolic, not exponential. Older verifications are worth roughly `3000 / (30 + days)` of their original weight. After 30 days, a verification is at half its initial contribution. After a year, it is below 10%. The hyperbolic shape was chosen for two reasons:
+A verification counts toward the score for twelve weeks. Its weight falls as its bin ages, and it leaves the window once it passes 84 days. A wallet that stops verifying returns to 0 as its window empties.
 
-- It rewards patient, real users without ever discounting their early activity to zero.
-- It denies a fast attacker the ability to "build up" a score in days. There is no shortcut against a function that values calendar time.
+Scoring the span of weeks rather than the count of verifications is deliberate. Filling a week you have already filled adds nothing, so verifying ten times in one afternoon scores the same as verifying once. Reaching the top of the range takes calendar time, and there is no way to compress it.
 
 ## What the ranges mean
 
 | Range | Profile |
 | --- | --- |
-| 0 | No Anchor minted, or Anchor minted but never re-verified |
+| 0 | No Anchor minted, or an Anchor whose 84-day window has emptied |
 | 100 | One re-verification on a fresh Anchor |
-| 100–300 | A few re-verifications within the first month |
-| 300–700 | Regular re-verification across multiple weeks |
-| 700–1500 | A month-plus of consistent activity |
-| 1500–3000 | Multi-month consistent return |
-| 3000+ | Long-term, behaviorally stable Anchor |
+| 100–350 | Verifications in a few separate weeks |
+| 350–550 | Presence across roughly half the window |
+| 550–680 | Most weeks filled across the full 84 days |
+| 680+ | Every week filled, on an Anchor open close to a year |
 
-Integrators set thresholds based on stakes. The numbers above are descriptive, not normative—your application's threshold reflects your risk model, not a global standard.
+Under the current `base_trust_increment` of 100, the score tops out near 720. `ProtocolConfig.max_trust_score` sets the hard ceiling at 10000, which leaves room for the increment to be raised later without a program upgrade.
+
+Integrators set thresholds based on stakes. The numbers above are descriptive, not normative, so your application's threshold should reflect your risk model rather than a global standard.
 
 ## How to choose a threshold
 
 Three lenses help.
 
-**Friction lens.** A threshold of 100 admits any wallet that has re-verified at least once. A threshold above 100 requires the user to have come back across at least a few days. If your action is one a real user might do soon after their first verification (commenting, joining a community), a 100 floor is the right baseline. If the action should reward sustained presence (airdrops, governance), the floor belongs higher.
+**Friction lens.** A threshold of 100 admits any wallet that has re-verified at least once. A threshold above 100 requires the user to have come back in separate weeks, since verifications inside one week fill the same bin. If your action is one a real user might do soon after their first verification (commenting, joining a community), a 100 floor is the right baseline. If the action should reward sustained presence (airdrops, governance), the floor belongs higher.
 
-**Cost lens.** A bot farm spending the protocol fee per verification and weeks of cadence per Anchor to clear a 500-floor pays a real per-identity cost. Multiply that by the number of fake identities the attacker needs to extract value at your threshold—that is the cost of attack against your gate.
+**Threshold selection.** A 500-floor requires weeks of cadence per Anchor, and every capture in that history is scored by the detection stack and compared across wallets. Pick the floor from the value behind your gate: the higher the floor, the longer the verified history behind each identity that clears it.
 
 **Reversibility lens.** Actions that are easily reversed (downvoting a comment, claiming a soulbound badge) tolerate lower thresholds. Actions that move money tolerate less.
 
 ## How the score updates
 
-The score is read by `verify_proof` on the verifier program, which then calls `update_anchor` on the Anchor program. `update_anchor` performs the score recalculation in a single instruction and writes the new value to the user's `IdentityState` PDA. The protocol fee is charged in the same transaction.
+The SDK bundles `create_challenge`, `verify_proof` and `update_anchor` into one transaction. `verify_proof` writes a `VerificationResult` PDA on the verifier program; `update_anchor` reads that PDA through an account constraint bound to the verifier's program ID, recalculates the score, and writes the new value to the user's `IdentityState` PDA. The protocol fee is charged in the same transaction. Neither program calls the other, so there is no cross-program invocation to account for in your compute budget.
 
 Reading the score from another program is a cross-program PDA read of the `IdentityState` account. No oracle, no cron, no external service.
 

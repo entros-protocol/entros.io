@@ -50,8 +50,8 @@ export function TokenContent() {
                 </p>
                 <p className="mt-4 text-base leading-relaxed text-foreground/65 md:text-lg">
                   Users pay a small fee to prove they're human. Integrators
-                  read on-chain state for free. Bot farms pay real money at
-                  scale.
+                  read on-chain state for free. The fee funds the protocol
+                  and makes an identity cost something to hold.
                 </p>
               </div>
             </div>
@@ -258,8 +258,8 @@ export function TokenContent() {
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            No VC allocation. No team unlock cliff. One launch, open to
-            everyone, including us.
+            No VC allocation and no team unlock cliff. One launch, open
+            to everyone, including us.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -333,7 +333,7 @@ export function TokenContent() {
                 </h2>
                 
                 <p className="mt-6 text-sm leading-relaxed text-foreground/65 max-w-md">
-                  Validators are financially incentivized to act honestly. Lazy validation or collusion results in severe economic penalties.
+                  Validators stake to take part, and the protocol slashes that stake for lazy validation or collusion.
                 </p>
               </div>
             </div>
@@ -347,7 +347,7 @@ export function TokenContent() {
                       Ground-Truth Honey-pots
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      The protocol continuously serves validators randomly interspersed, pre-calibrated test challenges (ground-truth captures with known human/bot status). Node accuracy is evaluated in real-time.
+                      The protocol interleaves pre-calibrated test challenges at random into the workload each validator receives (ground-truth captures with known human/bot status). The registry scores every node against the known answer as the results come in.
                     </p>
                   </div>
                 </div>

@@ -1,6 +1,8 @@
 # Entros Protocol — Security & Quality Audit Tracker
 
-Last updated: 2026-07-15
+Last updated: 2026-07-25
+
+**Recent activity (2026-07-25): Touch-path liveness signal added — observe-only.** The wallet-connected verification flow now transmits a coarse, downsampled outline of the traced challenge curve, and the server computes an observe-only liveness signal from it (region proximity + gesture consistency). The signal is logged for calibration and does not affect any verification outcome. This begins restoring the touch challenge-response binding that the behavioral feature summary alone does not enforce; enforcement is deferred pending calibration. Raw motion recordings and the full-resolution touch stream still never leave the device.
 
 **Recent activity (2026-07-15): Acoustic & Kinematic Realism Hardening (A2 & B2) implemented and verified.** Implemented high-frequency noise-floor variance checks on raw PCM audio in `entros-validation` (`src/realism.rs`) to detect digital loopback playback devices (A2). Added 6-axis touch/motion kinematic checks analyzing touch jitter variance, curvature variance, pressure derivative variance, path efficiency bounds, and physiological tremor peak frequency/amplitude to block programmatic cursor/sensor injection (B2). Integrated checks and risk calculations into the main validate pipeline (`src/lib.rs`). Fixed all compile/clippy warnings across `cadence.rs`, `phrase_binding.rs`, `probing_detector.rs`, `realism.rs`, and `lib.rs` under strict `-D warnings` audit. Verified via 8 new realism unit tests (214/214 total passing).
 

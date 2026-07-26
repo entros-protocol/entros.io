@@ -16,6 +16,7 @@ const attestation = await verifyEntrosAttestation(walletBase58, connection);
 
 if (!attestation) {
   // wallet has no Entros attestation
+  return;
 }
 
 if (attestation.expired) {
@@ -34,7 +35,7 @@ type EntrosAttestation = {
   isHuman: boolean;
   trustScore: number;
   verifiedAt: number;
-  mode: "wallet-connected" | "walletless";
+  mode: string; // "wallet-connected" or "walletless"
   expired: boolean;
 };
 ```

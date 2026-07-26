@@ -40,7 +40,7 @@ The plugin supports an optional `previous_voter_weight_plugin` field. Setting it
 
 One person, one vote, without document upload, KYC, or face scan. The threshold is the lever: low for open communities, high for treasury-controlling sub-DAOs. The plugin reads from the same Anchor PDAs as every other Entros integration; there is no separate enrollment.
 
-The strength of the gate scales with the threshold. A DAO whose threshold is 100 (a single re-verification) is gated against casual bot pressure. A DAO whose threshold is 500 is gated against attackers willing to maintain Anchors across weeks per fake voter. The cost of attack is bounded by the number of fake voters needed times the per-Anchor cost of sustaining the score over the threshold's reachability window.
+The strength of the gate scales with the threshold. A threshold of 100 asks every voter for a single re-verification. A threshold of 500 asks for weeks of cadence, and every capture in that history is scored by the detection stack and compared across wallets before it counts. Choose the floor from the value behind the vote: the higher the floor, the longer the verified history behind each ballot that clears it.
 
 ## Where to look next
 

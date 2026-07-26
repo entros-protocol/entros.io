@@ -55,7 +55,7 @@ When the default fallback doesn't fit your design, supply your own:
 </EntrosGate>
 ```
 
-The `fallback` prop is rendered for both "below threshold" and "no Anchor on file" cases. If you want to distinguish those two states, use `verifyEntrosAttestation` from the SDK directly and branch inside your own component.
+The `fallback` prop replaces three states: "wallet disconnected", "below threshold" and "no Anchor on file". The default fallback renders `WalletMultiButton` in the disconnected case, so a custom `fallback` needs to render its own connect control or users have no way in. To branch on the three states yourself, call `verifyEntrosAttestation` from the SDK directly inside your own component.
 
 ## Self-host the verify route
 

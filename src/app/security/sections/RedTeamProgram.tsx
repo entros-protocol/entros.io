@@ -79,7 +79,7 @@ export function RedTeamProgram() {
         <p className="mt-8 max-w-3xl text-sm leading-relaxed text-foreground/55">
           Attack implementation code, per-attempt telemetry, and
           parameter values that produce elevated pass rates are kept
-          in a private repository—methodology public, weapons private.
+          in a private repository.
         </p>
       </div>
     </section>

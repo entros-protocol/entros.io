@@ -1,31 +1,31 @@
 const FINDINGS = [
   {
-    title: "Single-Modality Detection Is Failing",
+    title: "Single-modality detection is failing",
     source: "SONAR Benchmark, ACM 2024-2025",
-    body: "OpenAI's TTS is detected only 78% of the time by the best available classifier. Models trained on older datasets lose up to 43% performance against newer TTS systems. Audio-only verification is a losing game.",
+    body: "OpenAI's TTS is detected only 78% of the time by the best available classifier. Models trained on older datasets lose up to 43% performance against newer TTS systems.",
   },
   {
-    title: "Multi-Modal Fusion Is the Defense",
+    title: "Multi-modal fusion is the defense",
     source: "BioMoTouch, arXiv 2025",
-    body: "Touch and motion sensor fusion from commodity devices achieves 99.71% accuracy with 0.27% equal error rate. Mimicry attacks succeed less than 1% of the time. Replicating physiological characteristics across multiple modalities in temporally consistent patterns is exponentially harder.",
+    body: "Touch and motion sensor fusion from commodity devices achieves 99.71% accuracy with 0.27% equal error rate. Mimicry attacks succeed less than 1% of the time. Replicating physiological characteristics across several modalities, in temporally consistent patterns, is a substantially harder problem.",
   },
   {
-    title: "Voice-Gesture Coupling Is Biomechanical",
+    title: "Voice-gesture coupling is biomechanical",
     source: "Pouw et al., Royal Society Proceedings B, 2025",
     body: "Hand movement and voice prosody couple through shared respiratory and motor control systems. The coupling is involuntary and biomechanical. A bot using TTS and a movement simulator produces two independent signals that lack this natural coupling.",
   },
   {
-    title: "Physics-Informed Detection Still Works",
+    title: "Physics-informed detection still works",
     source: "VoiceRadar, NDSS 2025",
     body: "Micro-frequency oscillations derived from vocal fold physics achieve 0.45% equal error rate against modern TTS. TTS models the statistical distribution of speech features but not the underlying physics of speech production.",
   },
   {
-    title: "Modern TTS Produces Artifacts in Both Directions",
+    title: "Modern TTS produces artifacts in both directions",
     source: "Warren et al., \"Pitch Imperfect\", 2025",
     body: "Neural vocoders can produce acoustic perturbation values higher than human baselines, not just lower. This overturns the assumption that synthetic speech is \"too perfect.\" Detection must account for artifacts in both directions.",
   },
   {
-    title: "Touch-IMU Shockwave Is a Liveness Signal",
+    title: "Touch-IMU shockwave is a liveness signal",
     source: "Device physics, BioMoTouch 2025",
     body: "Physical touch produces a measurable hardware response in a device's motion sensors. A signal generated without genuine physical interaction cannot reproduce it.",
   },
@@ -78,11 +78,11 @@ export function ResearchValidationSection() {
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-foreground/75 md:text-lg">
             Entros captures voice, movement, and touch simultaneously
             and verifies their temporal correlation. Spoofing one
-            modality in isolation is feasible. Spoofing all three with
-            consistent behavioral characteristics across modalities is
-            an exponentially harder problem. Trust Score then requires
-            maintaining that consistency across sessions over weeks,
-            compounding the difficulty further.
+            modality in isolation is feasible. Spoofing all three, with
+            behavioral characteristics that stay consistent across
+            modalities, is a substantially harder problem. Trust Score
+            then asks for that consistency to hold across sessions over
+            weeks.
           </p>
         </div>
       </div>

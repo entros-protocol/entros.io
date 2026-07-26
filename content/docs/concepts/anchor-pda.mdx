@@ -51,16 +51,18 @@ The account stores ownership, score, fingerprint commitments, and verification m
 | `recent_timestamps` | `[i64; 52]` | 127 | Rolling window of recent verification timestamps used by the score formula |
 | `last_reset_timestamp` | `i64` | 543 | Unix timestamp of the most recent `reset_identity_state` |
 | `new_wallet` | `Pubkey` | 551 | Authorized successor wallet for `migrate_identity`; zero when no migration has been authorized |
+| `projection_version` | `u16` | 583 | Feature-projection version the stored commitment was produced under |
+| `last_rebaseline_timestamp` | `i64` | 585 | Unix timestamp of the most recent `rebaseline_anchor` |
 
 Field offsets are documented for direct deserialization. For typed access from a Rust client, the canonical IDL is published with the `entros-anchor` program.
 
 ## Token-2022 identity NFT
 
-The Anchor mint uses the Token-2022 `NonTransferable` and `MintCloseAuthority` extensions. It is a one-supply, one-decimal token held in the user's associated token account. There is no transfer hook, no royalty extension, no metadata pointer to off-chain content. The mint exists to make the Anchor visible in any Token-2022-aware wallet UI; the authoritative score and metadata live in `IdentityState`. `MintCloseAuthority` is held by the program so that `migrate_identity` can close the old mint when an identity moves to a new wallet.
+The Anchor mint uses the Token-2022 `NonTransferable`, `MintCloseAuthority`, `MetadataPointer` and `TokenMetadata` extensions. It is a one-supply, zero-decimal token held in the user's associated token account. There is no transfer hook and no royalty extension. The mint exists to make the Anchor visible in any Token-2022-aware wallet UI; the authoritative score and metadata live in `IdentityState`. `MintCloseAuthority` is held by the program so that `migrate_identity` can close the old mint when an identity moves to a new wallet.
 
 ## Instructions
 
-The `entros-anchor` program exposes five public instructions.
+The `entros-anchor` program exposes seven public instructions.
 
 - **`mint_anchor`**—Initializes a new Anchor on first verification. Caller must supply a valid ZK proof from `entros-verifier`. Charges the protocol fee.
 - **`update_anchor`**—Re-verification path. Validates a proof whose `commitment_prev` public input matches the stored `current_commitment`, advances the score, charges the fee, and overwrites `current_commitment` with the new value.

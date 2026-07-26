@@ -23,37 +23,39 @@ The fee accumulates in the `Treasury` PDA owned by `entros-registry`. The protoc
 
 ## Compute units
 
-The dominant on-chain cost is the Groth16 proof verification, which runs as part of the verification transaction alongside the `update_anchor` (re-verification) or `mint_anchor` (first verification) PDA write. The SDK pre-bundles a `ComputeBudgetProgram.setComputeUnitLimit(250_000)` instruction so the batched transaction fits within Solana's compute budget.
+The dominant on-chain cost is the Groth16 proof verification, which runs as part of the verification transaction alongside the `update_anchor` (re-verification) or `mint_anchor` (first verification) PDA write. The SDK pre-bundles a `ComputeBudgetProgram.setComputeUnitLimit` instruction so the batched transaction fits within Solana's compute budget: 300,000 when the encrypted-baseline write rides along, 250,000 otherwise.
 
 | Operation | Ceiling CU |
 | --- | --- |
 | `verify_proof` (standalone, Groth16 verification) | ~123,000 |
-| Full re-verification transaction (`create_challenge` + `verify_proof` + `update_anchor`) | ~167,000 |
+| Full re-verification transaction (`create_challenge` + `verify_proof` + `update_anchor` + `set_encrypted_baseline`) | ~167,000 |
 | Full first-verification transaction (`create_challenge` + `verify_proof` + `mint_anchor`) | ~240,000 |
 | Reading `IdentityState` (off-chain RPC) | 0 |
 | Cross-program PDA read of `IdentityState` | under 1,000 |
 | Voter-weight plugin `update_voter_weight_record` | ~5,000 |
 
-The above are upper bounds enforced by the regression suite—each ceiling is the worst-case measurement across ten runs of the on-chain test suite (entros-anchor + entros-verifier + entros-registry integration tests). The standalone `verify_proof` instruction at 123K fits comfortably within Solana's 200K default per-instruction budget. The batched first-verification path at 240K leaves ~10K headroom against the 250K request budget; the re-verification path at 167K leaves ~83K headroom. Selective migration of the hot-path instructions to Pinocchio post-mainnet is planned (see [Programs reference](/docs/reference/programs)) to restore additional headroom on the first-verification path.
+The above are upper bounds enforced by the regression suite—each ceiling is the worst-case measurement across ten runs of the LiteSVM test suite (entros-anchor + entros-verifier + entros-registry integration tests). The standalone `verify_proof` instruction at 123K fits comfortably within Solana's 200K default per-instruction budget. The batched first-verification path at 240K leaves ~10K headroom against the 250K request budget; the re-verification path at 167K leaves ~83K headroom. Selective migration of the hot-path instructions to Pinocchio post-mainnet is planned (see [Programs reference](/docs/reference/programs)) to restore additional headroom on the first-verification path.
 
 ## Rent
 
-Each new account on Solana requires rent-exempt funding. Numbers below are queried directly from devnet RPC against the canonical struct sizes declared in the program source.
+Each new account on Solana requires rent-exempt funding. Numbers below are the amounts the programs actually fund on devnet, which for the mint exceeds bare rent on its declared data size because the metadata extension is funded up front.
 
 | Account | Size | Rent | Refundable |
 | --- | --- | --- | --- |
-| `IdentityState` | 583 bytes | 0.00494856 SOL | No (held while Anchor is active) |
-| `Mint` (Token-2022 with NonTransferable + MintCloseAuthority + MetadataPointer + TokenMetadata) | 415 bytes | 0.00377928 SOL | No |
+| `IdentityState` | 593 bytes | 0.00501816 SOL | No (held while Anchor is active) |
+| `Mint` (Token-2022 with NonTransferable + MintCloseAuthority + MetadataPointer + TokenMetadata) | 415 bytes | 0.00383496 SOL | No |
 | Associated Token Account (Token-2022 with ImmutableOwner) | 174 bytes | 0.00210192 SOL | No |
 | `Challenge` | 90 bytes | 0.001517 SOL | Yes, via `close_challenge` |
 | `VerificationResult` | 182 bytes | 0.002158 SOL | Yes, via `close_verification_result` |
 | Agent metadata entry | governed by Solana Agent Registry | ~0.003 SOL | If marked mutable; immutable entries are permanent |
 
-Total user-side cost on first verification: protocol fee (0.005 SOL) plus rent for `IdentityState` + `Mint` + ATA (~0.01083 SOL one-time) ≈ **0.01583 SOL** total. Subsequent re-verifications pay the 0.005 SOL protocol fee plus a small refundable rent on the per-attempt `VerificationResult` account; the persistent accounts are already funded, and `Challenge` is closed for rent recovery in the same transaction.
+Total user-side cost on first verification: protocol fee (0.005 SOL) plus rent for `IdentityState` + `Mint` + ATA (~0.01096 SOL one-time) ≈ **0.01596 SOL**, plus transaction fees.
+
+A re-verification costs **~0.00867 SOL**: the 0.005 SOL protocol fee, plus rent on the two per-attempt accounts the transaction opens (`Challenge` and `VerificationResult`), plus transaction fees. The persistent accounts are already funded. Both per-attempt accounts are reclaimable through `close_challenge` and `close_verification_result`, which recover 0.00367 SOL per verification once called.
 
 ## Economic notes
 
-The fee is set deliberately small per individual verification and high enough to create real cumulative cost for an attacker maintaining many Anchors. The `verification_fee` field on `ProtocolConfig` is updateable by the protocol authority via `update_protocol_config` and may evolve as the protocol decentralizes or as SOL economics shift.
+The fee is set deliberately small per individual verification and high enough that holding many Anchors carries real cumulative cost. The `verification_fee` field on `ProtocolConfig` is updateable by the protocol authority via `update_protocol_config` and may evolve as the protocol decentralizes or as SOL economics shift.
 
 ## Where to look next
 

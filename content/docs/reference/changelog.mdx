@@ -7,9 +7,33 @@ The protocol publishes the SDK as `@entros/pulse-sdk` on npm. Programs are deplo
 
 ## Pulse SDK
 
+### 3.x
+
+Current published version: `3.16.0`. The 3.x line tracks the v3 feature pipeline and the client-side signals that accompany it.
+
+- 3.16.0 — the wallet-connected flow transmits a coarse, timestamp-free outline of the traced challenge curve alongside the existing features. Sixty-four points at equal time intervals, used to check the trace against the curve the server issued.
+- 3.14.0 — the SDK parses the server-issued Lissajous curve from the challenge response and renders that curve rather than generating its own.
+- 3.13.0 — baseline storage is partitioned per wallet, which removes the repeated signature prompt when switching wallets. Storage access is guarded for server-side rendering.
+- 3.11.0–3.12.0 — client capture reports spectral flatness and centroid, and flags virtual audio devices, in the `client_signals` envelope.
+- 3.9.0 — `client_signals` carries automation-framework artifacts, without device fingerprinting.
+- 3.3.0 — wallet-keyed encrypted baseline recovery, so a returning user restores their baseline from chain instead of re-enrolling.
+- 3.0.0 — the audio feature set drops the MFCC DC term, which carried microphone energy bias. Feature vectors produced by 3.0.0 and later are not comparable with 2.x vectors.
+
+### 2.0.0
+
+Expanded motion and touch feature spaces with covariance, curvature, gap distribution and path-efficiency terms.
+
+### Upgrading from 1.x
+
+The verification API is unchanged: `PulseSDK`, `createSession`, `verify`, `submitViaWallet` and `verifyEntrosAttestation` all keep their signatures. Two changes need attention.
+
+The public surface narrowed to the verification path. Seven statistics helpers that the SDK exported incidentally (`mean`, `variance`, `skewness`, `kurtosis`, `entropy`, `autocorrelation`, `condense`) are no longer exported; import them from a statistics library if your own code used them.
+
+`DEFAULT_CAPTURE_MS` moved from 7000 to 12000. If you display your own progress UI, read the constant rather than hard-coding the window.
+
 ### 1.5.x
 
-Current published version: `1.5.3`. The 1.5.1–1.5.3 line is responsiveness, audio capture, and dependency hygiene on top of the 1.5.0 baseline; no API or breaking changes.
+Final release of the 1.x line: `1.5.3`. The 1.5.1–1.5.3 line is responsiveness, audio capture, and dependency hygiene on top of the 1.5.0 baseline; no API or breaking changes.
 
 - 1.5.3 — Audio capture passes `voiceIsolation: true` in `getUserMedia` constraints (W3C Media Capture Extensions); browsers and OS layers that support the constraint apply the platform's voice-isolation pipeline before samples reach the SDK, browsers that don't recognize it fall back to the default constraints. The F0 contour detector also yields to the host event loop between blocks so the verify spinner repaints through the F0 stage. Transitive `uuid` dependency is overridden to `^14.0.0` to clear advisories surfaced by the upstream chain.
 - 1.5.2 — Heavy feature-extraction stages yield to the host event loop between blocks. The verify spinner repaints during long extraction stages instead of stalling.
@@ -22,7 +46,7 @@ Current published version: `1.5.3`. The 1.5.1–1.5.3 line is responsiveness, au
 
 ### 1.4.x
 
-- 1.4.0 — first-verification mints now bundle a validator-signed receipt as an `Ed25519Program::verify` instruction immediately before `mint_anchor`. The on-chain program enforces the binding (see entros-anchor errors 6015–6021). The SDK consumes the receipt from the `/validate-features` response and prepends the verify instruction transparently; callers do not need to handle the receipt directly.
+- 1.4.0 — first-verification mints now bundle a validator-signed receipt as an `Ed25519Program::verify` instruction immediately before `mint_anchor`. The on-chain program enforces the binding (see entros-anchor errors 6016–6022). The SDK consumes the receipt from the `/validate-features` response and prepends the verify instruction transparently; callers do not need to handle the receipt directly.
 - 1.4.0 — `instructionsSysvar` is now always passed to `mint_anchor` (the on-chain accounts struct requires it whether or not a receipt is bundled). SDKs older than 1.4.0 are silently broken against the deployed program.
 - 1.4.0 — `PulseConfig.onPrivacyFallback` callback. Browsers that block encrypted localStorage (iOS Safari private mode, Brave shields, Firefox Total Cookie Protection) trigger this callback; the host app returns `true` to allow plaintext fallback or `false` to keep storage in-memory only. Without the callback, the SDK defaults to in-memory only—safer than the previous silent plaintext fallback.
 - 1.4.0 — validator-unreachable returns `{ ok: false, reason: "validation_unavailable" }` instead of silently bypassing server validation.
@@ -53,7 +77,7 @@ Initial public release. Capture, feature extraction, hashing, proof generation, 
 
 ### entros-anchor
 
-- Current deployment enforces validator-signed mint-receipt binding on first verification: every `mint_anchor` call must be immediately preceded by an `Ed25519Program::verify` instruction whose signed message ties the wallet, commitment, and `validated_at` timestamp to the registered validator pubkey. SDKs at 1.4.0 or later bundle the receipt automatically; older SDKs hit `MissingValidatorReceipt` (6015). Re-verification (`update_anchor`) binds via the on-chain `VerificationResult` PDA produced by the verifier program and is unaffected.
+- Current deployment enforces validator-signed mint-receipt binding on first verification: every `mint_anchor` call must be immediately preceded by an `Ed25519Program::verify` instruction whose signed message ties the wallet, commitment, and `validated_at` timestamp to the registered validator pubkey. SDKs at 1.4.0 or later bundle the receipt automatically; older SDKs hit `MissingValidatorReceipt` (6016). Re-verification (`update_anchor`) binds via the on-chain `VerificationResult` PDA produced by the verifier program and is unaffected.
 - Cross-program binding patch on `update_anchor` against the verifier program. Discovered and fixed in the same sprint as the T4a security wave.
 - Reset path (`reset_identity_state`) gated behind a 7-day cooldown.
 

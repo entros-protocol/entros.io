@@ -5,7 +5,7 @@ export const features: Feature[] = [
     icon: "pulse",
     title: "The Pulse",
     description:
-      "Voice, motion, and touch is captured simultaneously on your device. A unique random challenge each session.",
+      "Voice, motion, and touch are captured simultaneously on your device. A unique random challenge each session.",
     benefit:
       "Behavioral entropy scoring detects synthetic data patterns. Raw data is never persisted—only derived statistical features are validated server-side.",
   },
@@ -23,6 +23,6 @@ export const features: Feature[] = [
     description:
       "A non-transferable Solana token tied to your wallet. Trust Score grows with consistent re-verification over time.",
     benefit:
-      "Progressive scoring rewards months of genuine use. Bot farms can't fast-track trust.",
+      "Progressive scoring rewards months of genuine use.",
   },
 ];

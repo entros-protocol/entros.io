@@ -19,11 +19,19 @@ export function HowItWorksSection() {
 
         {/* Hairline grid via bg-border + gap-px (see why-solana-section.tsx). */}
         <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
-          {features.map((feature) => {
+          {features.map((feature, i) => {
             const Icon = getIcon(feature.icon);
             return (
               <div key={feature.title} className="bg-background p-8">
-                <Icon className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                {/* Index rule—step number, hairline span, mini icon.
+                    Mirrors the integration cards on the Realms case study. */}
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-sm tracking-[0.2em] text-cyan">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="h-px flex-1 bg-border" />
+                  <Icon className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                </div>
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground">
                   {feature.title}
                 </h3>

@@ -14,6 +14,7 @@ Program: `GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2`
 | `IdentityState` | `["identity", user]` | entros-anchor | Per-wallet score and commitment record |
 | `Mint` | `["mint", user]` | entros-anchor | Token-2022 NonTransferable mint |
 | `MintAuthority` | `["mint_authority"]` | entros-anchor | Program-wide mint authority |
+| `EncryptedBaseline` | `["encrypted_baseline", user]` | entros-anchor | Wallet-encrypted baseline blob, derived via `deriveEncryptedBaselinePda` |
 
 ## entros-verifier
 
@@ -42,8 +43,8 @@ Program: `99nwXzcugse3x8kxE9v6mxZiq8T9gHDoznaaG6qcw534`
 | PDA | Seeds | Owner | Purpose |
 | --- | --- | --- | --- |
 | `Registrar` | `["registrar", realm, governing_token_mint]` | entros-voter-weight | Per-realm plugin config |
-| `VoterWeightRecord` | `["voter_weight_record", realm, governing_token_mint, voter]` | entros-voter-weight | Per-voter weight |
-| `MaxVoterWeightRecord` | `["max_voter_weight_record", realm, governing_token_mint]` | entros-voter-weight | Realm-wide max-weight cap |
+| `VoterWeightRecord` | `["voter-weight-record", realm, governing_token_mint, voter]` | entros-voter-weight | Per-voter weight |
+| `MaxVoterWeightRecord` | `["max-voter-weight-record", realm, governing_token_mint]` | entros-voter-weight | Realm-wide max-weight cap |
 
 ## SAS
 

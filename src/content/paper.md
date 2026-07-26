@@ -2,8 +2,8 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** May 31, 2026
-**Word Count:** Approx. 6500
+**Updated:** July 26, 2026
+**Word Count:** Approx. 8400
 
 ---
 
@@ -21,7 +21,7 @@ The distinction between human and artificial actors in digital systems is increa
 
 Most current PoP systems rely on a single, static biometric secret—iris (Worldcoin [5]), palm print (VeryAI), or face—that, once captured, serves as a permanent anatomical identifier. BrightID [6] takes a different approach using social graph analysis, which depends on coordinated verification events. These designs optimize for different properties: strong uniqueness guarantees at the cost of revocability, or social trust at the cost of coordination overhead. Entros explores a third axis: consistency of dynamic behavior over time, which is both bounded enough to uniquely identify and variable enough to be naturally revocable.
 
-The Entros Protocol operates on a different principle. A human is not a static data point; they are a continuous, dynamic process. The behavioral signature of a living human—the micro-perturbations in voice, the involuntary tremor in hand movement, the idiosyncratic pressure patterns of touch—drifts over time in a bounded, chaotic pattern that is unique to each individual. AI can mimic a snapshot of this signature. Sustaining a temporally-consistent imitation across weeks and months is computationally prohibitive relative to the value extractable from most Sybil attacks.
+The Entros Protocol operates on a different principle. A human is not a static data point; they are a continuous, dynamic process. The behavioral signature of a living human—the micro-perturbations in voice, the involuntary tremor in hand movement, the idiosyncratic pressure patterns of touch—drifts over time in a bounded, chaotic pattern that is unique to each individual. AI can mimic a snapshot of this signature. Sustaining a temporally-consistent imitation across weeks and months, against a detection stack that scores every capture, is a materially harder problem than producing a single convincing sample.
 
 Instead of asking *"What is your secret?"*, the protocol asks *"Are you still you?"*.
 
@@ -212,7 +212,7 @@ The protocol's economic security is anchored by a native utility token (SPL Toke
 
 #### **4.2. User-Pays Model**
 
-Users pay a small protocol fee (~0.005 SOL) per verification. This is trivial for any Solana user but creates real economic cost for bot farms attempting to maintain thousands of identities. Integrators read on-chain verification state for free via `verifyEntrosAttestation()`—no escrow, no API keys, no billing relationship.
+Users pay a small protocol fee (~0.005 SOL) per verification. This is trivial for any Solana user, and enough that holding many Anchors carries a real recurring cost. Integrators read on-chain verification state for free via `verifyEntrosAttestation()`—no escrow, no API keys, no billing relationship.
 
 #### **4.3. Validation Cycle**
 
@@ -246,7 +246,7 @@ The score is capped at a configurable maximum (currently 10,000) and computed on
 
 #### **5.3. Verification Modes**
 
-Wallet-connected mode is the primary flow. The user pays the per-verification fee, signs the transaction, mints an Entros Anchor, and builds an on-chain Trust Score queryable by any integrator. Each verification produces a SAS attestation that integrators read for free. The economic surface—per-verification fees plus per-wallet funding—directly raises the cost of bot farms.
+Wallet-connected mode is the primary flow. The user pays the per-verification fee, signs the transaction, mints an Entros Anchor, and builds an on-chain Trust Score queryable by any integrator. Each verification produces a SAS attestation that integrators read for free. The economic surface—per-verification fees plus per-wallet funding—means the number of Anchors an operator holds is bounded by what they are willing to fund.
 
 Walletless mode is a secondary liveness tier for use cases that need a captcha-equivalent signal without onboarding a wallet. The behavioral fingerprint is stored locally (encrypted with AES-256-GCM, key as non-extractable `CryptoKey` in IndexedDB). The identity is device-bound and ephemeral; clearing storage resets it. No on-chain Anchor, no portable Trust Score.
 
@@ -282,7 +282,7 @@ The defense is layered:
 
 **Entropy scoring.** The extraction pipeline measures Shannon entropy and jitter variance per sensor stream. Synthetic data with low or uniform entropy is flagged before reaching the hashing stage.
 
-We do not claim synthesis is impossible. We claim it is expensive relative to the value extractable from most Sybil attacks, and that this cost increases with the number of identities maintained over time.
+We do not claim synthesis is impossible. We claim that synthesis which survives the full detection stack is difficult to produce and difficult to sustain across sessions, and that the cost of attempting it at scale grows with the number of identities involved.
 
 **Empirical context.** Serwadda and Phoha [17] demonstrated that spoofing mouse dynamics—even with full knowledge of the target's behavioral profile—required extensive per-target training and achieved limited success rates. Entros requires spoofing three modalities simultaneously. Under an independence assumption, if single-modality spoofing succeeds with probability p_v (voice), p_m (motion), and p_t (touch), the joint success rate is p_v · p_m · p_t. Even generous estimates of 0.3 per modality yield ~2.7% joint success per attempt.
 
@@ -296,17 +296,17 @@ Each wallet maps to exactly one Entros Anchor (enforced by PDA derivation). Crea
 2. k independent behavioral profiles, each sustained across regular re-verifications
 3. k × m verification fees over m re-verification cycles
 
-The Trust Score penalizes new accounts (age bonus starts at 0) and requires sustained active history (age/span bonus rewards duration of engagement). An adversary maintaining 1,000 identities to Trust Score > 500 over thirteen weeks at weekly cadence pays 65 SOL in protocol fees (1,000 × 13 × 0.005 SOL) plus ~13 SOL in one-time per-identity Solana account rent (1,000 × ~0.013 SOL for mint, ATA, IdentityState, and per-verification records), for a total of ~78 SOL—in addition to the per-identity compute of generating temporally consistent multi-modal sensor data that survives the active detection stack for the campaign duration. The defense is not absolute: a single high-value airdrop allocation may exceed this fee. Asymmetry compounds over time. The attacker pays continuously against an evolving detection stack, with no advance knowledge of which targets will materialise—most lucrative airdrops are unannounced, forcing speculative deployment months before any chance of recoupment. The equilibrium shifts against sustained Sybil farming at scale, not against any single attack.
+The Trust Score penalizes new accounts (age bonus starts at 0) and requires sustained active history (age/span bonus rewards duration of engagement). An adversary maintaining 1,000 identities to Trust Score > 500 over thirteen weeks at weekly cadence pays 65 SOL in protocol fees (1,000 × 13 × 0.005 SOL) plus ~13 SOL in one-time per-identity Solana account rent (1,000 × ~0.013 SOL for mint, ATA, IdentityState, and per-verification records), for a total of ~78 SOL. This arithmetic prices the residual attempt volume only: it assumes captures that already survive the active detection stack for the full campaign duration, and says nothing about the probability of reaching that state. Fees alone do not bound a high-value airdrop allocation, which is why they sit outermost rather than first. Asymmetry compounds over time. The attacker pays continuously against an evolving detection stack, with no advance knowledge of which targets will materialise—most lucrative airdrops are unannounced, forcing speculative deployment months before any chance of recoupment. The equilibrium shifts against sustained Sybil farming at scale, not against any single attack.
 
 #### **6.4.1. Layered Sybil Resistance**
 
-Entros's Sybil resistance operates through three independent layers, each raising the cost of maintaining duplicate identities:
+Entros's Sybil resistance operates through three independent layers. Behavioral comparison is the layer that detects duplicate identities; the other two bound how many attempts an adversary can sustain against it:
 
-* **Economic deterrence.** Each verification costs the user SOL. Each wallet requires funding. Maintaining thousands of fake identities over months requires sustained capital expenditure that scales linearly with the attack surface.
-* **Temporal deterrence.** Trust Score rewards consistency over time. Weekly re-verifications across months carry more weight than bulk verifications in a single session. A bot farm must maintain each identity's behavioral signature across sessions and days, compounding the operational cost per identity.
+* **Economic deterrence.** Each verification costs the user SOL and each wallet requires funding, so the cost of holding many Anchors scales linearly with their number. This bounds attempt volume; it does not decide whether any capture passes.
+* **Temporal deterrence.** Trust Score rewards consistency over time. Weekly re-verifications across months carry more weight than bulk verifications in a single session, so a score reflects sustained presence and cannot be reached by volume alone.
 * **Behavioral fingerprint comparison.** The server-side registry compares each new verification's SimHash fingerprint against existing entries. One person operating multiple wallets produces clustered fingerprints that the registry detects. The discriminative power of the 308-feature behavioral fingerprint is being empirically calibrated through data collection from diverse users.
 
-These layers are complementary. Economic cost makes Sybil farming expensive. Temporal requirements make it slow. Behavioral comparison makes it detectable. An attacker must defeat all three simultaneously. The fingerprint registry's effectiveness improves as empirical data informs threshold calibration, and the architecture supports evolution toward probabilistic risk scoring as the user population grows.
+These layers are complementary. Behavioral comparison makes duplicate identities detectable, temporal requirements mean a single capture proves little, and economic cost bounds how many attempts an adversary can mount against the first two. An attacker must defeat all three simultaneously. The fingerprint registry's effectiveness improves as empirical data informs threshold calibration, and the architecture supports evolution toward probabilistic risk scoring as the user population grows.
 
 #### **6.5. Privacy**
 
@@ -318,14 +318,14 @@ Raw biometric data is destroyed after feature extraction. On-chain, only the Pos
 
 **SimHash reversibility.** Recent work has demonstrated pre-image attacks on locality-sensitive hashes [21], showing that SimHash fingerprints contain recoverable information about the original input. Entros's architecture addresses this at two levels: (1) the SimHash fingerprint is never transmitted or stored on-chain—only the Poseidon commitment is public, and the ZK proof reveals nothing beyond the Hamming distance range; (2) the fingerprint stored locally for re-verification is encrypted with AES-256-GCM using a non-extractable `CryptoKey` in IndexedDB, requiring device-level compromise to access. In wallet-connected mode, an additional copy is held on chain in a per-wallet PDA as AES-256-GCM ciphertext keyed to a deterministic Ed25519 `signMessage` signature over a domain-separated payload; only the wallet that wrote it can derive the key and decrypt, making the baseline recoverable across devices while remaining opaque to all other observers. The blob's plaintext is a 32-byte SimHash fingerprint plus a 32-byte commitment salt—64 bytes total. It contains neither raw sensor data nor the 308 statistical features; both are destroyed earlier in the pipeline. Even if decrypted under wallet compromise, the SimHash is non-invertible to the original feature vector, and the original feature vector is itself a statistical summary rather than a recording. The symmetric encryption is quantum-resistant under standard assumptions about Grover's algorithm on AES-256; the wallet-signature-derived key derivation is not, sharing the same post-quantum migration concern as every Ed25519-based Solana primitive. SimHash is not relied upon as a privacy-preserving representation; the Poseidon commitment provides that property.
 
-#### **6.6. Economic Sustainability of Attacks**
+#### **6.6. Attack Cost Under the Detection Stack**
 
-The protocol does not claim to make spoofing impossible. It claims to make sustained spoofing *economically irrational* relative to the value it extracts. The defense is layered:
+The protocol does not claim to make spoofing impossible. The primary defense is detection: every capture is scored against the detection layers described above before it reaches the chain. Economic cost is a secondary layer that bounds the volume of attempts an adversary can mount, not the mechanism that decides whether any single capture passes. The defense is layered:
 
 * **Feature-level:** Realistic multi-modal sensor data across 308 dimensions is hard to synthesize.
 * **Circuit-level:** Replays (d_H = 0) and imposters (d_H > δ_max) are rejected.
 * **Entropy scoring:** Low-entropy synthetic data is flagged before hashing.
-* **Economic:** Each verification costs SOL. Each wallet requires funding. Trust Score rewards months of consistency over bursts.
+* **Economic:** Each verification costs SOL and each wallet requires funding, which bounds attempt volume. Trust Score rewards months of consistency over bursts.
 
 #### **6.7. Graduated Trust Model**
 
@@ -339,7 +339,7 @@ Temporal consistency applies from the second verification onward. Each returning
 2. **Device-bound consistency** *(returning walletless verification). Behavioral drift matches a device-local fingerprint. Signal strength: medium. Suitable for session authentication, content gating.*
 3. **Portable identity** *(wallet-connected with Trust Score). Persistent on-chain Anchor with months of behavioral consistency visible to all integrators. Signal strength: high. Suitable for airdrop eligibility, DAO governance, DeFi access controls.*
 
-In wallet-connected mode, the user pays the per-verification fee, creating direct economic cost for bot farms; integrators read on-chain state for free. The protocol provides the signal; the integrator sets the threshold.
+In wallet-connected mode, the user pays the per-verification fee, so each Anchor carries a recurring cost to its holder; integrators read on-chain state for free. The protocol provides the signal; the integrator sets the threshold.
 
 A bot that clears local storage before each walletless verification is perpetually at Tier 1—a liveness check with no temporal history. High-value integrations can require Tier 2 or Tier 3, making this strategy ineffective for anything beyond basic captcha equivalence.
 
@@ -448,7 +448,7 @@ The mobile application, targeting the Solana dApp Store, is the production targe
 
 The Entros Protocol presents a framework for Proof-of-Personhood through temporal behavioral consistency. By measuring bounded, chaotic drift in multi-modal biometric signals over time, it provides graduated trust guarantees that static biometrics and session-level captcha cannot.
 
-The protocol is precise about what it proves. First-time verification is a liveness check; temporal consistency compounds over repeated sessions, and the graduated trust model makes that explicit rather than presenting a false binary. The defense against sophisticated synthesis is economic: sustained spoofing at scale costs more than it extracts.
+The protocol is precise about what it proves. First-time verification is a liveness check; temporal consistency compounds over repeated sessions, and the graduated trust model makes that explicit rather than presenting a false binary. The defense against sophisticated synthesis is multi-modal detection under temporal consistency, with economic cost bounding the volume of attempts mounted against it.
 
 **Future work:**
 

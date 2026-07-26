@@ -9,7 +9,7 @@ The threat model is structured by the kind of adversary, not by the kind of atta
 
 A scripted attempt to bypass the device-side capture flow. Replays a stored signal, calls the SDK with synthetic inputs, fakes the wallet adapter handshake.
 
-The capture pipeline is a sealed flow inside the SDK. Inputs that don't pass through the live sensor pipeline don't produce valid feature vectors. Replays don't pass the Anonymity Ring's distribution checks. The verifier program rejects proofs that don't match the on-chain commitments.
+The checks that decide the outcome run on the validator, not in the browser. Each session receives a new phrase and curve, so a stored capture answers the wrong challenge, and the validator transcribes the submitted audio to compare it against the phrase it issued. Feature vectors face distribution checks in the Anonymity Ring, and the verifier program rejects proofs that don't match the on-chain commitments.
 
 Public adversarial test count at this tier: more than 14,000 attempts across T1–T3 combined, all rejected.
 
@@ -17,15 +17,15 @@ Public adversarial test count at this tier: more than 14,000 attempts across T1�
 
 Multiple wallets, a script library, modest budget. Tries to mass-mint Anchors and farm low Trust Scores at scale.
 
-The device-fingerprinting layer makes single-device farming visible. Re-using captured signals across wallets is detected by the ring's cross-Anchor analysis. The protocol fee per verification creates a per-Anchor floor cost; the time decay on the Trust Score makes "rush a high score" infeasible. Sustained high scores require sustained, distinct activity per Anchor.
+The device-fingerprinting layer makes single-device farming visible. Re-using captured signals across wallets is detected by the ring's cross-Anchor analysis. The protocol fee per verification means each Anchor carries a recurring cost to hold; the time decay on the Trust Score makes "rush a high score" infeasible. Sustained high scores require sustained, distinct activity per Anchor.
 
 ## Tier 3—Human-in-the-loop farms
 
 Real humans behind multiple wallets, performing real captures. The hardest tier of farming because it bypasses any synthesis detection—the signals are genuine human signals.
 
-The protocol's response is economic. A human who runs N Anchors must do N captures every re-verification window. Each capture is twelve seconds plus the protocol fee. The Trust Score per Anchor decays without that work. The cost of maintaining N high-score Anchors scales linearly in N, while the value an attacker can extract from each Anchor is bounded by the gates the Anchor is meant to clear.
+The protocol's response has two parts. Every capture is scored by the detection stack regardless of how many Anchors the operator holds, and the ring's cross-Anchor analysis compares captures across wallets — the layer that applies here is behavioral overlap, not synthesis detection, and its sensitivity is bounded by how much a person can vary their own behavioral signature. On top of that, an operator running N Anchors performs N captures every re-verification window, each twelve seconds plus the protocol fee, and the Trust Score per Anchor decays without that work.
 
-What this means in practice: human-in-the-loop farming is not technically impossible, but it ceases to be economically rational at integrator-set thresholds calibrated to the value being protected.
+What this means in practice: a genuine human performing every capture by hand defeats synthesis detection by not using synthesis. What remains against them is cross-Anchor comparison plus the per-Anchor cadence requirement, which integrators tune through the threshold to the value being protected.
 
 ## Tier 4—Behavioral synthesis
 

@@ -65,7 +65,7 @@ const beforeAfter = [
     before:
       "An attacker spins up a hundred fresh wallets, funds each one with the minimum token balance, and casts a hundred votes. Quorum lands at near-zero cost.",
     after:
-      "Each of those hundred wallets needs an Entros Anchor with the floor Trust Score and a recent verification. The cost to clear the floor includes the verification fee, the time the attacker spends, and the consistency check the system runs across returns. The same attack now demands real money and real time per wallet.",
+      "Each of those hundred wallets needs an Entros Anchor with the floor Trust Score and a recent verification. That means a hundred live captures, each validated server-side and checked for behavioral overlap against every other Anchor in the registry. Nothing that fails those checks reaches the vote.",
   },
   {
     scenario: "Whale dictating treasury allocation",
@@ -106,11 +106,11 @@ export default function RealmsCaseStudy() {
             Verified votes<span className="text-cyan">.</span>
           </h1>
 
-          <p className="mx-auto mt-8 max-w-2xl text-base leading-relaxed text-foreground/70 md:text-lg">
-            The Entros voter-weight plugin reads an on-chain Anchor before
-            a Realms ballot counts. The DAO sets a Trust Score floor and a
-            recency window; the plugin enforces both. spl-governance
-            compatible, live on devnet, source on GitHub.
+          {/* text-balance evens the two line lengths and prevents a
+              single-word orphan on the last row. */}
+          <p className="mx-auto mt-8 max-w-2xl text-balance text-base leading-relaxed text-foreground/70 md:text-lg">
+            The plugin reads an Entros Anchor before a Realms ballot counts.
+            The DAO sets the Trust Score floor and the recency window.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -186,9 +186,8 @@ export default function RealmsCaseStudy() {
           </div>
 
           <p className="mt-12 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Three protocols, three codebases, three years. The pattern is
-            the same: the ballot asked about balance, not about the
-            returning human behind it.
+            In every case the ballot asked about balance. None of them
+            asked whether a returning human stood behind it.
           </p>
         </div>
       </section>

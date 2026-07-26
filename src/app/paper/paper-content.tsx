@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 
 interface PaperMeta {
   version?: string;
+  original?: string;
   updated?: string;
   wordCount?: string;
 }
@@ -51,7 +52,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
         </div>
       </div>
 
-      {(meta.version || meta.updated || meta.wordCount) && (
+      {(meta.version || meta.original || meta.updated || meta.wordCount) && (
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.15em]">
           {meta.version && (
             <span className="text-foreground/40">
@@ -60,9 +61,16 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
               <span className="text-foreground/65">{meta.version}</span>
             </span>
           )}
+          {meta.original && (
+            <span className="text-foreground/40">
+              <span className="text-foreground/30">Original</span>
+              {" "}
+              <span className="text-foreground/65">{meta.original}</span>
+            </span>
+          )}
           {meta.updated && (
             <span className="text-foreground/40">
-              <span className="text-foreground/30">Updated</span>
+              <span className="text-foreground/30">Last Updated</span>
               {" "}
               <span className="text-foreground/65">{meta.updated}</span>
             </span>

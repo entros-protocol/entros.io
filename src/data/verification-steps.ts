@@ -20,9 +20,9 @@ export const verificationSteps: VerificationStep[] = [
   {
     title: "03—Extract + Score",
     description:
-      "308 statistical features across voice, motion, and touch. Includes anatomical signal (formants, MFCCs, voice quality) plus anti-synthesis traces (jitter, shimmer, HNR).",
+      "308 statistical features across voice, motion, and touch. Anatomical signal (formants, MFCCs, voice quality) alongside anti-synthesis traces (jitter, shimmer, HNR).",
     detail:
-      "Audio (170 features): F0 statistics and delta, jitter, shimmer, harmonics-to-noise ratio, MFCCs and delta-MFCCs, LPC coefficient stats, formant trajectories (F1/F2/F3) plus bandwidths, voice quality (CPP, spectral tilt, H1-H2, sub-band ratios), pitch contour DCT, and long-term average spectrum statistics. Motion (81 features): jerk and jounce analysis, FFT band energies, tremor peak in the 4-12 Hz physiological band, cross-axis IMU covariance, magnitude autocorrelation. Touch (57 features): velocity, acceleration, pressure first-derivative moments, contact aspect ratio, trajectory curvature, inter-touch gap distribution, path efficiency, per-stroke length stats. Per-feature entropy detects TTS artifacts; real human tremor fluctuates over time, synthetic data stays constant. On desktop, mouse pointer dynamics replace IMU data with the same kinematic feature shape.",
+      "Audio contributes 170 features: F0 statistics, jitter, shimmer, harmonics-to-noise ratio, MFCCs, LPC coefficients, formant trajectories, and voice quality. Motion contributes 81: jerk, jounce, FFT band energies, tremor peak in the 4-12 Hz physiological band, and cross-axis IMU covariance. Touch contributes 57: velocity, acceleration, pressure derivatives, curvature, and path efficiency. Per-feature entropy separates live behavior from generated data. Human tremor fluctuates over time; synthetic signal holds steady. On desktop, mouse pointer dynamics replace IMU data with the same kinematic feature shape.",
     icon: "scan",
   },
   {

@@ -108,8 +108,16 @@ export function AgentsContent() {
                   </div>
                 </div>
 
+                {/* Attestation label—sits above the whole diagram rather than
+                    inside the connector. The connector is only as wide as the
+                    gap between the two nodes, so on a narrow card an absolutely
+                    positioned label overflows across both circles. */}
+                <p className="mt-10 text-center font-mono text-[11px] tracking-[0.15em] text-cyan">
+                  entros:human-operator
+                </p>
+
                 {/* Diagram */}
-                <div className="mt-14 flex items-center px-2">
+                <div className="mt-6 flex items-center px-2">
                   {/* Human—animated ripple rings */}
                   <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
                     <span className="absolute inset-0 rounded-full border border-cyan/35 animate-ripple" aria-hidden />
@@ -121,11 +129,6 @@ export function AgentsContent() {
 
                   {/* Connection channel */}
                   <div className="relative mx-3 flex-1">
-                    {/* Top label */}
-                    <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[11px] tracking-[0.15em] text-cyan">
-                      entros:human-operator
-                    </span>
-
                     {/* Channel—gradient hairline + 3 signal dots */}
                     <div className="relative h-px bg-gradient-to-r from-cyan/15 via-cyan/55 to-cyan/15">
                       <span className="absolute left-[20%] top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan/60" aria-hidden />
@@ -170,12 +173,12 @@ export function AgentsContent() {
                   ].map((p, i) => (
                     <div
                       key={p.label}
-                      className={`flex items-center justify-center gap-2 py-4 ${
+                      className={`flex items-center justify-center gap-1.5 px-1 py-5 md:gap-2 md:px-2 ${
                         i > 0 ? "border-l border-border" : ""
                       }`}
                     >
-                      <span className="h-1 w-1 rounded-full bg-cyan" aria-hidden />
-                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
+                      <span className="h-1 w-1 shrink-0 rounded-full bg-cyan" aria-hidden />
+                      <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-foreground/55 md:text-[10px] md:tracking-[0.2em]">
                         {p.label}
                       </span>
                     </div>

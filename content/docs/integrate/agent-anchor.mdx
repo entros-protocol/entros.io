@@ -87,7 +87,7 @@ const keyHash = new Uint8Array(keyHashBuffer).slice(0, 16);
 const [metaPda] = PublicKey.findProgramAddressSync(
   [
     new TextEncoder().encode("agent_meta"),
-    agentAsset.toBuffer(),
+    new PublicKey(agentAsset).toBuffer(),
     keyHash,
   ],
   REGISTRY_PROGRAM_ID,

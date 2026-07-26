@@ -9,10 +9,14 @@ export function FooterCTASection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+        {/* Non-breaking spaces bind "portable identity" and "every dApp"
+            so each sentence splits at its comma on narrow viewports
+            instead of orphaning a trailing word. text-balance cannot do
+            this here because it will not balance across the <br>. */}
         <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-          Identity that compounds
+          Fast<span className="text-cyan">,</span> private<span className="text-cyan">,</span> portable&nbsp;identity<span className="text-cyan">.</span>
           <br />
-          over time<span className="text-cyan">.</span>
+          Readable by every&nbsp;dApp<span className="text-cyan">.</span>
         </h2>
 
         <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">

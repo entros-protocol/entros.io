@@ -7,7 +7,7 @@ export const useCases: UseCase[] = [
     problem:
       "Wallet farmers claim thousands of allocations meant for real users.",
     solution:
-      "Gate claims on Trust Score. Farming requires sustained behavioral verification per wallet.",
+      "Gate claims on Trust Score. Every wallet must pass live behavioral verification, again and again, to build one.",
   },
   {
     icon: "vote",
@@ -15,7 +15,7 @@ export const useCases: UseCase[] = [
     problem:
       "Token-weighted governance is plutocracy by default. A wealthy attacker can ratify their own theft (Mango 2022) or spam-clear quorum with self-funded proposals.",
     solution:
-      "Realms voter-weight plugin gates voting on verified-personhood Trust Score, not token holdings. One human, one vote—verified behaviorally on any device.",
+      "Realms voter-weight plugin gates voting on a verified-personhood Trust Score rather than a token balance. One human, one vote, on any device.",
   },
   {
     icon: "bot",

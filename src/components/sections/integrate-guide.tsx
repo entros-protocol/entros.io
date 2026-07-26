@@ -33,9 +33,9 @@ const ABUSE_MECHANISMS = [
   },
   {
     number: "03",
-    title: "Protocol fee defense",
+    title: "Protocol fee",
     description:
-      "Every verification costs the user SOL. Bot farms must fund wallets and pay per attempt. The cost scales with the attack.",
+      "Every verification costs the user SOL, and each wallet carries account rent. Holding many Anchors is not free.",
   },
   {
     number: "04",
@@ -401,11 +401,9 @@ export function IntegrateGuide() {
           </h2>
 
           <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/70 md:text-lg">
-            Every verification costs the user SOL. Synthetic data is
-            rejected server-side before reaching the chain. Bot farms must
-            fund thousands of wallets, pay per verification, and maintain
-            Trust Score across months. You control trust requirements
-            through four mechanisms.
+            Synthetic input is rejected server-side before it reaches the
+            chain. Verification also costs SOL, so Anchors are not free to
+            hold. You control trust requirements through four mechanisms.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2">

@@ -63,6 +63,7 @@ const attestation = await verifyEntrosAttestation(walletAddress, connection);
 
 if (!attestation || !attestation.isHuman) {
   // no verification on file, or expired
+  return;
 }
 
 if (attestation.trustScore < 250) {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AsciiFlow } from "@/components/ui/ascii-flow";
 import { TokenContent } from "@/components/sections/token-content";
+import { TokenLaunchCard } from "@/components/sections/token-launch-card";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
@@ -29,32 +30,7 @@ export default function Token() {
             $ENTROS turns genuine verification demand into network security.
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              Try the demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              href="/integrate"
-              className="
-                group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              Integrate
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          </div>
+          <TokenLaunchCard />
         </div>
 
         <div className="flex h-[225px] items-start justify-center pb-4 sm:h-[270px] md:h-[300px] md:pb-6 lg:h-[330px] xl:h-[360px]">

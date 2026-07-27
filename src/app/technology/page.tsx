@@ -36,9 +36,9 @@ export default function Technology() {
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              A signed challenge in, a zero-knowledge proof out. The
-              pipeline runs on your device, end to end—your behavioral
-              fingerprint never leaves it.
+              Capture, feature extraction, and proof generation all run on
+              your device. What reaches Solana is a zero-knowledge proof and
+              a commitment, never a raw recording.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

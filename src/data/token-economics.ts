@@ -55,9 +55,9 @@ export const supplyPrinciples: SupplyPrinciple[] = [
       "A fixed supply on an open launch. No presale, no private round, no VC allocation.",
   },
   {
-    title: "No insider allocation",
+    title: "Bought and locked",
     description:
-      "No tokens are minted to the team. Any team-held supply is bought on the open market at launch, like any other buyer, and locked in public vesting contracts anyone can inspect.",
+      "The team's tokens were bought on the open market at launch, not granted, and locked in public vesting contracts anyone can inspect.",
   },
   {
     title: "Value from utility",
@@ -93,6 +93,6 @@ export const launchDetails = {
   mechanism: "Fair launch",
   airdrop:
     "No presale and no VC round. As the protocol earns, a share of revenue rewards verified humans over bot farms. Real users, prioritized.",
-  standard: "SPL Token-2022 with Confidential Balances",
+  standard: "SPL Token on Solana",
   supply: "Fixed at genesis",
 };

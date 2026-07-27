@@ -26,11 +26,11 @@ export function HowItWorksSection() {
                 {/* Index rule—step number, hairline span, mini icon.
                     Mirrors the integration cards on the Realms case study. */}
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-sm tracking-[0.2em] text-cyan">
+                  <span className="font-mono text-base tracking-[0.2em] text-cyan">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <span className="h-px flex-1 bg-border" />
-                  <Icon className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <Icon className="h-7 w-7 text-cyan" strokeWidth={1.5} />
                 </div>
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground">
                   {feature.title}

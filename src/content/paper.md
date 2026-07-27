@@ -2,8 +2,8 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** July 26, 2026
-**Word Count:** Approx. 8400
+**Updated:** July 27, 2026
+**Word Count:** Approx. 8500
 
 ---
 
@@ -204,7 +204,7 @@ Groth16 requires a structured reference string (SRS) from a trusted setup ceremo
 
 #### **4.1. The Entros Token**
 
-The protocol's economic security is anchored by a native utility token (SPL Token-2022 with Confidential Balances [13]):
+The protocol's economic security is anchored by a native utility token, a standard SPL mint launched on a public bonding curve. The identity Anchor described in Section 3 is a separate Token-2022 mint carrying the NonTransferable extension; the two are distinct assets with distinct standards.
 
 1. **Staking.** Validators stake Entros tokens as slashable collateral to participate in the Anonymity Ring.
 2. **Delegation.** Holders who do not run a node delegate stake to a validator, sharing the accuracy-weighted rewards and the slashing risk.
@@ -457,7 +457,7 @@ The protocol is precise about what it proves. First-time verification is a liven
 
 * Multi-contributor trusted setup ceremony for Groth16 Phase 2 before mainnet.
 * External security audit of all on-chain programs, the ZK circuit, and the executor node.
-* Full on-chain token economics: validator staking, capacity tiers, and governance wired to the SPL Token-2022 mint with Confidential Balances.
+* Full on-chain token economics: validator staking, delegation, capacity tiers, and economic governance wired to the utility token.
 * Cross-chain deployment to Ethereum L2s after Solana mainnet stabilizes.
 * Formal analysis of SimHash collision probability bounds under adversarial feature distributions.
 * Cross-wallet fingerprint comparison is implemented in the server-side validation layer. The executor maintains a registry of SimHash fingerprints and compares each new verification against existing entries. If the Hamming distance between a new fingerprint and any existing entry falls below δ_max, the verification is flagged as a potential duplicate identity. Empirical investigation of the persistence of involuntary behavioral features across deliberate behavioral modification is ongoing.

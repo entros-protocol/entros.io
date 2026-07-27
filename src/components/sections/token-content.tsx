@@ -1,5 +1,6 @@
 import { SolanaIcon } from "@/lib/solana-icon";
-import { Shield, Vote, Layers, Share2, Rocket, TrendingUp, Lock, Flame, AlertTriangle } from "lucide-react";
+import { Shield, Vote, Layers, Share2, Rocket, TrendingUp, Lock, Flame, AlertTriangle,
+  Fingerprint, Coins, Blocks, KeyRound, Network } from "lucide-react";
 import {
   protocolFee,
   flywheel,
@@ -10,55 +11,12 @@ import {
 
 const UTILITY_ICONS = [Shield, Share2, Layers, Vote];
 
+/** One glyph per flywheel node, in order. None reused elsewhere on this page. */
+const FLYWHEEL_ICONS = [Fingerprint, Coins, Blocks, KeyRound, Network];
+
 export function TokenContent() {
   return (
     <>
-      {/* Protocol Fee */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
-              <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // PROTOCOL FEE
-                </span>
-
-                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  Every verification<span className="text-cyan">.</span>
-                  <br />
-                  On-chain revenue<span className="text-cyan">.</span>
-                </h2>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7">
-              <div className="border border-border p-6 md:p-8">
-                <div className="flex items-start gap-4">
-                  <SolanaIcon className="mt-1 h-6 w-6 shrink-0 text-cyan" />
-                  <div>
-                    <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
-                      {protocolFee.amount}
-                    </p>
-                    <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
-                      {protocolFee.destination}
-                    </p>
-                  </div>
-                </div>
-
-                <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                  {protocolFee.description}
-                </p>
-                <p className="mt-4 text-base leading-relaxed text-foreground/65 md:text-lg">
-                  Users pay a small fee to prove they're human. Integrators
-                  read on-chain state for free. The fee funds the protocol
-                  and makes an identity cost something to hold.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Revenue Flywheel */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
@@ -120,19 +78,24 @@ export function TokenContent() {
                       }}
                       strokeWidth="1"
                     />
-                    <text
-                      x={cx}
-                      y={138}
-                      textAnchor="middle"
-                      style={{
-                        fill: "var(--color-cyan)",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 20,
-                        letterSpacing: "0.1em",
-                      }}
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </text>
+                    {(() => {
+                      // Nested <svg> inside the diagram: lucide spreads
+                      // unknown props onto its root element, so x/y/width/
+                      // height position each glyph inside its own circle.
+                      const Glyph = FLYWHEEL_ICONS[i] ?? Fingerprint;
+                      const S = 30;
+                      return (
+                        <Glyph
+                          x={cx - S / 2}
+                          y={130 - S / 2}
+                          width={S}
+                          height={S}
+                          stroke="var(--color-cyan)"
+                          strokeWidth={1.4}
+                          fill="none"
+                        />
+                      );
+                    })()}
                     <text
                       x={cx}
                       y={208}
@@ -258,8 +221,8 @@ export function TokenContent() {
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            No VC allocation and no team unlock cliff. One launch, open
-            to everyone, including us.
+            No presale and no VC round. One launch, open to everyone.
+            What the team holds, it bought there and locked.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -276,6 +239,52 @@ export function TokenContent() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Protocol Fee */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
+              <div className="lg:relative">
+                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
+                  // PROTOCOL FEE
+                </span>
+
+                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
+                  Every verification<span className="text-cyan">.</span>
+                  <br />
+                  On-chain revenue<span className="text-cyan">.</span>
+                </h2>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <div className="border border-border p-6 md:p-8">
+                <div className="flex items-start gap-4">
+                  <SolanaIcon className="mt-1 h-6 w-6 shrink-0 text-cyan" />
+                  <div>
+                    <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
+                      {protocolFee.amount}
+                    </p>
+                    <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
+                      {protocolFee.destination}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
+                  {protocolFee.description}
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-foreground/65 md:text-lg">
+                  Users pay a small fee to prove they're human. Integrators
+                  read on-chain state for free. The fee funds the protocol
+                  and makes an identity cost something to hold.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -300,7 +309,7 @@ export function TokenContent() {
                   className="flex flex-col bg-background p-8 md:p-10"
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 text-cyan" strokeWidth={1.5} />
+                    <Icon className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                     <span className="h-px flex-1 bg-border" />
                   </div>
 
@@ -341,7 +350,7 @@ export function TokenContent() {
             <div className="lg:col-span-7">
               <div className="border border-border">
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Flame className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <Flame className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Ground-Truth Honey-pots
@@ -353,7 +362,7 @@ export function TokenContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <AlertTriangle className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <AlertTriangle className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Asymmetric Slashing
@@ -365,7 +374,7 @@ export function TokenContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Shield className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <Shield className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Multi-Party Consensus
@@ -400,7 +409,7 @@ export function TokenContent() {
             <div className="lg:col-span-7">
               <div className="border border-border">
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Rocket className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <Rocket className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       {launchDetails.mechanism}
@@ -412,20 +421,20 @@ export function TokenContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Lock className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <Lock className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       {launchDetails.standard}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Supply fixed at genesis. Confidential Balances for
-                      private staking.
+                      Fixed supply at genesis, launched through the EasyA
+                      Kickstart bonding curve on Solana.
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <TrendingUp className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                  <TrendingUp className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Real revenue behind it

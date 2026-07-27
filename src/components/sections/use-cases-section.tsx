@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { useCases } from "@/data/use-cases";
 import { getIcon } from "@/lib/icons";
 
@@ -33,6 +35,19 @@ export function UseCasesSection() {
             );
           })}
         </div>
+
+        <Link
+          href="/solutions"
+          className="
+            group mt-12 inline-flex items-center gap-2
+            rounded-full border border-foreground/20 px-5 py-2.5
+            text-sm text-foreground
+            transition-colors hover:border-foreground/40 hover:bg-foreground/5
+          "
+        >
+          See all use cases
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </Link>
       </div>
     </section>
   );

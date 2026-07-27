@@ -73,7 +73,7 @@ export default function Token() {
           <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             $ENTROS
             <br />
-            Identity on chain<span className="text-cyan">.</span>
+            Built to secure human verification<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

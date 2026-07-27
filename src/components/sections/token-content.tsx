@@ -392,7 +392,7 @@ export function TokenContent() {
                 </span>
 
                 <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  Verified humans only<span className="text-cyan">.</span>
+                  How the token works<span className="text-cyan">.</span>
                 </h2>
               </div>
             </div>

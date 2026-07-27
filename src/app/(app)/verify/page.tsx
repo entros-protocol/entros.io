@@ -84,10 +84,9 @@ export default function Verify() {
             Mint your Anchor<span className="text-cyan">.</span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
-            Twelve seconds of voice, motion, and touch. Connect your Solana
-            wallet to mint an Entros Anchor with a portable, on-chain Trust
-            Score readable by every dApp.
+          <p className="mx-auto mt-7 max-w-2xl text-balance text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
+            Twelve seconds of voice, motion, and touch. Connect a Solana
+            wallet to mint your Anchor and start building Trust Score.
           </p>
         </div>
       </section>

@@ -82,15 +82,12 @@ export default function Technology() {
       <VerificationModesSection />
       <ResearchValidationSection />
 
-      {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-            Proof of personhood,
-            <br />
-            verified on Solana<span className="text-cyan">.</span>
-          </h2>
-          <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
+      {/* Calls to action, no closing headline. No border or top padding:
+          the research section's own bottom padding sets the gap, so these
+          read as the tail of that section rather than a separate band. */}
+      <section>
+        <div className="mx-auto max-w-5xl px-6 pb-24 text-center md:pb-32">
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/verify"
               className="

@@ -5,6 +5,10 @@ import { cn } from "@/lib/utils";
 
 const FRAME_INTERVAL_MS = 33;
 
+/** Fraction of the box the fitted art is allowed to occupy on each axis. */
+const FIT_W = 0.72;
+const FIT_H = 0.75;
+
 export type SceneRender = (
   cols: number,
   rows: number,
@@ -22,6 +26,13 @@ interface AsciiSceneProps {
   aspect?: string;
   className?: string;
   fill?: boolean;
+  /**
+   * Scale the art to the box instead of the viewport breakpoint ladder.
+   * The ladder cannot track a box whose width swings with the grid it
+   * sits in (a two-column split is narrower at 1440 than it is stacked
+   * at 768), which leaves the art stranded in the middle of the panel.
+   */
+  fit?: boolean;
 }
 
 export function AsciiScene({
@@ -32,10 +43,43 @@ export function AsciiScene({
   aspect = "16/9",
   className,
   fill = false,
+  fit = false,
 }: AsciiSceneProps) {
   const preRef = useRef<HTMLPreElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   const renderRef = useRef(render);
   renderRef.current = render;
+
+  useEffect(() => {
+    if (!fit) return;
+    const pre = preRef.current;
+    const box = boxRef.current;
+    if (!pre || !box) return;
+
+    // Measure the cell advance off the live font rather than assuming
+    // 0.6em, so swapping the mono stack cannot silently mis-scale.
+    const probe = document.createElement("pre");
+    probe.className = pre.className;
+    probe.style.cssText =
+      "position:absolute;visibility:hidden;font-size:100px;white-space:pre";
+    probe.textContent = "0".repeat(20);
+    box.appendChild(probe);
+    const advance = probe.getBoundingClientRect().width / 20 / 100;
+    probe.remove();
+    if (!advance) return;
+
+    function resize() {
+      const { width, height } = box!.getBoundingClientRect();
+      const byWidth = (width * FIT_W) / (cols * advance);
+      const byHeight = (height * FIT_H) / rows;
+      pre!.style.fontSize = `${Math.min(byWidth, byHeight)}px`;
+    }
+
+    const observer = new ResizeObserver(resize);
+    observer.observe(box);
+    resize();
+    return () => observer.disconnect();
+  }, [fit, cols, rows]);
 
   useEffect(() => {
     const pre = preRef.current;
@@ -129,6 +173,7 @@ export function AsciiScene({
 
   return (
     <div
+      ref={boxRef}
       className={cn(
         "relative w-full overflow-hidden border border-border bg-surface",
         fill && "h-full",

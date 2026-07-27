@@ -20,7 +20,7 @@ export function PrivacySection() {
         </h2>
 
         <div className="mt-16 grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-start lg:gap-16">
-          <AsciiDataFlowScene label="DATA FLOW" aspect="4/5" />
+          <AsciiDataFlowScene label="DATA FLOW" aspect="4/5" fit />
 
           <ul className="flex flex-col divide-y divide-border border-y border-border">
             {privacyGuarantees.map((guarantee) => {

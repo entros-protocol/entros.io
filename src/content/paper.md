@@ -386,7 +386,7 @@ T1 exercises trivial procedural synthesis (sine-wave harmonics with additive noi
 
 T3b applies distributional constraints derived from published voice science norms, maintaining physiologically plausible feature values throughout the optimization. Inter-feature consistency checks (e.g., perturbation measure ratios inherent to vocal fold mechanics) prevent the optimizer from producing individually plausible but structurally impossible feature combinations.
 
-T4 (modern voice cloning via XTTS-v2, F5-TTS), T5 (coupled cross-modal synthesis), and T6–T8 (identity theft, replay perturbation, adaptive probing) are planned. Aggregate results are published at entros.io/security. Attack implementation code remains private per responsible-disclosure convention.
+T4 extends the program to modern neural voice synthesis, which the tiers above deliberately exclude. T4a paired pre-recorded human voice with procedural motion and moved from a 100% pass counterfactual to 0% across four progressive defense waves, closing at 1,000 attempts with a 95% confidence interval of [0%, 0.37%]. T4b synthesized the issued challenge phrase in real time across two TTS model families and 58 voices; 0% of 200 attempts cleared the full production stack. T5 (coupled cross-modal synthesis) is underway. T6–T8 (identity theft, replay perturbation, adaptive probing) are planned. Aggregate results are published at entros.io/security. Attack implementation code remains private per responsible-disclosure convention.
 
 ---
 

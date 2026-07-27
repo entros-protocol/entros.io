@@ -694,6 +694,7 @@ interface SceneProps {
   aspect?: string;
   className?: string;
   fill?: boolean;
+  fit?: boolean;
 }
 
 export function AsciiSDKScene(p: SceneProps) {

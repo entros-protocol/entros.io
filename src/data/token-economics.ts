@@ -24,7 +24,7 @@ export const flywheel: FlyWheelStep[] = [
   {
     step: "Humans verify",
     description:
-      "A person proves they are a live human and pays a small SOL fee, in the same transaction as the ZK proof. One signature, one prompt.",
+      "A person proves they are a live human and pays a small SOL fee, in the same transaction as the ZK proof.",
   },
   {
     step: "Protocol earns",

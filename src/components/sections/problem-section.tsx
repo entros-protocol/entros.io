@@ -15,12 +15,11 @@ export function ProblemSection() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          At that scale, identifying a returning human across time
-          becomes the foundational signal for airdrops, governance, and
-          agent accountability. Static biometrics verify a moment.
-          Entros is the behavioral layer—continuous proof-of-personhood
-          that runs in any browser and keeps raw data on the device,
-          compounding trust across every dApp on Solana.
+          At that scale, recognizing a returning human becomes the
+          foundational signal for airdrops, governance, and agent
+          accountability. Static biometrics prove a moment. Entros
+          proves a pattern, captured on-device in any browser and
+          compounding across every dApp on Solana.
         </p>
       </div>
     </section>

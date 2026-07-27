@@ -55,9 +55,9 @@ export const supplyPrinciples: SupplyPrinciple[] = [
       "A fixed supply on an open launch. No presale, no private round, no VC allocation.",
   },
   {
-    title: "No insider unlocks",
+    title: "No insider allocation",
     description:
-      "No team cliff hanging over the market. Any team-held tokens are bought on the same terms as everyone else and locked in public.",
+      "No tokens are minted to the team. Any team-held supply is bought on the open market at launch, like any other buyer, and locked in public vesting contracts anyone can inspect.",
   },
   {
     title: "Value from utility",
@@ -73,14 +73,19 @@ export const tokenUtilities: TokenUtility[] = [
       "Validators stake $ENTROS as slashable collateral to run a node in the verification network. Rewards track validation accuracy against ground-truth benchmarks, never throughput, so passing borderline captures to lift volume cannot increase yield. Activates as the validator network decentralizes.",
   },
   {
-    title: "Governance",
+    title: "Delegation",
     description:
-      "Holders vote on protocol parameters: the verification fee, Trust Score weights, threshold policy, and how protocol revenue is used. One token, one vote.",
+      "Holders who do not run a node delegate stake to a validator and share both the accuracy-weighted rewards and the slashing risk. Returns track real verification volume rather than emissions. Activates alongside validator staking.",
   },
   {
     title: "Capacity Tiers",
     description:
-      "Large integrators stake $ENTROS for priority access and bulk verification, replacing per-verification fees with a staking model at scale.",
+      "Large integrators stake $ENTROS for priority access and bulk verification, replacing per-verification fees with a staking model at scale. Activates after mainnet.",
+  },
+  {
+    title: "Economic Governance",
+    description:
+      "Holders direct the protocol economy: treasury allocation, the verification fee, validator admission policy, and ecosystem funding. Voting weight combines a verified Entros Anchor with staked tokens under a lock multiplier. Detection parameters are set by calibration against measured data and red-team results, published as a changelog, and are never put to a token vote.",
   },
 ];
 

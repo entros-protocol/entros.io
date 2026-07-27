@@ -1,5 +1,5 @@
 import { SolanaIcon } from "@/lib/solana-icon";
-import { Shield, Vote, Layers, Rocket, TrendingUp, Lock, Flame, AlertTriangle } from "lucide-react";
+import { Shield, Vote, Layers, Share2, Rocket, TrendingUp, Lock, Flame, AlertTriangle } from "lucide-react";
 import {
   protocolFee,
   flywheel,
@@ -8,7 +8,7 @@ import {
   launchDetails,
 } from "@/data/token-economics";
 
-const UTILITY_ICONS = [Shield, Vote, Layers];
+const UTILITY_ICONS = [Shield, Share2, Layers, Vote];
 
 export function TokenContent() {
   return (
@@ -288,10 +288,10 @@ export function TokenContent() {
           </span>
 
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Stake<span className="text-cyan">.</span> Govern<span className="text-cyan">.</span> Validate<span className="text-cyan">.</span>
+            Stake<span className="text-cyan">.</span> Delegate<span className="text-cyan">.</span> Govern<span className="text-cyan">.</span>
           </h2>
 
-          <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
+          <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2">
             {tokenUtilities.map((utility, i) => {
               const Icon = UTILITY_ICONS[i] ?? Shield;
               return (

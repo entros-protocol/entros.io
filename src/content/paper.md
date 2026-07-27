@@ -206,9 +206,12 @@ Groth16 requires a structured reference string (SRS) from a trusted setup ceremo
 
 The protocol's economic security is anchored by a native utility token (SPL Token-2022 with Confidential Balances [13]):
 
-1. **Staking.** Validators stake Entros tokens to participate in the Anonymity Ring.
-2. **Verification capacity.** Integrators stake Entros for discounted or unlimited verifications via capacity tiers.
-3. **Governance.** Token holders vote on protocol parameters.
+1. **Staking.** Validators stake Entros tokens as slashable collateral to participate in the Anonymity Ring.
+2. **Delegation.** Holders who do not run a node delegate stake to a validator, sharing the accuracy-weighted rewards and the slashing risk.
+3. **Verification capacity.** Integrators stake Entros for discounted or unlimited verifications via capacity tiers.
+4. **Economic governance.** Holders direct treasury allocation, the verification fee, validator admission policy, and ecosystem funding. Detection parameters are excluded: Trust Score weights, Hamming bounds, and validation thresholds are set by calibration against measured data and adversarial results, and published as a changelog.
+
+None of these mechanisms are active in the current devnet deployment. Verification fees and validator stake are SOL-denominated today, and each mechanism activates in phases as the validator network decentralizes.
 
 #### **4.2. User-Pays Model**
 

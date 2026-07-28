@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { mainNav } from "@/data/navigation";
 import { MobileNav } from "./mobile-nav";
 import { NavDropdown, type DropdownItem } from "./nav-dropdown";
 import { NavbarWordmark } from "./navbar-wordmark";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { NavThemeSquare } from "./nav-theme-square";
+import { GithubMark } from "./github-mark";
 
 const technologyDropdown: DropdownItem[] = [
   {
@@ -61,77 +63,97 @@ const solutionsDropdown: DropdownItem[] = [
 
 export function Navbar() {
   return (
-    <nav className="fixed top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center px-6">
-        {/* Wordmark—client component, runs a one-shot hash-shuffle reveal
-            on first mount when entering on the home route. */}
-        <NavbarWordmark />
+    /* Floating bar: a wordmark-and-links strip plus detached action
+       blocks, each 46px square with its own shadow. */
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-50 pt-2.5 md:pt-3">
+      <div className="pointer-events-auto mx-auto flex max-w-7xl items-center gap-2.5 px-6 md:gap-3">
+        {/* White strip: wordmark, then links pushed left to free right-hand room */}
+        <div className="flex h-[46px] min-w-0 flex-1 items-center bg-foreground px-5 shadow-[0_10px_34px_rgba(0,0,0,0.3)]">
+          <div className="shrink-0 text-background [&_a]:text-background [&_a]:text-2xl">
+            <NavbarWordmark />
+          </div>
 
-        {/* Center navigation */}
-        <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 md:flex">
-          {mainNav.map((item) =>
-            item.label === "Technology" ? (
-              <li key={item.href}>
-                <NavDropdown label="Technology" items={technologyDropdown} />
-              </li>
-            ) : item.label === "Solutions" ? (
-              <li key={item.href}>
-                <NavDropdown label="Solutions" items={solutionsDropdown} />
-              </li>
-            ) : (
-              <li key={item.href}>
-                {item.external ? (
-                  <a
-                    href={item.href}
-                    className="py-2 text-sm leading-none text-foreground/70 transition-colors duration-200 hover:text-foreground"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {item.label}
-                  </a>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className="py-2 text-sm leading-none text-foreground/70 transition-colors duration-200 hover:text-foreground"
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </li>
-            )
-          )}
-        </ul>
+          <ul className="ml-auto hidden items-center gap-6 md:flex lg:gap-8">
+            {mainNav.map((item) =>
+              item.label === "Technology" ? (
+                <li key={item.href} className="[&_button]:font-medium [&_button]:text-background [&_button:hover]:text-background/70">
+                  <NavDropdown label="Technology" items={technologyDropdown} />
+                </li>
+              ) : item.label === "Solutions" ? (
+                <li key={item.href} className="[&_button]:font-medium [&_button]:text-background [&_button:hover]:text-background/70">
+                  <NavDropdown label="Solutions" items={solutionsDropdown} />
+                </li>
+              ) : (
+                <li key={item.href}>
+                  {item.external ? (
+                    <a
+                      href={item.href}
+                      className="text-sm font-medium leading-none text-background transition-colors hover:text-background/70"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="text-sm font-medium leading-none text-background transition-colors hover:text-background/70"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </li>
+              )
+            )}
+          </ul>
+        </div>
 
-        {/* Right-side actions: ghost Dashboard + filled-primary Verify. */}
-        <div className="ml-auto flex items-center gap-2">
-          <Link
-            href="/dashboard"
-            className="
-              hidden md:inline-flex items-center
-              rounded-full px-4 py-1.5 text-sm font-medium
-              text-foreground/70
-              transition-colors duration-200
-              hover:bg-foreground/5 hover:text-foreground
-            "
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="/verify"
-            className="
-              hidden md:inline-flex items-center
-              rounded-full bg-foreground px-4 py-1.5
-              text-sm font-medium text-background
-              transition-colors duration-200
-              hover:bg-foreground/90
-            "
-          >
-            Verify
-          </Link>
-          <ThemeToggle />
+        {/* Detached square blocks */}
+        <a
+          href="https://github.com/entros-protocol"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Entros on GitHub"
+          className="
+            hidden h-[46px] w-[46px] items-center justify-center bg-foreground
+            text-background shadow-[0_10px_34px_rgba(0,0,0,0.3)]
+            transition-colors hover:bg-foreground/90 md:inline-flex
+          "
+        >
+          <GithubMark className="h-[18px] w-[18px]" />
+        </a>
+
+        <Link
+          href="/dashboard"
+          className="
+            hidden h-[46px] items-center bg-foreground px-4
+            text-sm font-medium text-background
+            shadow-[0_10px_34px_rgba(0,0,0,0.3)]
+            transition-colors hover:bg-foreground/90 md:inline-flex
+          "
+        >
+          Dashboard
+        </Link>
+
+        <Link
+          href="/verify"
+          className="
+            hidden h-[46px] items-center gap-2 border border-foreground/25
+            bg-background px-4 text-sm font-medium text-foreground
+            shadow-[0_10px_34px_rgba(0,0,0,0.3)]
+            transition-colors hover:bg-surface md:inline-flex
+          "
+        >
+          Verify
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+
+        <NavThemeSquare />
+
+        <div className="flex h-[46px] items-center bg-foreground px-1 shadow-[0_10px_34px_rgba(0,0,0,0.3)] md:hidden [&_button]:text-background">
           <MobileNav />
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

@@ -1,30 +1,29 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { AsciiSpiral } from "@/components/ui/ascii-spiral";
+import { DriftWaveform } from "@/components/ui/drift-waveform";
 
 /**
- * Homepage hero—split layout.
- * Left:  display headline · subheading · two CTAs.
- * Right: ASCII spiral animation.
+ * Homepage hero—copy stacked at the top, the bounded-drift waveform
+ * running edge to edge along the bottom. The wave bleeds the container
+ * padding on both sides so it meets the skeleton rails, and `mt-auto`
+ * pins it to the floor of the viewport-height section.
  */
 export function HeroSection() {
-  // `flex-col-reverse` flips DOM source-order rendering on mobile so the
-  // ASCII spiral appears above the headline + CTAs (matches the Scale.com-
-  // style mobile pattern: graphic on top, content below). `lg:flex-row`
-  // re-enters the desktop split-layout by source order: text left, spiral
-  // right. Desktop layout is unchanged from the original.
   return (
-    <section className="relative mx-auto flex min-h-svh w-full max-w-7xl flex-col-reverse justify-center gap-16 px-6 pt-28 pb-6 md:pt-36 md:pb-12 lg:min-h-[calc(100vh-4rem)] lg:flex-row lg:justify-normal lg:items-center lg:gap-12 lg:pt-24 lg:pb-24">
-      {/* Left column—copy + CTAs */}
-      <div className="relative z-10 flex flex-col lg:w-1/2 lg:max-w-2xl">
+    <section className="relative mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pt-28 pb-0 md:pt-32 lg:min-h-[calc(100vh-4rem)] lg:pt-28">
+      {/* Copy + CTAs */}
+      <div className="relative z-10 flex max-w-2xl flex-col lg:max-w-5xl">
+        {/* The headline measures 868px set on one line at lg's 72px, so the
+            column opens up at lg to carry it. Below that the break stays:
+            md's 60px still needs 723px against a 676px column. */}
         <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-          The temporal
-          <br />
+          The temporal{" "}
+          <br className="lg:hidden" />
           identity layer
           <span className="text-cyan">.</span>
         </h1>
 
-        <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
+        <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg lg:max-w-2xl">
           Behavioral ZK-proofs for humans. Agent Anchor for the AI operators
           behind them. On-device and Solana-native, portable across every dApp.
         </p>
@@ -60,30 +59,17 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Right column—ASCII spiral. flex justify-center makes the pre
-          (a flex item with content-driven width) sit centered in the column
-          on every breakpoint.
-
-          Explicit height matches the spiral's eventual rendered height at
-          each breakpoint (80 rows × font-size: 80×2.5px=200 on mobile so
-          the stacked layout fits the headline + CTAs above the fold;
-          80×4.5px=360, 80×5px=400, 80×5.5px=440, 80×6px=480 from sm up).
-          Reserves the layout space before the async payload decodes,
-          eliminating the CLS that would otherwise shove the headline upward
-          on first paint.
-
-          `lg:flex-1` only applies at lg+ where the layout is `flex-row`. On
-          smaller breakpoints (`flex-col-reverse`) we deliberately omit
-          `flex-1` so the spiral container uses its natural height instead
-          of growing to fill all available vertical space — without this,
-          the spiral would consume most of the mobile viewport and push
-          headline + CTAs below the fold. */}
-      <div className="relative flex h-[200px] max-w-[75%] items-center justify-center sm:h-[360px] md:h-[400px] lg:h-[440px] lg:w-1/2 lg:max-w-none lg:flex-1 xl:h-[480px]">
-        {/* Spiral renders upright on every breakpoint. (Previously rotated
-            90° on mobile, which left the animating, oversized <pre> being
-            repainted while rotated — janky and visually clipped on phones.) */}
-        <AsciiSpiral className="opacity-95" />
-      </div>
+      {/* Bounded-drift waveform. `-mx-6` cancels the section padding so the
+          wave reaches the rails on both sides; `mt-auto` drops it to the
+          bottom edge, where its gradient dissolves into the section border
+          below. Height is viewport-relative so the copy above always keeps
+          its air on short screens. Growing the phone step past this only
+          pushes the tail below the fold — the narrow geometry closes the
+          gap under the buttons by raising its own baseline instead. */}
+      <DriftWaveform
+        idPrefix="hero"
+        className="-mx-6 mt-auto h-[42svh] min-h-[240px] md:h-[44svh] lg:h-[46svh]"
+      />
     </section>
   );
 }

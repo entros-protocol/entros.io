@@ -33,6 +33,8 @@ interface AsciiSceneProps {
    * at 768), which leaves the art stranded in the middle of the panel.
    */
   fit?: boolean;
+  /** Multiplier on the fit ratio, for scenes that should fill more of the box. */
+  fitScale?: number;
 }
 
 export function AsciiScene({
@@ -44,6 +46,7 @@ export function AsciiScene({
   className,
   fill = false,
   fit = false,
+  fitScale = 1,
 }: AsciiSceneProps) {
   const preRef = useRef<HTMLPreElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -68,18 +71,27 @@ export function AsciiScene({
     probe.remove();
     if (!advance) return;
 
+    let lastSize = 0;
+
     function resize() {
       const { width, height } = box!.getBoundingClientRect();
-      const byWidth = (width * FIT_W) / (cols * advance);
-      const byHeight = (height * FIT_H) / rows;
-      pre!.style.fontSize = `${Math.min(byWidth, byHeight)}px`;
+      const byWidth = (width * FIT_W * fitScale) / (cols * advance);
+      const byHeight = (height * FIT_H * fitScale) / rows;
+      // Snap to a whole pixel. A fractional font-size gives the monospace
+      // cell a fractional advance, so every animated frame re-lays the
+      // glyphs out at sub-pixel offsets and the field visibly jitters.
+      const next = Math.max(1, Math.floor(Math.min(byWidth, byHeight)));
+      if (next !== lastSize) {
+        lastSize = next;
+        pre!.style.fontSize = `${next}px`;
+      }
     }
 
     const observer = new ResizeObserver(resize);
     observer.observe(box);
     resize();
     return () => observer.disconnect();
-  }, [fit, cols, rows]);
+  }, [fit, fitScale, cols, rows]);
 
   useEffect(() => {
     const pre = preRef.current;
@@ -93,10 +105,12 @@ export function AsciiScene({
     let lastFrame = 0;
     let rafId = 0;
     let inView = true;
+    let started = false;
+    let lastHtml = "";
 
     function frame(now: number) {
       if (now - lastFrame < FRAME_INTERVAL_MS) {
-        if (inView) rafId = requestAnimationFrame(frame);
+        if (inView && started) rafId = requestAnimationFrame(frame);
         return;
       }
       const dt = Math.min((now - prev) / 1000, 0.05);
@@ -141,9 +155,18 @@ export function AsciiScene({
         }
         if (r < rows - 1) html += "\n";
       }
-      pre!.innerHTML = html;
+      // Only touch the DOM when the field actually changed. Assigning
+      // innerHTML tears down and rebuilds the whole subtree and forces a
+      // repaint even when the output is byte-identical — and most frames
+      // ARE identical, because several renderers quantise on Math.floor(t).
+      // At 7px that redundant repaint was invisible; at 12-16px it reads
+      // as flicker.
+      if (html !== lastHtml) {
+        lastHtml = html;
+        pre!.innerHTML = html;
+      }
 
-      if (inView) rafId = requestAnimationFrame(frame);
+      if (inView && started) rafId = requestAnimationFrame(frame);
     }
 
     const reduceMotion = window.matchMedia(
@@ -163,6 +186,7 @@ export function AsciiScene({
       { threshold: 0 }
     );
     observer.observe(pre);
+    started = true;
     rafId = requestAnimationFrame(frame);
 
     return () => {
@@ -175,28 +199,12 @@ export function AsciiScene({
     <div
       ref={boxRef}
       className={cn(
-        "relative w-full overflow-hidden border border-border bg-surface",
+        "relative w-full overflow-hidden rounded-2xl bg-foreground/[0.06]",
         fill && "h-full",
         className
       )}
       style={fill ? undefined : { aspectRatio: aspect }}
     >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-px -top-px z-10 h-2 w-2 border-l-2 border-t-2 border-cyan/60"
-      />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-px -top-px z-10 h-2 w-2 border-r-2 border-t-2 border-cyan/60"
-      />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-px -left-px z-10 h-2 w-2 border-b-2 border-l-2 border-cyan/60"
-      />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-px -right-px z-10 h-2 w-2 border-b-2 border-r-2 border-cyan/60"
-      />
 
       {label && (
         <div className="absolute left-4 top-3 z-10 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/30">

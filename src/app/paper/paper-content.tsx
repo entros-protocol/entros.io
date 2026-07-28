@@ -138,7 +138,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
               const isBlock = className?.startsWith("language-");
               if (isBlock) {
                 return (
-                  <code className="block overflow-x-auto border border-border bg-surface p-5 font-mono text-sm leading-relaxed text-foreground/80">
+                  <code className="block overflow-x-auto rounded-2xl bg-foreground/[0.06] p-5 font-mono text-sm leading-relaxed text-foreground/80">
                     {children}
                   </code>
                 );

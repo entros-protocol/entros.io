@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
+import { TWITTER_HANDLE, TWITTER_URL } from "@/lib/site";
 
 /**
  * Contract address for $ENTROS. Empty until the token mints on EasyA
@@ -147,7 +148,19 @@ export function TokenLaunchCard() {
             </a>
           </>
         ) : (
-          "The address will be published here and on @entros_protocol at launch."
+          <>
+            The address will be published here and on{" "}
+            {/* Bound so the handle and "at launch." share the final line. */}
+            <a
+              href={TWITTER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="whitespace-nowrap text-foreground/70 underline decoration-foreground/25 underline-offset-4 transition-colors hover:text-foreground"
+            >
+              {TWITTER_HANDLE}
+            </a>
+            &nbsp;at&nbsp;launch.
+          </>
         )}
       </p>
     </div>

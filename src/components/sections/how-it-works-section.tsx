@@ -13,7 +13,7 @@ export function HowItWorksSection() {
         </span>
 
         <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          Three involuntary signals,
+          Three human signals,
           one cryptographic commitment<span className="text-cyan">.</span>
         </h2>
 

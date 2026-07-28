@@ -461,7 +461,7 @@ const mintRender: SceneRender = (cols, rows, tier, char, t) => {
 const creatorRender: SceneRender = (cols, rows, tier, char, t) => {
   const cx = (cols - 1) / 2;
   const cy = (rows - 1) / 2;
-  const rOuter = Math.min(cols * 0.32, rows * 0.42);
+  const rOuter = Math.min(cols * 0.46, rows * 0.62);
   const rInner = rOuter * 0.55;
   for (let a = 0; a < TWO_PI; a += 0.025) {
     const r1 = rOuter;
@@ -695,6 +695,7 @@ interface SceneProps {
   className?: string;
   fill?: boolean;
   fit?: boolean;
+  fitScale?: number;
 }
 
 export function AsciiSDKScene(p: SceneProps) {

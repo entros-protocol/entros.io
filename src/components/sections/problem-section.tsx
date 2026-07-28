@@ -11,7 +11,14 @@ export function ProblemSection() {
         </span>
 
         <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          99.99% of Solana transactions will be agent-driven within two years<span className="text-cyan">.</span>
+          {/* Non-breaking spaces bind "within two years" into one unit so it
+              wraps to the second line together, instead of stranding "years."
+              alone. Responsive in a way a hard <br /> would not be. */}
+          {/* {" "} is load-bearing: JSX drops a space that sits between a
+              closing tag and the text following it. */}
+          <span className="text-cyan">99.99%</span>{" "}
+          of Solana transactions will be agent-driven
+          within&nbsp;two&nbsp;years<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">

@@ -106,6 +106,10 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
   images: {
+    // Next 16 allowlists the `quality` prop and silently falls back to 75
+    // for anything unlisted. 92 is here for the Seeker device matte, whose
+    // large flat gradients band visibly at 75.
+    qualities: [75, 92],
     remotePatterns: [
       { protocol: "https", hostname: "github.com" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },

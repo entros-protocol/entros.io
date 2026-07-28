@@ -33,11 +33,11 @@ function commitmentToHex(bytes: Uint8Array): string {
 
 import { RESET_COOLDOWN_SECS, evaluateResetCooldown } from "@/lib/cooldown";
 
-// Soft-reject retry budget (master-list #94). When attemptsUsed < MAX_ATTEMPTS
+// Soft-reject retry budget. When attemptsUsed < MAX_ATTEMPTS
 // and the server returns a user-recoverable reason, the client routes to
 // soft_failed (retry available) instead of failed (hard stop). Capped to
 // bound bot retry benefit per wallet — the server-side per-wallet cap
-// (master-list #94 C4) enforces this across wallet refreshes; this client
+// enforces this across wallet refreshes; this client
 // counter just drives the UX inside a session.
 const MAX_ATTEMPTS = 3;
 
@@ -105,12 +105,11 @@ function sanitizeErrorMessage(message: unknown): string {
   sanitized = sanitized.replace(/\b[1-9A-HJ-NP-Za-km-z]{40,}\b/g, "[blob]");
   // Strip Railway internal service URLs (and any `*.railway.internal` host)
   // that leak into reqwest-format upstream-failure messages from
-  // executor-node when the validation-service is unreachable. Empirical
-  // leak (2026-05-15): "error sending request for url
-  // (http://serene-possibility.railway.internal:8080/validate)" surfaced
-  // verbatim during a validator crash loop. Keep the leading "error
-  // sending request" substring so the categorizer in step-views can
-  // route it to validation-rejected; only the URL itself is the leak.
+  // executor-node when the validation-service is unreachable, e.g.
+  // "error sending request for url (http://<host>/validate)". Keep the
+  // leading "error sending request" substring so the categorizer in
+  // step-views can route it to validation-rejected; only the URL is
+  // the leak.
   sanitized = sanitized.replace(
     /https?:\/\/[\w.-]+\.railway\.internal(?::\d+)?(?:\/[^\s)]*)?/gi,
     "[internal]",
@@ -163,7 +162,7 @@ export function VerifyWalletConnected({
     tx: string;
     score: number;
   } | null>(null);
-  // Server-issued challenge phrase (master-list #89). Fetched from the
+  // Server-issued challenge phrase. Fetched from the
   // executor's /challenge endpoint during handleStart so the PulseChallenge
   // displays the authoritative phrase the validation service will
   // phoneme-match. Null when no fetch has happened yet or the executor was

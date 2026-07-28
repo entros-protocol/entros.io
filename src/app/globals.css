@@ -407,3 +407,83 @@ body {
 .wallet-adapter-dropdown-list-item:hover {
   background-color: var(--color-surface-hover) !important;
 }
+
+/* ----------------------------------------------------------------
+   Page skeleton
+
+   A wide content span bounded by a pair of vertical rails, with the
+   horizontal rules of card grids meeting them. `--breathe` keeps the
+   rails off the viewport edge on narrow screens.
+   ---------------------------------------------------------------- */
+
+:root {
+  --wrap: 1720px;
+  --wrap-narrow: 1376px;
+  --breathe: clamp(22px, 2.4vw, 52px);
+}
+
+/* Widen the two span tokens at the source rather than at ~116 call
+   sites. Ratio held at ~1.34x for both. */
+.max-w-7xl {
+  max-width: min(var(--wrap), calc(100% - 2 * var(--breathe)));
+}
+.max-w-5xl {
+  max-width: min(var(--wrap-narrow), calc(100% - 2 * var(--breathe)));
+}
+
+/* Rails ride the SECTION, not the inner container, so they run the full
+   height of every section regardless of how many wrappers it holds. */
+section {
+  position: relative;
+}
+section::before,
+section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+  pointer-events: none;
+  z-index: 0;
+}
+/* Sections come in two shapes. Most are full-width with an inner
+   .mx-auto.max-w-7xl, so the rail has to be inset to that container's edge.
+   A few (the home hero) ARE the constrained container, where percentage
+   math would double-count the inset — those rail at left:0 instead. */
+section:not([class*="max-w-"])::before {
+  left: max(var(--breathe), calc((100% - var(--wrap)) / 2));
+}
+section:not([class*="max-w-"])::after {
+  right: max(var(--breathe), calc((100% - var(--wrap)) / 2));
+}
+section[class*="max-w-"]::before { left: 0; }
+section[class*="max-w-"]::after { right: 0; }
+
+/* Card grids sit inside the container's px-6, so their own border-y stops
+   short of the rail. Bleed them out by exactly that padding so the
+   horizontals meet the verticals. */
+section > .mx-auto.max-w-7xl > .border-y,
+section > .mx-auto.max-w-7xl > .border-b,
+section > .mx-auto.max-w-7xl > div > .border-y {
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
+}
+
+/* Nav clearance: the bar floats instead of occupying a fixed 64px row. */
+body { padding-top: 0; }
+
+/* Standard content sections use py-24 / md:py-32. Widen the gap so each
+   band gets its own scroll viewport. Selector is .mx-auto.<pad> (0,2,0)
+   so it outranks the Tailwind utility without !important. Docs, verify,
+   dashboard and paper don't use this pair, so they're untouched. */
+section > .mx-auto.py-24 {
+  padding-top: 9rem;
+  padding-bottom: 9rem;
+}
+@media (min-width: 768px) {
+  section > .mx-auto.md\:py-32 {
+    padding-top: 13rem;
+    padding-bottom: 13rem;
+  }
+}

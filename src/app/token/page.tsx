@@ -18,14 +18,30 @@ export default function Token() {
       {/* Hero—centered, ASCII orbit full-width below the copy. */}
       <section>
         <div className="mx-auto max-w-5xl px-6 pt-32 pb-2 text-center md:pt-40">
-          <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-            The economic layer
-            <br />
-            of verified humanity<span className="text-cyan">.</span>
+          {/* Breaks are set per breakpoint rather than left to wrapping.
+              Desktop keeps its "The economic layer / of verified humanity."
+              split. Below md the phrase is broken explicitly so it reads
+              "The economic / layer of / verified / humanity."
+
+              The breaks only hold if the longest of those rows fits. At
+              48px "The economic" measures ~302px against a 298px column on
+              a 390px phone, so below md the size is fluid: "The economic"
+              runs ~6.29x the font size and the column is `100vw - 92px`,
+              which is what the slope solves for. It reaches the full 3rem
+              by ~400px and never exceeds it. md and up are untouched. */}
+          <h1 className="font-display text-[clamp(2rem,calc(15.2vw_-_14px),3rem)] font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+            The economic{" "}
+            <br className="md:hidden" />
+            layer{" "}
+            <br className="hidden md:inline" />
+            of{" "}
+            <br className="md:hidden" />
+            verified humanity<span className="text-cyan">.</span>
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-            Protocol fees, validator staking, treasury revenue.
+            {/* Bound so "revenue." never wraps away from what it belongs to. */}
+            Protocol fees, validator staking, treasury&nbsp;revenue.
             <br />
             $ENTROS turns genuine verification demand into network security.
           </p>

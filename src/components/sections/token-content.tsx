@@ -1,6 +1,6 @@
 import { SolanaIcon } from "@/lib/solana-icon";
 import { Shield, Vote, Layers, Share2, Rocket, TrendingUp, Lock, Flame, AlertTriangle,
-  Fingerprint, Coins, Blocks, KeyRound, Network } from "lucide-react";
+  Fingerprint, Coins, Blocks, KeyRound, Network, Users } from "lucide-react";
 import {
   protocolFee,
   flywheel,
@@ -374,7 +374,7 @@ export function TokenContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Shield className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                  <Users className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Multi-Party Consensus

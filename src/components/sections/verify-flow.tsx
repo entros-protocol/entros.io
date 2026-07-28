@@ -7,7 +7,7 @@ import {
 } from "@/components/verify/verify-state-machine";
 import { VerifyWalletConnected } from "./verify-wallet-connected";
 
-// Walletless preview removed from the public verify route 2026-05-06: the
+// Walletless preview is not exposed on the public verify route: the
 // preview path didn't run real validation, so a user could pass by being
 // silent for 12 seconds — the impression that creates is incompatible with
 // the article's claims about behavioral verification. Driving every tester
@@ -15,8 +15,7 @@ import { VerifyWalletConnected } from "./verify-wallet-connected";
 // signal. The walletless components (`verify-walletless.tsx`,
 // `verify-mode-toggle.tsx`) and the `VerifyMode` type alias remain in the
 // codebase so the path can be restored as a clearly-labelled product demo
-// later (or upgraded to a real-validation walletless tier; see master-list
-// for the v1.1 follow-up).
+// later, or upgraded to a real-validation walletless tier.
 
 class VerifyErrorBoundary extends Component<
   { children: React.ReactNode; onError: () => void },

@@ -41,18 +41,20 @@ export function SolutionCasesSection() {
             return (
               <article
                 key={c.title}
-                className={`grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-20 ${
+                className={`grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center lg:gap-20 ${
                   reverse ? "lg:[&>*:first-child]:order-2" : ""
                 }`}
               >
                 <Scene
                   label={`CASE ${number}`}
                   aspect="4/5"
+                  fit
                   className="lg:col-span-5 lg:h-full"
                 />
 
-                {/* Copy side */}
-                <div className="lg:col-span-7">
+                {/* Copy side, centred against the tall scene so the
+                    column doesn't sit top-aligned with dead space under it. */}
+                <div className="lg:col-span-7 lg:self-center">
                   <div className="flex items-center gap-4">
                     <span className="font-mono text-xs tracking-[0.2em] text-cyan">
                       {number}

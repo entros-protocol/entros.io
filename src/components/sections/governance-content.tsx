@@ -265,12 +265,7 @@ export function GovernanceContent() {
 
             {/* Diagram—concentric rings + signal channel */}
             <div className="lg:col-span-6">
-              <div className="relative flex h-full flex-col border border-border p-8 md:p-12">
-                {/* Corner brackets */}
-                <span className="absolute left-0 top-0 h-3 w-3 border-l border-t border-cyan/70" aria-hidden />
-                <span className="absolute right-0 top-0 h-3 w-3 border-r border-t border-cyan/70" aria-hidden />
-                <span className="absolute bottom-0 left-0 h-3 w-3 border-b border-l border-cyan/70" aria-hidden />
-                <span className="absolute bottom-0 right-0 h-3 w-3 border-b border-r border-cyan/70" aria-hidden />
+              <div className="relative flex h-full flex-col rounded-2xl bg-foreground/[0.06] p-8 md:p-12">
 
                 <div className="flex items-center justify-between">
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
@@ -484,7 +479,14 @@ export function GovernanceContent() {
             </div>
 
             <div className="lg:col-span-7">
-              <div className="flex h-full flex-col justify-center overflow-x-auto border border-border bg-surface p-6 font-mono text-sm md:p-8">
+              {/* Same treatment as the home snippet: the block is sized to
+                  its longest line, and the width it gives back becomes a
+                  hairline off its vertical centre running out to the site's
+                  right-hand skeleton line. `-mr-6` cancels the container
+                  padding so it lands on the rail exactly. */}
+              <div className="flex h-full items-center">
+                <div className="min-w-0 w-full lg:w-auto lg:shrink lg:grow-0 lg:basis-[38rem]">
+                  <div className="overflow-x-auto rounded-2xl bg-foreground/[0.06] p-6 font-mono text-sm md:p-8">
                 <pre className="leading-relaxed text-foreground/80">
                   <span className="text-foreground/40">
                     {"// DAO admin configures the Entros voter weight plugin\n"}
@@ -508,6 +510,9 @@ export function GovernanceContent() {
                   <span className="text-[#C084FC]">{"rpc"}</span>
                   {"();"}
                 </pre>
+                  </div>
+                </div>
+                <div aria-hidden className="-mr-6 hidden h-px flex-1 bg-border lg:block" />
               </div>
             </div>
           </div>

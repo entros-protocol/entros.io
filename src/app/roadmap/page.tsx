@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, KeyRound, ShieldCheck, Wrench } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
@@ -130,38 +131,67 @@ export default function Roadmap() {
             </div>
           </div>
 
-          {/* Hero panel — three-row preview of the gates with status pills */}
+          {/* Hero panel: the path to mainnet as a plain ordered sequence.
+              No header — the section eyebrow and headline beside it already
+              say what this is and that devnet is live. No per-gate icons or
+              category chips either: those restated the step titles. What is
+              left is the order, which step is next, and where the sequence
+              ends. Each gate's substance lives in the section below. */}
           <div className="lg:col-span-4">
-            <div className="border border-border p-6 md:p-8">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                // GATES
-              </p>
+            <div className="rounded-2xl bg-foreground/[0.06] px-8 py-10 md:px-10 md:py-12">
+              {/* `w-fit` collapses the list to its own content width so the
+                  sequence sits centred rather than against the left edge
+                  with a wide empty gutter. */}
+              <ol className="relative mx-auto w-fit">
+                {/* One continuous spine behind every marker, stopped short
+                    at both ends so it reads as a path rather than a rule. */}
+                <span
+                  aria-hidden
+                  className="absolute bottom-3 left-[3.5px] top-3 w-px bg-border"
+                />
 
-              <ol className="mt-8 space-y-6">
-                {gates.map((gate, i) => {
-                  const Icon = gate.Icon;
-                  return (
-                    <li key={gate.label} className="flex items-start gap-4">
-                      <span className="mt-0.5 font-mono text-xs tracking-[0.2em] text-cyan">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <Icon
-                            className="h-4 w-4 text-cyan"
-                            strokeWidth={1.5}
-                          />
-                          <p className="font-display text-base font-medium tracking-tight text-foreground">
-                            {gate.label}
-                          </p>
-                        </div>
-                        <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/50">
-                          {gate.window}
+                {[...gates.map((g) => g.label), "Mainnet launch"].map(
+                  (label, i, all) => {
+                    const isNext = i === 0;
+                    const isDestination = i === all.length - 1;
+                    return (
+                      <li
+                        key={label}
+                        className={cn(
+                          "relative flex items-center gap-5",
+                          isDestination ? "pt-10" : "pb-10"
+                        )}
+                      >
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "relative z-10 h-2 w-2 shrink-0 rounded-full",
+                            isNext && "bg-cyan",
+                            isDestination && "bg-foreground",
+                            !isNext &&
+                              !isDestination &&
+                              "border border-foreground/30 bg-background"
+                          )}
+                        />
+                        <p
+                          className={cn(
+                            "font-display text-base font-medium tracking-tight md:text-lg",
+                            isNext || isDestination
+                              ? "text-foreground"
+                              : "text-foreground/55"
+                          )}
+                        >
+                          {label}
                         </p>
-                      </div>
-                    </li>
-                  );
-                })}
+                        {isNext && (
+                          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-cyan">
+                            Next
+                          </span>
+                        )}
+                      </li>
+                    );
+                  }
+                )}
               </ol>
             </div>
           </div>

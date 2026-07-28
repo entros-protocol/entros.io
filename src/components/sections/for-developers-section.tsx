@@ -41,7 +41,17 @@ export function ForDevelopersSection() {
           </div>
 
           <div className="lg:col-span-3">
-            <CodeBlock code={sdkSnippet.code} />
+            {/* The snippet is sized to its longest line rather than the
+                column, and the leftover width becomes a rail: a hairline
+                off the block's vertical centre running out to the site's
+                right-hand skeleton line. `-mr-6` cancels the container
+                padding so it lands on the rail exactly. */}
+            <div className="flex items-center">
+              <div className="min-w-0 w-full lg:w-auto lg:shrink lg:grow-0 lg:basis-[34rem]">
+                <CodeBlock code={sdkSnippet.code} />
+              </div>
+              <div aria-hidden className="-mr-6 hidden h-px flex-1 bg-border lg:block" />
+            </div>
             <div className="mt-4 font-mono text-sm text-foreground/50">
               <span className="text-foreground/30">$</span>{" "}
               {sdkSnippet.installCommand}

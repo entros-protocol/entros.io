@@ -62,11 +62,7 @@ export default function Integrate() {
 
         {/* Install callout */}
         <div className="mx-auto max-w-3xl px-6 pb-20 md:pb-28">
-          <div className="relative border border-border bg-surface px-6 py-5 font-mono text-sm md:px-8 md:py-6 md:text-base">
-            <span className="absolute left-0 top-0 h-3 w-3 border-l border-t border-cyan/70" aria-hidden />
-            <span className="absolute right-0 top-0 h-3 w-3 border-r border-t border-cyan/70" aria-hidden />
-            <span className="absolute bottom-0 left-0 h-3 w-3 border-b border-l border-cyan/70" aria-hidden />
-            <span className="absolute bottom-0 right-0 h-3 w-3 border-b border-r border-cyan/70" aria-hidden />
+          <div className="relative rounded-2xl bg-foreground/[0.06] px-6 py-5 font-mono text-sm md:px-8 md:py-6 md:text-base">
 
             <span className="text-foreground/40">$</span>
             <span className="ml-3 text-foreground/85">npm install </span>

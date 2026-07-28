@@ -340,8 +340,8 @@ function isStaleBlockhashError(error: string): boolean {
   );
 }
 
-// Server returns a 429 with `{reason: "rate_limited"}` (per-wallet cap,
-// master-list #94) or `{reason: "ip_rate_limited"}` (per-IP cap, #155).
+// Server returns a 429 with `{reason: "rate_limited"}` (per-wallet cap)
+// or `{reason: "ip_rate_limited"}` (per-IP cap).
 // Both surface a friendly `error` body string starting with "Too many".
 // Surfacing a distinct title prevents the "Verification failed" generic
 // page when the user is just being told to wait.
@@ -432,11 +432,10 @@ function isOpaqueRejectionError(error: string): boolean {
   return (
     // Validator anti-probing rejections. The validation service returns
     // `safe_reason=None` for sybil-match / TTS-detected / advanced
-    // biometric checks (deliberate opacity posture from the categorization
-    // sprint), with the user-facing error body set to a generic phrase.
-    // Matching "verification failed" specifically catches the sybil and
-    // related cases that surfaced after #98 shipped; "validation failed"
-    // and "feature validation" cover the SDK-side fallback wording.
+    // biometric checks, with the user-facing error body set to a generic
+    // phrase. Matching "verification failed" catches the sybil and related
+    // cases; "validation failed" and "feature validation" cover the
+    // SDK-side fallback wording.
     e.includes("verification failed") ||
     e.includes("verification rejected") ||
     e.includes("feature validation") ||
@@ -458,9 +457,8 @@ function isOpaqueRejectionError(error: string): boolean {
     e.includes("transaction simulation failed") ||
     // Upstream-failure patterns from executor-node when the validation-
     // service is unreachable (crash loop, restart window, network blip).
-    // Empirical instance (2026-05-15): validator OOM-crashed during a
-    // whitening attempt; executor returned the reqwest "error sending
-    // request for url ([internal])" envelope verbatim. Routing these
+    // The executor returns the reqwest "error sending request for url
+    // ([internal])" envelope verbatim in that case. Routing these
     // through validation-rejected gives the user the same polished
     // surface without revealing infrastructure detail. The sanitizer in
     // verify-wallet-connected.tsx strips the URL itself; this routes the
@@ -692,8 +690,8 @@ export function FailedView({
         "Validation rejected this attempt. Please try again, or contact support if this persists.";
       break;
     case "insufficient-sol":
-      // MAINNET TODO (master-list #124): rewrite devnet-specific copy + CTA.
-      // Mainnet users need SOL from a CEX/DEX, not the faucet—body should
+      // TODO(mainnet): rewrite devnet-specific copy + CTA. Mainnet users
+      // need SOL from a CEX/DEX, not the faucet—body should
       // drop the "devnet" qualifier and the "Get devnet SOL" button should
       // either disappear or repoint to a "How to get SOL" docs page.
       title = "This wallet needs SOL";

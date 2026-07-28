@@ -368,7 +368,7 @@ try {
           </div>
 
           {/* Dynamic Code Generator Block */}
-          <div className="border border-border bg-surface flex flex-col flex-1">
+          <div className="flex flex-1 flex-col overflow-hidden rounded-2xl bg-foreground/[0.06]">
             <div className="flex border-b border-border bg-background/50 overflow-x-auto">
               {[
                 { id: "react", label: "React Component" },

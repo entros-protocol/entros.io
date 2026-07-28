@@ -180,15 +180,9 @@ export function AsciiSpiral({ className }: AsciiSpiralProps) {
         "select-none whitespace-pre font-mono leading-[1] text-cyan",
         // Light-mode glyph thickening (no-op in dark mode).
         "ascii-art-bright",
-        // Glyph size is tiny on purpose—at 80 cols × 80 rows, even a
-        // 6px glyph produces a ~480px-wide spiral. We size to fit comfortably
-        // in the right half of the split hero (~520px column). Mobile uses
-        // 3.5px (~280px rendered) so the rotated spiral feels prominent
-        // against typical mobile screen widths. The hero container is held
-        // at 200px tall on mobile so the larger rendered spiral is allowed
-        // to overflow visually (around the centered axis) without
-        // increasing the layout-reserved height — the section's pt-28 +
-        // gap-12 absorb the overflow without pushing the headline down.
+        // Glyph size is tiny on purpose: at 80 cols × 80 rows even a 6px
+        // glyph renders a ~480px block. Call sites override this ladder
+        // when they need the disk at a different scale.
         "text-[3.5px] sm:text-[4.5px] md:text-[5px] lg:text-[5.5px] xl:text-[6px]",
         className
       )}

@@ -47,10 +47,11 @@ export function AsciiFingerprint({ className }: AsciiFingerprintProps) {
     let lastFrame = 0;
     let rafId = 0;
     let inView = true;
+    let started = false;
 
     function frame(now: number) {
       if (now - lastFrame < FRAME_INTERVAL_MS) {
-        if (inView) rafId = requestAnimationFrame(frame);
+        if (inView && started) rafId = requestAnimationFrame(frame);
         return;
       }
       const dt = Math.min((now - prev) / 1000, 0.05);
@@ -177,7 +178,7 @@ export function AsciiFingerprint({ className }: AsciiFingerprintProps) {
       }
       pre!.innerHTML = html;
 
-      if (inView) rafId = requestAnimationFrame(frame);
+      if (inView && started) rafId = requestAnimationFrame(frame);
     }
 
     const reduceMotion = window.matchMedia(
@@ -197,6 +198,7 @@ export function AsciiFingerprint({ className }: AsciiFingerprintProps) {
       { threshold: 0 }
     );
     observer.observe(pre);
+    started = true;
     rafId = requestAnimationFrame(frame);
 
     return () => {

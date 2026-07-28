@@ -36,9 +36,9 @@ export function VerifyWalletless({
   const voicedFramesRef = useRef(0);
   // Cosmetic phrase for the walletless preview. Walletless mode doesn't
   // hit `/validate-features` so the phrase isn't bound to anything
-  // server-side—but since #89 v3 the wallet-connected flow shows real
-  // curated words, showing nonsense here would create a jarring style
-  // mismatch for researchers comparing the two modes. Refreshed at the
+  // server-side—but the wallet-connected flow shows real curated words,
+  // and nonsense here would be a jarring mismatch between the two
+  // modes. Refreshed at the
   // top of every handleStart() so a Try-again gives a new phrase, and
   // never re-rolls during a single capture.
   const [walletlessPhrase, setWalletlessPhrase] = useState<string>(() =>

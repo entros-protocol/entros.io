@@ -1,13 +1,12 @@
 /**
  * Curated subset of the validator's word dictionary for the WALLETLESS
- * verification preview (master-list #94 follow-up, 2026-04-26).
+ * verification preview.
  *
  * Walletless mode is cosmetic—it doesn't go through `/validate-features`,
  * so the displayed phrase isn't bound to anything server-side. The only
- * reason this list exists is style parity with the wallet-connected flow:
- * since #89 v3 the wallet flow shows real curated words ("trading duty
- * assembly wins command"), so showing nonsense syllables in walletless is
- * jarring for casual researchers comparing the two modes.
+ * reason this list exists is style parity with the wallet-connected flow,
+ * which shows real curated words ("trading duty assembly wins command"),
+ * so nonsense syllables in walletless would be jarring by comparison.
  *
  * Source: each word is verified to exist in
  * `executor-node/src/challenge/word_dict.rs` (which is a verbatim copy of

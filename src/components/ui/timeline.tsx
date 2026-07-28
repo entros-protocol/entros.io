@@ -31,9 +31,18 @@ const TimelineNode = forwardRef<
   }
 >(({ heightMV, rotateMV, threshold }, ref) => {
   const [filled, setFilled] = useState(false);
+  const filledRef = useRef(false);
 
+  // heightMV is built with useTransform(scrollYProgress, [0, 1], [0, height]),
+  // so when Timeline's `height` state lands the output range changes and the
+  // motion value emits "change" DURING Timeline's render. Calling setFilled
+  // straight from the handler is then a cross-component setState mid-render.
+  // Ignore non-crossings, and defer the real update off the render phase.
   useMotionValueEvent(heightMV, "change", (h) => {
-    setFilled(h >= threshold);
+    const next = h >= threshold;
+    if (next === filledRef.current) return;
+    filledRef.current = next;
+    queueMicrotask(() => setFilled(next));
   });
 
   return (

@@ -24,10 +24,10 @@ export function VerificationModesSection() {
           provides the signal. The integrator sets the threshold.
         </p>
 
-        <div className="mt-16 grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-10">
-          <AsciiWalletFlowScene label="WALLET FLOW" aspect="16/10" />
+        <div className="mt-16 grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-10">
+          <AsciiWalletFlowScene label="WALLET FLOW" aspect="16/10" fit fitScale={1.25} />
 
-          <div>
+          <div className="lg:self-center">
             <h3 className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
               Wallet-connected verification
             </h3>

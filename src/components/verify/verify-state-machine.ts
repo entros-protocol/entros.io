@@ -11,7 +11,7 @@ export function verifyReducer(
       // Allow starting from idle, re-entering from the failed state when the
       // user chose to reset their baseline after a baseline-missing error, or
       // re-entering from soft_failed when the user clicks "Try again" on a
-      // soft-reject (master-list #94). The parent component owns the retry
+      // soft-reject. The parent component owns the retry
       // counter—by the time it dispatches START_CAPTURE we trust the
       // attempt budget has been checked.
       if (

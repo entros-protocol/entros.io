@@ -214,11 +214,7 @@ export default function BadgeDemo() {
 
             {/* Mock profile list—the badge in real UI context */}
             <div className="lg:col-span-5">
-              <div className="relative border border-border p-6 md:p-8">
-                <span className="absolute left-0 top-0 h-3 w-3 border-l border-t border-cyan/70" aria-hidden />
-                <span className="absolute right-0 top-0 h-3 w-3 border-r border-t border-cyan/70" aria-hidden />
-                <span className="absolute bottom-0 left-0 h-3 w-3 border-b border-l border-cyan/70" aria-hidden />
-                <span className="absolute bottom-0 right-0 h-3 w-3 border-b border-r border-cyan/70" aria-hidden />
+              <div className="relative rounded-2xl bg-foreground/[0.06] p-6 md:p-8">
 
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
                   // PROFILES

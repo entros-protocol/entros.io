@@ -18,7 +18,7 @@ export type VerifyState =
       txSignature?: string;
     }
   | {
-      // Soft-reject (master-list #94): a server-validation rejection in a
+      // Soft-reject: a server-validation rejection in a
       // user-recoverable category (variance_floor, entropy_bounds,
       // temporal_coupling_low, phrase_content_mismatch). The user is invited
       // to retry without a hard failure UI. After `attemptsRemaining` hits

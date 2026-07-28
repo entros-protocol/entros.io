@@ -69,7 +69,7 @@ export default function Technology() {
             </div>
           </div>
 
-          <div className="relative flex h-[280px] flex-1 items-center justify-center sm:h-[360px] md:h-[400px] lg:h-[440px] lg:w-2/5 xl:h-[480px]">
+          <div className="relative flex h-[360px] flex-1 items-center justify-center sm:h-[460px] md:h-[520px] lg:h-[580px] lg:w-2/5 xl:h-[640px]">
             <AsciiFingerprint />
           </div>
         </div>
@@ -86,8 +86,8 @@ export default function Technology() {
           the research section's own bottom padding sets the gap, so these
           read as the tail of that section rather than a separate band. */}
       <section>
-        <div className="mx-auto max-w-5xl px-6 pb-24 text-center md:pb-32">
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mx-auto max-w-7xl px-6 pb-24 md:pb-32">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-start">
             <Link
               href="/verify"
               className="

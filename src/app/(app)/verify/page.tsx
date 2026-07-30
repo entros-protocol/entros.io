@@ -85,8 +85,8 @@ export default function Verify() {
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-balance text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
-            Twelve seconds of voice, motion, and touch. Connect a Solana
-            wallet to mint your Anchor and start building Trust Score.
+            Connect a Solana wallet to mint your Entros Anchor and start
+            building Trust Score.
           </p>
         </div>
       </section>

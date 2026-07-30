@@ -56,7 +56,7 @@ export function MobileNav() {
   const close = () => setOpen(false);
 
   return (
-    <div className="flex items-center md:hidden">
+    <div className="flex items-center navbar:hidden">
       <button
         onClick={() => setOpen(!open)}
         className="flex h-8 w-8 items-center justify-center transition-opacity hover:opacity-70"

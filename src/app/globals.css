@@ -72,6 +72,14 @@
    ---------------------------------------------------------------- */
 
 @theme {
+  /* Width at which the full navbar swaps to the burger menu. The wordmark
+     and the link list collide at 941px and are already tight by 1024px,
+     where only 35px separates them. 68.75rem (1100px) keeps them just over
+     100px apart, which is the point the bar stops reading as crowded. In rem
+     like the rest of the scale, so a larger root font, which widens the link
+     text, moves the swap earlier rather than letting it collide. */
+  --breakpoint-navbar: 68.75rem;
+
   /* Font families */
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;

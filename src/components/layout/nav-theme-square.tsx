@@ -19,7 +19,7 @@ function useMounted() {
  * it outlines itself in the panel's own text colour instead.
  */
 const VARIANTS = {
-  nav: "hidden h-[46px] w-[46px] bg-foreground text-background shadow-[0_10px_34px_rgba(0,0,0,0.3)] hover:bg-foreground/90 md:inline-flex",
+  nav: "hidden h-[46px] w-[46px] bg-foreground text-background shadow-[0_10px_34px_rgba(0,0,0,0.3)] hover:bg-foreground/90 navbar:inline-flex",
   sheet:
     "inline-flex h-10 w-10 shrink-0 border border-background/25 text-background hover:bg-background/10",
 } as const;

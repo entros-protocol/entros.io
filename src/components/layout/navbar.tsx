@@ -73,7 +73,7 @@ export function Navbar() {
             <NavbarWordmark />
           </div>
 
-          <ul className="ml-auto hidden items-center gap-6 md:flex lg:gap-8">
+          <ul className="ml-auto hidden items-center gap-8 navbar:flex">
             {mainNav.map((item) =>
               item.label === "Technology" ? (
                 <li key={item.href} className="[&_button]:font-medium [&_button]:text-background [&_button:hover]:text-background/70">
@@ -117,7 +117,7 @@ export function Navbar() {
           className="
             hidden h-[46px] w-[46px] items-center justify-center bg-foreground
             text-background shadow-[0_10px_34px_rgba(0,0,0,0.3)]
-            transition-colors hover:bg-foreground/90 md:inline-flex
+            transition-colors hover:bg-foreground/90 navbar:inline-flex
           "
         >
           <GithubMark className="h-[18px] w-[18px]" />
@@ -129,7 +129,7 @@ export function Navbar() {
             hidden h-[46px] items-center bg-foreground px-4
             text-sm font-medium text-background
             shadow-[0_10px_34px_rgba(0,0,0,0.3)]
-            transition-colors hover:bg-foreground/90 md:inline-flex
+            transition-colors hover:bg-foreground/90 navbar:inline-flex
           "
         >
           Dashboard
@@ -141,7 +141,7 @@ export function Navbar() {
             hidden h-[46px] items-center gap-2 border border-foreground/25
             bg-background px-4 text-sm font-medium text-foreground
             shadow-[0_10px_34px_rgba(0,0,0,0.3)]
-            transition-colors hover:bg-surface md:inline-flex
+            transition-colors hover:bg-surface navbar:inline-flex
           "
         >
           Verify
@@ -150,7 +150,7 @@ export function Navbar() {
 
         <NavThemeSquare />
 
-        <div className="flex h-[46px] items-center bg-foreground px-1 shadow-[0_10px_34px_rgba(0,0,0,0.3)] md:hidden [&_button]:text-background">
+        <div className="flex h-[46px] items-center bg-foreground px-1 shadow-[0_10px_34px_rgba(0,0,0,0.3)] navbar:hidden [&_button]:text-background">
           <MobileNav />
         </div>
       </div>

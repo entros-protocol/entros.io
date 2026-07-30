@@ -1,5 +1,3 @@
-// @ts-nocheck
-// animation math with guaranteed-bounds array access
 "use client";
 
 import { useRef, useEffect } from "react";
@@ -10,7 +8,11 @@ import { useRef, useEffect } from "react";
  * Pure SVG, no external dependencies.
  */
 
-const VB = 500;
+// The sphere's widest silhouette spans ~347 units: 2·RADIUS, plus the ~5%
+// perspective gain on a rim node, plus drift, plus the 2.5x glow halo of an
+// energised one. A 390 viewBox leaves that margin and no more, so the sphere
+// fills the element it is given instead of sitting in its own padding.
+const VB = 390;
 const CX = VB / 2;
 const CY = VB / 2;
 const FOV = 700;
@@ -58,8 +60,10 @@ function buildEdges(pts: Vec3[]): Edge[] {
   const edges: Edge[] = [];
   for (let i = 0; i < pts.length; i++) {
     const pi = pts[i];
+    if (!pi) continue;
     for (let j = i + 1; j < pts.length; j++) {
       const pj = pts[j];
+      if (!pj) continue;
       const dot = pi.x * pj.x + pi.y * pj.y + pi.z * pj.z;
       if (dot > EDGE_ANGLE_THRESHOLD) edges.push({ a: i, b: j });
     }
@@ -70,8 +74,8 @@ function buildEdges(pts: Vec3[]): Edge[] {
 function buildAdjacency(edges: Edge[], n: number): number[][] {
   const adj: number[][] = Array.from({ length: n }, () => []);
   for (const { a, b } of edges) {
-    adj[a].push(b);
-    adj[b].push(a);
+    adj[a]?.push(b);
+    adj[b]?.push(a);
   }
   return adj;
 }
@@ -111,9 +115,9 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
       const dp = driftPhase[idx] ?? 0;
       const drift = DRIFT_AMP * Math.sin(t * 0.7 + dp);
 
-      let x = p.x * (1 + drift);
-      let y = p.y * (1 + drift * 0.6);
-      let z = p.z * (1 + drift);
+      const x = p.x * (1 + drift);
+      const y = p.y * (1 + drift * 0.6);
+      const z = p.z * (1 + drift);
 
       const cosT = Math.cos(TILT), sinT = Math.sin(TILT);
       const y1 = y * cosT - z * sinT;
@@ -133,7 +137,9 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
       };
     }
 
-    function tick(now: number) {
+    // An arrow bound after the `svg` null-check, rather than a hoisted
+    // declaration, so the narrowing reaches the innerHTML write below.
+    const tick = (now: number) => {
       const dt = Math.min((now - prev) / 1000, 0.05);
       prev = now;
 
@@ -155,6 +161,7 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
       // Wave propagation
       for (let w = waves.length - 1; w >= 0; w--) {
         const wave = waves[w];
+        if (!wave) continue;
         if (t >= wave.nextTime) {
           const next: number[] = [];
           for (const idx of wave.frontier) {
@@ -188,6 +195,7 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
       // Edges
       for (const { a, b } of edges) {
         const pa = projected[a], pb = projected[b];
+        if (!pa || !pb) continue;
         const depth = (Math.min(pa.z, pb.z) + 1) / 2;
         const opacity = (0.1 + 0.15 * depth) * fadeIn;
         html += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="rgba(${cyanRGB},${opacity})" stroke-width="0.6"/>`;
@@ -196,9 +204,11 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
       // Signals
       for (let s = signals.length - 1; s >= 0; s--) {
         const sig = signals[s];
+        if (!sig) { signals.splice(s, 1); continue; }
         const progress = (t - sig.startTime) / SIGNAL_DURATION;
         if (progress > 1) { signals.splice(s, 1); continue; }
         const pa = projected[sig.fromIdx], pb = projected[sig.toIdx];
+        if (!pa || !pb) { signals.splice(s, 1); continue; }
         const sx = pa.x + (pb.x - pa.x) * progress;
         const sy = pa.y + (pb.y - pa.y) * progress;
         const so = (0.9 * (1 - progress)) * fadeIn;
@@ -221,7 +231,7 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
 
       svg.innerHTML = html;
       raf = requestAnimationFrame(tick);
-    }
+    };
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);

@@ -3,10 +3,15 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-const COLS = 96;
-const ROWS = 28;
-const X_CENTER_COL = 48;
-const Y_CENTER_ROW = 14;
+// The oval reaches 23.7 columns and 13.5 rows either side of centre, so a
+// 96-wide grid spent half its width on blank cells that still occupied layout.
+// This grid is sized to the artwork: 2-3 columns of margin, no spare rows.
+// X_SCALE and Y_SCALE are unchanged, so the ridge field is bit-identical.
+// Only the empty border is gone.
+const COLS = 50;
+const ROWS = 27;
+const X_CENTER_COL = 25;
+const Y_CENTER_ROW = 13;
 const X_SCALE = 40;
 const Y_SCALE = 20;
 const FRAME_INTERVAL_MS = 33;
@@ -212,9 +217,18 @@ export function AsciiFingerprint({ className }: AsciiFingerprintProps) {
       ref={preRef}
       aria-hidden="true"
       className={cn(
-        "select-none whitespace-pre font-mono leading-[1] text-cyan",
+        "select-none whitespace-pre font-mono text-cyan",
         "ascii-art-bright",
-        "text-[7px] sm:text-[9px] md:text-[10px] lg:text-[11px] xl:text-[12px]",
+        // A <pre> does not scale to its box, so glyph size is what sets the
+        // artwork's size. Height is the binding constraint at every step: the
+        // oval is half again as tall as it is wide.
+        "text-[9px] sm:text-[11px] md:text-[13px] xl:text-[15px]",
+        // Placed after the size ladder, not before it: tailwind-merge counts
+        // font-size as conflicting with leading, so a leading class written
+        // first is dropped from the output and the row pitch falls back to
+        // whatever the page inherits. 1.5 is the pitch this ridge field is
+        // shaped for. At 1 the same cells read as a circle, not a print.
+        "leading-[1.5]",
         className
       )}
     />

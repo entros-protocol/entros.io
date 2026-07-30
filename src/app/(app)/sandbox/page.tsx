@@ -4,7 +4,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Integration Sandbox",
   description:
-    "Live configuration sandbox for the Entros verification button. Tweak threat profiles, customize styling, and copy generated React, TypeScript, and Anchor code instantly.",
+    "Live sandbox for the Entros verification button. Tweak threat profiles, restyle it, and copy the generated React, TypeScript, and Anchor code.",
   path: "/sandbox",
 });
 

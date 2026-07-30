@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Integrate",
   description:
-    "Drop the EntrosVerify component into any Solana app in five lines, or wire the Pulse SDK directly for custom UX. Reading on-chain attestations is free and needs no account with us.",
+    "Drop the EntrosVerify component into any Solana app in five lines, or wire the Pulse SDK for custom UX. Reading on-chain attestations is free.",
   path: "/integrate",
 });
 

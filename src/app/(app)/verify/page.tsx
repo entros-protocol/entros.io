@@ -8,7 +8,7 @@ const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const baseMetadata = pageMetadata({
   title: "Verify",
   description:
-    "Prove you are human with Entros Protocol. Twelve seconds of voice, motion, and touch—anchored on Solana devnet, readable by every dApp.",
+    "Prove you are human with Entros Protocol. Twelve seconds of voice, motion, and touch, anchored on Solana devnet and readable by every dApp.",
   path: "/verify",
 });
 

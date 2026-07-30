@@ -44,9 +44,9 @@ const wordmark = JetBrains_Mono({
   display: "swap",
 });
 
-const ROOT_TITLE = `${SITE_NAME}—Proof of Personhood on Solana`;
+const ROOT_TITLE = `${SITE_NAME} | Temporal identity on Solana`;
 const ROOT_DESCRIPTION =
-  "Twelve seconds of behavioral liveness—voice, motion, and touch—anchored on chain. Read by every Solana dApp. Bind your agent, build your Trust Score. No raw biometrics, ever.";
+  "Twelve seconds of behavioral liveness in voice, motion, and touch, anchored on chain. Read by every Solana dApp. Bind your agent. No raw biometrics.";
 const SOCIAL_DESCRIPTION =
   "Twelve seconds of behavioral liveness on Solana, private, anchored on chain, read by every dApp. Bind your agent, build your Trust Score.";
 

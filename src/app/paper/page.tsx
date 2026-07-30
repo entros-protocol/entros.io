@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Research Paper",
   description:
-    "Entros Protocol: Proof-of-Personhood through Temporal Biometric Consistency. The full research paper—abstract, threat model, ZK circuit, on-chain anchoring, security analysis.",
+    "Entros Protocol: Proof-of-Personhood through Temporal Biometric Consistency. Threat model, ZK circuit, on-chain anchoring, and security analysis.",
   path: "/paper",
 });
 

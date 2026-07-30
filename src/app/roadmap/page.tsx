@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Roadmap",
   description:
-    "Entros is live on devnet with a shipped SDK and proven red-team results. The token funds the path to mainnet: a public trusted setup ceremony and an external security audit.",
+    "Live on devnet with a shipped SDK and red-team results. The token funds the path to mainnet: a public trusted setup ceremony and an external audit.",
   path: "/roadmap",
 });
 

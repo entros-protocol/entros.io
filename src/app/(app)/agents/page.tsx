@@ -64,8 +64,13 @@ export default function Agents() {
             </div>
           </div>
 
-          <div className="relative flex h-[320px] flex-1 items-center justify-center sm:h-[400px] md:h-[460px] lg:h-[520px] lg:w-1/2">
-            <AgentNetworkAnimation className="h-full w-full max-w-[520px]" />
+          {/* The sphere is square, so a width cap plus `aspect-square` sizes it
+              on both axes. A fixed height cannot: `flex-1` resolves to
+              `flex-basis: 0%`, which overrides `height` while this row is
+              stacked, and leaves the box taller than its own column once the
+              row splits at lg. */}
+          <div className="relative flex flex-1 items-center justify-center lg:w-1/2">
+            <AgentNetworkAnimation className="aspect-square w-full max-w-[400px] sm:max-w-[480px] lg:max-w-[560px]" />
           </div>
         </div>
       </section>

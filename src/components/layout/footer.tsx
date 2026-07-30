@@ -9,7 +9,7 @@ export function Footer() {
             entros<span className="text-cyan">.</span>
           </p>
           <p className="mt-2 text-xs text-foreground/60">
-            Proof of Personhood on Solana
+            Temporal identity on Solana
           </p>
         </div>
 

@@ -12,7 +12,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Technology",
   description:
-    "How Entros verification works. Twelve seconds of speaking and tracing—feature extraction, ZK proof generation, and on-chain verification run automatically. Raw recordings are processed locally and never stored.",
+    "Twelve seconds of speaking and tracing. Feature extraction and ZK proving run on your device. Raw recordings are processed locally and never stored.",
   path: "/technology",
 });
 
@@ -69,7 +69,11 @@ export default function Technology() {
             </div>
           </div>
 
-          <div className="relative flex h-[360px] flex-1 items-center justify-center sm:h-[460px] md:h-[520px] lg:h-[580px] lg:w-2/5 xl:h-[640px]">
+          {/* Below lg this row is stacked, so `flex-1` resolves to
+              `flex-basis: 0%` and overrides any height set here. The box takes
+              the glyph block's own height instead. The lg and xl heights do
+              apply, and reserve the band the print is centred in. */}
+          <div className="relative flex flex-1 items-center justify-center lg:h-[580px] lg:w-2/5 xl:h-[640px]">
             <AsciiFingerprint />
           </div>
         </div>

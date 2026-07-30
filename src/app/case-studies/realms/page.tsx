@@ -3,7 +3,7 @@ import { ArrowRight, GitBranch, Vote, Coins, Layers } from "lucide-react";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
-  title: "Realms — Case Study",
+  title: "Realms Case Study",
   description:
     "Sybil-resistant DAO governance on Realms. The Entros voter-weight plugin gates votes on live behavioral verification, not token balance.",
   path: "/case-studies/realms",

@@ -5,17 +5,18 @@ import { ArrowUpRight, Check, Copy } from "lucide-react";
 import { TWITTER_HANDLE, TWITTER_URL } from "@/lib/site";
 
 /**
- * Contract address for $ENTROS. Empty until the token mints on EasyA
- * Kickstart—the card renders a pre-launch state rather than a fake
- * address, so nothing copyable is ever wrong.
+ * Contract address for $ENTROS: a standard SPL mint, 6 decimals, with mint
+ * and freeze authority both revoked. Leave this empty to return the card to
+ * its pre-launch state rather than show an address that cannot be verified.
  */
-const CONTRACT_ADDRESS = "";
+const CONTRACT_ADDRESS = "fc7hPCHtpNezg7cAp6UoUksHU6Sy98hEGswf8SSEASY";
 
 /**
- * Public launch page for the token, e.g. the kickstart.easya.io token URL.
- * Empty until it exists; the label then renders muted and non-interactive.
+ * Public launch page for the token. Empty renders the label muted and
+ * non-interactive.
  */
-const TOKEN_URL = "";
+const TOKEN_URL =
+  "https://kickstart.easya.io/token/fc7hPCHtpNezg7cAp6UoUksHU6Sy98hEGswf8SSEASY";
 
 const EXPLORER_BASE = "https://solscan.io/token/";
 

@@ -622,11 +622,11 @@ export function VerifyWalletConnected({
   }
 
   if (state.step === "idle") {
-    // 24-hour cadence hint: the Trust Score recency dedup in update_anchor
-    // collapses verifications inside a single 24h window into one bucket, so
-    // verifying sooner than 24h after the last attempt won't produce a
-    // recency bump (and older entries aging can make the score slightly
-    // dip). Surface a one-line explainer so users don't get surprised.
+    // Cadence hint. `update_anchor` scores weekly bin activation, so a second
+    // verification inside the same week does not raise the score. It costs
+    // nothing either: the activity ring records one entry per bin, so
+    // verifying through several integrator gates in a day leaves a wallet's
+    // span intact. Say both, so nobody reads a flat score as a penalty.
     const DAY_SEC = 86400;
     const nowSec = Math.floor(Date.now() / 1000);
     const secondsSinceLastVerif =
@@ -639,14 +639,8 @@ export function VerifyWalletConnected({
       showCadenceHint && secondsSinceLastVerif !== null
         ? Math.floor(secondsSinceLastVerif / 3600)
         : 0;
-    const hoursUntilNext =
-      showCadenceHint && secondsSinceLastVerif !== null
-        ? Math.max(1, Math.ceil((DAY_SEC - secondsSinceLastVerif) / 3600))
-        : 0;
     const hoursAgoLabel =
       hoursAgo === 0 ? "less than an hour" : `${hoursAgo} hour${hoursAgo === 1 ? "" : "s"}`;
-    const hoursUntilNextLabel =
-      hoursUntilNext === 1 ? "1 more hour" : `${hoursUntilNext} more hours`;
 
     return (
       <div className="space-y-6">
@@ -681,9 +675,10 @@ export function VerifyWalletConnected({
         {showCadenceHint && (
           <div className="mx-auto max-w-sm rounded-lg border border-cyan/20 bg-cyan/5 px-4 py-3">
             <p className="text-center text-xs text-foreground/70 leading-relaxed">
-              You verified {hoursAgoLabel} ago. Trust Score increments fully
-              when verifications are spaced 24+ hours apart—wait{" "}
-              {hoursUntilNextLabel} for the next bump.
+              You verified {hoursAgoLabel} ago. Trust Score grows with the
+              number of separate weeks you verify in, so this one will not
+              raise it. Verifying again is free of any penalty, and an
+              integrator can ask for a fresh check whenever it needs one.
             </p>
           </div>
         )}
@@ -783,6 +778,7 @@ export function VerifyWalletConnected({
           failedAt={state.failedAt}
           opaque={state.opaque}
           baselineRecovery={state.baselineRecovery}
+          retryAfterSec={state.retryAfterSec}
           onReset={handleReset}
           onResetBaseline={handleResetBaselineClick}
         />

@@ -28,6 +28,9 @@ const FALLBACK_CODE = `<EntrosGate
   <PremiumContent />
 </EntrosGate>`;
 
+// Displayed verbatim on the page as the source to copy. Generated from
+// src/components/ui/entros-gate.tsx and pinned by test/gate-source-parity.test.ts,
+// because a hand-kept copy of a component's own source drifts silently.
 const COMPONENT_CODE = `"use client";
 
 /**
@@ -42,7 +45,7 @@ const COMPONENT_CODE = `"use client";
  *   - React + Next.js Link
  *   - @solana/web3.js (PublicKey, Connection)
  *   - @solana/wallet-adapter-react (useWallet, useConnection)
- *   - @solana/wallet-adapter-react-ui (WalletMultiButton)
+ *   - @solana/wallet-adapter-react-ui (WalletMultiButton, the universal Solana wallet UI)
  *   - @entros/pulse-sdk (PROGRAM_IDS constant)
  *   - lucide-react (icons)
  *   - Tailwind CSS for styling (no custom design system imports)
@@ -54,10 +57,20 @@ const COMPONENT_CODE = `"use client";
  *     <PremiumContent />
  *   </EntrosGate>
  *
- * SECURITY: This is a client-side gate. It is suitable for UI gating, paywalls
- * with low stakes, and progressive disclosure. For high-stakes access control
- * (spending funds, sensitive data), also validate Trust Score server-side
- * since a determined user can bypass any client-side check via DevTools.
+ * The gate reads two fields, not one. \`trustScore\` says how consistently this
+ * wallet has verified. \`maxVerificationAge\` bounds how long ago it last did.
+ * A score on its own describes a history; pairing it with recency keeps the
+ * gate about the operator rather than the record.
+ *
+ * For an action with real stakes, run a verification at the point of the
+ * action and let the gate read the result: \`<EntrosVerify />\` from
+ * \`@entros/verify\` opens the capture in place, and this gate passes on the
+ * next render.
+ *
+ * SECURITY: this is a client-side gate, suitable for UI gating, paywalls and
+ * progressive disclosure. A determined user can bypass any client-side check
+ * via DevTools, so for high-stakes access control assert the same two fields
+ * in your own program or server route, reading the Anchor PDA directly.
  */
 
 import type { ReactNode } from "react";
@@ -69,11 +82,48 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { PROGRAM_IDS } from "@entros/pulse-sdk";
 import { Loader2, ShieldAlert, Wallet } from "lucide-react";
 
+/**
+ * Smallest account this component can read. \`last_verification_timestamp\` ends
+ * at 56 and \`trust_score\` at 62, so 62 covers both. Every layout the program
+ * has ever written is longer than this.
+ */
 const EXPECTED_SIZE = 62;
+
+/** One day. Long enough for a session, short enough to mean something. */
+const DEFAULT_MAX_VERIFICATION_AGE = 86_400;
+
+/**
+ * Whether an Anchor clears both thresholds.
+ *
+ * Pure, so the gate's decision can be tested without a DOM and read without
+ * tracing a component. \`nowSeconds\` is injected for the same reason.
+ *
+ * The clock here is the browser's, and a user controls it. That is fine for
+ * what this is: a client-side gate for UI, which a user could bypass with
+ * DevTools regardless. Anything that moves value asserts the same two fields
+ * where it settles, against \`Clock::get()\` on chain or a server clock.
+ */
+export function passesEntrosGate(
+  anchor: { trustScore: number; lastVerifiedAt: number },
+  thresholds: { minTrustScore: number; maxVerificationAge: number },
+  nowSeconds: number = Math.floor(Date.now() / 1000),
+): boolean {
+  // A minted Anchor always carries a verification timestamp, so a zero here
+  // means the account is not one, and no threshold should pass it.
+  if (anchor.lastVerifiedAt <= 0) return false;
+  if (anchor.trustScore < thresholds.minTrustScore) return false;
+  return nowSeconds - anchor.lastVerifiedAt <= thresholds.maxVerificationAge;
+}
 const ENTROS_PROGRAM_ID = new PublicKey(PROGRAM_IDS.entrosAnchor);
 
 interface EntrosGateProps {
   minTrustScore: number;
+  /**
+   * Seconds since the wallet's last verification, above which the gate does
+   * not pass. Defaults to one day. Pass \`Infinity\` to gate on score alone,
+   * which is appropriate for display and for anything with no real stakes.
+   */
+  maxVerificationAge?: number;
   children: ReactNode;
   fallback?: ReactNode;
   loadingFallback?: ReactNode;
@@ -84,10 +134,11 @@ type FetchState =
   | { status: "loading" }
   | { status: "disconnected" }
   | { status: "no-identity" }
-  | { status: "ready"; trustScore: number };
+  | { status: "ready"; trustScore: number; lastVerifiedAt: number };
 
 export function EntrosGate({
   minTrustScore,
+  maxVerificationAge = DEFAULT_MAX_VERIFICATION_AGE,
   children,
   fallback,
   loadingFallback,
@@ -127,7 +178,12 @@ export function EntrosGate({
             account.data.byteOffset,
             account.data.byteLength,
           );
-          setFetchState({ status: "ready", trustScore: view.getUint16(60, true) });
+          setFetchState({
+            status: "ready",
+            trustScore: view.getUint16(60, true),
+            // i64 at offset 48. Unix seconds fit in a Number until year 275760.
+            lastVerifiedAt: Number(view.getBigInt64(48, true)),
+          });
         } catch {
           if (isMounted) setFetchState({ status: "no-identity" });
         }
@@ -140,7 +196,12 @@ export function EntrosGate({
     };
   }, [publicKey, connected, connection]);
 
-  if (fetchState.status === "ready" && fetchState.trustScore >= minTrustScore) {
+  // Both comparisons happen at render time, not in the fetch effect. Changing
+  // either threshold re-renders without triggering a new RPC call.
+  if (
+    fetchState.status === "ready" &&
+    passesEntrosGate(fetchState, { minTrustScore, maxVerificationAge })
+  ) {
     return <>{children}</>;
   }
 
@@ -166,6 +227,109 @@ export function EntrosGate({
       minTrustScore={minTrustScore}
       verifyHref={verifyHref}
     />
+  );
+}
+
+type FallbackState =
+  | { status: "disconnected" }
+  | { status: "no-identity" }
+  | { status: "below-threshold"; trustScore: number };
+
+function DefaultFallback({
+  state,
+  minTrustScore,
+  verifyHref,
+}: {
+  state: FallbackState;
+  minTrustScore: number;
+  verifyHref: string;
+}) {
+  const statusLabel =
+    state.status === "disconnected"
+      ? "WALLET"
+      : state.status === "no-identity"
+        ? "UNVERIFIED"
+        : "BELOW THRESHOLD";
+
+  return (
+    <div className="w-full">
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+          // {statusLabel}
+        </p>
+        {state.status === "below-threshold" && (
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+            {state.trustScore} &lt; {minTrustScore}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-8 flex flex-col items-start gap-6">
+        {state.status === "disconnected" ? (
+          <Wallet className="h-7 w-7 text-cyan/80" strokeWidth={1.5} />
+        ) : (
+          <ShieldAlert className="h-7 w-7 text-cyan/80" strokeWidth={1.5} />
+        )}
+
+        {state.status === "disconnected" && (
+          <>
+            <div>
+              <p className="text-base font-medium text-foreground">
+                Connect your wallet
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+                This content requires a verified Entros identity.
+              </p>
+            </div>
+            <WalletMultiButton />
+          </>
+        )}
+
+        {state.status === "no-identity" && (
+          <>
+            <div>
+              <p className="text-base font-medium text-foreground">
+                Verify your humanness
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+                This content requires an Entros Anchor with Trust Score{" "}
+                <span className="font-mono text-cyan">{minTrustScore}</span>{" "}
+                or higher.
+              </p>
+            </div>
+            <Link
+              href={verifyHref}
+              className="inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
+            >
+              Verify now
+            </Link>
+          </>
+        )}
+
+        {state.status === "below-threshold" && (
+          <>
+            <div>
+              <p className="text-base font-medium text-foreground">
+                Trust Score too low
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/60">
+                Your Trust Score is{" "}
+                <span className="font-mono text-cyan">{state.trustScore}</span>.
+                This content requires{" "}
+                <span className="font-mono text-cyan">{minTrustScore}</span>.
+                Re-verify across multiple days to grow your score.
+              </p>
+            </div>
+            <Link
+              href={verifyHref}
+              className="inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
+            >
+              Re-verify
+            </Link>
+          </>
+        )}
+      </div>
+    </div>
   );
 }`;
 
@@ -201,10 +365,10 @@ export default function GateDemo() {
               </h1>
 
               <p className="mt-8 max-w-xl text-base leading-relaxed text-foreground/70 md:text-lg">
-                A drop-in React component that gates content by Entros
-                Trust Score. Wrap any children, set a threshold, the gate
-                handles wallet connection, identity lookup, and
-                verification prompts.
+                A drop-in React component that gates content on an Entros
+                Anchor. Wrap any children, set a Trust Score floor and a
+                recency window, and the gate handles wallet connection,
+                identity lookup, and verification prompts.
               </p>
 
               <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -299,8 +463,9 @@ export default function GateDemo() {
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Connect your wallet, dial the Trust Score threshold, and watch
-            the gate decide what your wallet can see.
+            Connect your wallet, dial the Trust Score floor, and watch the
+            gate decide what your wallet can see. It reads recency too, so a
+            wallet that has not verified inside the window does not pass.
           </p>
 
           {/* Wallet status pill */}
@@ -366,7 +531,8 @@ export default function GateDemo() {
                         Protected content visible
                       </p>
                       <p className="mt-1 text-xs text-foreground/55">
-                        Your Trust Score meets the threshold of {threshold}.
+                        Your Anchor clears a Trust Score of {threshold} and
+                        verified inside the window.
                       </p>
                     </div>
                   </EntrosGate>

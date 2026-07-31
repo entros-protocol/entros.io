@@ -6,10 +6,27 @@ describe("Sandbox Anchor Template Schema (Item #11 / Item #200 alignment)", () =
     const code = generateAnchorCode(0.75);
 
     // Verify the exact Anchor on-chain field name is present
-    expect(code).toContain("identity.last_verification_timestamp >= clock.unix_timestamp - 86400");
-    
+    expect(code).toContain("identity.last_verification_timestamp >= clock.unix_timestamp -");
+
     // Ensure the deprecated/incorrect field name is absent
     expect(code).not.toContain("identity.last_verified");
+  });
+
+  it("uses the window the docs recommend for a claim", () => {
+    // The template is an airdrop claim, and the recommendation for a claim is
+    // to run a verification at the point of the action. One hour leaves room
+    // for a slow wallet round trip without accepting a stale Anchor. Anything
+    // looser here quietly teaches a weaker pattern than the docs do.
+    // See content/docs/concepts/trust-score.mdx "What to gate on".
+    expect(generateAnchorCode(0.75)).toContain("clock.unix_timestamp - 3600");
+  });
+
+  it("gates on recency as well as score", () => {
+    // Both requires must be present. A template that checks only the score
+    // teaches a gate that a wallet passes on history alone.
+    const code = generateAnchorCode(0.75);
+    expect(code).toContain("AirdropError::AttestationExpired");
+    expect(code).toContain("AirdropError::InsufficientTrustScore");
   });
 
   it("correctly calculates trust_score threshold based on riskCeiling parameter", () => {

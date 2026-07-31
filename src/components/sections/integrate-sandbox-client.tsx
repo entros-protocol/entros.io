@@ -18,9 +18,11 @@ pub mod my_airdrop {
         let identity = &ctx.accounts.identity_state;
         let clock = Clock::get()?;
 
-        // Verify the attestation was issued within the last 24 hours
+        // A claim runs a verification at the point of the claim, so the
+        // Anchor this reads was written moments ago. One hour leaves room for
+        // a slow wallet round trip without accepting a stale Anchor.
         require!(
-            identity.last_verification_timestamp >= clock.unix_timestamp - 86400,
+            identity.last_verification_timestamp >= clock.unix_timestamp - 3600,
             AirdropError::AttestationExpired
         );
 

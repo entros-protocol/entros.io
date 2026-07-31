@@ -12,6 +12,12 @@ import {
   Share2,
 } from "lucide-react";
 
+import {
+  COOLDOWN_REASONS,
+  type RetryableReason,
+  type VerificationReason,
+} from "@entros/pulse-sdk";
+
 import { buildShareUrl, buildTwitterIntent } from "@/lib/share";
 
 const STAGE_SUBTITLES: Record<string, string> = {
@@ -46,7 +52,13 @@ function TumblingSquare() {
 
 export function ProvingView({ stage }: { stage?: string }) {
   const label = stage || "Processing...";
-  const subtitle = (stage && STAGE_SUBTITLES[stage]) || "Please wait";
+  // Type-checked on the result, for the same reason as the hint lookup below.
+  // Every object inherits `toString`, so a `stage` of "toString" reads back a
+  // function, and a function is truthy, so `||` would not catch it either.
+  // `stage` is SDK-controlled today, which makes this a type lie rather than
+  // a live crash, but the identical shape twenty lines down was reachable.
+  const rawSubtitle: unknown = stage ? STAGE_SUBTITLES[stage] : undefined;
+  const subtitle = typeof rawSubtitle === "string" ? rawSubtitle : "Please wait";
 
   return (
     <div className="text-center space-y-4">
@@ -209,9 +221,13 @@ export function VerifiedView({
  * coupling", "Whisper", "SimHash", etc.) per the public-copy specificity
  * rule—we describe what the user can DO, not what we measured.
  *
- * Keys must stay in sync with `entros-validation::ReasonCode::safe_label`.
+ * Typed against the SDK's retryable set rather than `Record<string, string>`,
+ * so adding a retryable reason without writing its hint is a compile error.
+ * Before, the table and the retry list were two hand-maintained copies and a
+ * missing key fell silently through to the generic fallback.
  */
-const SOFT_HINT: Record<string, string> = {
+
+const SOFT_HINT: Record<RetryableReason, string> = {
   variance_floor:
     "Your signals were a bit flat. Try moving more and speaking with normal volume.",
   entropy_bounds:
@@ -222,6 +238,8 @@ const SOFT_HINT: Record<string, string> = {
     "Read the phrase clearly at a normal pace, exactly as shown.",
   validation_unavailable:
     "We couldn't reach the verification service. Check your connection and try again.",
+  validation_timeout:
+    "Your connection stalled while sending the verification. Somewhere with a stronger signal should work.",
   captcha_required:
     "Liveness pattern anomaly detected. Please complete this dynamic voice/motion challenge to verify your identity.",
 };
@@ -246,7 +264,17 @@ export function SoftFailedView({
   onTryAgain: () => void;
   onCancel: () => void;
 }) {
-  const hint = SOFT_HINT[reason] ?? SOFT_HINT_FALLBACK;
+  // Widened for the lookup because `reason` arrives from the server as a
+  // plain string. The exhaustiveness that matters is on the table's
+  // declaration, where a missing hint for a retryable reason fails the build;
+  // here an unrecognised reason should simply take the fallback.
+  //
+  // Typed on the result rather than nullish-coalesced. Every object inherits
+  // `toString`, `constructor` and friends, so a `reason` of "toString" reads
+  // back a function, and a function is not nullish, so it would have sailed
+  // past `??` and into a text node.
+  const rawHint: unknown = (SOFT_HINT as Record<string, unknown>)[reason];
+  const hint = typeof rawHint === "string" ? rawHint : SOFT_HINT_FALLBACK;
   const attemptsLabel =
     attemptsRemaining === 1 ? "1 attempt left" : `${attemptsRemaining} attempts left`;
 
@@ -340,12 +368,18 @@ function isStaleBlockhashError(error: string): boolean {
   );
 }
 
-// Server returns a 429 with `{reason: "rate_limited"}` (per-wallet cap)
-// or `{reason: "ip_rate_limited"}` (per-IP cap).
-// Both surface a friendly `error` body string starting with "Too many".
-// Surfacing a distinct title prevents the "Verification failed" generic
-// page when the user is just being told to wait.
-function isRateLimitedError(error: string): boolean {
+// A cooldown, by reason code where one arrived and by prose only as a
+// fallback.
+//
+// The server sends 429 with `rate_limited` (per-wallet cap),
+// `ip_rate_limited` (per-IP cap) or `cross_wallet_cooldown`, and the SDK now
+// carries the code through. It used to be dropped, leaving this function to
+// recover the same fact by matching "too many" in an English error string,
+// so rewording the server's copy quietly regressed this screen to the generic
+// "Verification failed" page. The substring branch stays only for a response
+// that reaches us without a code.
+function isRateLimitedError(error: string, reason?: string): boolean {
+  if (COOLDOWN_REASONS.has(reason as VerificationReason)) return true;
   const e = error.toLowerCase();
   return e.includes("too many") || e.includes("recently verified") || e.includes("different wallet");
 }
@@ -526,10 +560,14 @@ type FailureKind =
   | { kind: "rate-limited" }
   | { kind: "permission-denied"; device: "microphone" | "motion" }
   | { kind: "microphone-too-quiet" }
-  | { kind: "drift-too-high" }
+  | { kind: "drift-too-high"; canReset: boolean }
   | { kind: "generic"; message: string };
 
-function categorizeFailure(error: string, canResetBaseline: boolean): FailureKind {
+function categorizeFailure(
+  error: string,
+  canResetBaseline: boolean,
+  reason?: string,
+): FailureKind {
   if (isRelayerError(error)) return { kind: "relayer-down" };
   // Quiet-mic detection routes BEFORE permission-denied so a captured-but-
   // silent stream surfaces its own actionable copy ("check input device + OS
@@ -558,7 +596,7 @@ function categorizeFailure(error: string, canResetBaseline: boolean): FailureKin
   if (isInsufficientSolError(error)) return { kind: "insufficient-sol" };
   if (isUserRejectionError(error)) return { kind: "user-rejection" };
   if (isStaleBlockhashError(error)) return { kind: "stale-blockhash" };
-  if (isRateLimitedError(error)) return { kind: "rate-limited" };
+  if (isRateLimitedError(error, reason)) return { kind: "rate-limited" };
   // Specific Custom codes route before the opaque-rejection bucket so
   // each gets its own user-actionable surface — cooldowns and stale
   // baselines reveal protocol-state the user needs to act on, not
@@ -571,7 +609,8 @@ function categorizeFailure(error: string, canResetBaseline: boolean): FailureKin
   // Drift-too-high is a recoverable capture-quality issue (an interrupted or
   // rushed capture pushed the fingerprint past the consistency ceiling). It
   // gets its own friendly "try again" surface, ahead of the opaque bucket.
-  if (isDriftTooHighError(error)) return { kind: "drift-too-high" };
+  if (isDriftTooHighError(error))
+    return { kind: "drift-too-high", canReset: canResetBaseline };
   // Opaque rejections and generic program reverts collapse into the same
   // user-facing surface. Distinguishing them would tell an attacker
   // whether the validator or the on-chain layer caught them, which is
@@ -610,14 +649,17 @@ function micRecoveryFootnote(): string {
 
 export function FailedView({
   error,
+  reason,
   onReset,
   onResetBaseline,
 }: {
   error: string;
+  /** SDK reason code, when one survived. Routes the cooldown screen. */
+  reason?: string;
   onReset: () => void;
   onResetBaseline?: () => void;
 }) {
-  const failure = categorizeFailure(error, typeof onResetBaseline === "function");
+  const failure = categorizeFailure(error, typeof onResetBaseline === "function", reason);
 
   let title: string;
   let body: string;
@@ -744,6 +786,24 @@ export function FailedView({
       title = "Let's try that again";
       body =
         "This capture didn't closely match your usual pattern. That often happens after an interrupted or rushed recording. Try again with a steady, uninterrupted capture.";
+      // A reset is offered here because a rushed recording is not the only way
+      // to land on this screen. A change to the feature pipeline moves every
+      // stored baseline into a space the next capture cannot match, and
+      // nothing upstream detects that: the stored commitment still equals the
+      // on-chain one, so every staleness check passes and the divergence
+      // surfaces only as distance. Without a way out the user reads copy
+      // blaming their recording and retries against a baseline that can never
+      // match again. See master-list #215 for the versioning that would let
+      // the SDK name this case instead of leaving it to be inferred here.
+      if (failure.canReset && onResetBaseline) {
+        footnote =
+          "If this keeps happening across several clean attempts, your baseline may predate a pipeline update. Resetting re-enrolls you from scratch.";
+        secondaryAction = {
+          label: "Reset baseline",
+          onClick: onResetBaseline,
+          tone: "danger",
+        };
+      }
       break;
     case "generic":
       // Friendly-text passthrough. The catch-block sanitizer in

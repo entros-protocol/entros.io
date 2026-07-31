@@ -54,7 +54,12 @@ export function verifyReducer(
 
     case "VERIFICATION_FAILED":
       if (state.step === "verified") return state;
-      return { step: "failed", error: action.error };
+      return {
+        step: "failed",
+        error: action.error,
+        reason: action.reason,
+        retryAfterSec: action.retryAfterSec,
+      };
 
     case "RESET":
       return { step: "idle" };

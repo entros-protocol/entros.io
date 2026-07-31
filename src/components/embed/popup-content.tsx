@@ -8,6 +8,7 @@ import { Wallet } from "lucide-react";
 import {
   type PulseSession,
   PROGRAM_IDS,
+  isClientOriginReason,
 } from "@entros/pulse-sdk";
 import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
 
@@ -47,13 +48,9 @@ type State =
 
 const PROOF_TIMEOUT_MS = 120_000;
 
-/**
- * SDK-emitted reason code signaling that the validator's
- * `/validate-features` endpoint was unreachable. Distinct from the
- * validator's safe-reveal soft-reject reasons (variance_floor etc.) —
- * surfaces as `network_error` rather than `validation_failed`.
- */
-const VALIDATION_UNAVAILABLE_REASON = "validation_unavailable";
+// The `validation_unavailable` literal used to be redeclared here. It now
+// comes from the SDK's taxonomy via `isClientOriginReason`, which also covers
+// `validation_timeout`, a failure this surface previously could not name.
 
 /**
  * `entros-anchor` Custom error code 6011 (`PrevCommitmentMismatch`):
@@ -297,6 +294,16 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     }
   }
 
+  /**
+   * The speak prompt is on screen, so the SDK can drop everything it recorded
+   * beforehand. The recorder starts early on purpose, so the prompt never
+   * appears during the microphone's cold start, which means the buffer opens
+   * with the challenge fetch and the countdown inside it.
+   */
+  function handleCaptureWindowOpen() {
+    sessionRef.current?.markCaptureStart();
+  }
+
   async function handleCaptureComplete() {
     const session = sessionRef.current;
     if (!session) return;
@@ -354,7 +361,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           // validator soft-rejects (variance_floor, entropy_bounds, etc.)
           // and collapse to validation_failed. Anything without a reason
           // code categorizes by error string.
-          if (result.reason === VALIDATION_UNAVAILABLE_REASON) {
+          if (isClientOriginReason(result.reason)) {
             fail("network_error");
             return;
           }
@@ -430,6 +437,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     return (
       <PulseChallenge
         onComplete={handleCaptureComplete}
+        onCaptureWindowOpen={handleCaptureWindowOpen}
         touchRef={touchRef}
         audioLevel={audioLevel}
         hasMotion={hasMotion}

@@ -8,6 +8,7 @@ import { Wallet } from "lucide-react";
 import {
   type PulseSession,
   PROGRAM_IDS,
+  MAX_VERIFICATION_MS,
   isClientOriginReason,
 } from "@entros/pulse-sdk";
 import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
@@ -28,6 +29,11 @@ import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
 import { usePulse } from "@/components/providers/pulse-provider";
 
+import {
+  PREV_COMMITMENT_MISMATCH_PATTERN,
+  bucketForResult,
+  categorizeError,
+} from "./categorize-embed-error";
 import { PopupBaselineStale } from "./popup-baseline-stale";
 import { PopupSuccess } from "./popup-success";
 import { PopupFailure } from "./popup-failure";
@@ -46,21 +52,25 @@ type State =
   // auto-close. The wire still emits `validation_failed`.
   | { step: "failed-baseline-stale" };
 
-const PROOF_TIMEOUT_MS = 120_000;
+// A backstop, not a phase clock.
+//
+// The SDK bounds each step and reports its own phase. A ceiling below
+// `MAX_VERIFICATION_MS` pre-empts those clocks and reports the failure against
+// whatever step its own message names, which is how a pending wallet prompt
+// came to be reported as a proving timeout. Read from the SDK rather than
+// written down, so raising a clock there raises this in step.
+const VERIFICATION_BACKSTOP_MS = MAX_VERIFICATION_MS + 30_000;
+
+// Name carried on the backstop rejection so the handler can recognise it
+// exactly. It used to be recognised by matching "timed out" in the message,
+// which is a contract nobody wrote down and which broke the moment the copy
+// changed: the integrator started receiving `unknown` for a plain timeout.
+const BACKSTOP_ERROR_NAME = "EntrosBackstopTimeout";
 
 // The `validation_unavailable` literal used to be redeclared here. It now
 // comes from the SDK's taxonomy via `isClientOriginReason`, which also covers
 // `validation_timeout`, a failure this surface previously could not name.
 
-/**
- * `entros-anchor` Custom error code 6011 (`PrevCommitmentMismatch`):
- * the proof's `commitment_prev` doesn't match the identity's current
- * on-chain commitment. Re-clicking the integrator's button can't fix
- * this; the user has to reset baseline on /verify first. Detected here
- * so we route to a dedicated recovery surface instead of the generic
- * "Try again from the integrator" copy.
- */
-const PREV_COMMITMENT_MISMATCH_PATTERN = /"Custom":\s*6011\b/;
 
 /**
  * Reads `trust_score` directly from the IdentityState PDA via a byte
@@ -124,61 +134,6 @@ async function readTrustScoreFromChain(
     }
   }
   return 0;
-}
-
-/**
- * Maps a free-form error string from the SDK / wallet adapter / RPC layer
- * into one of the popup's opaque `EmbedErrorReason` buckets. The buckets
- * are deliberately coarse — integrators receive a category, never the raw
- * message, so adversarial probes can't enumerate the validator's internal
- * rejection codes through the popup boundary.
- */
-function categorizeError(error: string): EmbedErrorReason {
-  const e = error.toLowerCase();
-  if (
-    e.includes("user rejected") ||
-    e.includes("rejected the request") ||
-    e.includes("user denied") ||
-    e.includes("rejected by user") ||
-    e.includes("prior credit") ||
-    e.includes("insufficient funds") ||
-    e.includes("insufficient lamports")
-  ) {
-    return "wallet_rejected";
-  }
-  if (
-    e.includes("doctype") ||
-    e.includes("failed to fetch") ||
-    e.includes("networkerror") ||
-    e.includes("blockhash not found") ||
-    e.includes("block height exceeded")
-  ) {
-    return "network_error";
-  }
-  if (e.includes("timed out") || e.includes("timeout")) {
-    return "timeout";
-  }
-  // Anchor program reverts surface from pulse-sdk 1.5.0 as
-  //   Transaction failed on chain: {"InstructionError":[N,{"Custom":CODE}]}
-  // The Custom codes (PrevCommitmentMismatch 6011, ResetCooldownActive
-  // 6012, ProofFromFuture 6014, MissingValidatorReceipt 6015, etc.) all
-  // signal that the on-chain program rejected the submission — collapse
-  // them into validation_failed so the integrator sees a meaningful
-  // bucket rather than the catch-all unknown.
-  if (e.includes('"custom"') || e.includes("instructionerror")) {
-    return "validation_failed";
-  }
-  // pulse-sdk 3.7.0 drift-too-high (recoverable capture-quality retry) and the
-  // opaque replay-floor rejection ("Verification rejected"). Both mean the
-  // verification didn't pass — map to validation_failed rather than the
-  // catch-all unknown, so integrators receive a meaningful bucket.
-  if (
-    e.includes("closely match your usual pattern") ||
-    e.includes("verification rejected")
-  ) {
-    return "validation_failed";
-  }
-  return "unknown";
 }
 
 /**
@@ -344,10 +299,11 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     );
 
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error("Proof generation timed out")),
-        PROOF_TIMEOUT_MS,
-      ),
+      setTimeout(() => {
+        const err = new Error("Verification took too long and was stopped");
+        err.name = BACKSTOP_ERROR_NAME;
+        reject(err);
+      }, VERIFICATION_BACKSTOP_MS),
     );
 
     Promise.race([proofPromise, timeoutPromise])
@@ -369,17 +325,26 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
             fail("validation_failed");
             return;
           }
-          // Stale-baseline on-chain revert: emit the same opaque
-          // validation_failed bucket on the wire (integrator handles
-          // the same way) but route the popup UI to the dedicated
+          // Anything a baseline reset fixes: emit the same opaque
+          // validation_failed bucket on the wire (the integrator handles it the
+          // same way either way) but route the popup UI to the dedicated
           // recovery surface that links to /verify's reset path.
+          //
+          // Two ways in. `Custom 6011` is the on-chain revert. `failedAt ===
+          // "baseline"` is the pre-flight case the SDK gained in 4.1.0: an
+          // anchor with no on-chain baseline to recover, which is 94 of the 107
+          // on devnet and used to dead-end here as `unknown` with nothing for
+          // the user to do.
           const errorMsg = result.error ?? "";
-          if (PREV_COMMITMENT_MISMATCH_PATTERN.test(errorMsg)) {
+          if (
+            result.failedAt === "baseline" ||
+            PREV_COMMITMENT_MISMATCH_PATTERN.test(errorMsg)
+          ) {
             emitError(ctx, "validation_failed");
             setState({ step: "failed-baseline-stale" });
             return;
           }
-          fail(errorMsg ? categorizeError(errorMsg) : "unknown");
+          fail(bucketForResult(result) ?? (errorMsg ? categorizeError(errorMsg) : "unknown"));
           return;
         }
 
@@ -413,8 +378,11 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
         setState({ step: "verified" });
       })
       .catch((err: Error) => {
-        const isTimeout = err.message?.toLowerCase().includes("timed out");
-        fail(isTimeout ? "timeout" : categorizeError(err.message ?? ""));
+        fail(
+          err?.name === BACKSTOP_ERROR_NAME
+            ? "timeout"
+            : categorizeError(err?.message ?? ""),
+        );
       });
   }
 

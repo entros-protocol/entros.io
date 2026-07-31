@@ -12,19 +12,25 @@ import {
   Share2,
 } from "lucide-react";
 
-import {
-  COOLDOWN_REASONS,
-  type RetryableReason,
-  type VerificationReason,
-} from "@entros/pulse-sdk";
+import { type RetryableReason } from "@entros/pulse-sdk";
+
+import type { FailureContext } from "./types";
+import { categorizeFailure, failureSpend } from "./categorize-failure";
 
 import { buildShareUrl, buildTwitterIntent } from "@/lib/share";
 
+// Every stage string the SDK emits from `onProgress`, and what it is doing.
+// Three of the seven had no entry and fell through to the "Please wait"
+// default: both baseline stages and the reset submission. Baseline recovery is
+// the slowest step a returning user sees, so it was the one most worth naming.
 const STAGE_SUBTITLES: Record<string, string> = {
   "Extracting features...": "Analyzing voice, motion, and touch data",
   "Validating...": "Server-side feature validation",
+  "Recovering baseline from chain...": "Decrypting your stored baseline",
+  "Re-syncing baseline with chain...": "Your baseline advanced on another device",
   "Computing proof...": "Generating zero-knowledge proof",
   "Submitting to Solana...": "Writing verification on-chain",
+  "Submitting reset to Solana...": "Rotating your on-chain baseline",
 };
 
 /**
@@ -97,6 +103,7 @@ export function VerifiedView({
   walletPubkey,
   trustScore,
   showShare = false,
+  portableBaseline,
 }: {
   commitment: string;
   txSignature?: string;
@@ -115,6 +122,15 @@ export function VerifiedView({
   /** Caller-controlled gate. Off for the baseline-reset flow so the share
    * row never appears there. */
   showShare?: boolean;
+  /**
+   * False when the verification landed but wrote no portable copy of the
+   * baseline. `undefined` in walletless mode, where none is written at all.
+   *
+   * Worth a line on a success screen because the consequence lands on a
+   * different device, weeks later, with nothing to explain it. 13 of 107
+   * devnet anchors carry an on-chain baseline; the rest found out that way.
+   */
+  portableBaseline?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const canShare = showShare && Boolean(walletPubkey);
@@ -175,6 +191,19 @@ export function VerifiedView({
             </p>
             <p className="font-mono text-xs text-foreground/70 break-all">
               {txSignature}
+            </p>
+          </div>
+        )}
+        {portableBaseline === false && (
+          <div className="rounded-lg border border-border bg-surface/50 p-4 text-left">
+            <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">
+              This device only
+            </p>
+            <p className="text-xs text-foreground/70 leading-relaxed">
+              Your wallet could not sign the message that encrypts a portable
+              copy of your baseline, so this verification is stored here alone.
+              Verifying from another device will need a reset. Connect a wallet
+              that supports message signing to make it portable.
             </p>
           </div>
         )}
@@ -306,125 +335,6 @@ export function SoftFailedView({
   );
 }
 
-function isRelayerError(error: string): boolean {
-  return (
-    error.includes("DOCTYPE") ||
-    error.includes("Failed to fetch") ||
-    error.includes("NetworkError") ||
-    error.includes("localhost")
-  );
-}
-
-/**
- * Detects the "on-chain anchor exists, local baseline is gone" failure
- * surfaced from `pulse-sdk/src/pulse.ts:278-285`. The stable substring is
- * "baseline is missing"—guarded by a reset.test.ts assertion in the SDK
- * to prevent silent copy drift.
- */
-function isMissingBaselineError(error: string): boolean {
-  return error.includes("baseline is missing");
-}
-
-// A different wallet signed the baseline key-derivation prompt than the one
-// connected (propagated from the SDK's complete()). The on-chain baseline is
-// intact — route to a no-reset surface. Contract: the matched phrase is emitted
-// verbatim by pulse-sdk pulse.ts complete() and survives sanitizeErrorMessage.
-function isWalletMismatchError(error: string): boolean {
-  return error.includes("different wallet signed");
-}
-
-// Wallet has zero (or insufficient) SOL. Phantom/Solflare/Backpack all
-// surface variants of the runtime simulation error verbatim. Match the
-// stable substrings the runtime uses, not the wrapper text.
-function isInsufficientSolError(error: string): boolean {
-  const e = error.toLowerCase();
-  return (
-    e.includes("prior credit") ||
-    e.includes("insufficient funds") ||
-    e.includes("insufficient lamports")
-  );
-}
-
-// User dismissed or rejected the wallet's signature prompt. Wallet
-// adapters use slightly different wording—match the common ones.
-function isUserRejectionError(error: string): boolean {
-  const e = error.toLowerCase();
-  return (
-    e.includes("user rejected") ||
-    e.includes("rejected the request") ||
-    e.includes("user denied") ||
-    e.includes("rejected by user")
-  );
-}
-
-// Transaction's recent blockhash expired before landing on chain.
-// Recoverable by retrying—the SDK requests a fresh blockhash on each
-// attempt.
-function isStaleBlockhashError(error: string): boolean {
-  return (
-    error.includes("Blockhash not found") ||
-    error.includes("block height exceeded") ||
-    error.includes("TransactionExpiredBlockheightExceeded")
-  );
-}
-
-// A cooldown, by reason code where one arrived and by prose only as a
-// fallback.
-//
-// The server sends 429 with `rate_limited` (per-wallet cap),
-// `ip_rate_limited` (per-IP cap) or `cross_wallet_cooldown`, and the SDK now
-// carries the code through. It used to be dropped, leaving this function to
-// recover the same fact by matching "too many" in an English error string,
-// so rewording the server's copy quietly regressed this screen to the generic
-// "Verification failed" page. The substring branch stays only for a response
-// that reaches us without a code.
-function isRateLimitedError(error: string, reason?: string): boolean {
-  if (COOLDOWN_REASONS.has(reason as VerificationReason)) return true;
-  const e = error.toLowerCase();
-  return e.includes("too many") || e.includes("recently verified") || e.includes("different wallet");
-}
-
-// pulse-sdk 1.5.0+ surfaces on-chain Anchor reverts as:
-//   Transaction failed on chain: {"InstructionError":[N,{"Custom":CODE}]}
-// Code 6011 is `PrevCommitmentMismatch` from entros-anchor — the local
-// baseline produces a `commitment_prev` that doesn't match the on-chain
-// identity. The user-actionable fix is the same as missing-baseline:
-// rotate the on-chain commitment via reset.
-function isPrevCommitmentMismatchError(error: string): boolean {
-  return /"Custom":\s*6011\b/.test(error);
-}
-
-// pulse-sdk 3.6.0+ pre-flight stale-baseline check: when the local baseline
-// has fallen behind the on-chain verification chain (a verify landed from
-// another origin/device) AND can't be re-synced from the on-chain
-// EncryptedBaseline, the SDK fails BEFORE submitting — no wasted signature or
-// fee — with this stable phrase. Same user-actionable surface as an on-chain
-// 6011 revert: reset to re-sync.
-function isStaleBaselineMessage(error: string): boolean {
-  return error.toLowerCase().includes("out of sync with your on-chain identity");
-}
-
-// pulse-sdk 3.7.0+ pre-flight Hamming bounds check: when the new behavioral
-// fingerprint drifts past the circuit's max-distance ceiling (an interrupted or
-// rushed capture), the SDK fails BEFORE proving — no wasted proof, no second
-// signature — with this stable phrase. Recoverable by retrying with a clean
-// capture, so it routes to its own friendly "try again" surface rather than the
-// opaque validation-rejected bucket. The drift ceiling is published in the
-// paper, so naming the goal reveals nothing an attacker can't already read.
-// Guarded by a pulse-sdk source-string test to prevent silent copy drift.
-function isDriftTooHighError(error: string): boolean {
-  return error.toLowerCase().includes("closely match your usual pattern");
-}
-
-// Code 6012 is `ResetCooldownActive` from entros-anchor. The 7-day
-// cooldown after a successful baseline reset has not elapsed. Until it
-// does, no further reset can land. Distinct from program-revert because
-// the user-actionable answer is "wait" — re-attempting today, even with
-// a perfect capture, produces the same revert.
-function isResetCooldownError(error: string): boolean {
-  return /"Custom":\s*6012\b/.test(error);
-}
-
 // Pre-flight cooldown checks (verify-wallet-connected.tsx) embed the
 // computed unlock timestamp in the synthetic error string so this UI
 // can show the user a specific "try again on $DATE" message. On the
@@ -435,190 +345,6 @@ function extractCooldownUnlockDate(error: string): Date | null {
   if (!m || !m[1]) return null;
   const d = new Date(m[1]);
   return Number.isNaN(d.getTime()) ? null : d;
-}
-
-// Catch-all for any other on-chain Anchor program revert (proof-from-
-// future, missing receipt, malformed accounts, etc.). Routes to the
-// validation-rejected surface alongside opaque validator rejections so
-// the user-facing copy is identical across the two paths — telling an
-// attacker whether the validator or the chain caught them would itself
-// be a calibration signal.
-function isProgramRevertError(error: string): boolean {
-  return error.includes("InstructionError") || /"Custom":\s*\d+/.test(error);
-}
-
-// Opaque rejections come from two sources that we deliberately collapse
-// into one user-facing message:
-//   1. The validator service returns `safe_reason=null` for anti-probing
-//      categories (sybil match, TTS detection, advanced biometric checks).
-//      The SDK propagates the response as "Feature validation failed" or
-//      whatever generic body the validator returned.
-//   2. The wallet adapter throws a raw Solana RPC error
-//      (`-32002 SendTransactionPreflightFailure` plus the `@solana/errors`
-//      decode prompt plus the base58 transaction blob) when on-chain
-//      preflight rejects before reaching a typed Custom code.
-// Today both paths leak into the generic bucket and render the error
-// string verbatim. Routing them through `validation-rejected` instead
-// surfaces deliberate "the system rejected this attempt" UX without
-// revealing which layer or which check caught the rejection.
-function isOpaqueRejectionError(error: string): boolean {
-  const e = error.toLowerCase();
-  return (
-    // Validator anti-probing rejections. The validation service returns
-    // `safe_reason=None` for sybil-match / TTS-detected / advanced
-    // biometric checks, with the user-facing error body set to a generic
-    // phrase. Matching "verification failed" catches the sybil and related
-    // cases; "validation failed" and "feature validation" cover the
-    // SDK-side fallback wording.
-    e.includes("verification failed") ||
-    e.includes("verification rejected") ||
-    e.includes("feature validation") ||
-    e.includes("validation rejected") ||
-    e.includes("validation failed") ||
-    // Solana RPC and wallet-adapter raw error formats. Phantom / Solflare
-    // / Backpack surface these verbatim when simulation rejects before
-    // pulse-sdk's confirmAndCheck wrapper runs. Routing them through
-    // validation-rejected delivers the same polished surface as opaque
-    // validator rejections — distinguishing the two would itself reveal
-    // calibration information to an attacker (whether the validator or
-    // the chain caught them). Specific user-actionable Custom codes
-    // (6011 stale-baseline, 6012 cooldown) route earlier in the
-    // categorizer so they retain their dedicated surfaces.
-    e.includes("-32002") ||
-    e.includes("sendtransactionpreflightfailure") ||
-    e.includes("@solana/errors") ||
-    e.includes("custom program error") ||
-    e.includes("transaction simulation failed") ||
-    // Upstream-failure patterns from executor-node when the validation-
-    // service is unreachable (crash loop, restart window, network blip).
-    // The executor returns the reqwest "error sending request for url
-    // ([internal])" envelope verbatim in that case. Routing these
-    // through validation-rejected gives the user the same polished
-    // surface without revealing infrastructure detail. The sanitizer in
-    // verify-wallet-connected.tsx strips the URL itself; this routes the
-    // category. Both are defense-in-depth — either alone closes the leak,
-    // both together survive a future regression in the other.
-    e.includes("error sending request") ||
-    e.includes("502 bad gateway") ||
-    e.includes("503 service unavailable") ||
-    e.includes("504 gateway timeout") ||
-    e.includes("upstream connect error")
-  );
-}
-
-// Microphone permission denied. Surface paths:
-// - verify-wallet-connected.tsx synthesizes "Microphone access denied. ..."
-//   when session.startAudio() throws (browser permissions API rejected).
-// - pulse-sdk/pulse.ts wraps captureAudio failures as
-//   "Audio capture failed: ${msg}. Ensure microphone permission is granted ..."
-// - Some browsers throw native NotAllowedError / PermissionDeniedError —
-//   message text varies by browser/OS so match the canonical substrings.
-function isMicrophonePermissionError(error: string): boolean {
-  const e = error.toLowerCase();
-  return (
-    e.includes("microphone access denied") ||
-    e.includes("microphone permission") ||
-    e.includes("audio capture failed") ||
-    e.includes("microphone unavailable") ||
-    (e.includes("notallowederror") && e.includes("audio")) ||
-    (e.includes("permission denied") && e.includes("audio"))
-  );
-}
-
-// Microphone reached the page but the audio coming through was effectively
-// silent — input device muted at the OS level, wrong default device selected,
-// gain too low, or browser-quirk processing returning a near-zero stream.
-// verify-wallet-connected.tsx synthesizes "Microphone audio too quiet. ..."
-// when the local voiced-frame counter stays below the validator's voicing-
-// ratio floor on a server-rejected attempt with no specific safe reason.
-// Routed before isMicrophonePermissionError so the more specific condition
-// wins; the substrings are disjoint anyway.
-function isMicrophoneTooQuietError(error: string): boolean {
-  return error.toLowerCase().includes("microphone audio too quiet");
-}
-
-// Motion sensor permission denied. iOS 13+ requires explicit consent via
-// DeviceMotionEvent.requestPermission() — denial surfaces as our synthetic
-// "Motion permission denied" string from verify-wallet-connected.tsx.
-function isMotionPermissionError(error: string): boolean {
-  const e = error.toLowerCase();
-  return (
-    e.includes("motion permission denied") || e.includes("motion access")
-  );
-}
-
-type FailureKind =
-  | { kind: "relayer-down" }
-  | { kind: "wallet-mismatch" }
-  | { kind: "missing-baseline"; canReset: boolean }
-  | { kind: "stale-baseline"; canReset: boolean }
-  | { kind: "cooldown-active" }
-  | { kind: "validation-rejected" }
-  | { kind: "insufficient-sol" }
-  | { kind: "user-rejection" }
-  | { kind: "stale-blockhash" }
-  | { kind: "rate-limited" }
-  | { kind: "permission-denied"; device: "microphone" | "motion" }
-  | { kind: "microphone-too-quiet" }
-  | { kind: "drift-too-high"; canReset: boolean }
-  | { kind: "generic"; message: string };
-
-function categorizeFailure(
-  error: string,
-  canResetBaseline: boolean,
-  reason?: string,
-): FailureKind {
-  if (isRelayerError(error)) return { kind: "relayer-down" };
-  // Quiet-mic detection routes BEFORE permission-denied so a captured-but-
-  // silent stream surfaces its own actionable copy ("check input device + OS
-  // mute") rather than the permission-recovery instructions, which don't
-  // apply when the browser already granted access.
-  if (isMicrophoneTooQuietError(error)) {
-    return { kind: "microphone-too-quiet" };
-  }
-  // Permission denials route before generic categories. Both surfaces are
-  // browser-state issues the user can fix directly; the generic "Verification
-  // failed" copy would misrepresent the cause and bury the actionable fix.
-  if (isMicrophonePermissionError(error)) {
-    return { kind: "permission-denied", device: "microphone" };
-  }
-  if (isMotionPermissionError(error)) {
-    return { kind: "permission-denied", device: "motion" };
-  }
-  // Route before missing-baseline: a wallet-signature mismatch is NOT a missing
-  // baseline (the on-chain baseline is intact), so this surface must not reset.
-  if (isWalletMismatchError(error)) {
-    return { kind: "wallet-mismatch" };
-  }
-  if (isMissingBaselineError(error)) {
-    return { kind: "missing-baseline", canReset: canResetBaseline };
-  }
-  if (isInsufficientSolError(error)) return { kind: "insufficient-sol" };
-  if (isUserRejectionError(error)) return { kind: "user-rejection" };
-  if (isStaleBlockhashError(error)) return { kind: "stale-blockhash" };
-  if (isRateLimitedError(error, reason)) return { kind: "rate-limited" };
-  // Specific Custom codes route before the opaque-rejection bucket so
-  // each gets its own user-actionable surface — cooldowns and stale
-  // baselines reveal protocol-state the user needs to act on, not
-  // biometric-check outcomes, so surfacing them doesn't help an attacker
-  // calibrate.
-  if (isPrevCommitmentMismatchError(error) || isStaleBaselineMessage(error)) {
-    return { kind: "stale-baseline", canReset: canResetBaseline };
-  }
-  if (isResetCooldownError(error)) return { kind: "cooldown-active" };
-  // Drift-too-high is a recoverable capture-quality issue (an interrupted or
-  // rushed capture pushed the fingerprint past the consistency ceiling). It
-  // gets its own friendly "try again" surface, ahead of the opaque bucket.
-  if (isDriftTooHighError(error))
-    return { kind: "drift-too-high", canReset: canResetBaseline };
-  // Opaque rejections and generic program reverts collapse into the same
-  // user-facing surface. Distinguishing them would tell an attacker
-  // whether the validator or the on-chain layer caught them, which is
-  // itself calibration information.
-  if (isOpaqueRejectionError(error) || isProgramRevertError(error)) {
-    return { kind: "validation-rejected" };
-  }
-  return { kind: "generic", message: error };
 }
 
 const FAUCET_URL = "https://faucet.solana.com";
@@ -650,16 +376,31 @@ function micRecoveryFootnote(): string {
 export function FailedView({
   error,
   reason,
+  failedAt,
+  opaque,
+  baselineRecovery,
   onReset,
   onResetBaseline,
+  userPaysFees = true,
 }: {
   error: string;
   /** SDK reason code, when one survived. Routes the cooldown screen. */
   reason?: string;
   onReset: () => void;
   onResetBaseline?: () => void;
-}) {
-  const failure = categorizeFailure(error, typeof onResetBaseline === "function", reason);
+  /**
+   * Whether the connected wallet is the fee payer. False on the walletless
+   * path, where the relayer signs and pays, and telling the user to check
+   * their wallet for a fee would point at a wallet they never connected.
+   */
+  userPaysFees?: boolean;
+} & FailureContext) {
+  const failure = categorizeFailure(
+    error,
+    typeof onResetBaseline === "function",
+    reason,
+    { failedAt, opaque, baselineRecovery },
+  );
 
   let title: string;
   let body: string;
@@ -679,14 +420,49 @@ export function FailedView({
     case "wallet-mismatch":
       title = "Wrong wallet signed";
       body =
-        "A different wallet signed than the one you connected—another wallet extension likely intercepted the signature prompt. Your on-chain baseline is intact. Sign with your connected wallet, or disable other wallet extensions (or unset their default), then try again.";
+        "A different wallet signed than the one you connected. Another wallet extension likely intercepted the signature prompt. Your on-chain baseline is intact. Sign with your connected wallet, or disable other wallet extensions (or unset their default), then try again.";
       footnote =
-        "No reset needed—this is a wallet-selection issue, not a baseline problem.";
+        "No reset needed. This is a wallet-selection issue, not a baseline problem.";
+      break;
+    case "no-portable-baseline":
+      // The largest group by far: 13 of 107 devnet anchors carry an on-chain
+      // baseline, so most people who reach a second device were minted before
+      // the feature existed. They used to be told a fingerprint was "not found
+      // on this device", which describes a search that could never have
+      // succeeded and points at a device that was never at fault.
+      title = "This anchor predates portable baselines";
+      body =
+        "Your Entros Anchor was created before baselines were stored on chain, so there is nothing here to restore. Reset once from this device and your baseline becomes recoverable on any device you connect the same wallet to.";
+      footnote =
+        "Resetting clears your verification count and trust score, and starts a 7-day cooldown before the next reset.";
+      if (failure.canReset && onResetBaseline) {
+        secondaryAction = {
+          label: "Reset baseline",
+          onClick: onResetBaseline,
+          tone: "danger",
+        };
+        dismissLabel = "Cancel";
+      }
+      break;
+    case "signing-unavailable":
+      title = "This wallet can't unlock your baseline";
+      body =
+        "Unlocking the baseline stored on chain needs a signed message, and this wallet does not offer message signing. Connect a wallet that does, or reset to re-enroll from this device.";
+      footnote =
+        "Some hardware wallet firmware omits message signing. Switching wallets keeps your verification history; resetting clears it.";
+      if (failure.canReset && onResetBaseline) {
+        secondaryAction = {
+          label: "Reset baseline",
+          onClick: onResetBaseline,
+          tone: "danger",
+        };
+        dismissLabel = "Cancel";
+      }
       break;
     case "missing-baseline":
       title = "Baseline can't be recovered here";
       body =
-        "Your Entros Anchor exists on chain, but the encrypted baseline couldn't be restored to this browser—either it was never written (older anchor) or your wallet can't decrypt it. Reset the baseline to re-enroll from here.";
+        "Your Entros Anchor exists on chain, but the encrypted baseline couldn't be restored to this browser. Either it was never written, or it was replaced by a later reset and no longer opens. Reset the baseline to re-enroll from here.";
       if (failure.canReset && onResetBaseline) {
         secondaryAction = {
           label: "Reset baseline",
@@ -699,7 +475,7 @@ export function FailedView({
     case "stale-baseline":
       title = "Baseline out of sync";
       body =
-        "Your on-chain Entros Anchor doesn't match the recovered baseline—usually after a reset on another device. Reset here to re-enroll, or verify from the device that holds the matching baseline.";
+        "Your on-chain Entros Anchor doesn't match the recovered baseline, usually after a reset on another device. Reset here to re-enroll, or verify from the device that holds the matching baseline.";
       if (failure.canReset && onResetBaseline) {
         secondaryAction = {
           label: "Reset baseline",
@@ -824,6 +600,27 @@ export function FailedView({
       break;
   }
 
+  // What the attempt cost, when it cost anything. Every phase up to and
+  // including the wallet prompt spends nothing, so this is silent on the large
+  // majority of failures. It is here because the alternative was what shipped
+  // for two months: a baseline reset that was broadcast, charged and reverted
+  // on every attempt, with the interface saying only that verification failed.
+  //
+  // Two surfaces suppress it because they already establish that no fee was
+  // taken, and the phase is deliberately the more cautious of the two answers:
+  // a wallet with no SOL cannot pay one, and an expired blockhash means the
+  // transaction never landed.
+  const spendIsKnownZero =
+    failure.kind === "insufficient-sol" || failure.kind === "stale-blockhash";
+  const spend =
+    userPaysFees && !spendIsKnownZero ? failureSpend(failedAt) : "none";
+  const spendNote =
+    spend === "certain"
+      ? "The network fee for this attempt was spent. Your identity did not change."
+      : spend === "possible"
+        ? "This attempt may have spent a network fee. Check your wallet's recent activity."
+        : null;
+
   return (
     <div className="text-center space-y-6">
       {failure.kind === "drift-too-high" ? (
@@ -835,6 +632,7 @@ export function FailedView({
         <p className="font-sans text-xl font-semibold text-foreground">{title}</p>
         <p className="mt-1 text-sm text-muted">{body}</p>
         {footnote && <p className="mt-2 text-xs text-muted">{footnote}</p>}
+        {spendNote && <p className="mt-2 text-xs text-muted">{spendNote}</p>}
       </div>
       {primaryCta && (
         <a

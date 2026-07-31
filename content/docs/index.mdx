@@ -11,11 +11,11 @@ These docs cover the integration paths: drop-in React components, on-chain reads
 
 Pick the path that matches your use case. Each integrator only needs one.
 
-**Tier 1 — Drop-in trigger.** You want a button that takes a user from "unverified wallet" to "verified human" with a single click. The popup hosts the wallet connect, the 12-second behavioral capture, the proof, and the on-chain mint. Your app stays wallet-adapter-free until a verified payload arrives on the callback. Install: `@entros/verify`. Five lines of JSX.
+**Tier 1, drop-in trigger.** You want a button that takes a user from "unverified wallet" to "verified human" with a single click. The popup hosts the wallet connect, the 12-second behavioral capture, the proof, and the on-chain mint. Your app stays wallet-adapter-free until a verified payload arrives on the callback. Install: `@entros/verify`. Five lines of JSX.
 
-**Tier 2 — Programmatic SDK.** You want to own the verification UX — custom capture canvas, branded loading states, inline rather than popup, mobile-native. The Pulse SDK exposes the lower-level primitives the popup is built on. Install: `@entros/pulse-sdk`. Same package powers Tier 1 internally.
+**Tier 2, programmatic SDK.** You want to own the verification UX: custom capture canvas, branded loading states, inline rather than popup, mobile-native. The Pulse SDK exposes the lower-level primitives the popup is built on. Install: `@entros/pulse-sdk`. Same package powers Tier 1 internally.
 
-**Tier 3 — Read-only.** You don't run verification yourself. You just need to gate access or display a Trust Score based on existing on-chain Anchors. One function call, free reads, no API key. Install: `@entros/pulse-sdk`.
+**Tier 3, read-only.** You display an existing Anchor, or gate something where a live capture would be more friction than the action is worth. One function call, free reads, no API key. Install: `@entros/pulse-sdk`. For anything with real stakes, pair it with a Tier 1 trigger at the point of the action.
 
 ## Where to start
 
@@ -23,19 +23,22 @@ Pick the path that matches your use case. Each integrator only needs one.
 - Most integrators (Tier 1)? Drop in `<EntrosVerify />` — see the [verification flow](/docs/integrate/verification-flow).
 - Custom UX (Tier 2)? See the [Pulse SDK reference](/docs/reference/sdk).
 - Read-only (Tier 3)? Jump to the [gate-a-route quickstart](/docs/quickstart/next-js) or [read-on-chain](/docs/integrate/read-on-chain).
+- Gating something valuable? See [what to gate on](/docs/concepts/trust-score#what-to-gate-on).
 - Curious where this is going? See the [Roadmap](/docs/roadmap/current).
 
 ## The shape of a Tier 3 read
 
-Most integrations read one piece of on-chain state: a Trust Score on the user's Anchor PDA, or an attestation issued through SAS. There is no API key, no billing relationship, no off-chain dependency. The user pays a small protocol fee at verification time. Integrators read for free.
+A read pulls one piece of on-chain state: the Anchor PDA, or an attestation issued through SAS. There is no API key, no billing relationship, no off-chain dependency. The user pays a small protocol fee at verification time. Integrators read for free.
 
 ```ts
 import { verifyEntrosAttestation } from "@entros/pulse-sdk";
 
 const attestation = await verifyEntrosAttestation(walletAddress, connection);
-if (attestation && attestation.isHuman && attestation.trustScore >= 100) {
+if (attestation?.isHuman && attestation.trustScore >= 100 && !attestation.expired) {
   // proceed
 }
 ```
 
-That's the entire shape. The rest of the docs is what's in the box, what each number means, and how to set thresholds that fit your use case.
+Two numbers, two questions. The score says how consistently this wallet has verified. Recency says how long ago it last did.
+
+For an airdrop claim, a governance vote or anything else worth the friction, run a verification at the point of the action and read the Anchor after it. The score is a history. The verification is the person. `<EntrosVerify />` does it in five lines. See the [verification flow](/docs/integrate/verification-flow).

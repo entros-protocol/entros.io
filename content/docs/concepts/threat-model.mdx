@@ -33,10 +33,16 @@ Adversarial models that attempt to synthesize the full 308-feature vector convin
 
 This is the active research surface. The Anonymity Ring's check stack is the layer designed to make synthesis hard. T4a was structured as a four-wave study against one canonical attack class—pre-recorded human voice paired with procedural motion and touch—to measure each defense layer's specific contribution. Wave 1 (50 attempts, 100% pass) established the counterfactual with cross-modal temporal coupling running in log-only mode. Wave 2 (10 attempts, 10% pass) enabled temporal enforcement. Wave 3 (20 attempts, 0% pass) added phrase content binding. Wave 4 (1,000 attempts, 0% pass, 95% CI [0%, 0.37%]) confirmed the result at scale. T4b extended the program to real-time synthesized voice—two independent TTS model families and 58 synthetic voices, all speaking the issued challenge phrase: the synthesized audio clears the texture checks, but the full production stack rejected every attempt (0% across 200 attempts). Each study closes one canonical class; the program continues against new ones.
 
+## What the integrator controls
+
+The protocol proves that a human operates a wallet. Whether that human is present when your application acts is a question your gate asks, and Entros gives you two fields to ask it with.
+
+A Trust Score read tells you how consistently a wallet has verified. Pairing it with `last_verification_timestamp` bounds how long ago. Running a verification at the point of a gated action answers it outright, which is why claims, votes and treasury actions are worth the extra step. See [Trust Score: what to gate on](/docs/concepts/trust-score#what-to-gate-on).
+
 ## What is out of scope
 
 - **Wallet compromise.** If an attacker controls the user's keypair, the Anchor follows. The protocol assumes the wallet is held by the legitimate user.
-- **Coercion.** A human verifying under duress produces a real verification. Protocol-level defense against coerced participation is a research question; the practical response is per-application thresholds and rate limits.
+- **Coercion.** A human verifying under duress produces a real verification. Protocol-level defense against coerced participation is a research question. The practical response is per-application thresholds and a live check at the point of the action.
 
 ## Where to look next
 

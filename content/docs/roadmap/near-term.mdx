@@ -15,7 +15,7 @@ The pre-audit hardening work is captured in the protocol's internal AUDIT.md and
 
 The verification *trigger* shipped as [`@entros/verify`](/docs/integrate/verification-flow) — a popup-pattern React component that opens a window to entros.io, runs the 12-second capture, and posts the verified payload back. Five lines of JSX, runs against the canonical flow, no redirect.
 
-The remaining packaging work is on the *display* primitives. `EntrosGate` (route guard) and `EntrosBadge` (Trust Score pill) are still copy-source single-file components; the near-term plan is a standalone `@entros/react` package that consolidates them as drop-ins. Until then, the canonical sources live in the entros.io repo and stay in sync with the on-chain layout.
+The remaining packaging work is on the *read* primitives. `EntrosGate` (route guard, reading score and recency) and `EntrosBadge` (Trust Score pill) are still copy-source single-file components. The near-term plan is a standalone `@entros/react` package that consolidates them as drop-ins, composing with `@entros/verify` so a gate can run a verification in its own fallback. Until then, the canonical sources live in the entros.io repo and stay in sync with the on-chain layout.
 
 ## Native Solana Mobile build
 

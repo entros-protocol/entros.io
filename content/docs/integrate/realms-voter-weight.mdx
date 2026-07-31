@@ -24,7 +24,15 @@ The DAO authority creates a `Registrar` account scoped to the realm and governin
 | `min_trust_score` | `u16` | Voters must have an Anchor with at least this score |
 | `max_verification_age` | `i64` | Maximum seconds since the most recent verification |
 
-A typical setting for a community DAO: `min_trust_score = 250`, `max_verification_age = 2_592_000` (30 days).
+Pick `max_verification_age` from what the vote decides.
+
+| Vote | `max_verification_age` |
+| --- | --- |
+| Treasury allocation, parameter change | `3_600` (1 hour) |
+| Standard proposal | `86_400` (1 day) |
+| Signalling, community poll | `604_800` (7 days) |
+
+A community DAO running standard proposals: `min_trust_score = 250`, `max_verification_age = 86_400`. Tighter windows ask voters to verify close to the vote, which is the point for anything that moves funds. The `/verify` flow takes twelve seconds.
 
 ## Wire-up steps
 

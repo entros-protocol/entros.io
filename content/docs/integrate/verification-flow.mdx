@@ -5,7 +5,7 @@ description: Drop in <EntrosVerify /> to take a user from unverified wallet to o
 
 The verification flow ships as `@entros/verify` — a React component that opens a popup window to entros.io, runs the 12-second capture, signs the wallet transaction, and posts the verified payload back via the `onVerified` callback. Your app never touches the wallet adapter or the SDK directly until the result arrives.
 
-This is the Tier 1 path. It's the right choice for ~90% of integrations. Tier 2 (custom UX with the Pulse SDK directly) is documented at [Reference → SDK](/docs/reference/sdk).
+This is the Tier 1 path, and the right choice for around 90% of integrations. It is also the only one that answers whether the person is there right now, which is why it belongs on a claim, a vote, or anything else worth the friction. Tier 2 (custom UX with the Pulse SDK directly) is documented at [Reference → SDK](/docs/reference/sdk).
 
 ## Install
 
@@ -46,7 +46,9 @@ interface EntrosVerifyResult {
 }
 ```
 
-Use `walletPubkey` to identify the user. Use `trustScore` if you want a higher gate than "verified once" (e.g., require 100+ for airdrop eligibility). Use `attestationPda` and `txSig` for audit trails.
+Use `walletPubkey` to identify the user. Use `trustScore` to ask for more than "verified once", for example a 100 floor on airdrop eligibility. Use `attestationPda` and `txSig` for audit trails.
+
+The callback fires on a verification that just happened, so the score arrives against someone present. Gating on the callback rather than on a later read is what makes that true.
 
 ## Optional props
 

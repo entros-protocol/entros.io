@@ -1,9 +1,9 @@
 ---
-title: Read a Trust Score with no SDK
-description: Direct Solana RPC call to read a wallet's Anchor PDA. Useful for server actions, edge functions, or any non-React context.
+title: Read an Anchor with no SDK
+description: Direct Solana RPC call to read a wallet's Trust Score and last verification. Useful for server actions, edge functions, or any non-React context.
 ---
 
-Trust Scores live on-chain in the Anchor PDA. Reading one is a single `getAccountInfo` call—no SDK, no relayer, no API key.
+The Anchor PDA holds a wallet's Trust Score and the time it last verified. Reading both is a single `getAccountInfo` call, with no SDK, no relayer and no API key.
 
 ## The PDA
 
@@ -25,26 +25,29 @@ function deriveAnchorPda(wallet: PublicKey): PublicKey {
 }
 ```
 
-## Read the score
+## Read the Anchor
 
-The `IdentityState` account stores the Trust Score as a little-endian `u16` at byte offset 60.
+`IdentityState` stores the last verification as a little-endian `i64` at byte offset 48, and the Trust Score as a little-endian `u16` at offset 60. Read both: the score is how consistently this wallet has verified, and the timestamp is how long ago it last did.
 
 ```ts
-async function readTrustScore(
+async function readAnchor(
   connection: Connection,
   wallet: PublicKey,
-): Promise<number | null> {
+): Promise<{ trustScore: number; lastVerifiedAt: number } | null> {
   const pda = deriveAnchorPda(wallet);
   const account = await connection.getAccountInfo(pda);
   if (!account) return null;
 
-  // Trust Score: u16 little-endian at offset 60 in the IdentityState struct
-  const trustScore = account.data.readUInt16LE(60);
-  return trustScore;
+  return {
+    // i64 little-endian at offset 48, unix seconds
+    lastVerifiedAt: Number(account.data.readBigInt64LE(48)),
+    // u16 little-endian at offset 60
+    trustScore: account.data.readUInt16LE(60),
+  };
 }
 ```
 
-Returns `null` if the wallet has never verified. Returns a number in `[0, 10000]` otherwise, where 10000 is the configured ceiling and scores today top out near 720.
+Returns `null` if the wallet has never verified. The score lands in `[0, 10000]`, where 10000 is the configured ceiling and scores today top out near 720.
 
 ## Use it server-side
 
@@ -58,18 +61,25 @@ export async function POST(req: NextRequest) {
   const connection = new Connection(
     process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com",
   );
-  const score = await readTrustScore(connection, new PublicKey(wallet));
-
-  if (score === null || score < 100) {
+  const anchor = await readAnchor(connection, new PublicKey(wallet));
+  if (!anchor) {
     return NextResponse.json({ allowed: false }, { status: 403 });
   }
-  return NextResponse.json({ allowed: true, score });
+
+  const ageSeconds = Math.floor(Date.now() / 1000) - anchor.lastVerifiedAt;
+  const allowed = anchor.trustScore >= 100 && ageSeconds <= 86_400;
+
+  return allowed
+    ? NextResponse.json({ allowed: true, score: anchor.trustScore })
+    : NextResponse.json({ allowed: false }, { status: 403 });
 }
 ```
 
+Pick the window from the stakes. A day suits routine access. For a claim or a vote, tighten it to an hour and have the client run a verification at the point of the action with [`<EntrosVerify />`](/docs/integrate/verification-flow), so this route reads an Anchor that was written moments ago.
+
 ## Compute cost
 
-A `getAccountInfo` call costs nothing on the integrator side—it's a free RPC read. The protocol fee is paid by the user at verification time, not at read time. There is no usage-based billing relationship between Entros and your application.
+A `getAccountInfo` call costs nothing on the integrator side. It is a free RPC read. The protocol fee is paid by the user at verification time, not at read time, and there is no usage-based billing relationship between Entros and your application.
 
 ## When to use this vs the SDK
 
@@ -80,4 +90,4 @@ A `getAccountInfo` call costs nothing on the integrator side—it's a free RPC r
 | Anchor program reading from another program | Cross-program PDA read in Rust |
 | Backend service in a non-JS language | Equivalent RPC call in your language's Solana SDK |
 
-The on-chain state is the single source of truth across all of these—same data, different access paths.
+The on-chain state is the single source of truth across all of these. Same data, different access paths, and the same two fields worth reading.

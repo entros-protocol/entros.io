@@ -3,9 +3,11 @@ title: Gate a Next.js route in five lines
 description: Drop EntrosGate into a Next.js app and require a verified human Trust Score before a page renders.
 ---
 
-The shortest path to a verified-human gate. Wrap any component in `<EntrosGate>`, set a `minTrustScore`, and the page renders only for wallets whose on-chain Anchor meets the threshold.
+The shortest path to a verified-human gate. Wrap any component in `<EntrosGate>`, set a `minTrustScore`, and the page renders only for wallets whose on-chain Anchor meets the threshold and verified recently enough.
 
-This is the **Tier 3 read-only path** — you're gating access against existing on-chain Anchors, not running verification yourself. If you instead want a button that takes a user from "unverified wallet" to "verified human" in one click, that's the **Tier 1 path** — see [Verification flow](/docs/integrate/verification-flow) for the `<EntrosVerify />` drop-in component.
+This is the **Tier 3 read-only path**: you read existing on-chain Anchors rather than running verification yourself. It fits display, progressive disclosure, and gates where a live capture would cost more friction than the action is worth.
+
+For an airdrop claim, a governance vote, or anything else worth the friction, run a verification at the point of the action and let the gate read the result. That is the **Tier 1 path**, `<EntrosVerify />`, and it composes with this one: see [Verification flow](/docs/integrate/verification-flow).
 
 > **Prerequisite.** `EntrosGate` depends on the Solana wallet adapter providers (`ConnectionProvider`, `WalletProvider`, `WalletModalProvider`). The component throws at render time without them. Step 2 below sets them up — do that first if your app doesn't already have a wallet adapter wiring at the root.
 
@@ -86,27 +88,35 @@ export default function ProtectedPage() {
 That's the integration. `EntrosGate` does three things:
 
 1. Reads the wallet's Anchor PDA on Solana.
-2. Compares the on-chain Trust Score against `minTrustScore`.
-3. Renders children if the score passes, otherwise a fallback prompt linking to `/verify`.
+2. Compares the Trust Score against `minTrustScore`, and the last verification against `maxVerificationAge`.
+3. Renders children if both pass, otherwise a fallback prompt linking to `/verify`.
 
-## Setting the threshold
+## Setting the thresholds
 
-`minTrustScore` is a `number` between 0 and 10000, the ceiling set by `ProtocolConfig.max_trust_score`. Scores today top out near 720, so pick from the range below rather than from the ceiling. The right value depends on the stakes of the gated action.
+`minTrustScore` is a `number` between 0 and 10000, the ceiling set by `ProtocolConfig.max_trust_score`. Scores today top out near 720, so pick from the range below rather than from the ceiling.
 
-| Stakes | Suggested floor | Reasoning |
-| --- | --- | --- |
-| Comment / vote / join | 100 | Admits any wallet that has re-verified at least once |
-| Mint allowlist / referral reward | 300 | A handful of re-verifications across the first month |
-| Airdrop claim / governance | 550+ | Presence across most of the 84-day window |
-| High-value access | 680+ | Every week filled, on an Anchor open close to a year |
+`maxVerificationAge` is seconds since the wallet last verified, and defaults to one day. The two answer different questions: the score is how consistently this wallet has verified, recency is how long ago it last did.
 
-Higher thresholds require a longer verified history from every caller; lower thresholds keep the protocol open to first-time humans. Pick deliberately.
+| Stakes | Score floor | Recency | Pattern |
+| --- | --- | --- | --- |
+| Comment / join | 100 | 7 days | Gate alone |
+| Mint allowlist / referral reward | 300 | 1 day | Gate alone |
+| Airdrop claim / governance | 550+ | 1 hour | Verify at the action, then gate |
+| High-value access | 680+ | 1 hour | Verify at the action, then gate |
+
+Higher thresholds ask for a longer verified history. Lower ones keep the protocol open to first-time humans. Above the mint-allowlist row, pair the gate with a verification at the point of the action so the score is read against someone who is present.
+
+```tsx
+<EntrosGate minTrustScore={550} maxVerificationAge={3600}>
+  <ClaimButton />
+</EntrosGate>
+```
 
 ## What the user sees
 
 If the connected wallet has no Anchor: a prompt linking to `https://entros.io/verify` by default (configurable via the `verifyHref` prop if you self-host the verification flow).
-If the wallet has an Anchor below threshold: a re-verify prompt.
-If the wallet meets the threshold: your component, no further interaction.
+If the wallet has an Anchor below the score floor, or has not verified inside `maxVerificationAge`: a re-verify prompt.
+If the wallet meets both: your component.
 
 The component doesn't open wallet adapter modals on its own. Wallet connection is the user's responsibility, then `<EntrosGate>` handles the rest.
 

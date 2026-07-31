@@ -5,7 +5,7 @@ description: Drop EntrosVerify into your app for one-click on-chain proof of per
 
 The shortest path to a verified human. Render `<EntrosVerify />` as a button anywhere in your React tree—on click, the user completes wallet connect plus a 12-second behavioral capture inside a popup window, and your `onVerified` callback fires with the verified payload. Your app never touches the wallet adapter or the SDK directly.
 
-This is the **Tier 1 drop-in path**—the right choice for ~90% of integrations. If you instead want to gate against existing on-chain Anchors without running verification yourself, that's the **Tier 3 path**—see [Next.js—gate a route](/docs/quickstart/next-js).
+This is the **Tier 1 drop-in path**, the right choice for around 90% of integrations and the one to reach for whenever the gated action is worth the friction. To read an existing Anchor instead, for display or a lower-stakes gate, see the **Tier 3 path** in [Next.js: gate a route](/docs/quickstart/next-js).
 
 ## Install
 
@@ -40,7 +40,7 @@ interface EntrosVerifyResult {
 }
 ```
 
-`walletPubkey` identifies the user. `trustScore` lets you gate higher-stakes actions (e.g. require 100+ for airdrop eligibility). `attestationPda` and `txSig` give you audit trails.
+`walletPubkey` identifies the user. `trustScore` lets you gate higher-stakes actions, for example a 100 floor on airdrop eligibility. It arrives from a verification that just completed, so it describes someone present. `attestationPda` and `txSig` give you audit trails.
 
 ## Where to look next
 

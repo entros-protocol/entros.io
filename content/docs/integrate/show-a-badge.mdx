@@ -46,11 +46,13 @@ The component fetches the Anchor PDA on mount and renders one of four states:
 `EntrosBadge` is a client component. To render a badge as static content, read the score on the server and pass it down:
 
 ```tsx
-const score = await readTrustScore(connection, walletPubkey);
-return <StaticBadge score={score} />;
+const anchor = await readAnchor(connection, walletPubkey);
+return <StaticBadge score={anchor?.trustScore} lastVerifiedAt={anchor?.lastVerifiedAt} />;
 ```
 
-The PDA layout is documented in the [read-on-chain integration guide](/docs/integrate/read-on-chain).
+A badge reports state rather than granting access, so showing when the wallet last verified alongside the score is the whole job. Use [`EntrosGate`](/docs/integrate/gate-a-route) where the answer decides what a user can do.
+
+`readAnchor` is in the [no-SDK quickstart](/docs/quickstart/read-trust-score), and the full PDA layout in the [read-on-chain guide](/docs/integrate/read-on-chain).
 
 ## Where to look next
 

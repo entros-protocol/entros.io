@@ -23,7 +23,7 @@ if (attestation.expired) {
   // attestation exists but has expired
 }
 
-if (attestation.isHuman && attestation.trustScore >= 250) {
+if (attestation.isHuman && attestation.trustScore >= 250 && !attestation.expired) {
   // pass the gate
 }
 ```
@@ -49,6 +49,8 @@ The attestation is a snapshot of the Anchor at verification time. The Anchor is 
 **The attestation says the user is verified, but the score has decayed.** Trust Scores decay. The attestation snapshots the score at verification time; the live Anchor reflects the decayed score. For applications where the snapshot is the meaningful number (e.g. "did this user pass our threshold at the time of attestation"), the attestation is correct. For applications where the live score matters, read the Anchor.
 
 A reasonable default: read the attestation for membership checks, read the Anchor for live thresholds.
+
+For an action worth real friction, neither read is the whole answer. Run a verification at the point of the action and read the Anchor after it, so the number you gate on describes someone who is present. See [Trust Score: what to gate on](/docs/concepts/trust-score#what-to-gate-on).
 
 ## Schema fields
 

@@ -23,6 +23,7 @@ const RPC_URL = process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
 export async function checkVerification(
   walletBase58: string,
   minScore = 100,
+  maxAgeSeconds = 86_400,
 ): Promise<{ verified: boolean; score: number | null }> {
   const wallet = new PublicKey(walletBase58);
   const [pda] = PublicKey.findProgramAddressSync(
@@ -33,8 +34,11 @@ export async function checkVerification(
   const account = await new Connection(RPC_URL).getAccountInfo(pda);
   if (!account) return { verified: false, score: null };
 
+  const lastVerifiedAt = Number(account.data.readBigInt64LE(48));
   const score = account.data.readUInt16LE(60);
-  return { verified: score >= minScore, score };
+  const age = Math.floor(Date.now() / 1000) - lastVerifiedAt;
+
+  return { verified: score >= minScore && age <= maxAgeSeconds, score };
 }
 ```
 
@@ -62,10 +66,21 @@ pub struct DoSomething<'info> {
     pub identity_state: AccountInfo<'info>,
 }
 
-pub fn do_something(ctx: Context<DoSomething>, min_score: u16) -> Result<()> {
+pub fn do_something(
+    ctx: Context<DoSomething>,
+    min_score: u16,
+    max_age_secs: i64,
+) -> Result<()> {
     let data = ctx.accounts.identity_state.try_borrow_data()?;
+    let last_verified = i64::from_le_bytes(data[48..56].try_into().unwrap());
     let trust_score = u16::from_le_bytes(data[60..62].try_into().unwrap());
+
+    let now = Clock::get()?.unix_timestamp;
     require!(trust_score >= min_score, ErrorCode::InsufficientTrust);
+    require!(
+        now.saturating_sub(last_verified) <= max_age_secs,
+        ErrorCode::VerificationExpired
+    );
     Ok(())
 }
 ```
@@ -80,12 +95,15 @@ from solana.rpc.api import Client
 
 ENTROS_ANCHOR = Pubkey.from_string("GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2")
 
-def read_trust_score(client: Client, wallet: Pubkey) -> int | None:
+def read_anchor(client: Client, wallet: Pubkey) -> tuple[int, int] | None:
+    """Returns (trust_score, last_verified_at) or None if never verified."""
     pda, _ = Pubkey.find_program_address([b"identity", bytes(wallet)], ENTROS_ANCHOR)
     info = client.get_account_info(pda).value
     if info is None:
         return None
-    return int.from_bytes(info.data[60:62], "little")
+    last_verified_at = int.from_bytes(info.data[48:56], "little", signed=True)
+    trust_score = int.from_bytes(info.data[60:62], "little")
+    return trust_score, last_verified_at
 ```
 
 ## What you cannot do without the SDK
@@ -93,7 +111,9 @@ def read_trust_score(client: Client, wallet: Pubkey) -> int | None:
 - **Verification.** Submitting a new proof requires the Pulse SDK's capture and proof-generation pipeline. There is no direct path to write to the Anchor PDA without going through the verifier program.
 - **Attestation issuance.** SAS attestations are issued by the Entros executor on successful verification. Direct issuance from a client is not a supported path.
 
-The read patterns above are sufficient for any gating, scoring, or display use case. Writes go through the SDK.
+The read patterns above cover scoring, display, and gating. Read both fields: `trust_score` for how consistently a wallet has verified, and `last_verification_timestamp` for how long ago it last did.
+
+For a claim, a vote, or anything else worth the friction, have the client run a verification at the point of the action so the Anchor you read was written moments earlier. Writes go through the SDK.
 
 ## Where to look next
 

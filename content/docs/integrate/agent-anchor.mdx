@@ -67,7 +67,11 @@ if (!operator || operator.trustScore < 500) {
 }
 ```
 
-This pattern turns "anyone can register an agent" into "any verified human with a sustained track record can register an agent." It does not stop a determined operator from registering many agents; combined with rate limits or per-operator caps, it stops the cheap-to-mass-register attacks.
+`trustScore` and `verifiedAt` on this object are the values written when the operator linkage was attested, and that linkage is immutable. They describe the operator at that moment, which is the right signal for provenance and for auditing who registered what.
+
+For a registration flow that acts on the answer now, read the operator's Anchor PDA as well and check `last_verification_timestamp` against your own window. Registering a new agent is also a natural place to ask the operator for a verification, which makes the score you read describe someone present.
+
+This pattern turns "anyone can register an agent" into "any verified human with a sustained track record can register an agent." It does not stop a determined operator from registering many agents. Combined with rate limits or per-operator caps, it stops the cheap-to-mass-register ones.
 
 ## Program IDs
 

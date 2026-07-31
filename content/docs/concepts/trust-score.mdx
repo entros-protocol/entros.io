@@ -35,6 +35,23 @@ Under the current `base_trust_increment` of 100, the score tops out near 720. `P
 
 Integrators set thresholds based on stakes. The numbers above are descriptive, not normative, so your application's threshold should reflect your risk model rather than a global standard.
 
+## What to gate on
+
+The score answers one question: how consistently has this wallet verified? It is a history, and it is the right signal for weighting, ranking and display.
+
+For access, read a second field alongside it. `last_verification_timestamp` sits at offset 48 of the same account and says how long ago that history was last extended. `EntrosGate` takes both, as `minTrustScore` and `maxVerificationAge`.
+
+And where an action is worth the friction, run a verification at the point of the action, then read the Anchor. The score is a history. The verification is the person.
+
+| What you are gating | Pattern |
+| --- | --- |
+| Airdrop claim, governance vote, treasury action | Verify at the action, then read the Anchor |
+| Account creation, high-value access | Verify at the action, or require a verification from the last hour |
+| Routine access, rate limiting | Score floor plus a one-day recency window |
+| Badges, leaderboards, profile display | Read the score |
+
+`<EntrosVerify />` runs the capture in a popup without leaving the page, so the top two rows cost one component. See the [verification flow](/docs/integrate/verification-flow).
+
 ## How to choose a threshold
 
 Three lenses help.
@@ -49,7 +66,7 @@ Three lenses help.
 
 The SDK bundles `create_challenge`, `verify_proof` and `update_anchor` into one transaction. `verify_proof` writes a `VerificationResult` PDA on the verifier program; `update_anchor` reads that PDA through an account constraint bound to the verifier's program ID, recalculates the score, and writes the new value to the user's `IdentityState` PDA. The protocol fee is charged in the same transaction. Neither program calls the other, so there is no cross-program invocation to account for in your compute budget.
 
-Reading the score from another program is a cross-program PDA read of the `IdentityState` account. No oracle, no cron, no external service.
+Reading the Anchor from another program is a cross-program PDA read of the `IdentityState` account. No oracle, no cron, no external service. Both fields sit in the bytes you already borrowed.
 
 ## Where to look next
 

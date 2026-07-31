@@ -7,6 +7,7 @@ import { PulseChallenge } from "@/components/verify/pulse-challenge";
 import { ProvingView, VerifiedView, FailedView } from "@/components/verify/step-views";
 import { usePulse } from "@/components/providers/pulse-provider";
 import { generateWalletlessPhrase } from "@/data/walletless-phrase-words";
+import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 import { Radio } from "lucide-react";
 
 function commitmentToHex(bytes: Uint8Array): string {
@@ -113,6 +114,16 @@ export function VerifyWalletless({
     }
   }
 
+  /**
+   * The speak prompt is on screen, so the SDK can drop everything it recorded
+   * beforehand. The recorder starts early on purpose, so the prompt never
+   * appears during the microphone's cold start, which means the buffer opens
+   * with the challenge fetch and the countdown inside it.
+   */
+  function handleCaptureWindowOpen() {
+    sessionRef.current?.markCaptureStart();
+  }
+
   async function handleCaptureComplete() {
     const session = sessionRef.current;
     if (!session) return;
@@ -145,14 +156,14 @@ export function VerifyWalletless({
         } else {
           dispatch({
             type: "VERIFICATION_FAILED",
-            error: result.error ?? "Verification failed",
+            error: sanitizeErrorMessage(result.error ?? "Verification failed"),
           });
         }
       })
       .catch((err: Error) => {
         dispatch({
           type: "VERIFICATION_FAILED",
-          error: err.message ?? "Unexpected error",
+          error: sanitizeErrorMessage(err.message ?? "Unexpected error"),
         });
       });
   }
@@ -219,6 +230,7 @@ export function VerifyWalletless({
     return (
       <PulseChallenge
         onComplete={handleCaptureComplete}
+        onCaptureWindowOpen={handleCaptureWindowOpen}
         touchRef={touchRef}
         audioLevel={audioLevel}
         hasMotion={hasMotion}

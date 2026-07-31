@@ -9,6 +9,12 @@ import {
 } from "@entros/pulse-sdk";
 
 const CAPTURE_DURATION_S = 12;
+/**
+ * Grace period between the final tick rendering and handing the capture back,
+ * so the user sees the counter reach zero rather than the view swapping under
+ * them. It is recorded audio, so it is deliberately small.
+ */
+const CAPTURE_SETTLE_MS = 300;
 
 const AUDIO_BAR_COUNT = 12;
 const BAR_OFFSETS = Array.from({ length: AUDIO_BAR_COUNT }, (_, i) =>
@@ -22,6 +28,7 @@ const MOTION_BAR_HEIGHTS = Array.from({ length: 6 }, () => 4 + Math.random() * 1
 
 export function PulseChallenge({
   onComplete,
+  onCaptureWindowOpen,
   touchRef,
   audioLevel = 0,
   hasMotion = true,
@@ -29,6 +36,13 @@ export function PulseChallenge({
   curve,
 }: {
   onComplete: (outline: CurveTracePoint[]) => void;
+  /**
+   * Fired the instant the speak prompt appears, so the SDK can discard the
+   * dead air it recorded while the challenge was being fetched and the
+   * countdown was running. Without it that silence is fingerprinted and
+   * uploaded as though it were speech.
+   */
+  onCaptureWindowOpen?: () => void;
   touchRef?: React.RefObject<HTMLDivElement | null>;
   audioLevel?: number;
   hasMotion?: boolean;
@@ -46,13 +60,28 @@ export function PulseChallenge({
   const svgContainerRef = useRef<HTMLDivElement>(null);
   const lastTouchPos = useRef<{ x: number; y: number } | null>(null);
   const completedRef = useRef(false);
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
   const [audioHintVisible, setAudioHintVisible] = useState(false);
   const lastVoicedAtRef = useRef<number | null>(null);
   const firstVoicedAtRef = useRef<number | null>(null);
   const hasSpokenEnoughRef = useRef(false);
   const captureStartedAtRef = useRef<number | null>(null);
+
+  // Both callbacks are held in refs because audio RMS updates re-render this
+  // component several times a second with a fresh callback identity, and an
+  // effect keyed on the prop itself would tear down and restart its timer on
+  // every one of those renders.
+  //
+  // The refs are refreshed in an effect rather than assigned during render.
+  // Writing a ref while rendering is a side effect in the render phase, which
+  // React's compiler rules reject and which misbehaves under concurrent
+  // rendering. Both reads happen from timers and event handlers after mount,
+  // so a value that lands one commit later costs nothing.
+  const onCompleteRef = useRef(onComplete);
+  const onCaptureWindowOpenRef = useRef(onCaptureWindowOpen);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+    onCaptureWindowOpenRef.current = onCaptureWindowOpen;
+  });
 
   const phrase = providedPhrase;
   const lissajousPoints = useMemo(() => {
@@ -113,6 +142,7 @@ export function PulseChallenge({
   useEffect(() => {
     if (countdown === 0 && !captureStarted) {
       setCaptureStarted(true);
+      onCaptureWindowOpenRef.current?.();
     }
   }, [countdown, captureStarted]);
 
@@ -129,7 +159,7 @@ export function PulseChallenge({
         if (next >= CAPTURE_DURATION_S && !completedRef.current) {
           completedRef.current = true;
           clearInterval(interval);
-          setTimeout(() => onCompleteRef.current(outlineRef.current), 300);
+          setTimeout(() => onCompleteRef.current(outlineRef.current), CAPTURE_SETTLE_MS);
         }
         return next;
       });

@@ -12,6 +12,8 @@ import {
   fetchIdentityState,
   reasonDisposition,
   isClientOriginReason,
+  phaseChargesAttempt,
+  MAX_VERIFICATION_MS,
 } from "@entros/pulse-sdk";
 import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
@@ -114,7 +116,8 @@ export function VerifyWalletConnected({
   // Per-session retry counter. Incremented once a server has actually
   // rendered a verdict on a capture, and reset to 0 on RESET and on
   // VERIFICATION_SUCCESS. Never charged for a failure the SDK raised on its
-  // own. See `isClientOriginReason` at the increment site.
+  // own, and never for a failure outside the `validation` phase. See
+  // `phaseChargesAttempt` and `isClientOriginReason` at the increment site.
   const attemptsUsedRef = useRef(0);
   // Failures that never reached a verdict get their own budget rather than no
   // budget. Charging them to the verification cap punishes a user for a
@@ -321,6 +324,7 @@ export function VerifyWalletConnected({
             dispatch({
               type: "VERIFICATION_FAILED",
               error: "Motion permission denied. Please allow motion access and try again.",
+              failedAt: "capture",
             });
             return;
           }
@@ -328,6 +332,7 @@ export function VerifyWalletConnected({
           dispatch({
             type: "VERIFICATION_FAILED",
             error: "Motion permission denied. Please allow motion access and try again.",
+            failedAt: "capture",
           });
           return;
         }
@@ -362,6 +367,7 @@ export function VerifyWalletConnected({
         dispatch({
           type: "VERIFICATION_FAILED",
           error: "Microphone access denied. Please allow microphone permission and try again.",
+          failedAt: "capture",
         });
         return;
       }
@@ -380,6 +386,9 @@ export function VerifyWalletConnected({
         dispatch({
           type: "VERIFICATION_FAILED",
           error: "Verification service unavailable. Please refresh and try again.",
+          // The challenge fetch is part of setting the capture up, and its
+          // failure is the relayer being unreachable.
+          failedAt: "capture",
         });
         return;
       }
@@ -402,6 +411,10 @@ export function VerifyWalletConnected({
           dispatch({
             type: "VERIFICATION_FAILED",
             error: result.syntheticError,
+            // A pre-flight read of the on-chain reset cooldown, before any
+            // capture. `Custom 6012` reports the same thing from
+            // `confirmation` after the fact.
+            failedAt: "baseline",
           });
           return true;
         }
@@ -453,7 +466,13 @@ export function VerifyWalletConnected({
 
     dispatch({ type: "CAPTURE_DONE" });
 
-    const PROOF_TIMEOUT_MS = 120_000;
+    // The SDK bounds each step and reports its own phase. A host backstop
+    // below `MAX_VERIFICATION_MS` pre-empts those clocks and reports the
+    // failure against whatever step its own message names, which is how a
+    // pending wallet prompt came to be reported as a proving timeout. Read
+    // from the SDK rather than written down, so raising a clock there raises
+    // this in step. It should never fire.
+    const backstopMs = MAX_VERIFICATION_MS + 30_000;
     const proofPromise =
       intentRef.current === "reset"
         ? session.completeReset(wallet?.adapter, connection, (stage) => {
@@ -463,7 +482,15 @@ export function VerifyWalletConnected({
             setProcessingStage(stage);
           }, outline);
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Proof generation timed out. Please try again.")), PROOF_TIMEOUT_MS)
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              "Verification took too long and was stopped. Check your wallet for a pending transaction before trying again.",
+            ),
+          ),
+        backstopMs,
+      )
     );
 
     Promise.race([proofPromise, timeoutPromise])
@@ -479,6 +506,7 @@ export function VerifyWalletConnected({
             type: "VERIFICATION_SUCCESS",
             commitment: commitmentToHex(result.commitment),
             txSignature: result.txSignature,
+            portableBaseline: result.portableBaseline,
           });
           return;
         }
@@ -491,10 +519,17 @@ export function VerifyWalletConnected({
         // rejection no server ever made. Three network blips and the user was
         // hard-failed without a single capture having been judged.
         const clientOrigin = isClientOriginReason(reason);
-        if (clientOrigin) {
-          transportFailuresRef.current += 1;
-        } else {
+        // Only `validation` evaluated whether a person was there, so only
+        // `validation` may charge for it. The budget used to move on every
+        // failure that carried no client-origin reason, which meant three
+        // declined wallet prompts, three empty-wallet reverts or three
+        // baseline problems hard-failed someone whose capture had passed
+        // validation every time.
+        const judged = phaseChargesAttempt(result.failedAt);
+        if (judged && !clientOrigin) {
           attemptsUsedRef.current += 1;
+        } else if (clientOrigin) {
+          transportFailuresRef.current += 1;
         }
 
         const used = clientOrigin
@@ -532,6 +567,9 @@ export function VerifyWalletConnected({
           error: sanitizeErrorMessage(errorMessage),
           reason,
           retryAfterSec: result.retryAfterSec,
+          failedAt: result.failedAt,
+          opaque: result.opaque,
+          baselineRecovery: result.baselineRecovery,
         });
       })
       .catch((err: Error) => {
@@ -720,6 +758,7 @@ export function VerifyWalletConnected({
       <VerifiedView
         commitment={state.commitment}
         txSignature={state.txSignature}
+        portableBaseline={state.portableBaseline}
         title={wasReset ? "Baseline reset" : "Verified"}
         subtitle={
           wasReset
@@ -741,6 +780,9 @@ export function VerifyWalletConnected({
         <FailedView
           error={state.error}
           reason={state.reason}
+          failedAt={state.failedAt}
+          opaque={state.opaque}
+          baselineRecovery={state.baselineRecovery}
           onReset={handleReset}
           onResetBaseline={handleResetBaselineClick}
         />

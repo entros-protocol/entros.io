@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { PulseSession } from "@entros/pulse-sdk";
+import { MAX_VERIFICATION_MS, type PulseSession } from "@entros/pulse-sdk";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
 import { ProvingView, VerifiedView, FailedView } from "@/components/verify/step-views";
@@ -75,6 +75,7 @@ export function VerifyWalletless({
             dispatch({
               type: "VERIFICATION_FAILED",
               error: "Motion permission denied. Please allow motion access and try again.",
+              failedAt: "capture",
             });
             return;
           }
@@ -82,6 +83,7 @@ export function VerifyWalletless({
           dispatch({
             type: "VERIFICATION_FAILED",
             error: "Motion permission denied. Please allow motion access and try again.",
+            failedAt: "capture",
           });
           return;
         }
@@ -101,6 +103,7 @@ export function VerifyWalletless({
         dispatch({
           type: "VERIFICATION_FAILED",
           error: "Microphone access denied. Please allow microphone permission and try again.",
+          failedAt: "capture",
         });
         return;
       }
@@ -134,12 +137,28 @@ export function VerifyWalletless({
 
     dispatch({ type: "CAPTURE_DONE" });
 
-    const PROOF_TIMEOUT_MS = 120_000;
+    // The SDK bounds each step and reports its own phase. A host backstop
+    // below `MAX_VERIFICATION_MS` pre-empts those clocks and reports the
+    // failure against whatever step its own message names, which is how a
+    // pending wallet prompt came to be reported as a proving timeout. Read
+    // from the SDK rather than written down, so raising a clock there raises
+    // this in step. It should never fire.
+    // The walletless path never prompts a wallet, so its real ceiling is
+    // lower. One derived value across both paths is one thing to keep right.
+    const backstopMs = MAX_VERIFICATION_MS + 30_000;
     const proofPromise = session.complete(undefined, undefined, (stage) => {
       setProcessingStage(stage);
     });
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Proof generation timed out. Please try again.")), PROOF_TIMEOUT_MS)
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              "Verification took too long and was stopped. Please try again.",
+            ),
+          ),
+        backstopMs,
+      )
     );
 
     Promise.race([proofPromise, timeoutPromise])
@@ -157,6 +176,10 @@ export function VerifyWalletless({
           dispatch({
             type: "VERIFICATION_FAILED",
             error: sanitizeErrorMessage(result.error ?? "Verification failed"),
+            reason: result.reason,
+            retryAfterSec: result.retryAfterSec,
+            failedAt: result.failedAt,
+            opaque: result.opaque,
           });
         }
       })
@@ -256,7 +279,18 @@ export function VerifyWalletless({
     // unreachable in walletless mode (it's gated on an on-chain anchor
     // existing for the connected wallet, and walletless has no wallet).
     // FailedView suppresses the Reset CTA when the handler is absent.
-    return <FailedView error={state.error} onReset={handleReset} />;
+    return (
+      <FailedView
+        error={state.error}
+        reason={state.reason}
+        failedAt={state.failedAt}
+        opaque={state.opaque}
+        onReset={handleReset}
+        // The relayer signs and pays on this path, so no fee note applies. The
+        // user has not connected a wallet to check.
+        userPaysFees={false}
+      />
+    );
   }
 
   return null;

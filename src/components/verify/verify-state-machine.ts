@@ -38,6 +38,7 @@ export function verifyReducer(
         intent: state.intent,
         commitment: action.commitment,
         txSignature: action.txSignature,
+        portableBaseline: action.portableBaseline,
       };
 
     case "VERIFICATION_SOFT_FAILED":
@@ -59,6 +60,9 @@ export function verifyReducer(
         error: action.error,
         reason: action.reason,
         retryAfterSec: action.retryAfterSec,
+        failedAt: action.failedAt,
+        opaque: action.opaque,
+        baselineRecovery: action.baselineRecovery,
       };
 
     case "RESET":

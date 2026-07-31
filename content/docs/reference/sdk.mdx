@@ -155,6 +155,51 @@ Three dispositions rather than a retryable boolean, because a rate limit is not 
 
 `isClientOriginReason(result.reason)` is true when the SDK gave up before a server rendered a verdict. Hosts metering attempts should not charge the user for those.
 
+## Verification phases
+
+`VerificationResult.failedAt` names the stage that failed: `capture`,
+`extraction`, `validation`, `baseline`, `proving`, `signing`, `submission`,
+`confirmation`. Route on it rather than on the wording of `error`.
+
+```ts
+import { phaseChargesAttempt, phaseSpend } from "@entros/pulse-sdk";
+
+phaseChargesAttempt(result.failedAt); // only `validation` judged the capture
+phaseSpend(result.failedAt);          // "none" | "possible" | "certain"
+```
+
+`opaque: true` means the cause must not be described. It is a second axis over
+`failedAt`, never derivable from it, because three failures in three phases have
+to render identically or the difference tells an attacker which layer caught
+them. Match a specific user-actionable condition first if you have one, then
+fall back to your generic rejection copy rather than to `error`.
+
+`baselineRecovery` says why an on-chain baseline could not be restored, when
+`failedAt` is `baseline`. `no-encrypted-baseline` means the anchor predates
+on-chain baseline storage and one reset makes it portable.
+
+`portableBaseline: false` on a **successful** result means the verification
+landed but wrote no portable copy, because the wallet could not sign the key
+derivation. Say so. Left silent, the user learns it on their next device.
+
+## Timeouts
+
+The SDK bounds the wallet signature at `SIGNATURE_TIMEOUT_MS` and confirmation
+at `CONFIRMATION_TIMEOUT_MS`. If you keep your own backstop timer over
+`complete()`, set it above `MAX_VERIFICATION_MS`, which is derived from those
+clocks plus the validate deadline. A backstop below it pre-empts the SDK's
+per-step clocks and reports the failure against whichever step its own message
+happens to name.
+
+```ts
+import { MAX_VERIFICATION_MS } from "@entros/pulse-sdk";
+```
+
+Neither timeout cancels the work it bounds, because nothing in a wallet adapter
+or in web3.js can be cancelled. A prompt approved after the clock expires still
+broadcasts, which is why a timeout is reported as `submission` rather than as a
+failure to send.
+
 ## Peer dependencies
 
 The SDK declares the following as optional peers:

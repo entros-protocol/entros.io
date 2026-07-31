@@ -95,18 +95,91 @@ type SubmissionResult = {
   txSignature?: string;
   attestationTx?: string;
   error?: string;
+  // 4.1.0
+  failedAt?: VerificationPhase;
+  opaque?: boolean;
+  baselineRecovery?: BaselineRecoveryReason;
+  portableBaseline?: boolean;
 };
 ```
 
-On success, `txSignature` is the verification transaction signature. `attestationTx`, when present, is the SAS attestation write. On failure, `error` carries the user-surfaceable message; the underlying program error code, when one exists, is included in that string and can be matched on.
+On success, `txSignature` is the verification transaction signature. `attestationTx`, when present, is the SAS attestation write. On failure, `error` carries the user-surfaceable message.
+
+### Route on the phase, not on the message
+
+`failedAt` names the stage that failed. Read it instead of matching words in
+`error`, which is what the SDK's own hosts used to do and what produced two
+mislabelled failures in production: an on-chain revert rendered as a validation
+rejection, because the matcher for a validator rejection also matched
+`custom program error`.
+
+```ts
+import { phaseChargesAttempt } from "@entros/pulse-sdk";
+
+const result = await session.complete(wallet, connection);
+if (!result.success) {
+  switch (result.failedAt) {
+    case "capture":
+    case "extraction":
+      return promptRecapture();
+    case "validation":
+      return showValidationOutcome(result);
+    case "baseline":
+      return showBaselineRecovery(result.baselineRecovery);
+    case "signing":
+      return showWalletCancelled();
+    case "submission":
+    case "confirmation":
+      return showChainOutcome(result);
+    default:
+      return showGenericError(result.error);
+  }
+}
+```
+
+The eight phases are `capture`, `extraction`, `validation`, `baseline`,
+`proving`, `signing`, `submission`, `confirmation`.
+
+Two rules across the wallet seam, because adapters merge signing and sending
+into one call and the outcome there is genuinely ambiguous. Only a declined
+prompt is `signing`, and only a failure the cluster reported is `confirmation`.
+Everything else, both SDK timeouts included, is `submission`, which says the
+outcome is unknown rather than claiming either way. `phaseSpend` returns
+`none`, `possible` or `certain` for the same reason.
+
+### Metering attempts
+
+If you cap attempts, cap them on `phaseChargesAttempt`. Only `validation`
+evaluated whether a person was there, so only `validation` may charge for one.
+Charging every failure means three declined wallet prompts hard-fail someone
+whose capture passed each time.
+
+```ts
+if (phaseChargesAttempt(result.failedAt) && !isClientOriginReason(result.reason)) {
+  attemptsUsed += 1;
+}
+```
+
+### Do not describe an opaque failure
+
+`opaque: true` means the cause must not be shown. A replay-floor rejection in
+`proving`, an attack-signal rejection in `validation` and a program revert in
+`confirmation` have to render identically, or the difference tells an attacker
+which layer caught them.
+
+You may still match a specific, user-actionable condition first, exactly as the
+`Custom 6011` and `Custom 6012` examples below do. The flag decides only what to
+show when nothing matched: render your generic rejection copy, not `error`.
 
 ### Chain-side transaction failures
 
-Since 1.5.0, the SDK throws when an on-chain transaction reverts. Earlier versions silently returned `success: true` for transactions that were included on chain but failed during execution—an easy way to ship a "verified!" UI for a tx that mutated nothing. The thrown error preserves the JSON `InstructionError` shape so callers can extract the `Custom` code:
+Since 1.5.0, the SDK reports a failure when an on-chain transaction reverts. Earlier versions silently returned `success: true` for transactions that were included on chain but failed during execution, an easy way to ship a "verified!" UI for a tx that mutated nothing. The error preserves the JSON `InstructionError` shape so callers can extract the `Custom` code.
+
+Since 4.1.0 these arrive with `failedAt: "confirmation"` and `opaque: true`. Match the codes you act on first, then fall back to your generic rejection copy rather than to `error`:
 
 ```ts
 const result = await session.complete(wallet, connection);
-if (!result.success) {
+if (!result.success && result.failedAt === "confirmation") {
   // result.error is one of:
   //   "Transaction failed on chain: {\"InstructionError\":[0,{\"Custom\":6011}]} (sig=...)"  // PrevCommitmentMismatch
   //   "Transaction failed on chain: {\"InstructionError\":[1,{\"Custom\":6016}]} (sig=...)"  // MissingValidatorReceipt
@@ -117,9 +190,9 @@ if (!result.success) {
     const code = Number(customMatch[1]);
     if (code === 6012) showCooldownMessage();
     else if (code === 6011) showStaleBaselinePrompt();
-    else showGenericError(`Program error ${code}`);
+    else showOpaqueRejection();
   } else {
-    showGenericError(result.error);
+    showOpaqueRejection();
   }
 }
 ```
@@ -132,7 +205,7 @@ A request to the executor's `/attest` endpoint now requires `wallet_address`, `n
 { "error": "wallet_ownership_required", "_padding": "..." }
 ```
 
-with HTTP 400. Omitting `wallet_address` is a different case: the request fails JSON extraction before the handler runs and returns HTTP 422 with a plain-text body, so match on the status code rather than the error field. The signed message format is `Entros-ATTEST:{wallet_address}:{timestamp_secs}`. The walletless attestation path was removed—wallets that cannot sign should not call `/attest` at all.
+with HTTP 400. Omitting `wallet_address` is a different case: the request fails JSON extraction before the handler runs and returns HTTP 422 with a plain-text body, so match on the status code rather than the error field. The signed message format is `Entros-ATTEST:{wallet_address}:{timestamp_secs}`. The walletless attestation path was removed. Wallets that cannot sign should not call `/attest` at all.
 
 ### Response padding
 

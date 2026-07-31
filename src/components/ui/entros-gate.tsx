@@ -12,7 +12,7 @@
  *   - React + Next.js Link
  *   - @solana/web3.js (PublicKey, Connection)
  *   - @solana/wallet-adapter-react (useWallet, useConnection)
- *   - @solana/wallet-adapter-react-ui (WalletMultiButton—the universal Solana wallet UI)
+ *   - @solana/wallet-adapter-react-ui (WalletMultiButton, the universal Solana wallet UI)
  *   - @entros/pulse-sdk (PROGRAM_IDS constant)
  *   - lucide-react (icons)
  *   - Tailwind CSS for styling (no custom design system imports)
@@ -24,10 +24,20 @@
  *     <PremiumContent />
  *   </EntrosGate>
  *
- * SECURITY: This is a client-side gate. It is suitable for UI gating, paywalls
- * with low stakes, and progressive disclosure. For high-stakes access control
- * (spending funds, sensitive data), also validate Trust Score server-side
- * since a determined user can bypass any client-side check via DevTools.
+ * The gate reads two fields, not one. `trustScore` says how consistently this
+ * wallet has verified. `maxVerificationAge` bounds how long ago it last did.
+ * A score on its own describes a history; pairing it with recency keeps the
+ * gate about the operator rather than the record.
+ *
+ * For an action with real stakes, run a verification at the point of the
+ * action and let the gate read the result: `<EntrosVerify />` from
+ * `@entros/verify` opens the capture in place, and this gate passes on the
+ * next render.
+ *
+ * SECURITY: this is a client-side gate, suitable for UI gating, paywalls and
+ * progressive disclosure. A determined user can bypass any client-side check
+ * via DevTools, so for high-stakes access control assert the same two fields
+ * in your own program or server route, reading the Anchor PDA directly.
  */
 
 import type { ReactNode } from "react";
@@ -39,11 +49,48 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { PROGRAM_IDS } from "@entros/pulse-sdk";
 import { Loader2, ShieldAlert, Wallet } from "lucide-react";
 
+/**
+ * Smallest account this component can read. `last_verification_timestamp` ends
+ * at 56 and `trust_score` at 62, so 62 covers both. Every layout the program
+ * has ever written is longer than this.
+ */
 const EXPECTED_SIZE = 62;
+
+/** One day. Long enough for a session, short enough to mean something. */
+const DEFAULT_MAX_VERIFICATION_AGE = 86_400;
+
+/**
+ * Whether an Anchor clears both thresholds.
+ *
+ * Pure, so the gate's decision can be tested without a DOM and read without
+ * tracing a component. `nowSeconds` is injected for the same reason.
+ *
+ * The clock here is the browser's, and a user controls it. That is fine for
+ * what this is: a client-side gate for UI, which a user could bypass with
+ * DevTools regardless. Anything that moves value asserts the same two fields
+ * where it settles, against `Clock::get()` on chain or a server clock.
+ */
+export function passesEntrosGate(
+  anchor: { trustScore: number; lastVerifiedAt: number },
+  thresholds: { minTrustScore: number; maxVerificationAge: number },
+  nowSeconds: number = Math.floor(Date.now() / 1000),
+): boolean {
+  // A minted Anchor always carries a verification timestamp, so a zero here
+  // means the account is not one, and no threshold should pass it.
+  if (anchor.lastVerifiedAt <= 0) return false;
+  if (anchor.trustScore < thresholds.minTrustScore) return false;
+  return nowSeconds - anchor.lastVerifiedAt <= thresholds.maxVerificationAge;
+}
 const ENTROS_PROGRAM_ID = new PublicKey(PROGRAM_IDS.entrosAnchor);
 
 interface EntrosGateProps {
   minTrustScore: number;
+  /**
+   * Seconds since the wallet's last verification, above which the gate does
+   * not pass. Defaults to one day. Pass `Infinity` to gate on score alone,
+   * which is appropriate for display and for anything with no real stakes.
+   */
+  maxVerificationAge?: number;
   children: ReactNode;
   fallback?: ReactNode;
   loadingFallback?: ReactNode;
@@ -54,10 +101,11 @@ type FetchState =
   | { status: "loading" }
   | { status: "disconnected" }
   | { status: "no-identity" }
-  | { status: "ready"; trustScore: number };
+  | { status: "ready"; trustScore: number; lastVerifiedAt: number };
 
 export function EntrosGate({
   minTrustScore,
+  maxVerificationAge = DEFAULT_MAX_VERIFICATION_AGE,
   children,
   fallback,
   loadingFallback,
@@ -97,7 +145,12 @@ export function EntrosGate({
             account.data.byteOffset,
             account.data.byteLength,
           );
-          setFetchState({ status: "ready", trustScore: view.getUint16(60, true) });
+          setFetchState({
+            status: "ready",
+            trustScore: view.getUint16(60, true),
+            // i64 at offset 48. Unix seconds fit in a Number until year 275760.
+            lastVerifiedAt: Number(view.getBigInt64(48, true)),
+          });
         } catch {
           if (isMounted) setFetchState({ status: "no-identity" });
         }
@@ -110,9 +163,12 @@ export function EntrosGate({
     };
   }, [publicKey, connected, connection]);
 
-  // Threshold comparison happens at render time, not in the fetch effect.
-  // Changing minTrustScore re-renders without triggering a new RPC call.
-  if (fetchState.status === "ready" && fetchState.trustScore >= minTrustScore) {
+  // Both comparisons happen at render time, not in the fetch effect. Changing
+  // either threshold re-renders without triggering a new RPC call.
+  if (
+    fetchState.status === "ready" &&
+    passesEntrosGate(fetchState, { minTrustScore, maxVerificationAge })
+  ) {
     return <>{children}</>;
   }
 

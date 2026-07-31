@@ -2,7 +2,7 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** July 27, 2026
+**Updated:** July 31, 2026
 **Word Count:** Approx. 8500
 
 ---
@@ -78,7 +78,7 @@ The original protocol design (June 2025 – April 2026) specified a 70-syllable 
 
 Three sensor streams are captured simultaneously over a configurable window (default: 7 seconds, extended to 12 seconds in the reference web application):
 
-* `S_audio`: Microphone input at 16 kHz (or device-native rate), capturing voice prosody.
+* `S_audio`: Microphone input, band-limited and decimated to a canonical 16 kHz on the device, capturing voice prosody.
 * `S_motion`: IMU accelerometer/gyroscope at 60–100 Hz on mobile; mouse pointer dynamics on desktop.
 * `S_touch`: Pointer/touch events including coordinates, pressure, and contact area from the digitizer.
 
@@ -431,7 +431,7 @@ Benchmarks measured on Chrome 132 (M1 MacBook Pro) and Safari (iPhone 15 Pro Max
 * On-chain verification: ~123K compute units
 * **Total (excluding capture): ~900 ms**
 
-The total pipeline from button click to on-chain proof takes approximately 11–16 seconds depending on the configured capture window, plus ~900 ms of computation. On mobile (iPhone 15 Pro Max, Safari), all three sensor streams (audio, IMU motion, touch) capture simultaneously. Audio captures at the device-native 48 kHz and is processed identically. Proof generation completes within the same time budget via snarkjs WASM.
+The total pipeline from button click to on-chain proof takes approximately 11–16 seconds depending on the configured capture window, plus ~900 ms of computation. On mobile (iPhone 15 Pro Max, Safari), all three sensor streams (audio, IMU motion, touch) capture simultaneously. Safari returns the hardware's native 48 kHz whatever rate the page requests. The SDK band-limits and decimates any capture at or above that rate to a canonical 16 kHz before feature extraction, so the browser's own resampler stops influencing the fingerprint. Hardware that delivers below 16 kHz, such as a narrowband Bluetooth headset, is passed through at its native rate rather than upsampled, since upsampling would invent detail the microphone never captured. Proof generation completes within the same time budget via snarkjs WASM.
 
 **Comparative context.** Groth16 proof generation at ~850 ms compares favorably to PLONK-based systems, which require ~2.5s for equivalent circuit sizes [22]. On-chain verification at ~123K compute units fits comfortably within Solana's 200K default budget; PLONK verification would exceed it. Poseidon commitment at ~3 ms reflects the hash's ZK-optimized design (~300 R1CS constraints vs. ~25,000 for SHA-256 in-circuit [3]).
 

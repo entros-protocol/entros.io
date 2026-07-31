@@ -28,7 +28,19 @@ export type VerifyState =
       reason: string;
       attemptsRemaining: number;
     }
-  | { step: "failed"; error: string };
+  | {
+      step: "failed";
+      error: string;
+      /**
+       * The SDK's reason code, kept rather than discarded. Failure routing
+       * used to run entirely off substring matches against the server's
+       * English prose, so a copy edit on the server silently regressed the
+       * rate-limit screen to a generic "Verification failed".
+       */
+      reason?: string;
+      /** Cooldown in seconds, when the server sent one with a 429. */
+      retryAfterSec?: number;
+    };
 
 export type VerifyAction =
   | { type: "START_CAPTURE"; intent: CaptureIntent }
@@ -40,7 +52,7 @@ export type VerifyAction =
       reason: string;
       attemptsRemaining: number;
     }
-  | { type: "VERIFICATION_FAILED"; error: string }
+  | { type: "VERIFICATION_FAILED"; error: string; reason?: string; retryAfterSec?: number }
   | { type: "RESET" };
 
 export type VerifyMode = "walletless" | "wallet-connected";

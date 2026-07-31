@@ -4,7 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { type PulseSession, type LissajousParams, type CurveTracePoint, PROGRAM_IDS, fetchIdentityState } from "@entros/pulse-sdk";
+import {
+  type PulseSession,
+  type LissajousParams,
+  type CurveTracePoint,
+  PROGRAM_IDS,
+  fetchIdentityState,
+  reasonDisposition,
+  isClientOriginReason,
+} from "@entros/pulse-sdk";
 import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
@@ -31,7 +39,8 @@ function commitmentToHex(bytes: Uint8Array): string {
   );
 }
 
-import { RESET_COOLDOWN_SECS, evaluateResetCooldown } from "@/lib/cooldown";
+import { evaluateResetCooldown } from "@/lib/cooldown";
+import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 
 // Soft-reject retry budget. When attemptsUsed < MAX_ATTEMPTS
 // and the server returns a user-recoverable reason, the client routes to
@@ -41,86 +50,11 @@ import { RESET_COOLDOWN_SECS, evaluateResetCooldown } from "@/lib/cooldown";
 // counter just drives the UX inside a session.
 const MAX_ATTEMPTS = 3;
 
-// Set of safe-to-reveal validator reasons that route to the soft-fail
-// retry UX instead of the hard-fail page. Must stay in sync with
-// `entros-validation::ReasonCode::safe_label` (the server-side allowlist)
-// and `SOFT_HINT` keys in `step-views.tsx` (the client-side hint
-// dictionary). Drift in either direction means a soft-rejectable reason
-// either escapes to hard-fail (annoying for the user) or slips into
-// soft-fail without a hint (confusing). The trailing entry
-// `validation_unavailable` is a client-side reason emitted by pulse-sdk
-// when /validate-features is unreachable (network failure, timeout,
-// abort) — treated as transient.
-const RETRYABLE_REASONS: ReadonlySet<string> = new Set([
-  "variance_floor",
-  "entropy_bounds",
-  "temporal_coupling_low",
-  "phrase_content_mismatch",
-  "validation_unavailable",
-  "captcha_required",
-]);
-
-// Defense-in-depth sanitizer for any error string about to be dispatched
-// into the failure UI. The categorizer in step-views already routes the
-// known leaky patterns (-32002, @solana/errors decode prompts, base58
-// transaction blobs) into the validation-rejected surface that renders
-// safe static copy — but if a future error class slips past the
-// categorizer, this sanitizer strips the developer-facing decode hint
-// and replaces long base58 sequences before the string can reach the
-// generic-fallback render path. Preserves substrings the categorizer
-// relies on for routing (`-32002`, `SendTransactionPreflightFailure`,
-// `Custom`, `InstructionError`).
-function safeStringify(value: unknown): string {
-  try {
-    const json = JSON.stringify(value);
-    return json && json !== "{}" ? json : String(value);
-  } catch {
-    return String(value);
-  }
-}
-
-function sanitizeErrorMessage(message: unknown): string {
-  // Defense-in-depth: callers pass a string today, but coerce anything else
-  // (e.g. a wallet adapter throwing a bare {InstructionError:[...]} object)
-  // into a categorizer-readable string rather than throwing on `.replace` or
-  // rendering "[object Object]". JSON preserves the `"Custom":<code>` substring
-  // the step-views categorizer routes on.
-  let sanitized =
-    typeof message === "string"
-      ? message
-      : message instanceof Error && typeof message.message === "string"
-        ? message.message
-        : safeStringify(message);
-  // Strip @solana/errors developer-facing decode hints.
-  sanitized = sanitized.replace(/Decode this error by running[^\n]*/gi, "");
-  // Replace labeled transaction blobs (sig=..., Tx: ..., etc.) with a
-  // placeholder while preserving the surrounding routing-relevant
-  // substrings the categorizer needs.
-  sanitized = sanitized.replace(
-    /(?:Tx|tx|Transaction|sig)[:=]\s*[1-9A-HJ-NP-Za-km-z]{30,}/g,
-    "[transaction]",
-  );
-  // Replace any standalone long base58 sequence (chunk hashes, transaction
-  // signatures, raw account addresses serialized verbatim) with a placeholder.
-  sanitized = sanitized.replace(/\b[1-9A-HJ-NP-Za-km-z]{40,}\b/g, "[blob]");
-  // Strip Railway internal service URLs (and any `*.railway.internal` host)
-  // that leak into reqwest-format upstream-failure messages from
-  // executor-node when the validation-service is unreachable, e.g.
-  // "error sending request for url (http://<host>/validate)". Keep the
-  // leading "error sending request" substring so the categorizer in
-  // step-views can route it to validation-rejected; only the URL is
-  // the leak.
-  sanitized = sanitized.replace(
-    /https?:\/\/[\w.-]+\.railway\.internal(?::\d+)?(?:\/[^\s)]*)?/gi,
-    "[internal]",
-  );
-  // Strip stack-trace frames so multi-line errors render as a single
-  // user-readable sentence rather than a wall of internal call sites.
-  sanitized = sanitized.replace(/^\s+at\s.*$/gm, "");
-  // Collapse runs of blank lines left behind by the stack-strip pass.
-  sanitized = sanitized.replace(/\n{2,}/g, "\n");
-  return sanitized.trim();
-}
+// The retryable-reason list used to live here as a literal, alongside five
+// other copies across this repo and entros-mobile. They had drifted: the same
+// rejection offered a retry here and dead-ended on mobile. `reasonDisposition`
+// from the SDK is now the only thing that classifies a reason, so there is
+// nothing left to keep in sync.
 
 export function VerifyWalletConnected({
   state,
@@ -177,10 +111,18 @@ export function VerifyWalletConnected({
   // capture-completion handler can choose between verify vs reset paths
   // without reading the reducer state (which may race the handler).
   const intentRef = useRef<"verify" | "reset">("verify");
-  // Per-session retry counter (incremented at the top of handleStart, reset
-  // to 0 on RESET / VERIFICATION_SUCCESS). The cap and retryable-reason set
-  // are hoisted to module scope at the top of this file.
+  // Per-session retry counter. Incremented once a server has actually
+  // rendered a verdict on a capture, and reset to 0 on RESET and on
+  // VERIFICATION_SUCCESS. Never charged for a failure the SDK raised on its
+  // own. See `isClientOriginReason` at the increment site.
   const attemptsUsedRef = useRef(0);
+  // Failures that never reached a verdict get their own budget rather than no
+  // budget. Charging them to the verification cap punishes a user for a
+  // dropped connection; exempting them entirely, which is what the first cut
+  // of this did, leaves the soft-retry loop unbounded. `validation_unavailable`
+  // and `validation_timeout` are both client-origin AND retryable, so the cap
+  // test could never fail and the screen offered "3 attempts left" forever.
+  const transportFailuresRef = useRef(0);
 
   // Microphone permission pre-flight. Browsers that previously denied
   // microphone access never re-prompt — the user has to manually re-enable
@@ -318,6 +260,7 @@ export function VerifyWalletConnected({
     // immediately route to hard-fail (because attemptsUsedRef >= MAX).
     if (intentRef.current !== intent) {
       attemptsUsedRef.current = 0;
+      transportFailuresRef.current = 0;
     }
     intentRef.current = intent;
     setRequesting(true);
@@ -404,9 +347,8 @@ export function VerifyWalletConnected({
         return;
       }
 
-      // Count this attempt against the (intent-scoped) session budget only
-      // after confirming we are not blocked by an active reset cooldown.
-      attemptsUsedRef.current += 1;
+      // The attempt is counted on the verdict, not here. See the increment in
+      // the result handler below.
 
       // Audio second—getUserMedia works without a gesture on secure origins
       try {
@@ -491,6 +433,16 @@ export function VerifyWalletConnected({
     await handleStart("reset");
   }
 
+  /**
+   * The speak prompt is on screen, so the SDK can drop everything it recorded
+   * beforehand. The recorder is started early on purpose, so the prompt never
+   * appears during the microphone's cold start, which means the buffer opens
+   * with the challenge fetch and the three-second countdown in it.
+   */
+  function handleCaptureWindowOpen() {
+    sessionRef.current?.markCaptureStart();
+  }
+
   async function handleCaptureComplete(outline: CurveTracePoint[]) {
     const session = sessionRef.current;
     if (!session) return;
@@ -522,6 +474,7 @@ export function VerifyWalletConnected({
         }
         if (result.success) {
           attemptsUsedRef.current = 0;
+          transportFailuresRef.current = 0;
           dispatch({
             type: "VERIFICATION_SUCCESS",
             commitment: commitmentToHex(result.commitment),
@@ -530,15 +483,29 @@ export function VerifyWalletConnected({
           return;
         }
         const reason = result.reason;
-        const canRetry =
-          typeof reason === "string" &&
-          RETRYABLE_REASONS.has(reason) &&
-          attemptsUsedRef.current < MAX_ATTEMPTS;
-        if (canRetry) {
+
+        // Charge the attempt here, on a verdict, rather than at capture
+        // start. The counter used to increment before the microphone even
+        // opened, so a denied permission, a missing challenge phrase or a
+        // dropped connection each burned one of three attempts for a
+        // rejection no server ever made. Three network blips and the user was
+        // hard-failed without a single capture having been judged.
+        const clientOrigin = isClientOriginReason(reason);
+        if (clientOrigin) {
+          transportFailuresRef.current += 1;
+        } else {
+          attemptsUsedRef.current += 1;
+        }
+
+        const used = clientOrigin
+          ? transportFailuresRef.current
+          : attemptsUsedRef.current;
+        const disposition = reasonDisposition(reason);
+        if (disposition === "retry" && used < MAX_ATTEMPTS) {
           dispatch({
             type: "VERIFICATION_SOFT_FAILED",
             reason: reason as string,
-            attemptsRemaining: MAX_ATTEMPTS - attemptsUsedRef.current,
+            attemptsRemaining: MAX_ATTEMPTS - used,
           });
           return;
         }
@@ -563,6 +530,8 @@ export function VerifyWalletConnected({
         dispatch({
           type: "VERIFICATION_FAILED",
           error: sanitizeErrorMessage(errorMessage),
+          reason,
+          retryAfterSec: result.retryAfterSec,
         });
       })
       .catch((err: Error) => {
@@ -580,6 +549,7 @@ export function VerifyWalletConnected({
     // Wipe the retry budget when the user explicitly resets—a fresh
     // session starts at 0 attempts used.
     attemptsUsedRef.current = 0;
+    transportFailuresRef.current = 0;
     dispatch({ type: "RESET" });
   }
 
@@ -720,6 +690,7 @@ export function VerifyWalletConnected({
     return (
       <PulseChallenge
         onComplete={handleCaptureComplete}
+        onCaptureWindowOpen={handleCaptureWindowOpen}
         touchRef={touchRef}
         audioLevel={audioLevel}
         hasMotion={hasMotion}
@@ -769,6 +740,7 @@ export function VerifyWalletConnected({
       <>
         <FailedView
           error={state.error}
+          reason={state.reason}
           onReset={handleReset}
           onResetBaseline={handleResetBaselineClick}
         />

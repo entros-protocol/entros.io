@@ -2,7 +2,7 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** July 31, 2026
+**Updated:** August 1, 2026
 **Word Count:** Approx. 8500
 
 ---
@@ -340,9 +340,11 @@ Temporal consistency applies from the second verification onward. Each returning
 
 1. **Liveness** *(first walletless verification). Multi-modal sensor data was captured from a likely human. No temporal consistency. Signal strength: low. Suitable for captcha-equivalent use cases.*
 2. **Device-bound consistency** *(returning walletless verification). Behavioral drift matches a device-local fingerprint. Signal strength: medium. Suitable for session authentication, content gating.*
-3. **Portable identity** *(wallet-connected with Trust Score). Persistent on-chain Anchor with months of behavioral consistency visible to all integrators. Signal strength: high. Suitable for airdrop eligibility, DAO governance, DeFi access controls.*
+3. **Portable identity** *(wallet-connected with Trust Score). Persistent on-chain Anchor with months of behavioral consistency visible to all integrators. Signal strength: high. Suitable for airdrop eligibility, DAO governance and DeFi access controls, read alongside a verification at the point of the gated action.*
 
-In wallet-connected mode, the user pays the per-verification fee, so each Anchor carries a recurring cost to its holder; integrators read on-chain state for free. The protocol provides the signal; the integrator sets the threshold.
+In wallet-connected mode the user pays the per-verification fee, so each Anchor carries a recurring cost to its holder, and integrators read on-chain state for free.
+
+The Anchor exposes two fields, and an integrator reads both. The Trust Score describes how consistently a wallet has verified. `last_verification_timestamp` describes how recently. For an action of consequence, an integrator triggers a verification when the action happens and reads the Anchor immediately after, so the history it reads belongs to an operator who is present. The protocol provides the signal. The integrator sets the threshold and the window.
 
 A bot that clears local storage before each walletless verification is perpetually at Tier 1—a liveness check with no temporal history. High-value integrations can require Tier 2 or Tier 3, making this strategy ineffective for anything beyond basic captcha equivalence.
 

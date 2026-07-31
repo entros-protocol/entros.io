@@ -7,7 +7,7 @@ export const useCases: UseCase[] = [
     problem:
       "Wallet farmers claim thousands of allocations meant for real users.",
     solution:
-      "Gate claims on Trust Score. Every wallet must pass live behavioral verification, again and again, to build one.",
+      "Ask for a verification at the claim, then read the Trust Score. One proves the person is there. The other shows how consistently that wallet has verified.",
   },
   {
     icon: "vote",
@@ -23,6 +23,6 @@ export const useCases: UseCase[] = [
     problem:
       "Social feeds, marketplaces, and games overrun by automated accounts.",
     solution:
-      "Filter bots at signup, or gate access to agents with a verified human operator and Trust Score. No identity or hardware data collected.",
+      "Verify at signup, or gate agents on a verified human operator and their Trust Score. No identity or hardware data collected.",
   },
 ];

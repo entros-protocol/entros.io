@@ -83,13 +83,13 @@ export function CustomVerify() {
  */
 export const useCaseSnippets = [
   {
-    title: "Check if a wallet is human",
+    title: "Read a wallet's attestation",
     description:
-      "Read the SAS attestation from chain state. No verification UI in your app, no API call, no key. Use this to gate any server route or client component.",
+      "Read the SAS attestation from chain state. No verification UI in your app, no API call, no key. Right for display and for lower-stakes gates. Pair it with a verification at the action for anything that moves value.",
     code: `import { verifyEntrosAttestation } from '@entros/pulse-sdk';
 import type { Connection } from '@solana/web3.js';
 
-export async function isVerifiedHuman(
+export async function hasVerifiedAnchor(
   walletAddress: string,
   connection: Connection,
 ): Promise<boolean> {
@@ -98,9 +98,9 @@ export async function isVerifiedHuman(
 }`,
   },
   {
-    title: "Gate access on Trust Score",
+    title: "Gate access on an Anchor",
     description:
-      "Drop-in React component. Renders children only when the connected wallet has an Anchor with Trust Score above your threshold. Source and live preview at /gate-demo — copy the file into your own components folder.",
+      "Drop-in React component. Renders children only when the connected wallet has an Anchor above your Trust Score floor that verified inside your recency window. Source and live preview at /gate-demo, copy the file into your own components folder.",
     code: `// Copy the EntrosGate source from entros.io/components/ui/entros-gate.tsx
 import { EntrosGate } from "./components/EntrosGate";
 

@@ -8,9 +8,9 @@ export const solutionCases: SolutionCase[] = [
     problem:
       "Jupiter filtered 750,000+ wallets as sybil before Jupuary 2025 distribution. The 2026 round was cut sharply by DAO vote and postponed. Every major Solana airdrop relitigates sybil from scratch because existing identity checks verify a moment, not sustained human presence over time.",
     solution:
-      "Gate airdrop claims on Entros Anchor with a minimum Trust Score (e.g., 500+). Trust Score requires sustained re-verification over time. Progressive scoring means 100 verifications in one day scores less than weekly verifications over 3 months.",
+      "Ask for a verification at the claim, then read the Anchor. The claim is gated on someone present, and the Trust Score alongside it shows how consistently that wallet has verified. Scoring rewards span over frequency, so 100 verifications in one day count for one week of history.",
     example:
-      "An airdrop integrator gates claims on Entros Trust Score (e.g., 200+ requires at least two re-verifications spaced over time). The protocol stays public and open; only verified humans pass the eligibility tier alongside existing token-balance and activity rules.",
+      "An airdrop integrator runs a twelve-second verification at the claim and requires a Trust Score floor alongside it, say 200 for at least two verifications spaced over time. The protocol stays public and open. Only verified humans pass the eligibility tier, alongside existing token-balance and activity rules.",
   },
   {
     icon: "vote",
@@ -32,7 +32,7 @@ export const solutionCases: SolutionCase[] = [
     solution:
       "Mint gate: one human per allocation, verified by Anchor. Competition entry: require Anchor age > 30 days and recent verification. Short-lived bot accounts with zero trust cannot qualify. Every capture is validated server-side before an Anchor is issued, and an Anchor is not free to hold.",
     example:
-      "An NFT marketplace can require Entros verification for mint allowlists on a per-collection basis. A perp DEX can gate referral-multiplier rewards or trading-competition entry on Trust Score above a threshold. Optional eligibility tier on top of existing rules—not a KYC replacement.",
+      "An NFT marketplace can require Entros verification at mint on a per-collection basis. A perp DEX can gate referral-multiplier rewards or competition entry on a verification at entry plus a Trust Score floor. An optional eligibility tier on top of existing rules, not a KYC replacement.",
   },
   {
     icon: "palette",
@@ -54,6 +54,6 @@ export const solutionCases: SolutionCase[] = [
     solution:
       "Require Entros verification at account creation or reward claim. The closed-source defense layer rejects synthetic inputs before they reach the chain.",
     example:
-      "A creator-rewards platform can gate reward claims on Entros Trust Score. Synthetic voice, motion, and touch are rejected server-side before an Anchor is issued, and the threshold can require a verification history rather than a single pass.",
+      "A creator-rewards platform can ask for a verification at the claim and read the Trust Score with it. Synthetic voice, motion and touch are rejected server-side before an Anchor is issued, and the floor can require a verification history rather than a single pass.",
   },
 ];

@@ -29,7 +29,7 @@ const ABUSE_MECHANISMS = [
     number: "02",
     title: "Trust Score thresholds",
     description:
-      "Require a minimum Trust Score to access protected features. New identities start at zero. High-value actions can require weeks of consistent verification history.",
+      "Require a Trust Score floor and a recent verification to reach protected features. New identities start at zero. High-value actions can ask for a verification at the action itself.",
   },
   {
     number: "03",
@@ -190,10 +190,11 @@ export function IntegrateGuide() {
           </h2>
 
           <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/70 md:text-lg">
-            For apps that don&apos;t run the verification themselves but
-            need to gate or display based on existing on-chain Anchors.
-            Free reads via <code className="font-mono text-cyan">verifyEntrosAttestation()</code>,
-            optional copy-source React components for badges and gates.
+            For apps that read an existing Anchor rather than running the
+            capture. Free reads via <code className="font-mono text-cyan">verifyEntrosAttestation()</code>,
+            optional copy-source React components for badges and gates. For an
+            action worth the friction, pair it with a verification at the point
+            of the action.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border lg:grid-cols-2">
@@ -283,9 +284,9 @@ export function IntegrateGuide() {
               </h3>
 
               <p className="mt-4 text-sm leading-relaxed text-foreground/65">
-                Route guard. Wrap any content, set a threshold, the gate
-                handles wallet connection, identity lookup, and
-                verification prompts.
+                Route guard. Wrap any content, set a Trust Score floor and a
+                recency window, and the gate handles wallet connection,
+                identity lookup, and verification prompts.
               </p>
 
               <Link

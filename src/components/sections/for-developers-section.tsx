@@ -23,7 +23,7 @@ export function ForDevelopersSection() {
             </h2>
 
             <p className="mt-6 max-w-md text-base leading-relaxed text-foreground/65 md:text-lg">
-              One React component, one callback. <code className="font-mono text-cyan">{`<EntrosVerify />`}</code> opens the verification popup, runs the behavioral capture, mints the on-chain Anchor, and hands you a verified payload. Any Solana program can read the result for free.
+              One React component, one callback. <code className="font-mono text-cyan">{`<EntrosVerify />`}</code> opens the verification popup, runs the behavioral capture, mints the on-chain Anchor, and hands you a verified payload for someone who is there. Any Solana program can read the result for free.
             </p>
 
             <a

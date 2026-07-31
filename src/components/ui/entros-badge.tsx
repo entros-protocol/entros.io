@@ -9,6 +9,20 @@ import { cn } from "@/lib/utils";
 const EXPECTED_SIZE = 62;
 const ENTROS_PROGRAM_ID = new PublicKey(PROGRAM_IDS.entrosAnchor);
 
+/**
+ * A badge reports state, it does not gate. It shows when the wallet last
+ * verified alongside the score, so the reader sees a history rather than a
+ * bare present-tense claim. Use `EntrosGate` where access depends on it.
+ */
+function relativeAge(lastVerifiedAt: number): string {
+  const days = Math.floor((Date.now() / 1000 - lastVerifiedAt) / 86_400);
+  if (days < 1) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  return months < 12 ? `${months}mo ago` : `${Math.floor(days / 365)}y ago`;
+}
+
 interface EntrosBadgeProps {
   walletAddress: string;
   connection?: Connection;
@@ -18,6 +32,7 @@ interface EntrosBadgeProps {
 export function EntrosBadge({ walletAddress, connection, className }: EntrosBadgeProps) {
   const [loading, setLoading] = useState(true);
   const [trustScore, setTrustScore] = useState<number | null>(null);
+  const [lastVerifiedAt, setLastVerifiedAt] = useState<number | null>(null);
   const [invalid, setInvalid] = useState(false);
 
   useEffect(() => {
@@ -32,7 +47,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
     try {
       pubkey = new PublicKey(walletAddress);
       setInvalid(false);
-    } catch (err) {
+    } catch {
       setInvalid(true);
       setTrustScore(null);
       setLoading(false);
@@ -58,17 +73,19 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
           if (isMounted) {
             if (!account || account.data.length < EXPECTED_SIZE) {
               setTrustScore(null);
+              setLastVerifiedAt(null);
             } else {
               const data = account.data;
               const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-              // Trust score is a u16 at offset 60
-              const score = view.getUint16(60, true);
-              setTrustScore(score);
+              // Trust score is a u16 at offset 60, last verification an i64 at 48.
+              setTrustScore(view.getUint16(60, true));
+              setLastVerifiedAt(Number(view.getBigInt64(48, true)));
             }
           }
-        } catch (err) {
+        } catch {
           if (isMounted) {
             setTrustScore(null);
+            setLastVerifiedAt(null);
           }
         } finally {
           if (isMounted) {
@@ -116,6 +133,13 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
           <span>
             Verified <span className="text-cyan/50">·</span> Trust:{" "}
             <span className="font-bold">{trustScore}</span>
+            {lastVerifiedAt !== null && lastVerifiedAt > 0 && (
+              <>
+                {" "}
+                <span className="text-cyan/50">·</span>{" "}
+                <span className="text-foreground/60">{relativeAge(lastVerifiedAt)}</span>
+              </>
+            )}
           </span>
         </>
       ) : (

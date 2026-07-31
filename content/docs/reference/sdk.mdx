@@ -128,11 +128,32 @@ type PulseConfig = {
 
 ## Verification result reasons
 
-`VerificationResult.reason` (when `success: false`) is a narrow, client-side signal:
+`VerificationResult.reason` (when `success: false`) carries a label when one is safe to reveal. Classify it with `reasonDisposition` rather than matching strings:
 
-- `validation_unavailable` — the executor's `/validate-features` endpoint was unreachable (network failure, timeout, abort). Treat as transient and offer a retry CTA.
+```ts
+import { reasonDisposition } from "@entros/pulse-sdk";
 
-The validator's server-side rejections do not surface a category code to the client by design — host code should not depend on a per-check breakdown. Build retry UX around the `success` boolean and an attempt counter, not a reason taxonomy. The `reason` field is absent on every server-side rejection, every on-chain submission failure, and every data-quality rejection.
+switch (reasonDisposition(result.reason)) {
+  case "retry":  // offer another attempt now
+  case "wait":   // blocked until result.retryAfterSec elapses
+  case "fatal":  // retrying changes nothing
+}
+```
+
+Three dispositions rather than a retryable boolean, because a rate limit is not "not retryable", it is "not retryable yet".
+
+| Reason | Disposition | Source |
+| --- | --- | --- |
+| `variance_floor`, `entropy_bounds`, `temporal_coupling_low`, `phrase_content_mismatch`, `captcha_required` | `retry` | validator |
+| `rate_limited`, `ip_rate_limited`, `cross_wallet_cooldown` | `wait` | executor, with `retryAfterSec` |
+| `payload_too_large` | `fatal` | executor |
+| `validation_unavailable`, `validation_timeout` | `retry` | SDK, before any server saw the capture |
+
+`reasonDisposition` returns `fatal` for a reason it does not recognise, so a newer server cannot hand an older client a retry it does not understand.
+
+**`reason` is absent on most rejections and its absence never means success.** The validator withholds a label on attack-signal rejections so the detection layers stay opaque to probing, and there is no label on on-chain submission failures or data-quality rejections. Read `success` first, always.
+
+`isClientOriginReason(result.reason)` is true when the SDK gave up before a server rendered a verdict. Hosts metering attempts should not charge the user for those.
 
 ## Peer dependencies
 

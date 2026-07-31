@@ -349,6 +349,16 @@ function extractCooldownUnlockDate(error: string): Date | null {
 
 const FAUCET_URL = "https://faucet.solana.com";
 
+/** Seconds to a short human phrase: "45 seconds", "3 minutes", "2 hours". */
+function formatWait(seconds: number): string {
+  const s = Math.max(1, Math.ceil(seconds));
+  if (s < 90) return `${s} second${s === 1 ? "" : "s"}`;
+  const m = Math.ceil(s / 60);
+  if (m < 90) return `${m} minute${m === 1 ? "" : "s"}`;
+  const h = Math.ceil(m / 60);
+  return `${h} hour${h === 1 ? "" : "s"}`;
+}
+
 // Browser-aware recovery copy for the microphone permission-denied surface.
 // Each major browser hides the per-site mic permission control in a different
 // place: Chrome/Edge/Brave (lock icon → site settings), Firefox (shield icon →
@@ -382,10 +392,17 @@ export function FailedView({
   onReset,
   onResetBaseline,
   userPaysFees = true,
+  retryAfterSec,
 }: {
   error: string;
   /** SDK reason code, when one survived. Routes the cooldown screen. */
   reason?: string;
+  /**
+   * Seconds the server said to wait, sent with every 429. The executor knows
+   * the exact window and puts it in the body, so the screen can name it
+   * instead of guessing.
+   */
+  retryAfterSec?: number;
   onReset: () => void;
   onResetBaseline?: () => void;
   /**
@@ -533,8 +550,13 @@ export function FailedView({
         body = error;
       } else {
         title = "Too many attempts";
-        body =
-          "This wallet has reached its retry limit for the current window. Please wait an hour before trying again.";
+        // The executor sends `retry_after` with every 429 and knows the real
+        // window, which differs by limiter. The copy used to say "wait an
+        // hour" regardless, which was a guess and collided with the on-chain
+        // conditions that also ask the user to wait.
+        body = retryAfterSec
+          ? `This wallet has reached its retry limit. Try again in ${formatWait(retryAfterSec)}.`
+          : "This wallet has reached its retry limit for the current window. Try again shortly.";
       }
       break;
     case "permission-denied":

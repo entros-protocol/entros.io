@@ -285,6 +285,7 @@ export function VerifyWalletless({
         reason={state.reason}
         failedAt={state.failedAt}
         opaque={state.opaque}
+        retryAfterSec={state.retryAfterSec}
         onReset={handleReset}
         // The relayer signs and pays on this path, so no fee note applies. The
         // user has not connected a wallet to check.

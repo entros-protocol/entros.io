@@ -31,6 +31,11 @@ const STAGE_SUBTITLES: Record<string, string> = {
   "Computing proof...": "Generating zero-knowledge proof",
   "Submitting to Solana...": "Writing verification on-chain",
   "Submitting reset to Solana...": "Rotating your on-chain baseline",
+  // Everything after the cluster confirms. Named separately because the wait
+  // is longest on mobile, where the wallet lives in another view, and telling
+  // someone their transaction is still going out when it has already landed is
+  // what makes a short wait feel like a hang.
+  "Finishing up...": "Your verification is confirmed on-chain",
 };
 
 /**

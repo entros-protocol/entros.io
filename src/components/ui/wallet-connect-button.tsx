@@ -78,10 +78,16 @@ function MobileWalletHint() {
   return (
     <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">
       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+      {/*
+        Pointed at Walletless mode until 2026-08-01, which has not been on the
+        verify route since the preview path was withdrawn for not running real
+        validation. Sending mobile users to a mode that no longer exists is
+        worse than sending them nowhere.
+      */}
       <p className="text-left">
-        Mobile wallet connection is limited during devnet. Use Walletless mode,
-        or open on desktop for the full wallet flow. Native mobile support
-        arrives with the Solana Mobile app.
+        Mobile wallet connection is limited during devnet. Open on desktop for
+        the full wallet flow. Native mobile support arrives with the Solana
+        Mobile app.
       </p>
     </div>
   );

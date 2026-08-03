@@ -6,6 +6,14 @@ import { Shield, Code, Settings, Copy, Check, Info, Sparkles, ExternalLink } fro
 type ThemeColor = "cyan" | "indigo" | "emerald" | "purple" | "pink";
 type PaymentMode = "user-pays" | "walletless";
 
+type SandboxTab = "react" | "anchor" | "sdk";
+
+const SANDBOX_TABS: ReadonlyArray<{ id: SandboxTab; label: string }> = [
+  { id: "react", label: "React Component" },
+  { id: "anchor", label: "Solana Anchor (Rust)" },
+  { id: "sdk", label: "Solana SDK (TS)" },
+];
+
 export function generateAnchorCode(riskCeiling: number = 0.75): string {
   return `use anchor_lang::prelude::*;
 use entros_registry::state::IdentityState;
@@ -72,7 +80,7 @@ export function IntegrateSandboxClient() {
   const [themeColor, setThemeColor] = useState<ThemeColor>("cyan");
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<"react" | "anchor" | "sdk">("react");
+  const [activeTab, setActiveTab] = useState<SandboxTab>("react");
   const [copied, setCopied] = useState<boolean>(false);
   
   // Interactive preview state
@@ -372,16 +380,12 @@ try {
           {/* Dynamic Code Generator Block */}
           <div className="flex flex-1 flex-col overflow-hidden rounded-2xl bg-foreground/[0.06]">
             <div className="flex border-b border-border bg-background/50 overflow-x-auto">
-              {[
-                { id: "react", label: "React Component" },
-                { id: "anchor", label: "Solana Anchor (Rust)" },
-                { id: "sdk", label: "Solana SDK (TS)" }
-              ].map((tab) => {
+              {SANDBOX_TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id)}
                     className={`px-5 py-3.5 font-mono text-xs uppercase tracking-wider border-r border-border transition-all ${
                       isActive
                         ? "bg-[#070b0e] text-cyan border-b-2 border-b-cyan"

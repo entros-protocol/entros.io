@@ -218,6 +218,10 @@ function scanLocalBrowserTelemetry(): DiagnosticPayload {
     webdriver = navigator.webdriver === true;
   } catch {}
 
+  // Automation tools inject properties that exist on no standard Window type
+  // (cdc_ markers, driver hooks). Probing for them is the point of this code,
+  // so there is no honest type to narrow to here.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any;
   for (const [key, label] of WINDOW_TELLS) {
     try {
@@ -228,6 +232,8 @@ function scanLocalBrowserTelemetry(): DiagnosticPayload {
   }
 
   try {
+    // Walks arbitrary injected objects by key. Same reason as above.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const scan = (obj: any) => {
       for (const k of Object.getOwnPropertyNames(obj)) {
         if (CDC_PATTERN.test(k)) {

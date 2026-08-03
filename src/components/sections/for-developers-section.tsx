@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { CodeBlock } from "@/components/ui/code-block";
 import { sdkSnippet } from "@/data/developer-snippet";
@@ -26,7 +27,7 @@ export function ForDevelopersSection() {
               One React component, one callback. <code className="font-mono text-cyan">{`<EntrosVerify />`}</code> opens the verification popup, runs the behavioral capture, mints the on-chain Anchor, and hands you a verified payload for someone who is there. Any Solana program can read the result for free.
             </p>
 
-            <a
+            <Link
               href="/docs"
               className="
                 group mt-8 inline-flex items-center gap-2
@@ -37,7 +38,7 @@ export function ForDevelopersSection() {
             >
               Read the docs
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
+            </Link>
           </div>
 
           <div className="lg:col-span-3">

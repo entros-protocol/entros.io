@@ -57,7 +57,7 @@ The one-time rent funds the user's on-chain Identity Anchor: a Token-2022 mint w
 
 Integrators read verified state from the on-chain Anchor PDA for free. No API keys, no billing relationship, no permission to read. The protocol monetizes the write side; the read side is composable Solana state.
 
-The Entros utility token (SPL Token-2022 with Confidential Balances) is a standalone mint today, with no coupling to live verification. Validator staking, governance over protocol parameters, and the multi-validator network they would serve are roadmap, not current behaviour.
+$ENTROS is a standard SPL mint launched through a public fair launch on EasyA Kickstart, with mint and freeze authority revoked. It is a standalone mint today, with no coupling to live verification. Validator staking, governance over protocol parameters, and the multi-validator network they would serve are roadmap, not current behaviour.
 
 ---
 
@@ -80,7 +80,7 @@ This repo (`entros.io`) is the website, the verification dApp, and the documenta
 | [`entros-mobile`](https://github.com/entros-protocol/entros-mobile) | Mobile app, in development: capture, native ZK proving via mopro, on-chain submit via Mobile Wallet Adapter |
 | [`entros-mopro`](https://github.com/entros-protocol/entros-mopro) | Native Groth16 prover bindings (UniFFI `.so` + Swift / Kotlin) consumed by `entros-mobile` |
 | [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) | Realms DAO voter-weight plugin |
-| [`token-contracts`](https://github.com/entros-protocol/token-contracts) | Entros utility token (SPL Token-2022 with Confidential Balances). Staking and incentive wiring are roadmap. |
+| [`token-contracts`](https://github.com/entros-protocol/token-contracts) | No code. Maps where $ENTROS utility lives; the mint itself comes from a public launchpad. Staking and incentive wiring are roadmap. |
 
 ### On-chain
 

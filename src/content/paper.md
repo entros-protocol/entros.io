@@ -196,7 +196,7 @@ On-chain verification uses the `groth16-solana` crate, implementing the BN254 pa
 
 #### **3.3. Trusted Setup**
 
-Groth16 requires a structured reference string (SRS) from a trusted setup ceremony. Phase 1 uses the Hermez community Powers of Tau—multi-contributor, production-grade, circuit-agnostic. Phase 2 currently has a single contributor. A multi-party computation ceremony with ≥10 independent contributors will precede mainnet deployment. The SRS is compromised only if *all* Phase 2 contributors collude [12].
+Groth16 requires a structured reference string (SRS) from a trusted setup ceremony. Phase 1 uses the Hermez community Powers of Tau—multi-contributor, production-grade, circuit-agnostic. Phase 2 currently has a single contributor. A multi-party computation ceremony with independent contributors will precede mainnet deployment, drawn from ecosystem builders and integrators. The SRS is compromised only if *all* Phase 2 contributors collude [12], so a single honest contributor is sufficient for soundness; additional contributors reduce the probability that none is honest.
 
 ---
 
@@ -460,7 +460,7 @@ The protocol is precise about what it proves. First-time verification is a liven
 * Multi-contributor trusted setup ceremony for Groth16 Phase 2 before mainnet.
 * External security audit of all on-chain programs, the ZK circuit, and the executor node.
 * Full on-chain token economics: validator staking, delegation, capacity tiers, and economic governance wired to the utility token.
-* Cross-chain deployment to Ethereum L2s after Solana mainnet stabilizes.
+* Cross-chain reads of the Solana attestation from other chains, via an attestation relay rather than a redeployment of the protocol.
 * Formal analysis of SimHash collision probability bounds under adversarial feature distributions.
 * Cross-wallet fingerprint comparison is implemented in the server-side validation layer. The executor maintains a registry of SimHash fingerprints and compares each new verification against existing entries. If the Hamming distance between a new fingerprint and any existing entry falls below δ_max, the verification is flagged as a potential duplicate identity. Empirical investigation of the persistence of involuntary behavioral features across deliberate behavioral modification is ongoing.
 * Server-side feature validation is implemented as described in Section 6.8. The validation models, thresholds, and detection algorithms are proprietary—the protocol layer is open source for trust and auditability, the defense layer is private for security. This follows the emerging "immutable open source" model in decentralized systems: on-chain programs are transparent and immutable, off-chain defense logic is private.

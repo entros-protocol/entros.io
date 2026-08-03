@@ -43,7 +43,7 @@ const timeline = [
   {
     window: "Now",
     title: "$ENTROS launch",
-    body: "The token launches to fund the path to mainnet and align the community from day one. Validator staking, fee-share, and governance activate in phases as the network decentralizes.",
+    body: "The token launched to fund the path to mainnet and align the community from day one. Validator staking, fee-share, and governance activate in phases as the network decentralizes.",
   },
   {
     window: "Next",

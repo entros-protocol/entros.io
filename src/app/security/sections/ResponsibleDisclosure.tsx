@@ -21,7 +21,7 @@ const disclosureItems = [
   },
   {
     label: "Bug bounty",
-    value: "Planned post-launch. Severity tiers and amounts TBD.",
+    value: "Planned post-mainnet. Severity tiers and amounts TBD.",
   },
 ];
 

@@ -57,7 +57,7 @@ export const supplyPrinciples: SupplyPrinciple[] = [
   {
     title: "Bought and locked",
     description:
-      "The team's tokens are bought on the open market at launch and locked in public Streamflow contracts anyone can inspect.",
+      "The team's tokens were bought on the open market at launch and are locked in public Streamflow contracts anyone can inspect.",
   },
   {
     title: "Value from utility",

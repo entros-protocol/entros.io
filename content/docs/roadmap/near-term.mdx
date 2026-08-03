@@ -1,15 +1,27 @@
 ---
 title: Near-term
-description: Active sprint. The audit, mainnet deployment, and the integrator surface filling out.
+description: Active sprint. The ceremony, the audit, the operational lift, and mainnet deployment.
 ---
 
-Near-term work is structured around three milestones: external audit, mainnet deployment, and the integrator-facing surface area filling out.
+Near-term work runs through three gates before mainnet, in order: the trusted setup ceremony, an external security audit, and the operational lift. The integrator-facing surface area fills out alongside them.
+
+## Trusted setup ceremony
+
+Groth16 Phase 2 currently has a single contributor. Multiple participants run the ceremony in sequence, each contributing random entropy and destroying it afterwards, and `entros-verifier` is recompiled against the resulting verifying key. The structured reference string is compromised only if every contributor colludes, so one honest participant is enough for the math to hold. Ecosystem builders and integrators take the open slots. The public log and hash chain publish at `entros.io/ceremony`.
 
 ## External security audit
 
-A full audit of the three on-chain programs by an established Solana auditor (OtterSec, Neodyme, or Asymmetric Research). The audit precedes mainnet deployment. Expected engagement: 6–10 weeks plus remediation.
+A full audit of the three on-chain programs and the on-chain proof flow by an established Solana audit firm. `entros-verifier` carries the highest stakes, `entros-registry` handles fees and validator staking, and `entros-anchor` mints the non-transferable token. The audit precedes mainnet deployment, and the firm publishes its report on completion with findings remediated in public. Expected engagement: 6–10 weeks plus remediation.
 
 The pre-audit hardening work is captured in the protocol's internal AUDIT.md and the public security program. Findings discovered during internal red-teaming are remediated and re-tested before the external engagement begins.
+
+## Operational lift
+
+The third gate is a sequence of small items rather than one large one: paid RPC capacity, a hardware-wallet upgrade authority, treasury backup and recovery procedures, monitoring, an incident-response runbook, and a partner integrator on standby for the first live mainnet verification.
+
+## Mainnet deployment
+
+After all three gates clear and audit remediations are in place, the three programs deploy to mainnet. Devnet remains live for development; mainnet is the production surface. Program IDs are immutable across the deployment—devnet IDs and mainnet IDs match where the deployment authority chooses, with documented exceptions for any program-id-derived PDA surface.
 
 ## Standalone display primitives
 
@@ -32,10 +44,6 @@ Three production integrator pilots, one each across the three composability surf
 - An AI-agent platform gating registrations on operator Trust Score
 
 These pilots inform the threshold-setting documentation and surface real-world edge cases that internal testing misses.
-
-## Mainnet deployment
-
-After the external audit lands and remediations are in place, the three programs deploy to mainnet. Devnet remains live for development; mainnet is the production surface. Program IDs are immutable across the deployment—devnet IDs and mainnet IDs match where the deployment authority chooses, with documented exceptions for any program-id-derived PDA surface.
 
 ## Where to look next
 

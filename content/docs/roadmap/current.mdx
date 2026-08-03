@@ -20,10 +20,16 @@ This page is the snapshot of the protocol as it stands. Each item below is verif
 
 | Component | Status |
 | --- | --- |
-| Pulse SDK on npm | `@entros/pulse-sdk@4.1.1` |
+| Pulse SDK on npm | `@entros/pulse-sdk@4.4.0` |
 | Hosted verification dApp | `entros.io/verify` (open to all on devnet) |
 | Anonymity Ring | Validation engine running all four tiers, single-validator deployment, 17,000+ adversarial attempts across T1–T4 with 0% production pass |
 | Public security program | `entros.io/security`—every adversarial wave published |
+
+## Token
+
+$ENTROS launched through a public fair launch on the EasyA Kickstart bonding curve. It is a standard SPL mint with mint and freeze authority revoked, and it carries no Token-2022 extensions. The identity Anchor is a separate Token-2022 mint using the `NonTransferable` extension, so the two are distinct assets under distinct standards.
+
+The token has no on-chain coupling to verification today. Protocol fees and validator stake are SOL-denominated. Validator staking, fee-share and governance denominated in $ENTROS activate in phases as the validator network decentralizes. See [the token page](/token) for the mint address and the mechanism map.
 
 ## Public artefacts
 

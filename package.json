@@ -7,7 +7,8 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test": "../pulse-sdk/node_modules/.bin/vitest run test",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run test",
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
@@ -46,7 +47,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^3.2.6"
   },
   "overrides": {
     "eslint-plugin-react-hooks": {

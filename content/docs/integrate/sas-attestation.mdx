@@ -63,6 +63,8 @@ The Entros schema, registered on SAS, has four fields:
 | `verifiedAt` | `i64` | Unix timestamp of the verification this attestation snapshots |
 | `mode` | `string` | `"wallet-connected"` or `"walletless"` |
 
+The executor currently writes only `wallet-connected`. The field carries both values because walletless is a defined tier that is not currently offered.
+
 The schema is deployed at:
 
 ```

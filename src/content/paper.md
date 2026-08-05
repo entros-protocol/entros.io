@@ -2,7 +2,7 @@
 
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
-**Updated:** August 1, 2026
+**Updated:** August 5, 2026
 **Word Count:** Approx. 8500
 
 ---
@@ -251,7 +251,7 @@ The score is capped at a configurable maximum (currently 10,000) and computed on
 
 Wallet-connected mode is the primary flow. The user pays the per-verification fee, signs the transaction, mints an Entros Anchor, and builds an on-chain Trust Score queryable by any integrator. Each verification produces a SAS attestation that integrators read for free. The economic surface—per-verification fees plus per-wallet funding—means the number of Anchors an operator holds is bounded by what they are willing to fund.
 
-Walletless mode is a secondary liveness tier for use cases that need a captcha-equivalent signal without onboarding a wallet. The behavioral fingerprint is stored locally (encrypted with AES-256-GCM, key as non-extractable `CryptoKey` in IndexedDB). The identity is device-bound and ephemeral; clearing storage resets it. No on-chain Anchor, no portable Trust Score.
+Walletless mode is a secondary liveness tier for use cases that need a captcha-equivalent signal without onboarding a wallet. The behavioral fingerprint is stored locally (encrypted with AES-256-GCM, key as non-extractable `CryptoKey` in IndexedDB). The identity is device-bound and ephemeral. Clearing storage resets it. No on-chain Anchor, no portable Trust Score. This tier is not currently offered in the reference application. A walletless decision rests on a single capture with no prior baseline to compare against, which is a harder problem than returning-user consistency. It opens when that decision is measured rather than assumed.
 
 ---
 
@@ -342,11 +342,13 @@ Temporal consistency applies from the second verification onward. Each returning
 2. **Device-bound consistency** *(returning walletless verification). Behavioral drift matches a device-local fingerprint. Signal strength: medium. Suitable for session authentication, content gating.*
 3. **Portable identity** *(wallet-connected with Trust Score). Persistent on-chain Anchor with months of behavioral consistency visible to all integrators. Signal strength: high. Suitable for airdrop eligibility, DAO governance and DeFi access controls, read alongside a verification at the point of the gated action.*
 
+Tiers 1 and 2 require walletless mode, which the protocol defines and the reference application does not currently offer. Tier 3 is the live flow.
+
 In wallet-connected mode the user pays the per-verification fee, so each Anchor carries a recurring cost to its holder, and integrators read on-chain state for free.
 
 The Anchor exposes two fields, and an integrator reads both. The Trust Score describes how consistently a wallet has verified. `last_verification_timestamp` describes how recently. For an action of consequence, an integrator triggers a verification when the action happens and reads the Anchor immediately after, so the history it reads belongs to an operator who is present. The protocol provides the signal. The integrator sets the threshold and the window.
 
-A bot that clears local storage before each walletless verification is perpetually at Tier 1—a liveness check with no temporal history. High-value integrations can require Tier 2 or Tier 3, making this strategy ineffective for anything beyond basic captcha equivalence.
+A bot that clears local storage before each walletless verification is perpetually at Tier 1, a liveness check with no temporal history. High-value integrations can require Tier 2 or Tier 3, making this strategy ineffective for anything beyond basic captcha equivalence.
 
 #### **6.8. Browser Trust Model and Server-Side Validation**
 

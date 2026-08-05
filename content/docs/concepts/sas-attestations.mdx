@@ -77,11 +77,11 @@ if (attestation.trustScore < 250) {
 
 Attestations carry an expiry timestamp, configurable per attestation. The default issued by the executor is 30 days from the verification timestamp. After expiry, the attestation account remains on-chain but `expired === true`. Re-verifying refreshes both the Anchor state and the attestation.
 
-## Walletless mode
+## Attestations are wallet-bound
 
-Walletless mode still exists for low-stakes CAPTCHA-equivalent surfaces, but it does not write to the Solana Attestation Service. Every SAS attestation is now bound to a wallet that signed an ownership proof at issue time — `/attest` requires `wallet_address`, `nonce`, `signature`, and `message` together on every call. The earlier walletless-on-SAS path was removed because it created a griefing surface where any caller could issue an attestation against any target wallet pubkey without proof of control.
+Every SAS attestation is bound to a wallet that signed an ownership proof at issue time, so `/attest` requires `wallet_address`, `nonce`, `signature`, and `message` together on every call. Without that proof, any caller could issue an attestation against any target wallet.
 
-Walletless integrations that need a one-shot human signal rely on the executor's client-side ephemeral receipt — short-lived, not persisted on chain. For any gate that depends on the temporal-identity claim (re-verification cadence, accumulated score, returning-operator reasoning), require a wallet-connected verification.
+Walletless verification is a defined tier that the reference application does not currently offer. An earlier walletless path did issue attestations, and it was dropped on 2026-04-30 because a caller could issue an attestation against any wallet without proving control of it. If the tier returns it will produce a client-side ephemeral receipt rather than an on-chain attestation. For any gate that depends on the temporal-identity claim (re-verification cadence, accumulated score, returning-operator reasoning), require a wallet-connected verification.
 
 ## Where to look next
 

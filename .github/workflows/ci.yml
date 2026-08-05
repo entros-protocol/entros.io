@@ -24,6 +24,15 @@ jobs:
       - name: Install
         run: npm ci
 
+      # The served PDF is built from a LaTeX source in another repository, so
+      # nothing makes the two move together. The site served a paper four days
+      # stale between 2026-08-01 and 2026-08-05 because the copy was manual.
+      - name: Install poppler for the paper check
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Paper PDF matches the rendered markdown
+        run: node scripts/check-paper-sync.mjs
+
       - name: Lint
         run: npm run lint
 

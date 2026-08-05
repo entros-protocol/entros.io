@@ -1,6 +1,5 @@
 # Entros Protocol: A Framework for Temporally-Consistent, Decentralized Proof-of-Personhood
 
-**Document Version:** 3.0
 **Original Date:** June 27, 2025
 **Updated:** August 5, 2026
 **Word Count:** Approx. 8500

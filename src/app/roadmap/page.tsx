@@ -1,16 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, KeyRound, ShieldCheck, Wrench } from "lucide-react";
+import { ArrowRight, Gauge, KeyRound, ShieldCheck, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
   title: "Roadmap",
   description:
-    "Live on devnet with a shipped SDK and red-team results. The token funds the path to mainnet: a public trusted setup ceremony and an external audit.",
+    "Live on devnet with a shipped SDK and red-team results. The token funds the path to mainnet: protocol hardening, a public trusted setup ceremony, and an external audit.",
   path: "/roadmap",
 });
 
 const gates = [
+  {
+    Icon: Gauge,
+    label: "Protocol hardening",
+    window: "Ongoing",
+    description:
+      "We run adversarial campaigns against the live pipeline and fix what they find. Controlled studies measure how much one person varies between sessions and across devices. That variance sets the bounds the protocol enforces. New detection layers log before they reject. This work runs alongside the other three.",
+  },
   {
     Icon: KeyRound,
     label: "Trusted setup ceremony",
@@ -46,6 +53,11 @@ const timeline = [
     body: "The token launched to fund the path to mainnet and align the community from day one. Validator staking, fee-share, and governance activate in phases as the network decentralizes.",
   },
   {
+    window: "Ongoing",
+    title: "Protocol hardening",
+    body: "Adversarial campaigns run against the live pipeline. We measure it against real capture data and tighten what the data shows. The fingerprint pipeline carries a version, so it can change without invalidating identities already issued. Mainnet waits on this work.",
+  },
+  {
     window: "Next",
     title: "Trusted setup ceremony",
     body: "Participants from across the ecosystem run the multi-party setup, each contributing entropy. We recompile entros-verifier against the new key and publish the log and hash chain at entros.io/ceremony.",
@@ -68,6 +80,9 @@ const timeline = [
 ];
 
 const flipCriteria = [
+  "Adversarial campaign run against the release candidate, with findings remediated",
+  "Calibration data collected across devices, with enforcement thresholds set from it",
+  "Feature-pipeline versioning live, so a projection change routes users to re-enrolment",
   "Trusted setup ceremony complete, with the public log and at least one independent participant on record",
   "Audit report published, with all critical and high findings remediated",
   "Hardware-wallet upgrade authority configured",
@@ -81,7 +96,7 @@ export default function Roadmap() {
   return (
     <>
       {/* Hero — asymmetric: text left (3/5), checklist panel right (2/5).
-          The panel previews the three gates so a reader sees the structure
+          The panel previews the four gates so a reader sees the structure
           before scrolling. */}
       <section>
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-10">
@@ -99,8 +114,8 @@ export default function Roadmap() {
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
               Entros is live on devnet: three programs, a shipped SDK, and a
               pipeline that already blocks recorded-voice replay and collapses
-              synthetic sybil farms in our own red-team. The token funds the
-              path to mainnet.
+              synthetic sybil farms in our own red-team. We keep measuring and
+              tightening it. The token funds the path to mainnet.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -185,7 +200,7 @@ export default function Roadmap() {
                         </p>
                         {isNext && (
                           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-cyan">
-                            Next
+                            Now
                           </span>
                         )}
                       </li>
@@ -198,11 +213,11 @@ export default function Roadmap() {
         </div>
       </section>
 
-      {/* The three gates — vertical hairline stack, full description */}
+      {/* The four gates, vertical hairline stack, full description */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // THE THREE GATES
+            // THE GATES
           </span>
 
           <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
@@ -210,9 +225,10 @@ export default function Roadmap() {
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Three pieces of work take Entros to mainnet: a public cryptographic
-            ceremony, an independent audit, and the operational lift to run
-            real value on live infrastructure. Each ships in public.
+            Four pieces of work take Entros to mainnet: protocol hardening, a
+            public cryptographic ceremony, an independent audit, and the
+            operational lift to run real value on live infrastructure. Each
+            ships in public.
           </p>
 
           <div className="mt-16 border-t border-border">
@@ -300,7 +316,7 @@ export default function Roadmap() {
                 </h2>
 
                 <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                  The three gates above, restated as conditions anyone
+                  The four gates above, restated as conditions anyone
                   can check. Each one gets ticked off in the open.
                 </p>
               </div>

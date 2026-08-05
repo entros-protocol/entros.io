@@ -11,7 +11,7 @@ export const metadata = pageMetadata({
 });
 
 const stats = [
-  { value: "12s", label: "Verification time" },
+  { value: "Zero", label: "Raw biometrics stored" },
   { value: "3", label: "Liveness signals" },
   { value: "On-chain", label: "Free dApp read" },
   { value: "Solana", label: "Native" },
@@ -50,7 +50,7 @@ const blurbs = [
   {
     length: "Medium",
     chars: "2 sentences · 290 chars",
-    text: "Entros is the temporal identity layer for Solana. Voice, motion, and touch run through a zero-knowledge proof on the user's device; the resulting attestation lands on-chain in twelve seconds and any Solana app reads it for free.",
+    text: "Entros is the temporal identity layer for Solana. Voice, motion, and touch run through a zero-knowledge proof on the user's device, and the resulting attestation lands on-chain for any Solana app to read for free.",
   },
   {
     length: "Long",

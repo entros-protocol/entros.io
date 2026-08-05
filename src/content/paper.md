@@ -399,7 +399,7 @@ T4 extends the program to modern neural voice synthesis, which the tiers above d
 
 **Worldcoin** [5] uses iris scanning to create a unique biometric identifier per person. The approach provides strong uniqueness guarantees through a dedicated hardware device (the Orb), which enforces a controlled capture environment. The tradeoff is a permanent anatomical template: because an iris scan cannot be changed, it cannot be revoked if the template is ever exposed. Entros's behavioral signature drifts naturally over time, making re-verification both the consistency check and the revocation mechanism.
 
-**BrightID** [6] verifies uniqueness through social graph analysis, where users vouch for each other in verification parties. The approach trades hardware cost for coordination overhead—users must attend verification events, and the trust model assumes non-colluding participants. Entros's approach requires neither coordination nor hardware: verification happens on a single device in 12 seconds.
+**BrightID** [6] verifies uniqueness through social graph analysis, where users vouch for each other in verification parties. The approach trades hardware cost for coordination overhead. Users must attend verification events, and the trust model assumes non-colluding participants. Entros's approach requires neither coordination nor hardware: verification happens on a single device.
 
 **Reclaim Protocol** [7] proves ownership of existing web2 accounts via TLS session proofs. It answers "do you control this account?"—not "are you human?" Entros and Reclaim are complementary: Reclaim proves account ownership, Entros proves the account owner is human.
 

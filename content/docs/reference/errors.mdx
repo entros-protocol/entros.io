@@ -34,7 +34,6 @@ Every program returns custom error codes via Anchor's `#[error_code]` macro. The
 | 6022 | `MalformedReceiptMessage` | Mint receipt message has malformed length, layout, or cross-instruction references |
 | 6023 | `IdentityStateNotFound` | The expected `IdentityState` PDA was not supplied or does not exist |
 | 6024 | `ValidatorNotConfigured` | No validator pubkey is registered in `ProtocolConfig` |
-| 6025 | `VerificationIntervalTooShort` | A re-verification was attempted within one hour of the previous one |
 
 The Receipt* family (6016–6022) only fires on the first-verification path. Re-verification (`update_anchor`) binds via the verifier-program `VerificationResult` PDA, not via the validator-signed mint receipt.
 

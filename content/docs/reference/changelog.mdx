@@ -7,9 +7,25 @@ The protocol publishes the SDK as `@entros/pulse-sdk` on npm. Programs are deplo
 
 ## Pulse SDK
 
+### 4.x
+
+Current published version: `4.5.0`. The 4.x line canonicalises capture at 16 kHz and reworks the transport and failure taxonomy.
+
+**4.5.0** Poseidon moved from `circomlibjs` to a zero-dependency implementation, producing the same field element with far less behind it. The proving key and the crypto modules now load during capture rather than after it. Golden vectors compare with a relative tolerance, so they hold across processor architectures.
+
+**4.4.0** `capture_timing` reports what the microphone delivered, measured before the SDK applies its own gain. A capture can be quiet and fully recoverable, and only these fields separate that from a microphone that was too quiet.
+
+**4.3.0** The motion contour aligns to the audio window rather than to its own array length.
+
+**4.2.0** `onProgress` reaches `submitViaWallet` and `submitResetViaWallet`.
+
+**4.1.0 to 4.1.3** Baseline reset lands on chain again, accounts written before `IdentityState` last grew decode correctly, and two prompts that could hold a confirmed verification open are now bounded.
+
+**4.0.0, breaking.** Every capture is band-limited and decimated to 16 kHz before feature extraction, not only captures that arrive at another rate. Browsers treat a requested sample rate as a request rather than an instruction, so the same voice at two rates produced two incomparable feature vectors. **Every fingerprint moved. Baselines from 3.x do not carry forward.** The release also rebuilt the transport around stalls rather than deadlines, so a slow upload that is still moving is never aborted, and added one exported reason taxonomy in place of six drifting copies.
+
 ### 3.x
 
-Current published version: `3.16.0`. The 3.x line tracks the v3 feature pipeline and the client-side signals that accompany it.
+The 3.x line tracked the v3 feature pipeline and the client-side signals that accompany it.
 
 - 3.16.0 — the wallet-connected flow transmits a coarse, timestamp-free outline of the traced challenge curve alongside the existing features. Sixty-four points at equal time intervals, used to check the trace against the curve the server issued.
 - 3.14.0 — the SDK parses the server-issued Lissajous curve from the challenge response and renders that curve rather than generating its own.

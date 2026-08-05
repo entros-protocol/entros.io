@@ -33,7 +33,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
 
         <div className="flex shrink-0 items-center gap-2">
           <a
-            href="https://zenodo.org/records/20609854"
+            href="https://doi.org/10.5281/zenodo.19517441"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"

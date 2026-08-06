@@ -50,7 +50,7 @@ const integrationSteps = [
   {
     Icon: Coins,
     title: "Voters verify once",
-    body: "A voter holds an Entros Anchor, a non-transferable Token-2022 mint. They run a twelve-second verification at entros.io/verify and the Anchor updates. The same Anchor reads to this DAO and every other Entros-gated surface on Solana.",
+    body: "A voter holds an Entros Anchor, a non-transferable Token-2022 mint. They run a twelve-second verification capture at entros.io/verify and the Anchor updates. The same Anchor reads to this DAO and every other Entros-gated surface on Solana.",
   },
   {
     Icon: Layers,

@@ -21,7 +21,7 @@ export const solutionCases: SolutionCase[] = [
     solution:
       "Voters must hold an Entros Anchor with minimum Trust Score and recent verification. The Realms voter-weight plugin reads that Anchor before it reads the balance. The whale's bag becomes one vote, and clearing quorum takes verified humans.",
     example:
-      "A DAO using Realms gates voting on Entros Trust Score alongside its existing token rules. One human, one vote, verified in 12 seconds on any device. Plugin shipped on devnet, spl-governance compatible.",
+      "A DAO using Realms gates voting on Entros Trust Score alongside its existing token rules. One human, one vote, from a 12-second verification capture on any device. Plugin shipped on devnet, spl-governance compatible.",
   },
   {
     icon: "gamepad",

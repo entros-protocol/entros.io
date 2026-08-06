@@ -1,7 +1,7 @@
 # Entros Protocol: A Framework for Temporally-Consistent, Decentralized Proof-of-Personhood
 
 **Original Date:** June 27, 2025
-**Updated:** August 5, 2026
+**Updated:** August 6, 2026
 **Word Count:** Approx. 8500
 
 ---
@@ -51,7 +51,7 @@ The Temporal-Biometric Hash (TBH) pipeline must satisfy five properties:
 2. **Temporal Consistency.** *Fingerprints from the same individual across sessions have bounded distance:* `d_H(F_t, F_{t+Δ}) ∈ [δ_min, δ_max]` *with high probability.*
 3. **Spoof Resistance.** *Generating a fingerprint F' such that* `d_H(F', F_target) < δ_max` *requires knowledge of the target's behavioral characteristics across multiple modalities.*
 4. **Privacy.** *The fingerprint F_T is never transmitted. Only a Poseidon commitment* `H_TBH = Poseidon(F_T, s)` *is published on-chain. The underlying feature vector is transmitted to the validation server as a fixed-size statistical summary for provenance validation but is not stored (Section 6.8).*
-5. **Efficiency.** *All operations run on consumer hardware within a browser context in under 5 seconds.*
+5. **Efficiency.** *All operations run on consumer hardware within a browser context.*
 
 #### **2.2. Challenge Generation**
 
@@ -75,7 +75,7 @@ The original protocol design (June 2025 – April 2026) specified a 70-syllable 
 
 #### **2.3. Multi-Modal Data Acquisition**
 
-Three sensor streams are captured simultaneously over a configurable window (default: 7 seconds, extended to 12 seconds in the reference web application):
+Three sensor streams are captured simultaneously over a configurable window (default: 12 seconds):
 
 * `S_audio`: Microphone input, band-limited and decimated to a canonical 16 kHz on the device, capturing voice prosody.
 * `S_motion`: IMU accelerometer/gyroscope at 60–100 Hz on mobile; mouse pointer dynamics on desktop.
@@ -298,7 +298,7 @@ Each wallet maps to exactly one Entros Anchor (enforced by PDA derivation). Crea
 2. k independent behavioral profiles, each sustained across regular re-verifications
 3. k × m verification fees over m re-verification cycles
 
-The Trust Score penalizes new accounts (age bonus starts at 0) and requires sustained active history (age/span bonus rewards duration of engagement). An adversary maintaining 1,000 identities to Trust Score > 500 over thirteen weeks at weekly cadence pays 65 SOL in protocol fees (1,000 × 13 × 0.005 SOL) plus ~13 SOL in one-time per-identity Solana account rent (1,000 × ~0.013 SOL for mint, ATA, IdentityState, and per-verification records), for a total of ~78 SOL. This arithmetic prices the residual attempt volume only: it assumes captures that already survive the active detection stack for the full campaign duration, and says nothing about the probability of reaching that state. Fees alone do not bound a high-value airdrop allocation, which is why they sit outermost rather than first. Asymmetry compounds over time. The attacker pays continuously against an evolving detection stack, with no advance knowledge of which targets will materialise—most lucrative airdrops are unannounced, forcing speculative deployment months before any chance of recoupment. The equilibrium shifts against sustained Sybil farming at scale, not against any single attack.
+The Trust Score penalizes new accounts (age bonus starts at 0) and requires sustained active history (age/span bonus rewards duration of engagement). Across 1,000 identities held to Trust Score > 500 for thirteen weeks at weekly cadence, the protocol collects 65 SOL in fees (1,000 × 13 × 0.005 SOL), and Solana charges ~13 SOL in one-time per-identity account rent (1,000 × ~0.013 SOL for mint, ATA, IdentityState, and per-verification records), for a total of ~78 SOL. This arithmetic prices the residual attempt volume only: it assumes captures that already survive the active detection stack for the full campaign duration, and says nothing about the probability of reaching that state. Fees alone do not bound a high-value airdrop allocation, which is why they sit outermost rather than first. Asymmetry compounds over time. The attacker pays continuously against an evolving detection stack, with no advance knowledge of which targets will materialise—most lucrative airdrops are unannounced, forcing speculative deployment months before any chance of recoupment. The equilibrium shifts against sustained Sybil farming at scale, not against any single attack.
 
 #### **6.4.1. Layered Sybil Resistance**
 
@@ -359,7 +359,7 @@ The protocol implements a two-level validation architecture:
 
 **Level 1 (client-side, deterministic).** The Groth16 proof, as currently implemented. Provides mathematical certainty that the Hamming distance constraint is satisfied.
 
-**Level 2 (server-side, statistical).** The 308-dimensional feature vector is transmitted alongside the proof to a validation server. The server applies statistical analysis using models inaccessible to the client: cross-modality correlation coefficients (real humans exhibit involuntary correlations between voice, motion, and touch that independent synthetic generators do not reproduce), per-feature entropy distributions (synthetic data exhibits entropy profiles outside expected human ranges), and jitter variance ratio analysis (text-to-speech engines produce unnaturally low jitter variance compared to natural speech [11]). The server-side models constitute a shared secret: the adversary cannot reverse-engineer the validation criteria.
+**Level 2 (server-side, statistical).** The 308-dimensional feature vector is transmitted alongside the proof to a validation server. The server applies statistical analysis using models inaccessible to the client: per-feature entropy distributions (synthetic data exhibits entropy profiles outside expected human ranges), and jitter variance ratio analysis (text-to-speech engines produce unnaturally low jitter variance compared to natural speech [11]). The server-side models are not published, and the same-window time-series analysis runs on signals the client does not control end to end.
 
 This architecture preserves the core privacy property. The feature vector is a fixed-size statistical summary (means, variances, spectral coefficients)—not raw time-series data. It cannot be used to reconstruct the original audio, motion, or touch signals. The ZK proof continues to ensure the fingerprint itself is never revealed. The feature vector provides a complementary signal for provenance validation without compromising the zero-knowledge property of the identity proof.
 
@@ -434,7 +434,7 @@ Benchmarks measured on Chrome 132 (M1 MacBook Pro) and Safari (iPhone 15 Pro Max
 * On-chain verification: ~123K compute units
 * **Total (excluding capture): ~900 ms**
 
-The total pipeline from button click to on-chain proof takes approximately 11–16 seconds depending on the configured capture window, plus ~900 ms of computation. On mobile (iPhone 15 Pro Max, Safari), all three sensor streams (audio, IMU motion, touch) capture simultaneously. Safari returns the hardware's native 48 kHz whatever rate the page requests. The SDK band-limits and decimates any capture at or above that rate to a canonical 16 kHz before feature extraction, so the browser's own resampler stops influencing the fingerprint. Hardware that delivers below 16 kHz, such as a narrowband Bluetooth headset, is passed through at its native rate rather than upsampled, since upsampling would invent detail the microphone never captured. Proof generation completes within the same time budget via snarkjs WASM.
+The total pipeline from button click to on-chain proof depends on the configured capture window and on network confirmation, plus ~900 ms of computation. On mobile (iPhone 15 Pro Max, Safari), all three sensor streams (audio, IMU motion, touch) capture simultaneously. Safari returns the hardware's native 48 kHz whatever rate the page requests. The SDK band-limits and decimates any capture at or above that rate to a canonical 16 kHz before feature extraction, so the browser's own resampler stops influencing the fingerprint. Hardware that delivers below 16 kHz, such as a narrowband Bluetooth headset, is passed through at its native rate rather than upsampled, since upsampling would invent detail the microphone never captured. Proof generation completes within the same time budget via snarkjs WASM.
 
 **Comparative context.** Groth16 proof generation at ~850 ms compares favorably to PLONK-based systems, which require ~2.5s for equivalent circuit sizes [22]. On-chain verification at ~123K compute units fits comfortably within Solana's 200K default budget; PLONK verification would exceed it. Poseidon commitment at ~3 ms reflects the hash's ZK-optimized design (~300 R1CS constraints vs. ~25,000 for SHA-256 in-circuit [3]).
 
@@ -452,7 +452,7 @@ The mobile application, targeting the Solana dApp Store, is the production targe
 
 ### **9. Conclusion and Future Work**
 
-The Entros Protocol presents a framework for Proof-of-Personhood through temporal behavioral consistency. By measuring bounded, chaotic drift in multi-modal biometric signals over time, it provides graduated trust guarantees that static biometrics and session-level captcha cannot.
+The Entros Protocol presents a framework for Proof-of-Personhood through temporal behavioral consistency. By measuring bounded, chaotic drift in multi-modal biometric signals over time, it provides graduated trust properties that static biometrics and session-level captcha do not.
 
 The protocol is precise about what it proves. First-time verification is a liveness check; temporal consistency compounds over repeated sessions, and the graduated trust model makes that explicit rather than presenting a false binary. The defense against sophisticated synthesis is multi-modal detection under temporal consistency, with economic cost bounding the volume of attempts mounted against it.
 
@@ -464,7 +464,7 @@ The protocol is precise about what it proves. First-time verification is a liven
 * Cross-chain reads of the Solana attestation from other chains, via an attestation relay rather than a redeployment of the protocol.
 * Formal analysis of SimHash collision probability bounds under adversarial feature distributions.
 * Cross-wallet fingerprint comparison is implemented in the server-side validation layer. The executor maintains a registry of SimHash fingerprints and compares each new verification against existing entries. If the Hamming distance between a new fingerprint and any existing entry falls below δ_max, the verification is flagged as a potential duplicate identity. Empirical investigation of the persistence of involuntary behavioral features across deliberate behavioral modification is ongoing.
-* Server-side feature validation is implemented as described in Section 6.8. The validation models, thresholds, and detection algorithms are proprietary—the protocol layer is open source for trust and auditability, the defense layer is private for security. This follows the emerging "immutable open source" model in decentralized systems: on-chain programs are transparent and immutable, off-chain defense logic is private.
+* Server-side feature validation is implemented as described in Section 6.8. The validation models, thresholds, and detection algorithms are proprietary—the protocol layer is open source for trust and auditability, the defense layer is private for security. This follows the emerging open-core defense model in decentralized systems: on-chain programs are transparent and independently verifiable, off-chain defense logic is private.
 * Adversarial testing was conducted across eight phases: exact replay (blocked by δ_min), naive synthesis (passes client-side pipeline), sustained re-verification (100% success rate without server-side validation), human-to-bot handoff, cross-modality correlation analysis, Sybil cost modeling, feature-level optimization (converges in 251 iterations), and full-pipeline random search (90% success rate without server-side validation). These results motivated the implementation of server-side validation as a required defense layer.
 * Device attestation via native application. Hardware integrity verification before behavioral capture, implementing a positive security model as described in Section 6.9.
 

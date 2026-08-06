@@ -136,7 +136,7 @@ below).
 ### High
 
 - [x] **`extractFeatures` zero-fills for missing audio** — Now throws error since audio is mandatory. Fixed 2026-03-23.
-- [x] **SimHash hyperplane cache dimension mismatch** — Added warning when feature vector dimension differs from expected 134. Fixed 2026-03-23.
+- [x] **SimHash hyperplane cache dimension mismatch** — Added warning when the feature vector dimension differs from the expected width. Fixed 2026-03-23.
 - [x] **`ctx.sampleRate` read after `ctx.close()`** — Captured sampleRate early before async operations. Fixed 2026-03-23.
 - [x] **Challenge randomness upgraded to `crypto.getRandomValues()`** — Earlier use of `Math.random()` in phrase and lissajous challenge generators replaced with cryptographic PRNG. Devnet-only exposure. Fixed 2026-03-23.
 
@@ -162,7 +162,7 @@ below).
 
 ### Tier 2 Hardening (added 2026-04-16)
 
-- [x] **Additional server-side verification signal live** — pulse-sdk 0.7.12+ surfaces extra sensor data alongside the 134-feature vector. Validation service computes a per-verification metric, empirically calibrated and enforced at the validation gate. Backward-compat with older SDK versions verified. Fail-closed coverage (non-finite inputs, short captures) in place. Enabled 2026-04-20.
+- [x] **Additional server-side verification signal live** — pulse-sdk 0.7.12+ surfaces extra sensor data alongside the feature vector. Validation service computes a per-verification metric, empirically calibrated and enforced at the validation gate. Backward-compat with older SDK versions verified. Fail-closed coverage (non-finite inputs, short captures) in place. Enabled 2026-04-20.
 
 ### Baseline Reset Flow (added 2026-04-21)
 
@@ -281,7 +281,7 @@ kept private per responsible-disclosure convention.
 ### High
 
 - [x] **Statistical gap surfaced during T3b campaign** — Feature-space optimization against the server-side validation pipeline found a narrow exploitable seam across a small subset of probes. Hardened via an additional consistency constraint in the validation service; subsequent campaign attempts rejected. Attack mechanism and specific constraint kept private. Fixed 2026-04-18.
-- [x] **Cross-modality correlation check removed** — Discovered 2026-04-20 during T4a Wave 1 log analysis: the check correlated feature-vector statistical summaries at matching index positions across modalities, which is a category error (correlating mean F0 in Hz against mean jerk in m/s³ has no semantic grounding). Observed range on unrelated inputs 0.004–0.881, threshold 0.01 was below noise floor — zero defense value. Removed in entros-validation 2026-04-21. Sound cross-modal defense remains via the temporal coupling check (Pearson on F0 contour × accel magnitude time-series, same-unit same-time). Semantic replacement checks deferred pending human-baseline calibration data.
+- [x] **Cross-modality correlation check removed** — Discovered 2026-04-20 during T4a Wave 1 log analysis: the check compared statistical summaries at matching index positions across modalities, which is a category error, since the quantities at a shared index carry unrelated units. Removed in entros-validation 2026-04-21 and replaced by same-unit, same-window time-series analysis. Method and parameters kept private.
 - [x] **Phrase content binding shipped** — Tier 1 validation now verifies that the audio content matches the server-issued challenge phrase, not just voice texture. Closes the pre-recorded-arbitrary-content attack class (T4a Wave 1 baseline). Combinatorial defense ≈ 4.7 × 10¹⁵ unique phrases per session via random sampling from a curated neutral-vocabulary dictionary, reducing precomputation feasibility to negligible. Calibrated to consistently distinguish correct from incorrect phrase content while accommodating natural transcription variance. Fixed 2026-04-25.
 
 ---

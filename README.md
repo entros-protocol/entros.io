@@ -32,9 +32,9 @@ Every capture, first or repeat, runs through server-side checks before it reache
 - **Phrase binding.** Audio is transcribed by Whisper and word-distance-matched against the server-issued challenge phrase. A capture that doesn't speak the issued phrase fails the match.
 - **Entropy and variance analysis.** Per-modality Shannon entropy and variance floors reject constant or low-information feature vectors.
 - **Voice synthesis fingerprinting.** Jitter and shimmer floors/ceilings, HNR bounds, voicing-ratio bounds, F0 delta variance, measured on the dimensions where synthesized speech is statistically distinct from a human larynx.
-- **Cross-modal temporal coupling.** Voice F0 and hand acceleration are causally coupled within a tight temporal window in real humans. A bot stitching audio onto procedural motion fails the cross-correlation peak.
-- **Sybil registry scan.** Your fingerprint is checked against every other verified user's, regardless of wallet. Biological collisions across wallets are caught.
-- **Calibration-attack noise.** Controlled noise on borderline outcomes near every threshold check, designed to defeat attackers probing for boundary-crafted inputs.
+- **Cross-modal temporal coupling.** Speech and hand motion originate in shared motor control and leave correlated traces across a genuine capture. Streams generated separately and stitched together do not carry them.
+- **Sybil registry scan.** Your fingerprint is checked against every other verified user's, regardless of wallet. Biological collisions across wallets surface here.
+- **Calibration-attack noise.** Controlled outcome noise, designed to defeat probing for boundary-crafted inputs.
 
 T1 through T3: 16,000 adversarial attempts, none passed. T4a paired pre-recorded human voice with procedural motion and moved from a 100% pass counterfactual to 0% across four progressive defense waves. T4b ran real-time synthesized voice across two TTS model families and 58 synthetic voices speaking the issued phrase, and 0% reached the chain across 200 attempts. T5 through T8 are queued.
 

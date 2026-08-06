@@ -15,7 +15,7 @@ const tiers = [
     name: "TIER 2",
     label: "Behavioral coupling signals",
     description:
-      "Time-series analysis of phonation and kinematic signals sampled during capture. Real human speech and hand motion share motor-cortex origins and produce measurable temporal coupling at short lags; independent synthesis does not. Enforcement is live on production since April 2026, calibrated against a two-wave red team study that isolated the layer's specific contribution to voice-replay rejection.",
+      "Time-series analysis of the signals sampled together during a capture. Human speech and hand motion originate in shared motor control and leave correlated traces across the recording. Streams generated separately and combined afterwards do not carry them. The specific signals, statistics and thresholds are not published.",
   },
 ];
 

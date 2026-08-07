@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { generateAnchorCode } from "../src/components/sections/integrate-sandbox-client";
 
-describe("Sandbox Anchor Template Schema (Item #11 / Item #200 alignment)", () => {
+describe("sandbox Anchor template", () => {
   it("generates Rust Anchor code using identity.last_verification_timestamp", () => {
-    const code = generateAnchorCode(0.75);
+    const code = generateAnchorCode(250, 3600);
 
-    // Verify the exact Anchor on-chain field name is present
-    expect(code).toContain("identity.last_verification_timestamp >= clock.unix_timestamp -");
+    expect(code).toContain("let now = Clock::get()?.unix_timestamp;");
+    expect(code).toContain("identity.last_verification_timestamp >= now - 3600");
 
     // Ensure the deprecated/incorrect field name is absent
     expect(code).not.toContain("identity.last_verified");
@@ -18,30 +18,30 @@ describe("Sandbox Anchor Template Schema (Item #11 / Item #200 alignment)", () =
     // for a slow wallet round trip without accepting a stale Anchor. Anything
     // looser here quietly teaches a weaker pattern than the docs do.
     // See content/docs/concepts/trust-score.mdx "What to gate on".
-    expect(generateAnchorCode(0.75)).toContain("clock.unix_timestamp - 3600");
+    expect(generateAnchorCode(250, 3600)).toContain("now - 3600");
   });
 
   it("gates on recency as well as score", () => {
     // Both requires must be present. A template that checks only the score
     // teaches a gate that a wallet passes on history alone.
-    const code = generateAnchorCode(0.75);
-    expect(code).toContain("AirdropError::AttestationExpired");
+    const code = generateAnchorCode(250, 3600);
+    expect(code).toContain("AirdropError::VerificationExpired");
     expect(code).toContain("AirdropError::InsufficientTrustScore");
   });
 
-  it("correctly calculates trust_score threshold based on riskCeiling parameter", () => {
-    // For riskCeiling = 0.75 -> threshold is (1 - 0.75) * 100 = 25
-    const code75 = generateAnchorCode(0.75);
-    expect(code75).toContain("identity.trust_score >= 25");
-
-    // For riskCeiling = 0.50 -> threshold is (1 - 0.50) * 100 = 50
-    const code50 = generateAnchorCode(0.50);
-    expect(code50).toContain("identity.trust_score >= 50");
+  it("uses the configured Trust Score floor", () => {
+    expect(generateAnchorCode(250, 3600)).toContain(
+      "identity.trust_score >= 250",
+    );
+    expect(generateAnchorCode(500, 3600)).toContain(
+      "identity.trust_score >= 500",
+    );
   });
 
   it("includes correct Account struct reference for IdentityState", () => {
-    const code = generateAnchorCode(0.75);
+    const code = generateAnchorCode(250, 3600);
     expect(code).toContain("pub identity_state: Account<'info, IdentityState>");
-    expect(code).toContain("use entros_registry::state::IdentityState;");
+    expect(code).toContain("use entros_anchor::IdentityState;");
+    expect(code).toContain("seeds::program = entros_anchor::ID");
   });
 });

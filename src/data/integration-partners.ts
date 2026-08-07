@@ -4,7 +4,7 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "Solana Foundation (SAS)",
     category: "Identity Primitive",
-    description: "Entros writes a SAS attestation per verification (live).",
+    description: "Entros attempts a wallet-bound SAS attestation after a successful devnet verification.",
     icon: "shield",
     logoUrl: "https://github.com/solana-foundation.png",
   },
@@ -116,7 +116,7 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "Realms (Mythic Project)",
     category: "DAO Framework",
-    description: "Voter-weight plugin shipped on devnet; Marinade pilot pathway.",
+    description: "On-chain voter-weight prototype deployed on devnet. Realms client registration remains planned.",
     icon: "vote",
     logoUrl: "https://github.com/solana-labs.png",
   },

@@ -6,7 +6,7 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "Pulse SDK",
     subtitle: "Client-side capture and proving",
     description:
-      "A TypeScript library that runs on the user's phone or browser. It captures sensor data, extracts features, generates the TBH commitment, and produces the ZK proof. Raw biometric data is discarded after feature extraction—only derived statistical features and the proof are retained.",
+      "A TypeScript library that captures sensor data, extracts 308 features, creates commitments, and produces ZK proofs. Raw motion and full-resolution touch stay on the device. Phrase audio and derived evidence go to the validation path.",
     highlights: [
       "Browser and React Native support",
       "Audio, IMU, and touch capture in parallel",
@@ -23,11 +23,11 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "ZK Circuit",
     subtitle: "Hamming distance verification",
     description:
-      "A Groth16 circuit that proves two Poseidon-committed TBH values are within Hamming distance t of each other. The circuit runs at proving time on the user's device. The verifier learns only that the threshold check passed.",
+      "A Groth16 circuit that proves two Poseidon commitments open correctly and their Hamming distance falls inside the configured range. It does not prove capture provenance.",
     highlights: [
       "Groth16 over BN254 curve",
       "Poseidon hash for ZK efficiency",
-      "Under 200K compute units on-chain",
+      "On-chain Groth16 verification",
       "Proof generation targets under 5 seconds on mobile",
     ],
     links: [
@@ -39,11 +39,11 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "On-Chain Programs",
     subtitle: "Three Solana programs",
     description:
-      "The entros-verifier program checks ZK proofs. The entros-anchor program manages non-transferable identity tokens (SPL Token-2022). The entros-registry tracks Trust Scores, validator staking, and protocol configuration.",
+      "The entros-verifier program checks ZK proofs. The entros-anchor program stores Trust Score and manages non-transferable Token-2022 Anchors. The entros-registry stores protocol configuration, treasury state, and validator-registration scaffolding.",
     highlights: [
       "Anchor framework with full constraint validation",
       "Non-transferable token via Token-2022 extension",
-      "Trust Score from verification count and age",
+      "Trust Score from active weekly bins and account age",
       "PDA-derived identity (one per wallet)",
     ],
     links: [
@@ -55,10 +55,10 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "Executor Node",
     subtitle: "Off-chain relay and challenge service",
     description:
-      "A Rust service that generates signed challenges and issues SAS attestations against verified wallets. The public protocol layer—open source for trust and auditability.",
+      "A Rust gateway that issues challenges, authenticates integrators, applies quotas, forwards evidence to the private validator, relays protocol writes, and attempts SAS issuance.",
     highlights: [
       "Server-generated signed challenges (anti-bot)",
-      "SAS attestation issuance",
+      "Best-effort SAS attestation issuance",
       "Per-integrator API-key rate limiting",
       "Configurable CORS and per-IP throttles",
     ],
@@ -71,12 +71,12 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "Validation Service",
     subtitle: "Proprietary defense layer",
     description:
-      "A private Rust crate that analyzes the 308-dimensional statistical feature summary for synthetic artifacts, cross-modality inconsistencies, and Sybil patterns. Protocol behavior is open and auditable in full. Detection logic is not—published thresholds and model internals are calibration data for an attacker.",
+      "A private Rust crate that analyzes the 308-dimensional statistical feature summary for synthetic artifacts, submitted-signal statistics, and Sybil patterns. Protocol behavior remains open and auditable. Detection thresholds and model internals stay private because they provide calibration data to an attacker.",
     highlights: [
       "TTS and synthetic data detection",
       "Cross-wallet fingerprint registry (Sybil detection)",
-      "Cross-modality behavioral coupling enforcement",
-      "Adaptive thresholds with zero information leakage",
+      "Cross-signal research telemetry (devnet)",
+      "Uniform public failure classes",
     ],
     links: [],
   },

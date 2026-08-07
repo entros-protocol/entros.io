@@ -12,14 +12,14 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Security Program",
   description:
-    "Continuous adversarial testing against state-level synthesis attacks. Every attack class against the verification pipeline, with attempt counts.",
+    "Scoped adversarial campaigns against the Entros verification pipeline, with attack classes, denominators, and observed results.",
   path: "/security",
 });
 
 const heroStats = [
-  { value: "17,000+", label: "Adversarial attempts" },
-  { value: "0%", label: "T1–T4 production pass rate" },
-  { value: "4 tiers", label: "Closed (T1–T4)" },
+  { value: "17,000+", label: "Published attempts" },
+  { value: "T1–T4b", label: "Published campaign range" },
+  { value: "Open", label: "T5 status" },
   { value: "Live", label: "Continuous testing" },
 ];
 
@@ -44,9 +44,9 @@ export default function Security() {
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Every attack class against the verification pipeline,
-              with attempt counts and pass rates rounded to prevent
-              threshold inference.
+              Each published campaign names its attack class, attempt count,
+              and observed pass rate. T5 remains open, and later tiers remain
+              planned.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

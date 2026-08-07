@@ -28,17 +28,16 @@ export function LatestResults() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Pass rate is the fraction of bot attempts that pass
-          server-side Tier 1 validation—the gate preceding on-chain
-          submission. An attempt that fails Tier 1 cannot proceed to
-          challenge fetch, proof generation, or transaction submission.
+          Pass rate is the fraction of campaign attempts that satisfied the
+          checks enabled for that row. Each result applies to its named
+          generator, sample size, and campaign configuration.
         </p>
 
         {/* Mobile-only: SOLVED scene slotted directly below the
             subheading. On desktop the same scene lives in the
             side-by-side grid below. */}
         <div className="mt-10 lg:hidden">
-          <AsciiSolvedScene label="SOLVED ATTACK CLASSES" aspect="4/5" />
+          <AsciiSolvedScene label="PUBLISHED CAMPAIGNS" aspect="4/5" />
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-3 lg:items-stretch lg:gap-16">
@@ -48,8 +47,8 @@ export function LatestResults() {
               lg:pb offsets past the "Last updated" footer so SLOT 2
               ends at the last data row. */}
           <div className="hidden lg:col-span-1 lg:flex lg:flex-col lg:gap-8 lg:pt-[3.25rem] lg:pb-[2.5rem]">
-            <AsciiSolvedScene label="SOLVED ATTACK CLASSES" fill className="flex-1" />
-            <AsciiFrontierScene label="FRONTIER—NEXT WAVES" fill className="flex-1" />
+            <AsciiSolvedScene label="PUBLISHED CAMPAIGNS" fill className="flex-1" />
+            <AsciiFrontierScene label="OPEN CAMPAIGNS" fill className="flex-1" />
           </div>
 
           <div className="lg:col-span-2">
@@ -125,7 +124,7 @@ export function LatestResults() {
                         <tr className="lg:hidden">
                           <td colSpan={5} className="py-6">
                             <AsciiFrontierScene
-                              label="FRONTIER—NEXT WAVES"
+                              label="OPEN CAMPAIGNS"
                               aspect="4/5"
                             />
                           </td>
@@ -146,7 +145,7 @@ export function LatestResults() {
         <div className="mt-16 grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-2">
           <div className="bg-background p-8">
             <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
-              // T4A—FOUR-WAVE STUDY
+              // T4A - FOUR-WAVE STUDY
             </p>
             <p className="mt-4 text-sm leading-relaxed text-foreground/70">
               {t4aNote}

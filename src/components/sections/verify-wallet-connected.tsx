@@ -707,7 +707,11 @@ export function VerifyWalletConnected({
           </button>
         </div>
         <p className="text-center text-xs text-muted">
-          Raw data is never stored. Only the ZK proof and a statistical summary persist.
+          Raw recordings are not retained.
+          <br />
+          Derived features support validation.
+          <br />
+          Commitments and proofs persist.
         </p>
       </div>
     );

@@ -2,10 +2,10 @@ const taxonomy = [
   { tier: "T1", attackClass: "Procedural synthesis (script-kiddie baseline)", tests: "Absolute attacker floor" },
   { tier: "T2", attackClass: "Parameter-varied procedural", tests: "Tier 1 statistical consistency checks" },
   { tier: "T3", attackClass: "Feature-space optimization with source access", tests: "Tier 1 distributional realism" },
-  { tier: "T4a", attackClass: "Pre-recorded human voice + procedural motion/touch", tests: "Cross-modal temporal coupling (Tier 2)" },
+  { tier: "T4a", attackClass: "Pre-recorded human voice + procedural motion/touch", tests: "Layer contribution and phrase binding" },
   { tier: "T4b", attackClass: "Real-time synthesized voice (XTTS-v2, Kokoro, streaming TTS)", tests: "TTS artifact detection + content binding + Sybil registry" },
-  { tier: "T5", attackClass: "Coupled cross-modal synthesis", tests: "Tier 2 temporal coupling" },
-  { tier: "T6", attackClass: "Targeted human-mimicry / identity theft", tests: "Hamming distance gate + Sybil registry" },
+  { tier: "T5", attackClass: "Coupled cross-modal synthesis", tests: "Current cross-signal detector" },
+  { tier: "T6", attackClass: "Targeted human-mimicry / identity theft", tests: "Blocked until T5 closes" },
   { tier: "T7", attackClass: "Replay with adversarial perturbation", tests: "Min-distance floor + commitment registry" },
   { tier: "T8", attackClass: "Black-box adaptive probing", tests: "Rate limits + response opacity" },
 ];
@@ -27,11 +27,9 @@ export function RedTeamProgram() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          An internal adversarial harness runs continuously against
-          production. Eight attack tiers ordered by sophistication.
-          Each campaign generates hundreds to thousands of bot
-          attempts, measures pass rates per defense layer, and feeds
-          results into threshold calibration.
+          The private harness runs isolated and full-stack campaigns against
+          the devnet pipeline. Published rows name their configuration and
+          denominator. T5 remains open. T6 through T8 remain planned.
         </p>
 
         <div className="mt-16 overflow-x-auto border-y border-border">

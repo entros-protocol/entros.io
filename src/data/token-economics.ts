@@ -24,12 +24,12 @@ export const flywheel: FlyWheelStep[] = [
   {
     step: "Humans verify",
     description:
-      "A person proves they are a live human and pays a small SOL fee, in the same transaction as the ZK proof.",
+      "A wallet completes Entros verification and pays the configured SOL fee in its protocol transaction.",
   },
   {
     step: "Protocol earns",
     description:
-      "Fees accrue in the on-chain treasury PDA as real SOL revenue. Transparent, auditable, no off-chain billing. Unlike a memecoin, the network behind the token earns from genuine usage.",
+      "Fees accrue in the on-chain treasury PDA as auditable SOL revenue, without an integrator billing relationship.",
   },
   {
     step: "Integrators build on it",
@@ -37,14 +37,14 @@ export const flywheel: FlyWheelStep[] = [
       "Sybil-sensitive apps gate on Entros for airdrops, governance, and agent checks. Each integration drives more genuine verifications.",
   },
   {
-    step: "$ENTROS secures it",
+    step: "$ENTROS utility expands",
     description:
-      "Validators stake $ENTROS as slashable collateral, integrators stake for capacity, and holders govern the protocol. Real usage creates real demand for the token.",
+      "The roadmap adds validator staking, capacity tiers, and economic governance after those mechanisms pass specification, audit, and deployment gates.",
   },
   {
     step: "The network compounds",
     description:
-      "More stake and more adoption harden the network, which attracts more integrators and more verifications. The loop compounds on genuine human demand.",
+      "The intended model links protocol use to validator security and future token utility as the network decentralizes.",
   },
 ];
 
@@ -62,7 +62,7 @@ export const supplyPrinciples: SupplyPrinciple[] = [
   {
     title: "Value from utility",
     description:
-      "The token secures and governs the network. As real human verification grows, so does demand to stake, access, and govern with $ENTROS.",
+      "Planned staking, capacity, and governance mechanisms connect $ENTROS to protocol operation after mainnet hardening.",
   },
 ];
 
@@ -70,29 +70,29 @@ export const tokenUtilities: TokenUtility[] = [
   {
     title: "Validator Staking",
     description:
-      "Validators stake $ENTROS as slashable collateral to run a node in the verification network. Rewards track validation accuracy against ground-truth benchmarks, never throughput, so passing borderline captures to lift volume cannot increase yield. Activates as the validator network decentralizes.",
+      "Planned validators will stake $ENTROS as collateral. The reward and slashing design must define measurable accuracy, appeal, and failure handling before implementation.",
   },
   {
     title: "Delegation",
     description:
-      "Holders who do not run a node delegate stake to a validator and share both the accuracy-weighted rewards and the slashing risk. Returns track real verification volume rather than emissions. Activates alongside validator staking.",
+      "Planned delegation will let holders support a validator and share its rewards and penalties. Delegation activates only after validator economics ship.",
   },
   {
     title: "Capacity Tiers",
     description:
-      "Large integrators stake $ENTROS for priority access and bulk verification, replacing per-verification fees with a staking model at scale. Activates after mainnet.",
+      "Planned capacity tiers can let large integrators stake $ENTROS for reserved throughput after mainnet. Current integrations use the configured per-verification fee.",
   },
   {
     title: "Economic Governance",
     description:
-      "Holders direct the protocol economy: treasury allocation, the verification fee, validator admission policy, and ecosystem funding. Voting weight combines a verified Entros Anchor with staked tokens under a lock multiplier. Detection parameters are set by calibration against measured data and red-team results, published as a changelog, and are never put to a token vote.",
+      "Planned governance covers treasury allocation, fees, validator policy, and ecosystem funding. Private detector parameters will remain outside token voting.",
   },
 ];
 
 export const launchDetails = {
   mechanism: "Fair launch",
   airdrop:
-    "No presale and no VC round. As the protocol earns, a share of revenue rewards verified humans over bot farms. Real users, prioritized.",
+    "No presale and no VC round. Any future revenue distribution requires a public mechanism, security review, and governance approval.",
   standard: "SPL Token on Solana",
   supply: "Fixed at genesis",
 };

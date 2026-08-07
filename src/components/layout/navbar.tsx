@@ -47,7 +47,7 @@ const solutionsDropdown: DropdownItem[] = [
   {
     label: "Realms Case Study",
     href: "/case-studies/realms",
-    description: "Verified-human governance on Realms, live on devnet.",
+    description: "Devnet voter-weight prototype and planned Realms client.",
   },
   {
     label: "Integrate",

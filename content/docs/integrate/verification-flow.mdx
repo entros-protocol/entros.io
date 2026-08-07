@@ -1,11 +1,11 @@
 ---
 title: Verification flow component
-description: Drop in <EntrosVerify /> to take a user from unverified wallet to on-chain Anchor in one click. Five lines of JSX.
+description: Drop in <EntrosVerify /> to run a wallet-connected Entros verification.
 ---
 
-The verification flow ships as `@entros/verify` — a React component that opens a popup window to entros.io, runs the 12-second capture, signs the wallet transaction, and posts the verified payload back via the `onVerified` callback. Your app never touches the wallet adapter or the SDK directly until the result arrives.
+The verification flow ships as `@entros/verify`. The React component opens an entros.io popup, runs the capture, signs the wallet transaction, and returns a result through `onVerified`.
 
-This is the Tier 1 path, and the right choice for around 90% of integrations. It is also the only one that answers whether the person is there right now, which is why it belongs on a claim, a vote, or anything else worth the friction. Tier 2 (custom UX with the Pulse SDK directly) is documented at [Reference → SDK](/docs/reference/sdk).
+This is the Tier 1 path for applications that want Entros to host the wallet and capture flow. Applications can request it before a high-value action. Tier 2 custom UX is documented in the [SDK reference](/docs/reference/sdk).
 
 ## Install
 
@@ -39,16 +39,16 @@ What this does on click:
 ```ts
 interface EntrosVerifyResult {
   walletPubkey: string;       // Base58 Solana wallet address
-  attestationPda: string;     // SAS attestation PDA — readable by any Solana program
+  attestationPda: string;     // Derived SAS address. Check whether the account exists
   txSig: string;              // Confirmed transaction signature
   trustScore: number;         // On-chain Trust Score after this verification
-  cluster: "devnet" | "mainnet-beta";
+  cluster: "devnet";
 }
 ```
 
-Use `walletPubkey` to identify the user. Use `trustScore` to ask for more than "verified once", for example a 100 floor on airdrop eligibility. Use `attestationPda` and `txSig` for audit trails.
+Use `walletPubkey` to identify the wallet. Use `trustScore` and recency to apply your policy. Use `txSig` to inspect the confirmed verification transaction.
 
-The callback fires on a verification that just happened, so the score arrives against someone present. Gating on the callback rather than on a later read is what makes that true.
+`attestationPda` is a deterministic address. SAS issuance occurs after the verification transaction and can fail without failing verification. Fetch that account before treating the attestation as issued.
 
 ## Optional props
 

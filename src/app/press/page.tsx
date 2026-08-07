@@ -11,7 +11,7 @@ export const metadata = pageMetadata({
 });
 
 const stats = [
-  { value: "Zero", label: "Raw biometrics stored" },
+  { value: "Local", label: "Raw motion and touch" },
   { value: "3", label: "Liveness signals" },
   { value: "On-chain", label: "Free dApp read" },
   { value: "Solana", label: "Native" },
@@ -45,17 +45,17 @@ const blurbs = [
   {
     length: "Short",
     chars: "1 line · 130 chars",
-    text: "Entros is the temporal identity layer for Solana. Twelve seconds of voice, motion, and touch prove a returning human on any device.",
+    text: "Entros is the temporal identity layer for Solana, designed to prove a returning human through voice, motion, and touch.",
   },
   {
     length: "Medium",
     chars: "2 sentences · 290 chars",
-    text: "Entros is the temporal identity layer for Solana. Voice, motion, and touch run through a zero-knowledge proof on the user's device, and the resulting attestation lands on-chain for any Solana app to read for free.",
+    text: "Entros is the temporal identity layer for Solana. Local feature extraction, private validation, and zero-knowledge proofs produce portable on-chain verification state.",
   },
   {
     length: "Long",
     chars: "3 sentences · 520 chars",
-    text: "Entros is the temporal identity layer for Solana. The user proves they are a returning human through twelve seconds of voice, motion, and touch captured on-device, with raw biometric data never persisted and a zero-knowledge proof landing on-chain. The user's Trust Score compounds across re-verifications, and Agent Anchor binds AI operators on the 8004 registry to the verified humans behind them.",
+    text: "Entros is the temporal identity layer for Solana, designed to prove a returning human through voice, motion, and touch. Raw motion and full-resolution touch stay on the device while the private validation service checks derived evidence. Trust Score records verification history, and Agent Anchor can link registered AI agents to the wallet that completed verification.",
   },
 ];
 

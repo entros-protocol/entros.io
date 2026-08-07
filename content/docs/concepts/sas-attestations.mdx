@@ -3,13 +3,13 @@ title: SAS Attestations
 description: How Entros composes across the rest of Solana through the Solana Attestation Service.
 ---
 
-Reading the Anchor PDA directly works for any program that knows where to look. SAS—the Solana Attestation Service—is the standard composability primitive that lets any program read a verification result without knowing anything specific about Entros.
+Reading the Anchor PDA directly works for any program that knows where to look. The Solana Attestation Service provides a shared schema for reading issued verification snapshots.
 
 ## What SAS is
 
 The Solana Attestation Service is a protocol for issuing structured, on-chain attestations against a wallet. An issuer (someone with credentials) attaches a schema (a typed record) to a wallet. Any consumer can then look up the attestation and read its fields.
 
-Entros publishes one attestation per successful verification. The attestation is what most integrators read; the Anchor PDA is the underlying source of truth.
+After a successful wallet-connected verification, the SDK attempts a separate SAS issuance request. Issuance is best-effort and can require another wallet message signature. The Anchor PDA remains the source of truth.
 
 ## The Entros credential and schema
 
@@ -25,7 +25,7 @@ The schema fields:
 | `isHuman` | `bool` | Whether the wallet has a verified Anchor |
 | `trustScore` | `u16` | Snapshot of the Trust Score at attestation time |
 | `verifiedAt` | `i64` | Unix timestamp of the verification |
-| `mode` | `string` | Always `"wallet-connected"` in production; the field is preserved for forward compatibility |
+| `mode` | `string` | `"wallet-connected"` in the current devnet issuer. The field remains for forward compatibility |
 
 The attestation PDA is derived from the credential, schema, and user wallet:
 
@@ -48,7 +48,7 @@ Three reasons.
 
 **Stable interface.** SAS is a Solana-wide primitive. A program already wired to read SAS attestations from any issuer can read Entros without knowing the Entros program IDs or account layouts.
 
-**Schema versioning.** If the Anchor's internal layout changes—adding a field, reorganizing offsets—the SAS schema is the integrator-facing contract. The schema is versioned independently of the underlying program.
+**Schema versioning.** The SAS schema can remain stable when the Anchor account layout changes. The schema is versioned independently of the underlying program.
 
 **Single-call composability.** An integrator that gates on multiple attestation types (e.g. KYC + verified human) can fan out reads through one SAS-aware function rather than hand-rolling each program's account layout.
 
@@ -71,11 +71,11 @@ if (attestation.trustScore < 250) {
 }
 ```
 
-`verifyEntrosAttestation` returns `null` if no attestation exists, or `{ isHuman, trustScore, verifiedAt, mode, expired }`. Expired attestations are returned with `expired: true` rather than `null`, so applications can choose whether to require freshness.
+`verifyEntrosAttestation` returns `null` if no attestation account exists. Existing accounts return `{ isHuman, trustScore, verifiedAt, mode, expired }`. Expired accounts return `expired: true`.
 
 ## Expiry
 
-Attestations carry an expiry timestamp, configurable per attestation. The default issued by the executor is 30 days from the verification timestamp. After expiry, the attestation account remains on-chain but `expired === true`. Re-verifying refreshes both the Anchor state and the attestation.
+Attestations carry an expiry timestamp. The executor currently requests 30 days from the verification timestamp. After expiry, the account remains on-chain with `expired === true`. Re-verification updates the Anchor and can produce a fresh attestation if the separate issuance step succeeds.
 
 ## Attestations are wallet-bound
 

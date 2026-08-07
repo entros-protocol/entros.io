@@ -3,7 +3,7 @@ title: SAS attestation
 description: Look up a wallet's Entros attestation through the Solana Attestation Service.
 ---
 
-SAS is the recommended composability surface. Reading an attestation is one function call; the function does the PDA derivation, account fetch, and schema deserialization for you.
+SAS is an optional composability surface. One SDK call performs PDA derivation, account fetch, and schema deserialization.
 
 ## Lookup
 
@@ -42,15 +42,15 @@ type EntrosAttestation = {
 
 ## When to read the attestation versus the Anchor PDA
 
-The attestation is a snapshot of the Anchor at verification time. The Anchor is the live source. They are usually identical; the difference matters in two cases.
+The attestation is a snapshot of the Anchor at issuance time. The Anchor is the live source. The records can differ because SAS issuance is a separate, best-effort step.
 
-**The attestation has expired but the user has re-verified.** A 30-day-old attestation is stale; a fresh re-verification updates the Anchor immediately and produces a fresh attestation moments later. If your application needs the most recent state, prefer the Anchor PDA directly.
+**The attestation has expired but the user has re-verified.** Re-verification updates the Anchor first. A fresh attestation appears only if the later SAS request succeeds. Read the Anchor when the application needs the latest state.
 
 **The attestation says the user is verified, but the score has decayed.** Trust Scores decay. The attestation snapshots the score at verification time; the live Anchor reflects the decayed score. For applications where the snapshot is the meaningful number (e.g. "did this user pass our threshold at the time of attestation"), the attestation is correct. For applications where the live score matters, read the Anchor.
 
 A reasonable default: read the attestation for membership checks, read the Anchor for live thresholds.
 
-For an action worth real friction, neither read is the whole answer. Run a verification at the point of the action and read the Anchor after it, so the number you gate on describes someone who is present. See [Trust Score: what to gate on](/docs/concepts/trust-score#what-to-gate-on).
+For a high-value action, run a fresh verification and read the Anchor afterward. This confirms that the wallet passed the current policy at the action. See [Trust Score: what to gate on](/docs/concepts/trust-score#what-to-gate-on).
 
 ## Schema fields
 
@@ -58,12 +58,12 @@ The Entros schema, registered on SAS, has four fields:
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `isHuman` | `bool` | Whether the attestation issuer believes the wallet is operated by a verified human |
+| `isHuman` | `bool` | Whether the wallet passed the issuer's Entros verification policy |
 | `trustScore` | `u16` | The Trust Score recorded at attestation time |
 | `verifiedAt` | `i64` | Unix timestamp of the verification this attestation snapshots |
 | `mode` | `string` | `"wallet-connected"` or `"walletless"` |
 
-The executor currently writes only `wallet-connected`. The field carries both values because walletless is a defined tier that is not currently offered.
+The current devnet issuer writes only `wallet-connected`. The field also reserves `walletless` for a future tier.
 
 The schema is deployed at:
 
@@ -87,7 +87,7 @@ The Solana Attestation Service is wallet-only: every successful attestation is b
 
 The earlier walletless-on-SAS path was removed because it created a griefing surface where any caller could issue an attestation against any target wallet pubkey without proof of control. `/attest` now requires `wallet_address`, `nonce`, `signature`, and `message` together on every call; missing any of those returns HTTP 400 with `error: "wallet_ownership_required"`. See [Errors → SDK and HTTP errors](/docs/reference/errors#sdk-and-http-errors) for the response shape.
 
-The `mode` field on `EntrosAttestation` is preserved for forward compatibility (always `"wallet-connected"` in current production) and gates that depend on temporal-identity claims — re-verification cadence, accumulated score, returning-operator reasoning — can ignore it:
+The `mode` field remains for forward compatibility. The current devnet issuer writes `"wallet-connected"`:
 
 ```ts
 if (!attestation.isHuman || attestation.expired) {

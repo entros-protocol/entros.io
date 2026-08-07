@@ -11,19 +11,19 @@ const phases = [
     day: "Day 1",
     title: "First verification",
     description:
-      "You speak a phrase, trace a curve, move your device. The protocol captures the behavioral signature of that moment and stores a cryptographic commitment.",
+      "You speak a phrase and trace a curve during one capture. The protocol validates the submitted evidence and stores a commitment.",
   },
   {
     day: "Day 7",
     title: "Re-verification",
     description:
-      "Same person, different session. Your voice shifts slightly. Your touch pressure changes. The ZK proof confirms the drift is within human range.",
+      "A later capture produces a new commitment. The ZK proof checks that both commitments open correctly and that fingerprint distance stays inside the circuit bounds.",
   },
   {
     day: "Day 30+",
     title: "Trust compounds",
     description:
-      "Each successful re-verification raises your Trust Score. Consistent patterns over weeks prove what a single snapshot cannot.",
+      "Successful re-verifications extend the wallet's history. Trust Score reflects active weekly bins, recency, and account age.",
   },
 ];
 
@@ -61,11 +61,11 @@ export function TemporalConsistencySection() {
             </h2>
 
             <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-              The protocol measures behavioral drift across sessions:
-              small, involuntary changes in voice, motion, and touch
-              that follow a bounded pattern unique to each person.
-              Verify once to register, then verify again to prove you
-              are still you. Each session strengthens the claim.
+              Entros measures fingerprint distance across sessions. The
+              current circuit proves a bounded relationship between supplied
+              commitments. The research program measures whether that signal
+              can support reliable returning-human continuity across people
+              and devices.
             </p>
           </div>
         </div>

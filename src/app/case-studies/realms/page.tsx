@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Realms Case Study",
   description:
-    "Sybil-resistant DAO governance on Realms. The Entros voter-weight plugin gates votes on live behavioral verification, not token balance.",
+    "Design study for Entros voter weight on Realms, based on the devnet on-chain prototype and planned client integration.",
   path: "/case-studies/realms",
 });
 
@@ -39,8 +39,8 @@ const incidents = [
 const integrationSteps = [
   {
     Icon: GitBranch,
-    title: "Point Realms at the plugin",
-    body: "The DAO operator names the Entros voter-weight plugin as the registrar for an existing or new Realms governance. The plugin speaks spl-governance, so the instructions and accounts the operator already knows still apply.",
+    title: "Register the future client",
+    body: "The planned JavaScript client registers with Governance UI and constructs each required plugin instruction.",
   },
   {
     Icon: Vote,
@@ -54,8 +54,8 @@ const integrationSteps = [
   },
   {
     Icon: Layers,
-    title: "Vote through the normal UI",
-    body: "Voters cast ballots in Realms the way they already do. The plugin reads the Anchor at vote-cast time and applies the floor the operator configured. Dormant wallets, scripted delegations, and unattended agents do not count.",
+    title: "Insert the eligibility update",
+    body: "The planned client updates the voter-weight record before the governed action. The on-chain program then applies the configured Anchor checks.",
   },
 ];
 
@@ -65,21 +65,21 @@ const beforeAfter = [
     before:
       "An attacker spins up a hundred fresh wallets, funds each one with the minimum token balance, and casts a hundred votes. Quorum lands at near-zero cost.",
     after:
-      "Each of those hundred wallets needs an Entros Anchor with the floor Trust Score and a recent verification. That means a hundred live captures, each validated server-side and checked for behavioral overlap against every other Anchor in the registry. Nothing that fails those checks reaches the vote.",
+      "The intended design requires each wallet to clear the configured Anchor policy. Population-level uniqueness must prove that the wallets represent distinct people before this becomes a one-person-one-vote claim.",
   },
   {
     scenario: "Whale dictating treasury allocation",
     before:
       "A whale holds concentrated token weight and pushes through proposals that pay their own bag. The outcome tracks the balance.",
     after:
-      "The plugin reads the Anchor first, the balance second. A whale who clears the floor casts a single Anchor's worth of weight. The DAO decides how much token weight stacks on top of that.",
+      "The current prototype writes one unit for an eligible Anchor. Future plugin chaining can define how that eligibility composes with token weight.",
   },
   {
     scenario: "Dormant delegations",
     before:
       "Stakers delegate tokens to staking contracts and the contracts auto-vote off whale signals. Holders never see the proposal page.",
     after:
-      "The plugin asks for a recent human verification at the moment of voting. A staking contract cannot present one. Dormant delegations drop out of quorum.",
+      "The intended client requests a recent Entros result before the action. Realms integration tests must confirm the behavior for delegated voting.",
   },
 ];
 
@@ -109,8 +109,8 @@ export default function RealmsCaseStudy() {
           {/* text-balance evens the two line lengths and prevents a
               single-word orphan on the last row. */}
           <p className="mx-auto mt-8 max-w-2xl text-balance text-base leading-relaxed text-foreground/70 md:text-lg">
-            The plugin reads an Entros Anchor before a Realms ballot counts.
-            The DAO sets the Trust Score floor and the recency window.
+            The devnet program reads an Entros Anchor and writes an eligible
+            voter-weight record. The Realms client layer remains planned.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -200,13 +200,13 @@ export default function RealmsCaseStudy() {
           </span>
 
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Plug in, set the floor, ship<span className="text-cyan">.</span>
+            Program first, client next<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            The plugin sits behind the standard Realms registrar
-            interface. The DAO operator configures it on-chain. Voters
-            keep using the Realms UI they know.
+            The on-chain addin implements the voter-weight record format.
+            A JavaScript client and Governance UI registration are still
+            required before voters can use the normal Realms flow.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2 lg:grid-cols-4">
@@ -295,7 +295,7 @@ export default function RealmsCaseStudy() {
                 </span>
 
                 <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  Live and inspectable<span className="text-cyan">.</span>
+                  Deployed and inspectable<span className="text-cyan">.</span>
                 </h2>
 
                 <p className="mt-8 text-base leading-relaxed text-foreground/65 md:text-lg">
@@ -354,9 +354,9 @@ export default function RealmsCaseStudy() {
             On verified humans<span className="text-cyan">.</span>
           </h2>
           <p className="mx-auto mt-8 max-w-xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            The first wave of devnet pilots is open. Run a Realms
-            governance and want to test the plugin against a live
-            proposal? Get in touch.
+            The on-chain prototype is ready for program-level testing.
+            Realms proposal pilots begin after the client and chaining
+            boundaries are implemented and tested.
           </p>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a

@@ -3,46 +3,46 @@ title: Proof of Personhood
 description: What Entros actually proves, and what it does not.
 ---
 
-Proof of personhood is a temporal identity claim: this wallet is operated by a returning human, and the protocol provides a privacy-preserving way to prove that on-chain.
+Entros treats proof of personhood as a temporal identity goal. The protocol is designed to establish that a returning human operates a wallet without identifying that person.
 
 The claim is narrow on purpose. It is not a real-name identity claim, and it is not a one-shot check. The protocol's distinguishing property is consistency across many verifications, captured behaviorally rather than by any document or stored secret.
 
 ## The bounded question
 
-Entros answers exactly one question on-chain:
+Entros is designed to answer one bounded question:
 
-> Is the same human, returning, over time, operating this wallet?
+> Is a returning human operating this wallet over time?
 
-The protocol does not record who the human is by name, document, or face. It records that a human, behaviorally consistent across a sequence of verifications, is the operator of a particular wallet.
+The protocol does not require a name, document, or face. Current on-chain state records commitments, verification history, and the result of the protocol's validation policy.
 
 ## What is recorded
 
 A non-transferable Token-2022 identity Anchor on Solana, plus an `IdentityState` PDA holding:
 
 - A 256-bit commitment to the user's most recent behavioral fingerprint
-- A monotonically increasing verification count
+- A verification count
 - A timestamp of the last verification
 - A computed Trust Score in `[0, 10000]`
 
-What is not recorded: raw biometric samples, sensor recordings, or any signal that could re-identify the human outside the protocol's own derivation pipeline.
+Raw motion and full-resolution touch recordings do not enter persistent protocol state. The validation service processes phrase audio and a derived feature summary. The protocol persists commitments, proofs, encrypted baseline material, and account state.
 
 ## What gets verified
 
-Each verification captures roughly twelve seconds of three involuntary behavioral signals on the user's device—voice prosody, hand tremor, and touch dynamics. Those signals are reduced on-device to a 308-number statistical summary, hashed into a 256-bit fingerprint, and proven against the previous fingerprint via a zero-knowledge circuit. The proof, the new commitment, and a small protocol fee land on Solana. Nothing else.
+Each verification captures voice, motion, and touch dynamics on the user's device. The client reduces them to a 308-number statistical summary and projects that summary into a 256-bit fingerprint. The validation service checks the submitted evidence. Re-verification also proves that two committed fingerprints satisfy the circuit's distance bounds.
 
-A single verification establishes presence. A sequence of verifications, spaced over days and weeks, is what makes the score compound.
+One completed verification records that the wallet passed the current policy. Verifications across multiple weeks contribute to Trust Score.
 
 ## Why behavioral, why temporal
 
 A snapshot biometric—face scan, fingerprint, iris—answers the question "is this a person right now?" Generative AI can answer that question deceptively. Behavioral signals captured at a single point in time can also be synthesized.
 
-Behavioral consistency across weeks is a different surface. The drift envelope of a real human's voice, hand, and touch is bounded but unique; reproducing the same envelope, on the same wallet, repeatedly, over months, is a fundamentally harder problem than synthesizing one realistic capture. The harder problem is the one Entros makes operators solve.
+Behavioral consistency across weeks provides a different measurement surface. Entros is testing how same-person variation, device changes, and synthetic inputs affect that surface before treating it as a uniqueness guarantee.
 
 ## What this is not
 
 - **Not KYC.** No legal-name binding, no document upload, no face scan.
-- **Not a one-shot check.** A single verification establishes presence. The protocol's distinguishing claim is the consistency of the behavioral signature across many verifications.
-- **Not a standing claim.** An Anchor records that a human verified, and how consistently. Whether that human is present right now is what a verification at the point of the action establishes, which is why an application gating something valuable asks for one. See [Trust Score: what to gate on](/docs/concepts/trust-score#what-to-gate-on).
+- **Not a one-shot identity guarantee.** One result records that the wallet passed the current verification policy. Repeated results build history.
+- **Not a standing liveness claim.** An Anchor records verification state and history. Applications can request a fresh verification before a high-value action. See [Trust Score: what to gate on](/docs/concepts/trust-score#what-to-gate-on).
 
 ## Where to look next
 

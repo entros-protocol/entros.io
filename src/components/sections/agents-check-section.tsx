@@ -102,8 +102,8 @@ export function AgentsCheckSection() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Enter any agent's asset address to check if it has a verified
-          human operator via Entros.
+          Enter an agent asset address to check for an Entros-linked operator
+          identity.
         </p>
 
         <div className="mt-12 border border-border p-6 md:p-8">
@@ -155,8 +155,7 @@ export function AgentsCheckSection() {
                   No Entros attestation
                 </p>
                 <p className="mt-0.5 text-xs text-foreground/50">
-                  This agent has no verified human operator linked via
-                  Entros Protocol.
+                  This agent has no Entros operator identity link.
                 </p>
               </div>
             </div>
@@ -168,7 +167,7 @@ export function AgentsCheckSection() {
                 <CheckCircle className="h-6 w-6 text-solana-green" />
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    Verified Human Operator
+                    Entros-linked Operator
                   </p>
                   <p className="mt-0.5 text-xs text-foreground/50">
                     Immutable on-chain attestation via{" "}
@@ -195,7 +194,7 @@ export function AgentsCheckSection() {
                 </div>
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                    Attested At
+                    Anchor Last Verified
                   </p>
                   <p className="mt-2 font-mono text-sm text-foreground">
                     {formatTimestamp(operator.verifiedAt)}

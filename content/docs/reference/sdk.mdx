@@ -74,7 +74,7 @@ The fused vector emitted by the SDK to the validator has dimension `SPEAKER_FEAT
 | --- | --- | --- |
 | `submitViaWallet` | `(proof, commitment, options) => Promise<SubmissionResult>` | Submit through a connected wallet |
 | `submitResetViaWallet` | `(commitment, options) => Promise<SubmissionResult>` | Submit a recovery reset |
-| `submitViaRelayer` | `(proof, commitment, options) => Promise<SubmissionResult>` | Submit through the executor's relayer. Used by the no-wallet capture preview on `entros.io/verify`; production integrations use `submitViaWallet`. |
+| `submitViaRelayer` | `(proof, commitment, options) => Promise<SubmissionResult>` | Low-level relayer submission path. The public hosted flow currently uses wallet-connected settlement. |
 
 ## Challenge generation
 
@@ -98,8 +98,8 @@ The fused vector emitted by the SDK to the validator has dimension `SPEAKER_FEAT
 | Export | Signature | Purpose |
 | --- | --- | --- |
 | `verifyEntrosAttestation` | `(walletAddress, connection) => Promise<EntrosAttestation \| null>` | Read a wallet's SAS attestation |
-| `attestAgentOperator` | `(agentAsset: string, options: { wallet, connection, cluster? }) => Promise<{ success: boolean; signature?: string; error?: string }>` | Write the human-operator metadata for a registered agent |
-| `getAgentHumanOperator` | `(agentAsset: string, connection?, cluster?) => Promise<AgentHumanOperator \| null>` | Read the human-operator metadata. `AgentHumanOperator` fields: `{ anchorPda, trustScore, verifiedAt, wallet }` |
+| `attestAgentOperator` | `(agentAsset: string, options: { wallet, connection, cluster? }) => Promise<{ success: boolean; signature?: string; error?: string }>` | Write operator identity metadata for a registered agent |
+| `getAgentHumanOperator` | `(agentAsset: string, connection?, cluster?) => Promise<AgentHumanOperator \| null>` | Read operator identity metadata. `AgentHumanOperator` fields: `{ anchorPda, trustScore, verifiedAt, wallet }` |
 | `fetchIdentityState` | `(wallet, connection) => Promise<IdentityState \| null>` | Read the full Anchor PDA |
 | `storeVerificationData` | `(data, walletAddress?) => Promise<void>` | Persist verification state to local storage. Pass the wallet address to keep multi-wallet state separate. |
 | `loadVerificationData` | `(walletAddress?) => Promise<StoredVerificationData \| null>` | Load persisted state for a wallet |
@@ -125,6 +125,8 @@ type PulseConfig = {
   onPrivacyFallback?: () => Promise<boolean>;
 };
 ```
+
+The type retains `mainnet-beta` and `localnet` for forward compatibility and local tests. Current Entros program and hosted verification support is devnet-only.
 
 ## Verification result reasons
 

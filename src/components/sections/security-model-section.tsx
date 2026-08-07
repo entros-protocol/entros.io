@@ -2,37 +2,37 @@ const DEFENSES = [
   {
     title: "Minimum Distance Constraint",
     description:
-      "The ZK circuit enforces a minimum Hamming distance between consecutive fingerprints. Perfect replay is rejected at the proof level. A bot submitting identical synthetic data twice gets blocked before reaching the chain.",
+      "Re-verification proves that committed fingerprints satisfy the circuit's minimum and maximum Hamming-distance bounds. The circuit rejects identical committed fingerprints.",
   },
   {
     title: "Server-Side Feature Validation",
     description:
-      "The 308-dimensional statistical feature summary is validated by proprietary server-side models before the on-chain proof is accepted. These models detect synthetic speech artifacts, unnatural jitter patterns, and cross-modality inconsistencies. The validation logic is private—the attacker can see that checks happen but not how they work.",
+      "The validation service checks the 308-dimensional statistical feature summary before accepting the on-chain proof. It measures acoustic artifacts, submitted-signal statistics, and duplicate fingerprint patterns. Detection logic and thresholds remain private calibration material.",
   },
   {
     title: "Progressive Trust Score",
     description:
-      "Trust Score rewards consistency over time, not volume. 100 verifications in one day scores lower than weekly verifications over 3 months. Recency weighting and cadence analysis mean a score reflects sustained presence, not burst activity.",
+      "Trust Score uses active weekly verification bins and account age. Repeating a verification inside one weekly bin does not add another active bin.",
   },
   {
     title: "Per-Session Randomness",
     description:
-      "Each verification generates a unique random phrase and Lissajous curve. No two sessions share the same challenge. The challenge elicits involuntary behavioral patterns (voice prosody, hand tremor, touch pressure) that are harder to synthesize than the words themselves.",
+      "Each session generates a fresh random phrase and Lissajous curve. The server checks the transcript against the issued phrase before settlement.",
   },
   {
     title: "Multi-Modal Capture",
     description:
-      "Three independent sensor streams record in parallel: microphone, pointer/touch digitizer, and device motion (where available). A bot needs to fake realistic voice, tremor, and touch pressure simultaneously. Spoofing one modality is feasible. Spoofing all three with consistent behavioral entropy is a substantially harder problem.",
+      "The client captures microphone, pointer or touch, and available motion data. Entros is measuring which combined signals add reliable separation across people, devices, and synthesis methods.",
   },
   {
     title: "Cross-Wallet Fingerprint Registry",
     description:
-      "The server maintains a registry of all verified behavioral fingerprints. New verifications are compared against existing entries. Sybil attacks—where one actor creates many identities—produce clustered fingerprints that the registry detects and rejects.",
+      "The private service keeps a bounded registry of recent server-side fingerprints. It compares new submissions with other wallets under the configured policy. Population-scale performance remains under evaluation.",
   },
   {
     title: "Economic Disincentives",
     description:
-      "Verification costs SOL, and each wallet carries funding and account rent, so holding many Anchors carries continuing cost. This is a disincentive, not the gate. What decides whether a capture becomes an Anchor is the validator, and synthetic input never reaches the transaction.",
+      "The configured fee and rate limits bound request volume. They do not decide whether a capture passes. The private validation policy makes that decision.",
   },
 ];
 
@@ -55,9 +55,9 @@ export function SecurityModelSection() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Synthetic input is rejected server-side before it ever reaches
-          the chain. Detection decides who gets an Anchor, and the checks
-          that make that call stay private.
+          The private service evaluates each submitted capture before
+          settlement. Detection logic stays private. Public campaign results
+          state their tested attack class and denominator.
         </p>
 
         <div className="mt-16 border-t border-border">

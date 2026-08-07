@@ -6,11 +6,11 @@ export const solutionCases: SolutionCase[] = [
     title: "Sybil-Resistant Airdrops",
     category: "DeFi",
     problem:
-      "Jupiter filtered 750,000+ wallets as sybil before Jupuary 2025 distribution. The 2026 round was cut sharply by DAO vote and postponed. Every major Solana airdrop relitigates sybil from scratch because existing identity checks verify a moment, not sustained human presence over time.",
+      "Jupiter filtered 750,000+ wallets as sybil before Jupuary 2025 distribution. The 2026 round was cut sharply by DAO vote and postponed. Every major Solana airdrop relitigates sybil from scratch because existing wallet filters do not carry a reusable verification history across applications.",
     solution:
-      "Ask for a verification at the claim, then read the Anchor. The claim is gated on someone present, and the Trust Score alongside it shows how consistently that wallet has verified. Scoring rewards span over frequency, so 100 verifications in one day count for one week of history.",
+      "Ask for a fresh verification at the claim, then read the Anchor. The result shows that the wallet passed the current policy. Trust Score records weekly verification span and account age.",
     example:
-      "An airdrop integrator runs a twelve-second verification at the claim and requires a Trust Score floor alongside it, say 200 for at least two verifications spaced over time. The protocol stays public and open. Only verified humans pass the eligibility tier, alongside existing token-balance and activity rules.",
+      "An airdrop integrator can run a twelve-second behavioral capture at the claim. It can also require Trust Score, recency, token-balance, and activity rules. Eligible wallets must pass every selected policy.",
   },
   {
     icon: "vote",
@@ -19,9 +19,9 @@ export const solutionCases: SolutionCase[] = [
     problem:
       "Token-weighted governance fails at predictable moments. Mango Markets 2022: Avi Eisenberg used his MNGO position to vote a proposal keeping $47M of his own oracle-manipulation drain. Chainalysis found that across major DAOs, under 1% of holders control over 90% of voting power, with turnout typically below 10%. Token weight is not community will.",
     solution:
-      "Voters must hold an Entros Anchor with minimum Trust Score and recent verification. The Realms voter-weight plugin reads that Anchor before it reads the balance. The whale's bag becomes one vote, and clearing quorum takes verified humans.",
+      "The devnet voter-weight program reads an Entros Anchor and can assign one unit to an eligible wallet. The planned Realms client can insert that check into governed actions.",
     example:
-      "A DAO using Realms gates voting on Entros Trust Score alongside its existing token rules. One human, one vote, from a 12-second verification capture on any device. Plugin shipped on devnet, spl-governance compatible.",
+      "A future Realms integration can gate voting on Trust Score and recency. The on-chain addin prototype is deployed on devnet. Client registration, plugin chaining, and population-level uniqueness remain open.",
   },
   {
     icon: "gamepad",
@@ -30,7 +30,7 @@ export const solutionCases: SolutionCase[] = [
     problem:
       "NFT drops at launch are bot-minted at scale. Referral programs and trading competitions on perp DEXes get sybil-farmed across hundreds of accounts. Filtering wallets without collecting identity documents remains a gap.",
     solution:
-      "Mint gate: one human per allocation, verified by Anchor. Competition entry: require Anchor age > 30 days and recent verification. Short-lived bot accounts with zero trust cannot qualify. Every capture is validated server-side before an Anchor is issued, and an Anchor is not free to hold.",
+      "Mint gate: require a fresh Entros result and an Anchor policy. Competition entry: require Anchor age and recency. The validation service checks each capture before the wallet transaction proceeds.",
     example:
       "An NFT marketplace can require Entros verification at mint on a per-collection basis. A perp DEX can gate referral-multiplier rewards or competition entry on a verification at entry plus a Trust Score floor. An optional eligibility tier on top of existing rules, not a KYC replacement.",
   },
@@ -41,9 +41,9 @@ export const solutionCases: SolutionCase[] = [
     problem:
       "Scammers mint NFT collections under stolen brands. Buyers cannot distinguish real creators from impersonators.",
     solution:
-      "Creators register with an Entros Anchor. Collection metadata includes a cryptographic commitment to the creator's Anchor. Buyers verify provenance on-chain. The Anchor's Trust Score signals how long the creator has maintained their verified identity.",
+      "A planned creator integration can reference an Entros Anchor in collection metadata. Buyers could then read the wallet's verification history alongside existing provenance checks.",
     example:
-      "A creator-tooling platform on Metaplex Core can include an Entros Anchor reference in collection metadata. Marketplaces displaying that metadata can render a 'Verified Creator' badge for Anchored artists. Token-2022 NonTransferable + Metaplex Core compose natively—the same primitive choices Entros's Agent Anchor uses today.",
+      "A creator platform could include an Entros Anchor reference in Metaplex Core metadata. Marketplaces could display the linked wallet's current Entros status without treating it as legal identity verification.",
   },
   {
     icon: "bot",
@@ -52,8 +52,8 @@ export const solutionCases: SolutionCase[] = [
     problem:
       "Bot accounts overrun reward platforms and content distribution apps. They farm the rewards, inflate the engagement numbers, and crowd out real users.",
     solution:
-      "Require Entros verification at account creation or reward claim. The closed-source defense layer rejects synthetic inputs before they reach the chain.",
+      "Require Entros verification at account creation or reward claim. The private validation service applies the current capture policy before protocol settlement.",
     example:
-      "A creator-rewards platform can ask for a verification at the claim and read the Trust Score with it. Synthetic voice, motion and touch are rejected server-side before an Anchor is issued, and the floor can require a verification history rather than a single pass.",
+      "A creator-rewards platform can ask for a fresh verification and read Trust Score with it. The policy can require a verification history rather than one result.",
   },
 ];

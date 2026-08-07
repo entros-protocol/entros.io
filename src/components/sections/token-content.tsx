@@ -29,9 +29,8 @@ export function TokenContent() {
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Protocol revenue scales with genuine human verification, and the
-            token secures the network that earns it. Each step compounds the
-            next.
+            Protocol fees already accrue in SOL. The roadmap connects future
+            validator security, capacity, and governance to $ENTROS.
           </p>
 
           {/* Labeled diagram — five nodes in a horizontal flow with
@@ -279,9 +278,10 @@ export function TokenContent() {
                   {protocolFee.description}
                 </p>
                 <p className="mt-4 text-base leading-relaxed text-foreground/65 md:text-lg">
-                  Users pay a small fee to prove they're human. Integrators
-                  read on-chain state for free. The fee funds the protocol
-                  and makes an identity cost something to hold.
+                  Users pay the configured fee when writing protocol state.
+                  Integrators read that state for free. Detection decides
+                  whether a verification passes. The fee bounds repeated
+                  attempts and funds protocol operation.
                 </p>
               </div>
             </div>
@@ -293,11 +293,11 @@ export function TokenContent() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // TOKEN UTILITY
+            // PLANNED TOKEN UTILITY
           </span>
 
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Stake<span className="text-cyan">.</span> Delegate<span className="text-cyan">.</span> Govern<span className="text-cyan">.</span>
+            Utility expands with decentralization<span className="text-cyan">.</span>
           </h2>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2">
@@ -327,22 +327,23 @@ export function TokenContent() {
         </div>
       </section>
 
-      {/* Economic Hardening & Slashing */}
+      {/* Planned economic hardening and slashing */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // ECONOMIC HARDENING
+                  // PLANNED ECONOMIC HARDENING
                 </span>
 
                 <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  Slashing & incentive alignment<span className="text-cyan">.</span>
+                  Slashing and incentive design<span className="text-cyan">.</span>
                 </h2>
                 
                 <p className="mt-6 text-sm leading-relaxed text-foreground/65 max-w-md">
-                  Validators stake to take part, and the protocol slashes that stake for lazy validation or collusion.
+                  These mechanisms are design targets. The registry does not
+                  implement selection, quorum, rewards, or slashing today.
                 </p>
               </div>
             </div>
@@ -356,7 +357,9 @@ export function TokenContent() {
                       Ground-Truth Honey-pots
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      The protocol interleaves pre-calibrated test challenges at random into the workload each validator receives (ground-truth captures with known human/bot status). The registry scores every node against the known answer as the results come in.
+                      The planned design can include blinded benchmark tasks.
+                      The specification must define dataset governance and
+                      prevent validators from identifying benchmark traffic.
                     </p>
                   </div>
                 </div>
@@ -368,7 +371,9 @@ export function TokenContent() {
                       Asymmetric Slashing
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      A validator earning a small fee per verification stands to lose their entire stake if they validate inaccurately, accept bots, or reject real users. The penalty dwarfs the reward, so honest validation is the only rational strategy.
+                      A future slashing design must define objective evidence,
+                      bounded penalties, appeals, and correlated-failure
+                      handling before funds can be at risk.
                     </p>
                   </div>
                 </div>
@@ -380,7 +385,9 @@ export function TokenContent() {
                       Multi-Party Consensus
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Verification requests require validation receipts from randomized validator quorums. A single colluding node cannot unilaterally approve a bot or forge a valid on-chain attestation.
+                      A future validator network can require receipts from a
+                      selected cohort. Selection, quorum, and aggregation are
+                      not implemented in the current registry.
                     </p>
                   </div>
                 </div>
@@ -440,9 +447,9 @@ export function TokenContent() {
                       Real revenue behind it
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Every verification pays a SOL fee into the on-chain
-                      treasury. Unlike a memecoin, the network behind the token
-                      earns from genuine human usage.
+                      Every wallet-connected verification pays the configured
+                      SOL fee into the on-chain treasury. Future $ENTROS utility
+                      remains separate until its mechanisms ship.
                     </p>
                   </div>
                 </div>

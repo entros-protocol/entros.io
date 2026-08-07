@@ -3,7 +3,7 @@ title: Entros Developer Docs
 description: Build with proof of personhood on Solana.
 ---
 
-Entros is a Solana protocol that proves a wallet is operated by a returning human, with the raw biometric signal never persisted or exposed.
+Entros is a Solana protocol designed to prove that a wallet is operated by a returning human. Raw motion and full-resolution touch remain on the device.
 
 These docs cover the integration paths: drop-in React components, on-chain reads, SAS attestations, Realms voter-weight, and Agent Anchor. They also publish the technical reference for the SDK and on-chain programs, and the public roadmap for what comes next.
 
@@ -11,7 +11,7 @@ These docs cover the integration paths: drop-in React components, on-chain reads
 
 Pick the path that matches your use case. Each integrator only needs one.
 
-**Tier 1, drop-in trigger.** You want a button that takes a user from "unverified wallet" to "verified human" with a single click. The popup hosts the wallet connect, the 12-second behavioral capture, the proof, and the on-chain mint. Your app stays wallet-adapter-free until a verified payload arrives on the callback. Install: `@entros/verify`. Five lines of JSX.
+**Tier 1, drop-in trigger.** You want a button that takes a user from an unverified wallet to a completed Entros verification. The popup hosts the wallet connection, behavioral capture, proof, and on-chain transaction. Your app stays wallet-adapter-free until the callback arrives. Install `@entros/verify`.
 
 **Tier 2, programmatic SDK.** You want to own the verification UX: custom capture canvas, branded loading states, inline rather than popup, mobile-native. The Pulse SDK exposes the lower-level primitives the popup is built on. Install: `@entros/pulse-sdk`. Same package powers Tier 1 internally.
 
@@ -41,4 +41,4 @@ if (attestation?.isHuman && attestation.trustScore >= 100 && !attestation.expire
 
 Two numbers, two questions. The score says how consistently this wallet has verified. Recency says how long ago it last did.
 
-For an airdrop claim, a governance vote or anything else worth the friction, run a verification at the point of the action and read the Anchor after it. The score is a history. The verification is the person. `<EntrosVerify />` does it in five lines. See the [verification flow](/docs/integrate/verification-flow).
+For an airdrop claim, a governance vote, or another high-value action, run a verification at the action and read the Anchor afterward. The score describes verification history. The fresh result shows that the wallet passed the current Entros policy. See the [verification flow](/docs/integrate/verification-flow).

@@ -7,22 +7,22 @@ export const mobileRoadmapItems: Feature[] = [
     description:
       "Direct accelerometer, gyroscope, touch pressure, and microphone access. No browser permission dialogs.",
     benefit:
-      "Sub-millisecond sensor timestamps enable cross-modal temporal analysis that browsers can't match.",
+      "Native APIs provide stronger sensor provenance and more consistent timing than the browser path.",
   },
   {
     icon: "activity",
-    title: "Physical liveness signals",
+    title: "Touch and motion timing research",
     description:
-      "Touch-IMU shockwave detection. A real finger press produces a Z-axis accelerometer spike within 5-10ms. Programmatic injection does not.",
+      "Measure whether a physical touch produces a time-aligned response in native motion sensors across supported devices.",
     benefit:
-      "Research shows mobile biometric verification achieves significantly lower error rates than desktop.",
+      "Native attestation can bind app and device integrity evidence to the submitted request while this signal is evaluated.",
   },
   {
     icon: "solana",
     title: "Solana dApp Store distribution",
     description:
-      "Trust Score persists across every dApp on Solana Mobile. Verify once on Seeker, use anywhere in the ecosystem.",
+      "Publish a hardened Android client for Seeker and other supported Solana Mobile devices.",
     benefit:
-      "Push notification re-verification keeps the Trust Score active without manual prompts.",
+      "Future notification support can remind users when a policy requires a fresh verification.",
   },
 ];

@@ -5,15 +5,15 @@ export const features: Feature[] = [
     icon: "pulse",
     title: "The Pulse",
     description:
-      "Voice, motion, and touch are captured simultaneously on your device. A unique random challenge each session.",
+      "Voice, motion, and touch are captured during one session. The flow generates a fresh random challenge each time.",
     benefit:
-      "Behavioral entropy scoring detects synthetic data patterns. Raw data is never persisted—only derived statistical features are validated server-side.",
+      "Raw motion and full-resolution touch stay on the device. The validation path receives derived features, phrase audio, timing summaries, and a coarse curve outline.",
   },
   {
     icon: "proof",
     title: "The Proof",
     description:
-      "A ZK proof that your behavioral fingerprint is consistent with your previous verification. No raw biometric data persists or is exposed.",
+      "A ZK proof that two committed fingerprints satisfy the configured Hamming-distance bounds.",
     benefit:
       "Groth16 proof with minimum distance constraint blocks perfect replay attacks.",
   },
@@ -23,6 +23,6 @@ export const features: Feature[] = [
     description:
       "A non-transferable Solana token tied to your wallet. Trust Score grows with consistent re-verification over time.",
     benefit:
-      "Progressive scoring rewards months of genuine use.",
+      "Weekly verification span and account age contribute to the on-chain score.",
   },
 ];

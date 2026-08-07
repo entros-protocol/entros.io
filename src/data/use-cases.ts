@@ -7,7 +7,7 @@ export const useCases: UseCase[] = [
     problem:
       "Wallet farmers claim thousands of allocations meant for real users.",
     solution:
-      "Ask for a verification at the claim, then read the Trust Score. One proves the person is there. The other shows how consistently that wallet has verified.",
+      "Ask for a fresh verification at the claim, then read Trust Score and recency. The result shows that the wallet passed the current Entros policy and records its verification history.",
   },
   {
     icon: "vote",
@@ -15,14 +15,14 @@ export const useCases: UseCase[] = [
     problem:
       "Token-weighted governance is plutocracy by default. A wealthy attacker can ratify their own theft (Mango 2022) or spam-clear quorum with self-funded proposals.",
     solution:
-      "Realms voter-weight plugin gates voting on a verified-personhood Trust Score rather than a token balance. One human, one vote, on any device.",
+      "The devnet voter-weight program can assign one unit to an eligible Anchor. A Realms client and population-level uniqueness evidence remain planned before one-person-one-vote becomes a supported outcome.",
   },
   {
     icon: "bot",
-    title: "Bot-Free Platforms",
+    title: "Bot-Resistant Platforms",
     problem:
       "Social feeds, marketplaces, and games overrun by automated accounts.",
     solution:
-      "Verify at signup, or gate agents on a verified human operator and their Trust Score. No identity or hardware data collected.",
+      "Run Entros at signup, or gate agents on a wallet that completed verification. Entros requires no name, document, face scan, or social account.",
   },
 ];

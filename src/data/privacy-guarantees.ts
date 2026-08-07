@@ -5,36 +5,36 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "smartphone",
     title: "On-device processing",
     description:
-      "Sensor capture, feature extraction, hashing, and proof generation run on the user's device. Raw motion and touch recordings stay in device memory and are destroyed once features are computed. The only recording that leaves is the spoken phrase, transcribed on arrival and discarded.",
+      "Sensor capture, feature extraction, hashing, and proof generation run on the user's device. Raw motion and full-resolution touch recordings stay in device memory. The spoken phrase leaves the device for validation and transcription.",
   },
   {
     icon: "database",
     title: "No raw biometric storage",
     description:
-      "Raw audio, motion, and touch are never persisted after the Temporal Fingerprint is computed. No server-side database holds voice samples or movement traces. The fingerprint is cached locally for fast re-verification and held on chain in a wallet-keyed AES-256-GCM blob, recoverable from any device by the wallet that wrote it and opaque to everyone else. That blob holds a one-way hash of the behavioral summary and a random salt, nothing more.",
+      "The validation service processes phrase audio in memory and does not write it to logs or persistent storage. The SDK stores the fingerprint, salt, commitment, and timestamp locally for re-verification. Wallet-connected flows can also store that baseline in a wallet-keyed AES-256-GCM blob on-chain.",
   },
   {
     icon: "file-lock",
     title: "Minimal data transmission",
     description:
-      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, a 308-feature statistical summary, a coarse outline of the traced curve for the liveness check, and the spoken phrase audio used for transcription. Nothing else.",
+      "The Pulse SDK sends the 308-feature summary, selected F0 and acceleration series, phrase audio, capture timing, client signals, a coarse curve outline, commitment data, and receipt intent to the validation path. The wallet flow submits commitments, proofs, public inputs, and encrypted baseline material on-chain when available.",
   },
   {
     icon: "eye-off",
     title: "No identity mapping",
     description:
-      "The protocol proves 'you are human,' not 'you are a specific person.' The TBH is pseudonymous. It does not link to a name, email, or social account.",
+      "The protocol is designed to prove humanness without identifying the person. The protocol does not require a name, email, document, face scan, or social account.",
   },
   {
     icon: "lock",
     title: "One-way commitment",
     description:
-      "Poseidon(fingerprint || salt) is computationally irreversible. The commitment cannot be decoded back into the original behavioral fingerprint.",
+      "Poseidon commits to the fingerprint and a large random salt. Its preimage resistance and the hidden salt prevent direct recovery from the commitment under the protocol's threat model.",
   },
   {
     icon: "shield",
-    title: "GDPR and EU AI Act aligned",
+    title: "Data minimization by design",
     description:
-      "Behavioral verification (not identification) is designed to minimize regulatory exposure under the EU AI Act. Data minimization is enforced by architecture, not policy.",
+      "The architecture limits raw-data movement and separates transient validation inputs from persistent protocol state. Each deployer must still assess its own legal and regulatory obligations.",
   },
 ];

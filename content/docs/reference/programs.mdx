@@ -5,7 +5,7 @@ description: The three Anchor programs that make up Entros, with their instructi
 
 Entros is built around three on-chain programs and one voter-weight plugin. All programs are built with Anchor 0.32.1 and deployed to Solana devnet.
 
-> **Framework roadmap.** The protocol's three on-chain programs are written in Anchor today, prioritizing developer ergonomics and IDL-driven SDK integration. As on-chain volume scales toward mainnet, the CU-pressured paths (`mint_anchor`, `update_anchor`, `verify_proof`) are slated for selective migration to Pinocchio, the lower-overhead Solana program framework maintained by Anza. The admin-and-governance program (`entros-registry`) stays on Anchor. This hybrid approach mirrors the architecture used by Jupiter Perps and other Solana projects optimizing hot paths post-mainnet.
+> **Framework roadmap.** The on-chain programs use Anchor today. The team will measure current transaction costs before deciding whether any hot path should move to Pinocchio. No framework migration is committed.
 
 ## entros-anchor
 
@@ -19,7 +19,7 @@ Owns the Anchor identity state. Holds per-wallet `IdentityState` PDAs and Token-
 
 | Instruction | Purpose |
 | --- | --- |
-| `mint_anchor` | Initialize a new Anchor on first verification. Validates a ZK proof from the verifier program. Charges the protocol fee. |
+| `mint_anchor` | Initialize a new Anchor after an enforced validator-signed receipt. Charges the protocol fee. |
 | `update_anchor` | Re-verification path. Validates a fresh proof against the current commitment, advances the score, overwrites `current_commitment`. |
 | `reset_identity_state` | Recovery path. Zeroes the score and clears the fingerprint commitment after a 7-day cooldown. Charges the fee. |
 | `authorize_new_wallet` | First step of wallet migration. Old + new wallets co-sign to record the successor and delegate the identity token. |
@@ -41,7 +41,9 @@ Owns the Anchor identity state. Holds per-wallet `IdentityState` PDAs and Token-
 4F97jNoxQzT2qRbkWpW3ztC3Nz2TtKj3rnKG8ExgnrfV
 ```
 
-Verifies Groth16 proofs of the Hamming-distance circuit. Its `verify_proof` instruction runs in the same transaction as `mint_anchor` or `update_anchor` and writes a `VerificationResult` PDA, which the Anchor program then reads through an account constraint bound to this program's ID. Neither program invokes the other.
+Verifies Groth16 proofs for re-verification. `verify_proof` writes a `VerificationResult` PDA. `update_anchor` reads that result through constraints bound to the verifier program. Neither program invokes the other.
+
+> **Artifact generation.** The deployed verifier, web client, mobile client, and native prover share the current generation. The `circuits` source and key directory describe an unpublished successor. A coordinated migration must update every consumer together.
 
 ### Instructions
 
@@ -76,30 +78,34 @@ The Groth16 circuit takes four public inputs:
 6VBs3zr9KrfFPGd6j7aGBPQWwZa5tajVfA7HN6MMV9VW
 ```
 
-Protocol-level configuration, validator stake, and treasury. Configures the protocol fee, the verification expiry windows, and the staking parameters for the Anonymity Ring.
+Stores protocol configuration, the treasury, validator-registration scaffolding, and the validator signing key. The current verification path does not select registered validators or aggregate a quorum.
 
 ### Instructions
 
 | Instruction | Purpose |
 | --- | --- |
 | `initialize_protocol` | One-time setup of the protocol config |
-| `update_protocol_config` | Authority-only updates to fee, expiry, score caps |
-| `set_validator_pubkey` | Authority-only write of the validator pubkey used for the mint-receipt binding (entros-anchor 6016–6022). Reallocs the protocol config to the post-binding layout the first time it runs. |
+| `update_protocol_config` | Authority-only update to `verification_fee` |
+| `set_validator_pubkey` | Authority-only write of the validator pubkey used for the mint-receipt binding. Extends a legacy config account when required. |
 | `migrate_admin` | Emergency administrative migration of the protocol authority |
-| `register_validator` | Stake to join the Anonymity Ring (activates as the ring decentralizes) |
+| `register_validator` | Deposit SOL and create validator registration state. Selection and assignment remain future work. |
 | `compute_trust_score` | Read-only preview of what a score would be given a verification history |
-| `unstake_validator` | Exit the validator set after the unbonding period |
+| `unstake_validator` | Return the registered SOL stake immediately and close the validator state |
 | `withdraw_treasury` | Authority-only treasury withdrawal |
 
-### Configurable fields
+### Stored configuration
 
 | Field | Type | Purpose |
 | --- | --- | --- |
-| `min_stake` | `u64` | Minimum validator stake (SOL on devnet today; transitions to $ENTROS as the ring decentralizes) |
+| `min_stake` | `u64` | Minimum SOL deposit for validator registration scaffolding |
 | `challenge_expiry` | `i64` | Seconds before an unconsumed challenge is invalid |
 | `max_trust_score` | `u16` | Cap on the score (10000 on devnet) |
 | `base_trust_increment` | `u16` | Per-verification increment baseline |
 | `verification_fee` | `u64` | Lamports charged per verification (default 5_000_000 = 0.005 SOL) |
+| `migration_fee` | `u64` | Lamports read by the wallet-migration path. No public setter exists today. |
+| `validator_pubkey` | `Pubkey` | Signing key accepted by the first-verification receipt check |
+
+`initialize_protocol` sets these fields. The current `update_protocol_config` instruction changes only `verification_fee`. `set_validator_pubkey` rotates the signing key.
 
 ## entros-voter-weight
 
@@ -107,9 +113,9 @@ Protocol-level configuration, validator stake, and treasury. Configures the prot
 99nwXzcugse3x8kxE9v6mxZiq8T9gHDoznaaG6qcw534
 ```
 
-Realms voter-weight plugin. Reads the voter's Entros Anchor and produces weight 1 (eligible) or 0 (rejected) given a configured threshold and recency window.
+On-chain Realms voter-weight prototype. It reads the voter's Entros Anchor and writes weight 1 when the score and recency checks pass. An ineligible update returns an error.
 
-See the [Realms integration guide](/docs/integrate/realms-voter-weight) for wire-up.
+The JavaScript client, Governance UI registration, automatic vote transaction construction, and plugin chaining remain planned. See the [Realms integration guide](/docs/integrate/realms-voter-weight).
 
 ### Instructions
 
@@ -126,6 +132,6 @@ See the [Realms integration guide](/docs/integrate/realms-voter-weight) for wire
 
 ## Where to look next
 
-- [PDAs](/docs/reference/pdas)—every seed and derivation
-- [Costs](/docs/reference/costs)—fees and compute-unit usage
-- [Errors](/docs/reference/errors)—error codes from each program
+- [PDAs](/docs/reference/pdas) - seeds and derivations
+- [Costs](/docs/reference/costs) - fees and configured compute budgets
+- [Errors](/docs/reference/errors) - program error codes

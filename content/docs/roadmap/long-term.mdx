@@ -3,29 +3,29 @@ title: Long-term
 description: Identity as public infrastructure, cross-chain by default, openly maintained.
 ---
 
-The long-term aim is for proof of personhood to be a Solana primitive that any program can read, the way every program can read SOL balances or SPL token holdings. Not a vendor; not a brand; an on-chain layer.
+The long-term aim is a Solana-native human-control signal that any program can read. The protocol is designed to become public infrastructure.
 
 ## Identity as public infrastructure
 
-The protocol's success is not measured in revenue. It is measured in the number of integrators building against the on-chain Anchor. When asking a user to prove they are there is as routine as asking them to sign, the protocol has done its job.
+The mission is to make a fresh human-control check as composable as a wallet signature. Integrators should read one documented state format across applications.
 
-This is also the reason the protocol's economics route fees to validators and to a community-governed treasury rather than to a corporate one indefinitely. The infrastructure should be sustainable without a centralized operator.
+The planned economics route fees to validators and a governed treasury after the validator network exists. Current fees accrue to the protocol treasury.
 
 ## Cross-chain as a default
 
-A wallet's verification status today is a Solana account. Tomorrow it should be a value any chain can read with the same confidence as a Solana program reads it. The medium-term relay work matures into a cross-chain-default model: any chain that gates on personhood reads the Solana attestation, with finality, without trusting any centralized bridge.
+A wallet's current verification state is a Solana account. Future relay work can make that state readable on other chains. The relay design must state its bridge and finality assumptions.
 
 ## Behavioral as a moving target
 
-The threat surface evolves. Generative models for voice, motion, and touch will improve. The check stack the Anonymity Ring runs will need to evolve in step. The long-term shape is a community of researchers, validators, and integrators who jointly maintain the check stack—not a single team holding the secret recipe.
+Voice, motion, and touch synthesis will improve. The validation policy must evolve against new measured attacks. A future validator network needs a controlled update and attestation process for that policy.
 
 ## What stays constant
 
-- **Privacy by architecture.** Raw motion and touch never leave the device; the spoken-phrase audio leaves only for transcription and is discarded immediately, never stored. This is not a feature of the current implementation; it is a property the protocol makes hard to violate. Every future version is built on the same constraint.
-- **The bounded question.** The protocol answers "is this the same human, returning, over time" and nothing more. It does not turn into a KYC service, a credit-scoring service, or a real-world-identity directory. The scope is the load-bearing claim.
-- **Open programs, open SDK, open research.** The on-chain primitives, client SDK, circuits, and research paper are auditable in source. The server-side validation pipeline is closed-source per responsible-disclosure convention; its threat model and aggregate red-team results are public. Every adversarial result is published. Every reference number in this documentation can be traced to a public artefact.
+- **Privacy boundary.** Raw motion and full-resolution touch stay on the client. Phrase audio leaves for transient processing and must never persist.
+- **Bounded mission.** Entros is designed to answer whether a wallet presents current and returning human-control evidence. It does not verify legal identity or personal attributes.
+- **Public protocol.** The on-chain programs, client SDK, circuits, and research paper remain public. The private validation engine publishes scoped campaign results and safe resolved-finding summaries.
 
 ## Where to look next
 
-- [Concepts: Proof of Personhood](/docs/concepts/proof-of-personhood)—the bounded question
-- [How to influence](/docs/roadmap/how-to-influence)—the RFC process for shaping what comes next
+- [Concepts: Proof of Personhood](/docs/concepts/proof-of-personhood) - the bounded mission
+- [How to influence](/docs/roadmap/how-to-influence) - the RFC process

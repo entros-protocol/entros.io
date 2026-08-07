@@ -3,18 +3,18 @@ title: Where the protocol is today
 description: What's live on devnet, what's in npm, what's documented.
 ---
 
-This page is the snapshot of the protocol as it stands. Each item below is verifiable on-chain or by `npm install`.
+This page describes the current devnet and package surfaces. Mainnet remains future work.
 
 ## On-chain
 
 | Component | Network | Status |
 | --- | --- | --- |
-| `entros-anchor` program | Devnet | Deployed, in active use |
-| `entros-verifier` program | Devnet | Deployed, accepting Groth16 proofs |
-| `entros-registry` program | Devnet | Deployed, treasury accumulating fees |
-| `entros-voter-weight` plugin | Devnet | Deployed |
-| Solana Agent Registry integration | Devnet | One agent (#2947) verified end-to-end |
-| SAS Entros credential and schema | Devnet | Issuing attestations on every verification |
+| `entros-anchor` program | Devnet | Deployed. Mints and updates Anchor state |
+| `entros-verifier` program | Devnet | Deployed. Verifies the current Groth16 artifact generation |
+| `entros-registry` program | Devnet | Deployed. Stores fee configuration, treasury state, and validator registration scaffolding |
+| `entros-voter-weight` plugin | Devnet | On-chain prototype deployed. Realms client integration remains planned |
+| Solana Agent Registry integration | Devnet | Agent Anchor client supports operator links on devnet |
+| SAS Entros credential and schema | Devnet | Best-effort wallet-bound issuance after successful verification |
 
 ## Off-chain
 
@@ -22,14 +22,14 @@ This page is the snapshot of the protocol as it stands. Each item below is verif
 | --- | --- |
 | Pulse SDK on npm | [`@entros/pulse-sdk`](https://www.npmjs.com/package/@entros/pulse-sdk) |
 | Hosted verification dApp | `entros.io/verify` (open to all on devnet) |
-| Anonymity Ring | Validation engine running all four tiers, single-validator deployment, 17,000+ adversarial attempts across T1–T4 with 0% production pass |
-| Public security program | `entros.io/security`—every adversarial wave published |
+| Private validation service | One team-operated service applies the current policy. Temporal analysis remains research telemetry by default |
+| Public security program | `entros.io/security` publishes scoped T1 through T4b campaign results. T5 remains open |
 
 ## Token
 
 $ENTROS launched through a public fair launch on the EasyA Kickstart bonding curve. It is a standard SPL mint with mint and freeze authority revoked, and it carries no Token-2022 extensions. The identity Anchor is a separate Token-2022 mint using the `NonTransferable` extension, so the two are distinct assets under distinct standards.
 
-The token has no on-chain coupling to verification today. Protocol fees and validator stake are SOL-denominated. Validator staking, fee-share and governance denominated in $ENTROS activate in phases as the validator network decentralizes. See [the token page](/token) for the mint address and the mechanism map.
+The token has no on-chain coupling to verification today. Current verification fees and registry scaffolding use SOL. The roadmap evaluates $ENTROS staking, fee share, and governance after specification, implementation, and audit. See [the token page](/token) for the mint address and mechanism map.
 
 ## Public artefacts
 
@@ -39,6 +39,6 @@ The token has no on-chain coupling to verification today. Protocol fees and vali
 
 ## Where to look next
 
-- [Near-term](/docs/roadmap/near-term)—what ships next
-- [Medium-term](/docs/roadmap/medium-term)—decentralization and validator economics
-- [Long-term](/docs/roadmap/long-term)—the protocol as public infrastructure
+- [Near-term](/docs/roadmap/near-term) - work before mainnet
+- [Medium-term](/docs/roadmap/medium-term) - decentralization and validator economics
+- [Long-term](/docs/roadmap/long-term) - the protocol as public infrastructure

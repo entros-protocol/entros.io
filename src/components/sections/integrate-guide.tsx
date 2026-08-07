@@ -9,7 +9,7 @@ import { CodeBlock } from "@/components/ui/code-block";
 import { IntegratePlayground } from "./integrate-playground";
 
 const CONFIG_OPTIONS = [
-  { name: "cluster", type: '"devnet" | "mainnet-beta"', description: "Solana cluster to connect to." },
+  { name: "cluster", type: '"devnet" | "mainnet-beta" | "localnet"', description: "SDK target. Current hosted Entros support is devnet-only." },
   { name: "rpcEndpoint", type: "string", description: "Custom RPC URL (optional)." },
   { name: "relayerUrl", type: "string", description: "Entros executor endpoint (advanced; not needed for wallet-connected)." },
   { name: "relayerApiKey", type: "string", description: "Executor API key (advanced; not needed for wallet-connected)." },
@@ -35,7 +35,7 @@ const ABUSE_MECHANISMS = [
     number: "03",
     title: "Protocol fee",
     description:
-      "Every verification costs the user SOL, and each wallet carries account rent. Holding many Anchors is not free.",
+      "The configured fee and rate limits bound request volume. The validation policy still decides whether a capture passes.",
   },
   {
     number: "04",
@@ -373,17 +373,15 @@ export function IntegrateGuide() {
                 No escrow, no API keys, no billing relationship.
               </p>
               <p className="mt-6 text-sm leading-relaxed text-foreground/55 md:text-base">
-                First verification additionally requires ~0.013 SOL of
-                one-time Solana account rent for the user's Identity
-                Anchor (mint, token account, identity state). Refundable
-                when accounts are closed. Subsequent verifications cost
-                only the protocol fee plus ~0.002 SOL per new verification
-                record (also refundable).
+                First verification also funds Solana account rent for the
+                Anchor mint, token account, and identity state. Network rent
+                and transaction fees vary. The wallet displays the final
+                amount before approval.
               </p>
               <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-                You get verified humans. The user pays to prove they're
-                human. The protocol gets a recurring fee that funds
-                validator rewards.
+                Integrators receive a public policy signal without an API
+                billing relationship. Current protocol fees accrue to the
+                treasury. Validator rewards remain a planned mechanism.
               </p>
             </div>
           </div>
@@ -402,7 +400,7 @@ export function IntegrateGuide() {
           </h2>
 
           <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/70 md:text-lg">
-            Synthetic input is rejected server-side before it reaches the
+            The validation service evaluates submitted evidence before it reaches the
             chain. Verification also costs SOL, so Anchors are not free to
             hold. You control trust requirements through four mechanisms.
           </p>

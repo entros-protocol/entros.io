@@ -3,19 +3,19 @@ const tiers = [
     name: "TIER 0",
     label: "Cryptographic gate",
     description:
-      "Zero-knowledge proofs of behavioral consistency. Groth16 proving system. Public verifier on Solana. Every verification produces a proof that the user's behavioral fingerprint is within a hidden Hamming distance threshold of their baseline, without revealing either fingerprint. Open source, auditable, verifiable on-chain.",
+      "Re-verification produces a Groth16 proof that committed fingerprints satisfy the circuit's Hamming-distance bounds. The public Solana verifier checks the proof without receiving either plaintext fingerprint. First verification uses a validator-signed receipt instead.",
   },
   {
     name: "TIER 1",
     label: "Statistical distribution checks",
     description:
-      "Server-side validation of the 308-dimensional feature vector extracted from each verification. Multiple independent checks verify that the statistical properties of extracted features are consistent with human physiology, not synthetic generation. Specific checks and threshold values are not published.",
+      "The private validation service checks the submitted 308-feature summary against configured capture, phrase, acoustic, and distribution policies. The service does not publish operational thresholds.",
   },
   {
     name: "TIER 2",
     label: "Behavioral coupling signals",
     description:
-      "Time-series analysis of the signals sampled together during a capture. Human speech and hand motion originate in shared motor control and leave correlated traces across the recording. Streams generated separately and combined afterwards do not carry them. The specific signals, statistics and thresholds are not published.",
+      "The validator records time-series relationships between speech and motion. Current code keeps enforcement disabled by default while Entros measures reliability across people, devices, and adaptive synthesis.",
   },
 ];
 
@@ -34,13 +34,13 @@ export function DefenseLayers() {
         </span>
 
         <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          Three layers, one filter<span className="text-cyan">.</span>
+          Three layers, one evidence stack<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Defense in depth: cryptographic gate, statistical realism,
-          behavioral coupling. Each tier is independent. An attack must
-          pass all three to reach the chain.
+          Enforced checks decide whether a capture can settle. Temporal
+          analysis remains research telemetry until human and adversarial
+          evidence supports a policy decision.
         </p>
 
         <div className="mt-16 border-t border-border">

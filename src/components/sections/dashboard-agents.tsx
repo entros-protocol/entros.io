@@ -218,9 +218,9 @@ export function DashboardAgents() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Link your Entros identity to your registered AI agents on the
-          Solana Agent Registry. Immutable, on-chain proof that a verified
-          human operates the agent.
+          Link an operator wallet&apos;s Entros Anchor to its registered AI agents
+          on the Solana Agent Registry. The immutable metadata records the
+          operator link and its verification snapshot.
         </p>
 
         {/* Auto-detected owned agents */}
@@ -395,8 +395,7 @@ export function DashboardAgents() {
                     No Entros attestation found
                   </p>
                   <p className="mt-0.5 text-xs text-foreground/50">
-                    This agent has no verified human operator linked via
-                    Entros.
+                    This agent has no Entros operator identity link.
                   </p>
                 </div>
               </div>
@@ -421,7 +420,7 @@ export function DashboardAgents() {
                 <CheckCircle className="h-5 w-5 text-solana-green" />
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    Verified Human Operator
+                    Entros-linked Operator
                   </p>
                   <p className="mt-0.5 text-xs text-foreground/55">
                     This agent is attested with an immutable Entros
@@ -440,7 +439,7 @@ export function DashboardAgents() {
                 </div>
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                    Verified at
+                    Anchor last verified
                   </p>
                   <p className="mt-2 font-mono text-sm text-foreground">
                     {formatTimestamp(operator.verifiedAt)}

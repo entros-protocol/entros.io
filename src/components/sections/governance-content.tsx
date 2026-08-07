@@ -51,22 +51,22 @@ const steps = [
     icon: Vote,
     title: "Vote",
     description:
-      "Before any governance action, the plugin reads the voter's Entros Anchor on-chain. Verified and recent: vote counted. Unverified or expired: vote blocked.",
+      "The planned Realms client inserts the voter-weight update before a governed action. Eligible Anchors receive one unit of voter weight.",
   },
 ];
 
 const chainOptions = [
   {
     name: "Entros + Token Voter",
-    description: "Hold tokens AND prove you're human to vote.",
+    description: "Planned composition with token-weighted voting.",
   },
   {
     name: "Entros + Quadratic",
-    description: "Quadratic voting weight, but only for verified humans.",
+    description: "Planned composition with quadratic voting.",
   },
   {
     name: "Entros + NFT Voter",
-    description: "NFT-gated governance with human liveness checks.",
+    description: "Planned composition with NFT-gated voting.",
   },
 ];
 
@@ -251,15 +251,13 @@ export function GovernanceContent() {
 
               <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
                 The plugin reads the voter's Trust Score and verification
-                recency from their Entros Anchor before every governance
-                action. Voters must prove they are a real, live human
-                with sustained behavioral history.
+                recency from their Entros Anchor. The on-chain prototype
+                applies those checks when its update instruction runs.
               </p>
               <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-                Dormant wallets and scripted delegations stop counting.
-                Voting starts costing time and SOL per ballot, not just
-                a token balance. Every wallet in a spam-quorum meets the
-                same live verification check.
+                A forthcoming Realms client will insert that instruction
+                before governed actions. Population-level uniqueness and
+                normal Governance UI wiring remain release gates.
               </p>
             </div>
 
@@ -408,10 +406,9 @@ export function GovernanceContent() {
           </h2>
 
           <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/70 md:text-lg">
-            Entros layers human verification on top of the plugins a
-            realm already runs. Chain it with token-voter to require both
-            holdings and human presence, or with quadratic voting for
-            verified-human quadratic weights.
+            The current Registrar has no predecessor plugin field and the
+            update instruction accepts no input voter-weight record. Future
+            client and program work will define safe plugin composition.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -529,14 +526,14 @@ export function GovernanceContent() {
               </span>
 
               <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-                Works with Realms today<span className="text-cyan">.</span>
+                On-chain foundation deployed<span className="text-cyan">.</span>
               </h2>
 
               <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                The Realms V2 UI supports custom voter-weight plugins.
-                Paste the program ID into the "Custom voting program ID"
-                field in your realm settings. No frontend changes
-                required.
+                The voter-weight program runs on Solana devnet. A typed
+                JavaScript client, Governance UI registration, automatic
+                transaction construction, and end-to-end Realms tests remain
+                planned.
               </p>
             </div>
 

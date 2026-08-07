@@ -3,49 +3,55 @@ title: Threat Model
 description: What Entros defends against, and what falls outside the protocol's surface.
 ---
 
-The threat model is structured by the kind of adversary, not by the kind of attack. Each tier is what a different class of adversary can do, and what the protocol's response is.
+This model separates current controls from research goals. The browser client is an untrusted input source. The private service and on-chain programs verify bounded properties of what the client submits.
 
-## Tier 1—Naive automation
+## Tier 1: naive automation
 
-A scripted attempt to bypass the device-side capture flow. Replays a stored signal, calls the SDK with synthetic inputs, fakes the wallet adapter handshake.
+This adversary replays stored signals, calls public client code with synthetic inputs, or automates the browser flow.
 
-The checks that decide the outcome run on the validator, not in the browser. Each session receives a new phrase and curve, so a stored capture answers the wrong challenge, and the validator transcribes the submitted audio to compare it against the phrase it issued. Feature vectors face distribution checks in the Anonymity Ring, and the verifier program rejects proofs that don't match the on-chain commitments.
+The server issues a fresh phrase and curve. It compares the transcript with the issued phrase and applies capture-policy checks. Browser and client-integrity signals add risk evidence. They do not create hardware-backed provenance.
 
-Public adversarial test count at this tier: 16,000 attempts across T1–T3 combined, all rejected.
+Public T1 through T3 campaigns contain 16,000 attempts. The public report records zero observed passes for those tested generators and configurations.
 
-## Tier 2—Coordinated bot farm
+## Tier 2: coordinated wallet automation
 
-Multiple wallets, a script library, modest budget. Tries to mass-mint Anchors and farm low Trust Scores at scale.
+This adversary controls many wallets and can generate different submissions for each wallet.
 
-The device-fingerprinting layer makes single-device farming visible. Re-using captured signals across wallets is detected by the ring's cross-Anchor analysis. The protocol fee per verification means each Anchor carries a recurring cost to hold; the time decay on the Trust Score makes "rush a high score" infeasible. Sustained high scores require sustained, distinct activity per Anchor.
+The private service computes a server-side fingerprint and compares it with fingerprints registered to other wallets. Rate limits and fees bound request volume. The detection policy decides whether a capture passes.
 
-## Tier 3—Human-in-the-loop farms
+Population-level uniqueness remains an open evidence question. Current code uses a full registry scan and one configured Hamming-distance policy. Offline evaluation and larger human cohorts must establish its operating curve.
 
-Real humans behind multiple wallets, performing real captures. The hardest tier of farming because it bypasses any synthesis detection—the signals are genuine human signals.
+## Tier 3: human-assisted duplication
 
-The protocol's response has two parts. Every capture is scored by the detection stack regardless of how many Anchors the operator holds, and the ring's cross-Anchor analysis compares captures across wallets — the layer that applies here is behavioral overlap, not synthesis detection, and its sensitivity is bounded by how much a person can vary their own behavioral signature. On top of that, an operator running N Anchors performs N captures every re-verification window, each twelve seconds plus the protocol fee, and the Trust Score per Anchor decays without that work.
+One person can operate multiple wallets and complete genuine captures. Synthesis checks do not address this case because the submitted signals can be human-generated.
 
-What this means in practice: a genuine human performing every capture by hand defeats synthesis detection by not using synthesis. What remains against them is cross-Anchor comparison plus the per-Anchor cadence requirement, which integrators tune through the threshold to the value being protected.
+Cross-wallet comparison may identify close fingerprints. Its sensitivity depends on within-person drift and cross-person separation. Entros is measuring those distributions before claiming one-person-one-Anchor enforcement.
 
-## Tier 4—Behavioral synthesis
+Applications can combine a fresh Entros result with Anchor age, Trust Score, recency, rate limits, and their existing eligibility rules.
 
-Adversarial models that attempt to synthesize the full 308-feature vector convincingly enough to pass the ring's checks and the device's pipeline.
+## Tier 4: behavioral synthesis
 
-This is the active research surface. The Anonymity Ring's check stack is the layer designed to make synthesis hard. T4a was structured as a four-wave study against one canonical attack class—pre-recorded human voice paired with procedural motion and touch—to measure each defense layer's specific contribution. Wave 1 (50 attempts, 100% pass) established the counterfactual with cross-modal temporal coupling running in log-only mode. Wave 2 (10 attempts, 10% pass) enabled temporal enforcement. Wave 3 (20 attempts, 0% pass) added phrase content binding. Wave 4 (1,000 attempts, 0% pass, 95% CI [0%, 0.37%]) confirmed the result at scale. T4b extended the program to real-time synthesized voice—two independent TTS model families and 58 synthetic voices, all speaking the issued challenge phrase: the synthesized audio clears the texture checks, but the full production stack rejected every attempt (0% across 200 attempts). Each study closes one canonical class; the program continues against new ones.
+This adversary generates challenge-matching audio, motion, touch, or feature summaries.
+
+T4a measured one prerecorded, arbitrary-content attack class across four conditions. The observed pass rates were 100%, 10%, 0%, and 0%. The final wave observed zero passes in 1,000 attempts, with a 95% confidence interval of [0%, 0.37%].
+
+T4b tested 200 full-stack attempts across two named TTS model families and 58 voices. No attempt reached the chain. These results apply to the tested models and campaign configurations. T5 remains open.
 
 ## What the integrator controls
 
-The protocol proves that a human operates a wallet. Whether that human is present when your application acts is a question your gate asks, and Entros gives you two fields to ask it with.
+Entros is designed to provide evidence of live human control for a wallet. Integrators choose the policy for each action.
 
-A Trust Score read tells you how consistently a wallet has verified. Pairing it with `last_verification_timestamp` bounds how long ago. Running a verification at the point of a gated action answers it outright, which is why claims, votes and treasury actions are worth the extra step. See [Trust Score: what to gate on](/docs/concepts/trust-score#what-to-gate-on).
+A Trust Score summarizes active weekly verification bins and account age. `last_verification_timestamp` records recency. A fresh verification provides the strongest current signal for an action. See [Trust Score: what to gate on](/docs/concepts/trust-score#what-to-gate-on).
 
 ## What is out of scope
 
 - **Wallet compromise.** If an attacker controls the user's keypair, the Anchor follows. The protocol assumes the wallet is held by the legitimate user.
 - **Coercion.** A human verifying under duress produces a real verification. Protocol-level defense against coerced participation is a research question. The practical response is per-application thresholds and a live check at the point of the action.
+- **Browser provenance.** A hostile browser can replace sensor APIs or submit computed evidence. Current server checks limit accepted submissions. Planned native attestation adds a higher-assurance capture tier.
+- **Legal identity and attributes.** Entros does not verify a name, age, credential, nationality, or account ownership outside the connected wallet.
 
 ## Where to look next
 
-- [Anonymity Ring](/docs/concepts/anonymity-ring)—the validator set that runs Tier 4 defenses
-- [Trust Score](/docs/concepts/trust-score)—how the score's decay shape is itself a defense
-- [Roadmap: Near-term](/docs/roadmap/near-term)—the external audit and what's next after Tier 4
+- [Anonymity Ring](/docs/concepts/anonymity-ring) - the current private validation service and decentralization plan
+- [Trust Score](/docs/concepts/trust-score) - the score formula and integration policy
+- [Roadmap: Near-term](/docs/roadmap/near-term) - the external audit and mainnet gates

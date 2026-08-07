@@ -1,9 +1,9 @@
 ---
 title: Verify a wallet in five lines
-description: Drop EntrosVerify into your app for one-click on-chain proof of personhood.
+description: Drop EntrosVerify into your app for a wallet-connected Entros verification.
 ---
 
-The shortest path to a verified human. Render `<EntrosVerify />` as a button anywhere in your React tree—on click, the user completes wallet connect plus a 12-second behavioral capture inside a popup window, and your `onVerified` callback fires with the verified payload. Your app never touches the wallet adapter or the SDK directly.
+Render `<EntrosVerify />` as a button in your React tree. The user connects a wallet and completes the capture inside a popup. The `onVerified` callback reports a completed Entros verification.
 
 This is the **Tier 1 drop-in path**, the right choice for around 90% of integrations and the one to reach for whenever the gated action is worth the friction. To read an existing Anchor instead, for display or a lower-stakes gate, see the **Tier 3 path** in [Next.js: gate a route](/docs/quickstart/next-js).
 
@@ -33,14 +33,14 @@ On click: a popup opens to entros.io, the user connects their wallet, completes 
 ```ts
 interface EntrosVerifyResult {
   walletPubkey: string;       // Base58 Solana wallet address
-  attestationPda: string;     // SAS attestation PDA—readable by any Solana program
+  attestationPda: string;     // Derived SAS address. Check whether the account exists
   txSig: string;              // Confirmed transaction signature
   trustScore: number;         // On-chain Trust Score after this verification
-  cluster: "devnet" | "mainnet-beta";
+  cluster: "devnet";
 }
 ```
 
-`walletPubkey` identifies the user. `trustScore` lets you gate higher-stakes actions, for example a 100 floor on airdrop eligibility. It arrives from a verification that just completed, so it describes someone present. `attestationPda` and `txSig` give you audit trails.
+`walletPubkey` identifies the wallet. `trustScore` lets you apply an application policy. `txSig` identifies the confirmed verification transaction. `attestationPda` is the deterministic address where a best-effort SAS issuance can appear. Fetch the account before treating the attestation as issued.
 
 ## Where to look next
 

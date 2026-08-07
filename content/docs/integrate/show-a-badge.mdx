@@ -9,7 +9,7 @@ description: Render a wallet's verification state without gating any content.
 
 `EntrosBadge` is a single-file React component you copy into your project from the entros.io repo: [`src/components/ui/entros-badge.tsx`](https://github.com/entros-protocol/entros.io/blob/main/src/components/ui/entros-badge.tsx). Drop it in a `components/` directory and import from there.
 
-(The shipped `@entros/verify` package covers the verification *trigger*; `EntrosBadge` is the read-only display primitive — same on-chain source, different surface. A standalone `@entros/badge` package is on the [near-term roadmap](/docs/roadmap/near-term).)
+The shipped `@entros/verify` package covers the verification trigger. `EntrosBadge` is a copy-source display primitive. A standalone package remains on the [near-term roadmap](/docs/roadmap/near-term).
 
 ## Usage
 
@@ -22,18 +22,18 @@ import { EntrosBadge } from "./components/EntrosBadge";
 
 The component fetches the Anchor PDA on mount and renders one of four states:
 
-- **Verified**—shows "Verified · Trust: *score*" with the on-chain Trust Score
-- **Not verified**—shows a neutral "Not Verified" indicator
-- **Loading**—shows a "Verifying Entros…" placeholder with the same dimensions as the eventual content
-- **Invalid address**—shows an "Invalid Address" indicator when the prop is not a valid base58 pubkey
+- **Entros verified** - shows the current on-chain Trust Score
+- **No Anchor** - shows a neutral state when the devnet account does not exist
+- **Loading** - shows a placeholder with the same dimensions as the result
+- **Invalid address** - shows an error when the prop is not a valid base58 public key
 
 ## Props
 
 | Prop | Type | Required | Default | Purpose |
 | --- | --- | --- | --- | --- |
-| `walletAddress` | `string` | yes |—| Base58-encoded wallet pubkey to look up |
-| `connection` | `Connection` | no | devnet RPC | Solana connection. Provide your own to read mainnet or use a different RPC. |
-| `className` | `string` | no |—| Tailwind classes appended to the root element |
+| `walletAddress` | `string` | yes | none | Base58-encoded wallet public key to look up |
+| `connection` | `Connection` | no | devnet RPC | Solana connection. Current Entros program support is devnet-only. |
+| `className` | `string` | no | none | Tailwind classes appended to the root element |
 
 ## Where badges work well
 
@@ -56,5 +56,5 @@ A badge reports state rather than granting access, so showing when the wallet la
 
 ## Where to look next
 
-- [Gate a route](/docs/integrate/gate-a-route)—when you want to block, not just display
-- [Read on-chain](/docs/integrate/read-on-chain)—the underlying RPC pattern
+- [Gate a route](/docs/integrate/gate-a-route) - use state in an access policy
+- [Read on-chain](/docs/integrate/read-on-chain) - the underlying RPC pattern

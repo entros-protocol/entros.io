@@ -18,10 +18,10 @@ export function IntegrationSection() {
         </h2>
 
         <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Wallet-connected verification is the production path: a Groth16
-          ZK proof, a persistent on-chain Entros Anchor, a SAS attestation,
-          and a Trust Score that compounds across re-verifications. One
-          wallet prompt, one transaction, full identity.
+          Wallet-connected verification is the primary devnet path. First
+          verification uses a validator receipt to mint the Anchor.
+          Re-verification adds a Groth16 proof. Best-effort SAS issuance runs
+          as a separate wallet action after protocol settlement.
         </p>
 
         <div className="mt-16 border-y border-border">

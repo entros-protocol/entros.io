@@ -16,7 +16,7 @@ const gates = [
     label: "Protocol hardening",
     window: "Ongoing",
     description:
-      "We run adversarial campaigns against the live pipeline and fix what they find. Controlled studies measure how much one person varies between sessions and across devices. That variance sets the bounds the protocol enforces. New detection layers log before they reject. This work runs alongside the other three.",
+      "Adversarial campaigns test the live pipeline. Controlled studies measure same-wallet drift, cross-wallet separation, device effects, and human completion. New detection layers record evidence before any enforcement decision.",
   },
   {
     Icon: KeyRound,
@@ -30,7 +30,7 @@ const gates = [
     label: "External security audit",
     window: "Independent audit",
     description:
-      "An established Solana audit firm reviews the three on-chain programs and the on-chain proof flow. entros-verifier carries the highest stakes; entros-registry handles fees and validator staking; entros-anchor mints the non-transferable token. The firm publishes its report on completion, with findings remediated in public.",
+      "An established Solana audit firm reviews the three on-chain programs and proof flow. The registry currently handles fees, treasury state, and validator registration scaffolding. Safe remediation summaries publish after fixes land.",
   },
   {
     Icon: Wrench,
@@ -45,12 +45,12 @@ const timeline = [
   {
     window: "May 2026",
     title: "Devnet pilot live",
-    body: "The devnet pilot is open at entros.io/verify. Three Anchor programs run live. The Solana Attestation Service issues an attestation on every verification. The Realms voter-weight plugin and Agent Anchor for the 8004 registry both ship.",
+    body: "The devnet pilot is open at entros.io/verify. Three protocol programs run on devnet. The SDK attempts a wallet-bound SAS attestation after successful verification. The Realms voter-weight program and Agent Anchor prototype are deployed on devnet, with client integration work still open.",
   },
   {
     window: "Now",
     title: "$ENTROS launch",
-    body: "The token launched to fund the path to mainnet and align the community from day one. Validator staking, fee-share, and governance activate in phases as the network decentralizes.",
+    body: "The token launched to fund the path to mainnet. Validator staking, fee share, and protocol governance remain planned mechanisms that require specification, implementation, and audit.",
   },
   {
     window: "Ongoing",
@@ -75,7 +75,7 @@ const timeline = [
   {
     window: "After launch",
     title: "Decentralized validator network",
-    body: "VRF-selected validator cohorts stake $ENTROS, earn a share of verification fees, and govern protocol parameters. The Anonymity Ring opens to permissionless operation.",
+    body: "The planned network adds validator admission, request assignment, quorum settlement, rewards, and governance. The final distribution and attestation model remains under design.",
   },
 ];
 
@@ -113,9 +113,9 @@ export default function Roadmap() {
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
               Entros is live on devnet: three programs, a shipped SDK, and a
-              pipeline that already blocks recorded-voice replay and collapses
-              synthetic sybil farms in our own red-team. We keep measuring and
-              tightening it. The token funds the path to mainnet.
+              private validation service with published, scoped red-team
+              results. T5 and population-level uniqueness evidence remain
+              open. The token funds the path to mainnet.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

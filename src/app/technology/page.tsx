@@ -12,7 +12,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Technology",
   description:
-    "Twelve seconds of speaking and tracing. Feature extraction and ZK proving run on your device. Raw recordings are processed locally and never stored.",
+    "Speaking and tracing produce local feature extraction and ZK proofs. Raw motion and full-resolution touch stay on the device.",
   path: "/technology",
 });
 
@@ -37,8 +37,9 @@ export default function Technology() {
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
               Capture, feature extraction, and proof generation all run on
-              your device. What reaches Solana is a zero-knowledge proof and
-              a commitment, never a raw recording.
+              your device. The validation path receives a statistical summary
+              and transient challenge evidence. Solana stores protocol state,
+              commitments, and proofs.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

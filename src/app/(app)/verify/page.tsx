@@ -8,7 +8,7 @@ const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const baseMetadata = pageMetadata({
   title: "Verify",
   description:
-    "Prove you are human with Entros Protocol. Twelve seconds of voice, motion, and touch, anchored on Solana devnet and readable by every dApp.",
+    "Complete the Entros behavioral verification flow on Solana devnet using voice, motion, and touch evidence.",
   path: "/verify",
 });
 
@@ -41,7 +41,7 @@ export async function generateMetadata({
   // landing-page framing; "Verified human..." is the right framing for a
   // personal share. Description stays on the baseMetadata default so the
   // surrounding copy complements the image (which carries the score).
-  const shareTitle = "Verified human on Entros Protocol";
+  const shareTitle = "Entros verification complete";
 
   return {
     ...baseMetadata,

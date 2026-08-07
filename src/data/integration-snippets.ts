@@ -14,7 +14,7 @@ import type { IntegrationSnippet } from "./types";
 export const verifyComponentSnippet = {
   title: "Drop-in component",
   description:
-    "The fastest path. Render `<EntrosVerify>` as a button anywhere in your React tree—the component handles the wallet popup, the 12-second behavioral capture, the on-chain mint, and hands you a verified payload via callback. Five lines.",
+    "Render `<EntrosVerify>` as a button in your React tree. The component handles the wallet popup, behavioral capture, on-chain transaction, and callback.",
   code: `import { EntrosVerify } from '@entros/verify';
 
 <EntrosVerify
@@ -39,7 +39,7 @@ export const integrationSnippets: IntegrationSnippet[] = [
     mode: "wallet-connected",
     title: "Wallet-connected verification",
     description:
-      "The user pays a small protocol fee (~0.005 SOL) and signs a single transaction. An on-chain Anchor is minted or updated, a SAS attestation is written, and the Trust Score recomputes—all from one wallet prompt. Your app reads results on-chain for free.",
+      "The user pays the configured protocol fee and signs one on-chain transaction. The transaction mints or updates the Anchor and recalculates Trust Score. The SDK then attempts a separate, best-effort SAS attestation that can require a message signature.",
     code: `"use client";
 import { useRef } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
@@ -85,7 +85,7 @@ export const useCaseSnippets = [
   {
     title: "Read a wallet's attestation",
     description:
-      "Read the SAS attestation from chain state. No verification UI in your app, no API call, no key. Right for display and for lower-stakes gates. Pair it with a verification at the action for anything that moves value.",
+      "Read an existing SAS attestation from chain state. No verification UI, API call, or key is required. Pair the read with a fresh verification for higher-value actions.",
     code: `import { verifyEntrosAttestation } from '@entros/pulse-sdk';
 import type { Connection } from '@solana/web3.js';
 
@@ -109,7 +109,7 @@ export function PremiumPage() {
     <EntrosGate minTrustScore={100}>
       {/* Renders only when the connected wallet has an Anchor
           with trust_score >= 100 on devnet */}
-      <h1>Welcome, verified human.</h1>
+      <h1>Verification policy satisfied.</h1>
     </EntrosGate>
   );
 }`,

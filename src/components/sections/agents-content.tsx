@@ -3,9 +3,9 @@ import { ShieldCheck, Bot } from "lucide-react";
 const steps = [
   {
     number: "01",
-    title: "Verify as human",
+    title: "Complete verification",
     description:
-      "Complete a behavioral verification to prove you're human. Your Entros Anchor is minted on Solana with a Trust Score that grows over time.",
+      "Complete the devnet verification flow. A successful first result can mint an Entros Anchor with an initial Trust Score.",
   },
   {
     number: "02",
@@ -17,7 +17,7 @@ const steps = [
     number: "03",
     title: "Attest with Agent Anchor",
     description:
-      "Link your Entros Anchor to your agent with one transaction. The attestation is immutable and on-chain. Any platform can verify the link.",
+      "Link the registered agent to the operator wallet's Entros Anchor. Any client can read the devnet link from chain state.",
   },
 ];
 
@@ -39,8 +39,8 @@ export function AgentsContent() {
             <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
               Thousands of AI agents are registered on Solana. They trade,
               vote, execute transactions, and interact with protocols
-              autonomously. None of them can prove a real human operates
-              them.
+              autonomously. The registry does not provide a shared signal
+              for the human operator behind an agent.
             </p>
             <p className="text-base leading-relaxed text-foreground/65 md:text-lg">
               Anyone can register unlimited anonymous agents with no link
@@ -60,23 +60,22 @@ export function AgentsContent() {
           </span>
 
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            One person<span className="text-cyan">.</span> One identity<span className="text-cyan">.</span>
+            One operator record<span className="text-cyan">.</span>
             <br />
-            All their agents<span className="text-cyan">.</span>
+            Every linked agent<span className="text-cyan">.</span>
           </h2>
 
           <div className="mt-16 grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-6">
               <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
-                Agent Anchor writes immutable metadata on a registered
-                agent linking it to its verified human operator's Entros
-                Anchor. One human, one Trust Score. Register 100 agents
-                and all 100 trace back to the same verified identity.
+                Agent Anchor records a link from a registered agent to an
+                operator wallet's Entros Anchor. Multiple agents can
+                reference one wallet and its current Trust Score.
               </p>
               <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-                Platforms set their own policies—minimum Trust Score
-                to register, maximum agents per operator, age requirements
-                on the operator's Anchor.
+                Platforms set their own policies. They can require Trust
+                Score, recency, Anchor age, or an agent limit per operator
+                wallet. Population-level uniqueness remains open research.
               </p>
             </div>
 
@@ -232,9 +231,9 @@ export function AgentsContent() {
               </h2>
 
               <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                Check if any agent has a verified human operator. Returns
-                the operator's Trust Score, verification timestamp, and
-                wallet address. Works on devnet and mainnet.
+                Read whether an agent has an Entros operator link. The
+                response includes the operator wallet, Trust Score, and
+                verification timestamp. Current support is devnet-only.
               </p>
             </div>
 

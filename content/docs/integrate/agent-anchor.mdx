@@ -1,9 +1,9 @@
 ---
 title: Agent Anchor
-description: Link a registered AI agent on the Solana Agent Registry to its verified human operator.
+description: Link a registered AI agent to an operator wallet's Entros Anchor on devnet.
 ---
 
-The Solana Agent Registry (the Solana implementation of the ERC-8004 agent identity spec) gives autonomous agents a canonical on-chain record. Agent Anchor extends that record with a metadata entry pointing to the operator's Entros Anchor—turning anonymous agent registrations into "Know Your Agent."
+The Solana Agent Registry gives autonomous agents an on-chain record. Agent Anchor adds immutable metadata that points to the operator wallet's Entros Anchor.
 
 ## What it does
 
@@ -16,9 +16,9 @@ A registered agent on the registry has an `agentAsset` PDA. Agent Anchor writes 
 | `verifiedAt` | `number` | Unix timestamp when the operator was last verified |
 | `wallet` | `string` | Operator's wallet pubkey (base58) |
 
-The metadata is JSON-serialized inside the registry's Borsh `Vec<u8>` envelope, keyed under `entros:human-operator`, and marked immutable—once written, the operator linkage is permanent.
+The metadata is JSON-serialized inside the registry's Borsh `Vec<u8>` envelope. It uses the `entros:human-operator` key and remains permanent once written.
 
-## Attest a human operator
+## Record an operator link
 
 ```ts
 import { attestAgentOperator } from "@entros/pulse-sdk";
@@ -38,11 +38,11 @@ if (!result.success) {
 3. JSON-serializes the four fields (`anchorPda`, `trustScore`, `verifiedAt`, `wallet`) and wraps them in the registry's Borsh `Vec<u8>` envelope.
 4. Calls the registry's `set_metadata_pda` instruction to write the payload, marked immutable.
 
-The wallet calling `attestAgentOperator` must be both the agent's owner on the registry and the holder of the operator Anchor.
+The calling wallet must own the registered agent and the referenced Entros Anchor.
 
 ## Read the operator metadata
 
-Any program—or any client—can read the operator linkage:
+Any program or client can read the operator link:
 
 ```ts
 import { getAgentHumanOperator } from "@entros/pulse-sdk";
@@ -63,24 +63,24 @@ Platforms accepting agent registrations can require a minimum operator Trust Sco
 ```ts
 const operator = await getAgentHumanOperator(agentAsset, connection);
 if (!operator || operator.trustScore < 500) {
-  return rejectAgent("operator must be a verified human with Trust Score 500+");
+  return rejectAgent("operator wallet must have Trust Score 500+");
 }
 ```
 
 `trustScore` and `verifiedAt` on this object are the values written when the operator linkage was attested, and that linkage is immutable. They describe the operator at that moment, which is the right signal for provenance and for auditing who registered what.
 
-For a registration flow that acts on the answer now, read the operator's Anchor PDA as well and check `last_verification_timestamp` against your own window. Registering a new agent is also a natural place to ask the operator for a verification, which makes the score you read describe someone present.
+For a current decision, fetch the linked Anchor and check its latest score and verification timestamp. Ask for a fresh verification when the action needs stronger recency.
 
-This pattern turns "anyone can register an agent" into "any verified human with a sustained track record can register an agent." It does not stop a determined operator from registering many agents. Combined with rate limits or per-operator caps, it stops the cheap-to-mass-register ones.
+This pattern adds an operator-wallet policy to agent registration. It does not establish population uniqueness. Applications can combine it with per-wallet limits and their existing agent policies.
 
 ## Program IDs
 
 | Network | Registry program ID |
 | --- | --- |
 | Devnet | `8oo4J9tBB3Hna1jRQ3rWvJjojqM5DYTDJo5cejUuJy3C` |
-| Mainnet | `8oo4dC4JvBLwy5tGgiH3WwK4B9PWxL9Z4XjA2jzkQMbQ` |
+| Mainnet | Registry address reserved by the SDK. Entros Anchor support is not deployed on mainnet |
 
-The metadata PDA is derived from the agent asset and the first 16 bytes of the SHA256 hash of the metadata key. The SDK does this internally; the equivalent client-side derivation is:
+The metadata PDA uses the agent asset and the first 16 bytes of the SHA256 metadata-key hash. The SDK derives it internally.
 
 ```ts
 const META_KEY = "entros:human-operator";
@@ -100,5 +100,5 @@ const [metaPda] = PublicKey.findProgramAddressSync(
 
 ## Where to look next
 
-- [Concepts: Anchor PDA](/docs/concepts/anchor-pda)—the operator's Entros Anchor that this metadata points at
-- [Reference: SDK](/docs/reference/sdk)—full signatures of `attestAgentOperator` and `getAgentHumanOperator`
+- [Concepts: Anchor PDA](/docs/concepts/anchor-pda) - the operator wallet's Entros Anchor
+- [Reference: SDK](/docs/reference/sdk) - signatures for `attestAgentOperator` and `getAgentHumanOperator`

@@ -1,10 +1,10 @@
 const openSource = [
   "On-chain programs (entros-anchor, entros-verifier, entros-registry)",
-  "ZK circuits and trusted setup artifacts",
+  "ZK circuit source and verification keys",
   "Client SDK (pulse-sdk on npm)",
   "Executor node",
   "Website and documentation",
-  "Security program page, blueprint documents, and aggregate results",
+  "Security program page, public documentation, and scoped campaign results",
   "Baseline adversarial testing (script-kiddie tier in pulse-sdk)",
 ];
 
@@ -33,8 +33,8 @@ export function OpenSourcePosture() {
         </h2>
 
         <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          The protocol layer is MIT licensed and auditable end to end.
-          The validation service and red-team harness stay closed.
+          The client and on-chain protocol are MIT licensed. The private
+          validation service and red-team harness stay closed.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-px border border-border bg-border lg:grid-cols-2">
@@ -74,11 +74,10 @@ export function OpenSourcePosture() {
         </div>
 
         <p className="mt-12 max-w-3xl text-sm leading-relaxed text-foreground/55">
-          Nothing that affects verifiable protocol behavior is private.
-          Every on-chain transition, every cryptographic operation,
-          every client-side computation is open and auditable. The
-          private components are the detection surface an attacker
-          would otherwise exploit to calibrate their attacks.
+          On-chain transitions, cryptographic checks, and client computations
+          are public. The private service decides whether submitted evidence
+          satisfies the current acceptance policy. Its operational detectors
+          and thresholds remain private to limit directed calibration.
         </p>
       </div>
     </section>

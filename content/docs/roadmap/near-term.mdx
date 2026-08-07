@@ -7,11 +7,15 @@ Near-term work runs through three gates before mainnet, in order: the trusted se
 
 ## Trusted setup ceremony
 
-Groth16 Phase 2 currently has a single contributor. Multiple participants run the ceremony in sequence, each contributing random entropy and destroying it afterwards, and `entros-verifier` is recompiled against the resulting verifying key. The structured reference string is compromised only if every contributor colludes, so one honest participant is enough for the math to hold. Ecosystem builders and integrators take the open slots. The public log and hash chain publish at `entros.io/ceremony`.
+The deployed verifier and current clients share one artifact generation. The `circuits` source and key directory describe an unpublished successor generation. The ceremony must produce one coordinated artifact set before any consumer changes.
+
+Multiple participants will contribute entropy in sequence and destroy it after use. The final artifacts will publish with a hash chain. The protocol will rebuild the verifier, web client, mobile client, and native prover against that one generation.
 
 ## External security audit
 
-A full audit of the three on-chain programs and the on-chain proof flow by an established Solana audit firm. `entros-verifier` carries the highest stakes, `entros-registry` handles fees and validator staking, and `entros-anchor` mints the non-transferable token. The audit precedes mainnet deployment, and the firm publishes its report on completion with findings remediated in public. Expected engagement: 6–10 weeks plus remediation.
+An established Solana audit firm will review the three on-chain programs and proof flow. `entros-registry` currently handles fees, treasury state, and validator registration scaffolding. Validator selection, quorum, rewards, and slashing remain planned.
+
+The audit precedes mainnet deployment. The final report and safe remediation summaries will become public after fixes land.
 
 The pre-audit hardening work is captured in the protocol's internal AUDIT.md and the public security program. Findings discovered during internal red-teaming are remediated and re-tested before the external engagement begins.
 
@@ -21,19 +25,19 @@ The third gate is a sequence of small items rather than one large one: paid RPC 
 
 ## Mainnet deployment
 
-After all three gates clear and audit remediations are in place, the three programs deploy to mainnet. Devnet remains live for development; mainnet is the production surface. Program IDs are immutable across the deployment—devnet IDs and mainnet IDs match where the deployment authority chooses, with documented exceptions for any program-id-derived PDA surface.
+After all three gates clear, the three programs can deploy to mainnet. Devnet will remain the development surface. Mainnet program IDs will publish after deployment. Integrators must not assume they match devnet.
 
 ## Standalone display primitives
 
-The verification *trigger* shipped as [`@entros/verify`](/docs/integrate/verification-flow) — a popup-pattern React component that opens a window to entros.io, runs the 12-second capture, and posts the verified payload back. Five lines of JSX, runs against the canonical flow, no redirect.
+The verification *trigger* shipped as [`@entros/verify`](/docs/integrate/verification-flow). The React component opens the devnet flow in a popup and returns a result to the opener.
 
 The remaining packaging work is on the *read* primitives. `EntrosGate` (route guard, reading score and recency) and `EntrosBadge` (Trust Score pill) are still copy-source single-file components. The near-term plan is a standalone `@entros/react` package that consolidates them as drop-ins, composing with `@entros/verify` so a gate can run a verification in its own fallback. Until then, the canonical sources live in the entros.io repo and stay in sync with the on-chain layout.
 
 ## Native Solana Mobile build
 
-A React Native package and platform-specific native builds for iOS and Android. The capture quality on mobile is materially higher than desktop—IMU at higher sampling rates, native microphone access, authentic touch dynamics.
+A React Native client exists for Android development. Representative-device testing, app integrity integration, release hardening, and store distribution remain open.
 
-The Solana Mobile (Seeker) integration is the central piece: Mobile Wallet Adapter for the wallet connection, Seed Vault for keypair handling, and a notifications path for re-verification reminders aligned to the score decay curve.
+The planned Seeker release uses Mobile Wallet Adapter and device-protected key handling. A future notification path can remind users when an application requires a fresh result.
 
 ## Integrator pilots
 
@@ -47,5 +51,5 @@ These pilots inform the threshold-setting documentation and surface real-world e
 
 ## Where to look next
 
-- [Medium-term](/docs/roadmap/medium-term)—what lands after the audit
-- [How to influence](/docs/roadmap/how-to-influence)—the RFC process and where feedback lands
+- [Medium-term](/docs/roadmap/medium-term) - work after the audit
+- [How to influence](/docs/roadmap/how-to-influence) - the RFC process

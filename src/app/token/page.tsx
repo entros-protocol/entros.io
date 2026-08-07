@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Token",
   description:
-    "Entros Token economics. Protocol fees, revenue flywheel, validator staking, and fair launch details.",
+    "Current protocol fees, fair-launch details, and the planned $ENTROS utility roadmap.",
   path: "/token",
 });
 
@@ -41,9 +41,9 @@ export default function Token() {
 
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
             {/* Bound so "revenue." never wraps away from what it belongs to. */}
-            Protocol fees, validator staking, treasury&nbsp;revenue.
+            Protocol fees today. Validator utility after hardening.
             <br />
-            $ENTROS turns genuine verification demand into network security.
+            $ENTROS is planned to support staking, capacity, and governance.
           </p>
 
           <TokenLaunchCard />

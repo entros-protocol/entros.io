@@ -22,15 +22,15 @@ export const verificationSteps: VerificationStep[] = [
     description:
       "308 statistical features across voice, motion, and touch. Anatomical signal (formants, MFCCs, voice quality) alongside anti-synthesis traces (jitter, shimmer, HNR).",
     detail:
-      "Audio contributes 170 features: F0 statistics, jitter, shimmer, harmonics-to-noise ratio, MFCCs, LPC coefficients, formant trajectories, and voice quality. Motion contributes 81: jerk, jounce, FFT band energies, tremor peak in the 4-12 Hz physiological band, and cross-axis IMU covariance. Touch contributes 57: velocity, acceleration, pressure derivatives, curvature, and path efficiency. Per-feature entropy separates live behavior from generated data. Human tremor fluctuates over time; synthetic signal holds steady. On desktop, mouse pointer dynamics replace IMU data with the same kinematic feature shape.",
+      "Audio contributes 170 features, including F0 statistics, MFCCs, LPC coefficients, formant trajectories, and voice quality. Motion contributes 81 features, including jerk, jounce, band energies, tremor peaks, and cross-axis covariance. Touch contributes 57 features, including velocity, pressure derivatives, curvature, and path efficiency. The private service evaluates these values under the current policy. On desktop, mouse dynamics fill the kinematic feature shape.",
     icon: "scan",
   },
   {
-    title: "04—Hash",
+    title: "04 - Hash",
     description:
-      "SimHash projects features into a 256-bit fingerprint. Same-user fingerprints cluster; imposters diverge.",
+      "SimHash projects the feature summary into a 256-bit fingerprint for continuity research.",
     detail:
-      "The expanded feature vector (including entropy and jitter metrics) is passed through SimHash using random hyperplane projections. The output is a Temporal Fingerprint. Two fingerprints from the same person have small Hamming distance. The entropy features mean synthetic data produces a different fingerprint than real behavioral data.",
+      "SimHash projects the expanded feature vector across fixed hyperplanes. The result is a comparable 256-bit fingerprint. Current research measures whether same-person captures stay close enough while different people and synthetic inputs separate reliably.",
     icon: "hash",
   },
   {
@@ -38,7 +38,7 @@ export const verificationSteps: VerificationStep[] = [
     description:
       "Poseidon(fingerprint || salt) produces the TBH commitment. The fingerprint and salt stay on-device.",
     detail:
-      "A large cryptographically-secure salt is generated. The Poseidon hash function (chosen for ZK-circuit efficiency over BN254 field elements) takes the fingerprint concatenated with the salt to produce H_TBH. The commitment and ZK proof are transmitted. The fingerprint and salt remain on-device, encrypted.",
+      "The SDK generates a large random salt. Poseidon commits to the fingerprint and salt over BN254 field elements. The fingerprint and salt stay in the encrypted baseline. The validation path receives the statistical summary and transient capture inputs before the wallet flow submits protocol data on-chain.",
     icon: "lock",
   },
   {
@@ -46,7 +46,7 @@ export const verificationSteps: VerificationStep[] = [
     description:
       "Groth16 ZK proof: distance is within the valid range. Not too similar (replay), not too different (imposter).",
     detail:
-      "The proof verifies three statements: both commitments are valid Poseidon hashes of real fingerprints, the Hamming distance falls below the maximum threshold (natural human variation), and the distance exceeds a minimum threshold (blocks perfect replay where a bot submits identical data). The verifier learns nothing about the actual fingerprints.",
+      "The circuit proves that both commitments open to the supplied fingerprints. It also proves that their Hamming distance is below the maximum and at or above the replay floor. The circuit does not prove how the client produced either fingerprint.",
     icon: "proof",
   },
   {
@@ -54,7 +54,7 @@ export const verificationSteps: VerificationStep[] = [
     description:
       "Proof verified on Solana. Anchor updated. Progressive Trust Score recalculated from verification history.",
     detail:
-      "The statistical feature summary is validated server-side by proprietary models that detect synthetic data, then the ZK proof is verified on-chain. Both must pass. The server sees derived statistics (means, variances, spectral coefficients) plus the spoken-phrase audio it transcribes and discards. It never sees raw motion or touch, and it stores no raw recordings. On success, the Anchor stores the verification timestamp in a rolling history. Trust Score recalculates using recency weighting and cadence analysis.",
+      "The private validation service applies phrase, synthesis, capture, and cross-wallet checks to the submitted evidence. Re-verification also requires an on-chain proof. The service processes phrase audio in memory and receives no raw motion or full-resolution touch stream. On success, the Anchor stores the latest timestamp and recent history. Trust Score recalculates from active weekly bins and account age.",
     icon: "check-circle",
   },
 ];

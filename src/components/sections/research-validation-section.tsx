@@ -1,23 +1,23 @@
 const FINDINGS = [
   {
-    title: "Single-modality detection is failing",
+    title: "Single-modality detection degrades across models",
     source: "SONAR Benchmark, ACM 2024-2025",
     body: "OpenAI's TTS is detected only 78% of the time by the best available classifier. Models trained on older datasets lose up to 43% performance against newer TTS systems.",
   },
   {
-    title: "Multi-modal fusion is the defense",
+    title: "Mobile fusion can improve authentication",
     source: "BioMoTouch, arXiv 2025",
-    body: "Touch and motion sensor fusion from commodity devices achieves 99.71% accuracy with 0.27% equal error rate. Mimicry attacks succeed less than 1% of the time. Replicating physiological characteristics across several modalities, in temporally consistent patterns, is a substantially harder problem.",
+    body: "BioMoTouch reports 99.71% accuracy and a 0.27% equal error rate for touch and motion fusion in its evaluation. This motivates Entros research, but does not establish Entros liveness or resistance to generated input.",
   },
   {
-    title: "Voice-gesture coupling is biomechanical",
+    title: "Arm movement can perturb the voice",
     source: "Pouw et al., Royal Society Proceedings B, 2025",
-    body: "Hand movement and voice prosody couple through shared respiratory and motor control systems. The coupling is involuntary and biomechanical. A bot using TTS and a movement simulator produces two independent signals that lack this natural coupling.",
+    body: "Pouw et al. found that prompted upper-limb movements and related postural muscle activity changed the amplitude envelope of a sustained /a/ vowel under controlled laboratory measurement. Whether consumer devices can turn that effect into a reliable liveness signal remains an open Entros research question.",
   },
   {
-    title: "Physics-informed detection still works",
+    title: "Physics-informed features merit evaluation",
     source: "VoiceRadar, NDSS 2025",
-    body: "Micro-frequency oscillations derived from vocal fold physics achieve 0.45% equal error rate against modern TTS. TTS models the statistical distribution of speech features but not the underlying physics of speech production.",
+    body: "VoiceRadar reports a 0.45% equal error rate for its micro-frequency feature on its benchmark. This motivates Entros evaluation but does not establish an Entros error rate.",
   },
   {
     title: "Modern TTS produces artifacts in both directions",
@@ -25,9 +25,9 @@ const FINDINGS = [
     body: "Neural vocoders can produce acoustic perturbation values higher than human baselines, not just lower. This overturns the assumption that synthetic speech is \"too perfect.\" Detection must account for artifacts in both directions.",
   },
   {
-    title: "Touch-IMU shockwave is a liveness signal",
+    title: "Touch and motion can share a physical response",
     source: "Device physics, BioMoTouch 2025",
-    body: "Physical touch produces a measurable hardware response in a device's motion sensors. A signal generated without genuine physical interaction cannot reproduce it.",
+    body: "A physical touch can produce a time-aligned response in device motion sensors. Whether consumer devices and attested clients can measure that response reliably enough to distinguish physical interaction from generated input remains open research.",
   },
 ];
 
@@ -45,14 +45,14 @@ export function ResearchValidationSection() {
         </span>
 
         <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          Why multi-modal behavioral
-          verification works<span className="text-cyan">.</span>
+          Evidence behind the research
+          program<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Single-modality detection is losing to modern AI. Entros&apos;s
-          multi-modal approach is the architecture recent research
-          converges on for proof of personhood.
+          External studies motivate multi-modal authentication and
+          synthesis research. Their accuracy numbers do not establish Entros
+          performance on consumer devices.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2 lg:grid-cols-3">
@@ -76,13 +76,11 @@ export function ResearchValidationSection() {
             // CORE ADVANTAGE
           </p>
           <p className="mt-4 max-w-3xl text-base leading-relaxed text-foreground/75 md:text-lg">
-            Entros captures voice, movement, and touch simultaneously
-            and verifies their temporal correlation. Spoofing one
-            modality in isolation is feasible. Spoofing all three, with
-            behavioral characteristics that stay consistent across
-            modalities, is a substantially harder problem. Trust Score
-            then asks for that consistency to hold across sessions over
-            weeks.
+            Entros captures voice, movement, and touch in one session. The
+            current fingerprint projection mixes those features but does not
+            prove a causal relationship between them. Temporal analysis stays
+            observable while challenge-bound designs and human completion are
+            tested. Trust Score records the wallet&apos;s verification history.
           </p>
         </div>
       </div>

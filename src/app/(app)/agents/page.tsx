@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Agent Anchor",
   description:
-    "Verify the human behind every AI agent on Solana. Link your Entros identity to your registered agents with immutable on-chain attestation.",
+    "Link a registered Solana agent to an operator wallet's Entros Anchor on devnet.",
   path: "/agents",
 });
 
@@ -31,9 +31,9 @@ export default function Agents() {
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Bind any registered AI agent on Solana to its verified
-              human operator with one immutable on-chain attestation.
-              Any platform reads it for free.
+              Link a registered AI agent to its operator wallet's Entros
+              Anchor with immutable devnet metadata. Any platform can read
+              the link from chain state.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -82,9 +82,9 @@ export default function Agents() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
           <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-            One human<span className="text-cyan">.</span>
+            One operator record<span className="text-cyan">.</span>
             <br />
-            All their agents<span className="text-cyan">.</span>
+            Every linked agent<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

@@ -2,9 +2,9 @@
 
 <img src="public/logos/wordmark.svg" alt="entros" height="72" />
 
-**Behavioral proof-of-personhood on Solana.**
+**Behavioral proof-of-personhood research and infrastructure on Solana.**
 
-Prove you're human with a twelve-second capture on your device. Vouch for the AI agents you operate.<br />
+Designed to prove humanness through a behavioral capture. Link AI agents to the wallet that operates them.<br />
 Build Trust. Gate any Solana dApp.
 
 [Home](https://entros.io) · [Demo](https://entros.io/verify) · [Paper](https://entros.io/paper) · [Docs](https://entros.io/docs) · [Security](https://entros.io/security)
@@ -15,14 +15,14 @@ Build Trust. Gate any Solana dApp.
 
 ## What
 
-Speak a server-issued challenge phrase: five words drawn at random from a curated 1,357-word dictionary, about 4.6 × 10¹⁵ combinations, fresh on every verification. For twelve seconds the Pulse SDK captures your voice prosody and the involuntary motion of your input device, whether that's a mouse, trackpad, touchscreen, or gyroscope. It extracts a 308-feature statistical signature on-device (170 audio: F0 statistics, jitter, shimmer, HNR, MFCCs and delta-MFCCs, LPC coefficients, formant trajectories, voice-quality metrics, pitch-contour DCT, LTAS; 81 motion; 57 touch) and hashes it into a Poseidon commitment. Your first verification registers that commitment as your baseline, and an Entros Anchor, a non-transferable Token-2022, mints to your wallet. Every re-verification generates a Groth16 ZK proof binding the new commitment to your previous one.
+Speak a server-issued challenge phrase while tracing its curve. The Pulse SDK captures voice, motion, and touch dynamics, then extracts a 308-feature summary on-device. Audio contributes 170 features, motion contributes 81, and touch contributes 57. SimHash projects the summary into a fingerprint. Poseidon commits to that fingerprint and a salt. The first verification registers the baseline and mints a non-transferable Token-2022 Anchor. Each re-verification proves that the previous and new commitments open correctly and satisfy the circuit's distance range.
 
-**Raw motion and touch never leave your device.** They are reduced to features on-device and discarded. What leaves is the ZK proof, the statistical summary, a coarse outline of the traced challenge curve, and the phrase audio, which the validator transcribes and discards without storing.
+**Raw motion and full-resolution touch never leave the device.** The validation path receives the feature summary, selected F0 and acceleration series, wallet address, phrase audio, capture timing, client signals, a coarse curve outline, commitment data, and receipt intent. The service processes phrase audio in memory without writing the waveform to logs or persistent storage. The wallet flow submits commitments, proofs, public inputs, and encrypted baseline material on-chain when available.
 
 ## Who
 
 - **dApps** gating real humans: airdrops, DAOs, fee discounts, content access
-- **AI agents** binding to a verifiable human operator on the Solana Agent Registry
+- **AI agents** linking to the wallet that completed Entros verification on the Solana Agent Registry
 - **Users** wanting one verification readable by every dApp on Solana, with no API keys and no billing relationship
 
 ## How a capture is checked
@@ -31,29 +31,24 @@ Every capture, first or repeat, runs through server-side checks before it reache
 
 - **Phrase binding.** Audio is transcribed by Whisper and word-distance-matched against the server-issued challenge phrase. A capture that doesn't speak the issued phrase fails the match.
 - **Entropy and variance analysis.** Per-modality Shannon entropy and variance floors reject constant or low-information feature vectors.
-- **Voice synthesis fingerprinting.** Jitter and shimmer floors/ceilings, HNR bounds, voicing-ratio bounds, F0 delta variance, measured on the dimensions where synthesized speech is statistically distinct from a human larynx.
-- **Cross-modal temporal coupling.** Speech and hand motion originate in shared motor control and leave correlated traces across a genuine capture. Streams generated separately and stitched together do not carry them.
-- **Sybil registry scan.** Your fingerprint is checked against every other verified user's, regardless of wallet. Biological collisions across wallets surface here.
-- **Calibration-attack noise.** Controlled outcome noise, designed to defeat probing for boundary-crafted inputs.
+- **Voice synthesis analysis.** The private validator examines acoustic and feature-distribution evidence for synthetic artifacts.
+- **Cross-signal temporal analysis.** The validator measures time-series relationships between speech and motion submitted during one capture. Entros is testing whether they add reliable discrimination across human users, consumer devices, and adaptive synthesis.
+- **Cross-wallet similarity.** The private registry compares submitted fingerprints across wallets. Population-level uniqueness remains an active research question.
+- **Adaptive attack controls.** The private stack limits repeated probing and keeps operational detector policy outside public clients.
 
-T1 through T3: 16,000 adversarial attempts, none passed. T4a paired pre-recorded human voice with procedural motion and moved from a 100% pass counterfactual to 0% across four progressive defense waves. T4b ran real-time synthesized voice across two TTS model families and 58 synthetic voices speaking the issued phrase, and 0% reached the chain across 200 attempts. T5 through T8 are queued.
+T1 through T3: 16,000 adversarial attempts, none passed. T4a paired pre-recorded human voice with procedural motion and moved from a 100% pass counterfactual to 0% across four progressive defense waves. T4b ran real-time synthesized voice across two TTS model families and 58 synthetic voices speaking the issued phrase, and 0% reached the chain across 200 attempts. T5 remains open. T6 is blocked on T5 closure. T7 and T8 remain queued.
 
-**Re-verification adds temporal consistency.** Every subsequent capture produces a Poseidon commitment; a Groth16 ZK circuit proves the Hamming distance to your previous on-chain commitment is below a threshold (similar enough to be you) AND above a floor (different enough to be fresh, not a replay). A cloned capture doesn't survive the next round, because the following capture has to drift the way a person's does: close enough to match, different enough to be new. Trust Score starts at zero on first verification, since the baseline is registered rather than trusted, and accrues with each successful re-verification. Integrators gate on Trust Score rather than the binary verified flag.
+**Re-verification adds a bounded continuity proof.** Each subsequent capture produces a Poseidon commitment. The Groth16 circuit proves that both commitments open correctly and that their Hamming distance is below the maximum and at or above the replay floor. The circuit proves relationships between supplied fingerprints. It does not prove capture provenance or personhood by itself. Trust Score starts at zero and recalculates from active weekly bins and account age.
 
-Each layer targets a different failure mode, and the red team publishes what it measures against each one (see [security](https://entros.io/security)).
+Each campaign targets a defined failure mode. The public [security page](https://entros.io/security) reports scoped aggregate results.
 
 ## Economics
 
-Users pay a small protocol fee per verification, currently about 0.005 SOL and tunable as Solana economics evolve. It is deducted inside the on-chain mint transaction, accrues to the protocol treasury, and is auditable on Solana Explorer.
+Wallet-connected transactions read `verification_fee` from the on-chain protocol config. Initialization uses a 0.005 SOL default. The authority can update the live value.
 
-**Total user cost per verification:**
+First verification also funds rent for the Anchor mint, associated token account, and `IdentityState`. Re-verification funds temporary proof accounts. Clients must query the target cluster and show the final wallet transaction before approval.
 
-| Action | Protocol fee (non-refundable) | One-time account rent | Total upfront |
-|---|---|---|---|
-| First verification | 0.005 SOL | ~0.011 SOL | ~0.016 SOL |
-| Each re-verification | 0.005 SOL | ~0.004 SOL (Challenge + VerificationResult) | ~0.009 SOL |
-
-The one-time rent funds the user's on-chain Identity Anchor: a Token-2022 mint with metadata extensions, an Associated Token Account, and the IdentityState PDA. Solana holds account rent rather than spending it, and the two per-attempt accounts are recoverable through `close_challenge` and `close_verification_result`. The persistent accounts stay funded while the identity is active. Only the protocol fee is non-refundable.
+Detection decides whether a capture passes. The fee and rate limits only bound request volume.
 
 Integrators read verified state from the on-chain Anchor PDA for free. No API keys, no billing relationship, no permission to read. The protocol monetizes the write side; the read side is composable Solana state.
 
@@ -71,15 +66,15 @@ This repo (`entros.io`) is the website, the verification dApp, and the documenta
 |---|---|
 | [`entros.io`](https://github.com/entros-protocol/entros.io) | **This repo**: website, verification dApp, docs, paper |
 | [`protocol-core`](https://github.com/entros-protocol/protocol-core) | Three Anchor programs: identity mint, ZK verifier, registry |
-| [`circuits`](https://github.com/entros-protocol/circuits) | Groth16 Hamming-distance circuit (~2,010 constraints) |
+| [`circuits`](https://github.com/entros-protocol/circuits) | Groth16 commitment-opening and bounded Hamming-distance circuit. Current source is an unpublished successor to deployed artifacts. |
 | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) | Client SDK: capture → fingerprint → prove → submit. npm [`@entros/pulse-sdk`](https://www.npmjs.com/package/@entros/pulse-sdk) |
 | [`entros-verify`](https://github.com/entros-protocol/entros-verify) | Drop-in popup component. npm [`@entros/verify`](https://www.npmjs.com/package/@entros/verify) |
-| [`executor-node`](https://github.com/entros-protocol/executor-node) | Off-chain relayer: feature validation, SAS attestation, on-chain submit |
+| [`executor-node`](https://github.com/entros-protocol/executor-node) | Public gateway: challenges, integrator auth, quotas, validator forwarding, SAS requests, and on-chain relay |
 | `entros-validation` | Behavioral validator, running as the relayer's validation backend (proprietary) |
-| `entros-redteam` | Adversarial test harness: T1 through T8 attack synthesis, telemetry, regression coverage (proprietary) |
+| `entros-redteam` | Private adversarial harness for completed campaigns, research prototypes, telemetry, and regression coverage. T5 remains open. Later tiers remain planned. |
 | [`entros-mobile`](https://github.com/entros-protocol/entros-mobile) | Mobile app, in development: capture, native ZK proving via mopro, on-chain submit via Mobile Wallet Adapter |
-| [`entros-mopro`](https://github.com/entros-protocol/entros-mopro) | Native Groth16 prover bindings (UniFFI `.so` + Swift / Kotlin) consumed by `entros-mobile` |
-| [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) | Realms DAO voter-weight plugin |
+| [`entros-mopro`](https://github.com/entros-protocol/entros-mopro) | Native Groth16 prover bindings consumed by `entros-mobile`. Native proof smoke coverage remains planned. |
+| [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) | Devnet voter-weight program. Realms client integration remains planned. |
 | [`token-contracts`](https://github.com/entros-protocol/token-contracts) | No code. Maps where $ENTROS utility lives; the mint itself comes from a public launchpad. Staking and incentive wiring are roadmap. |
 
 ### On-chain
@@ -95,7 +90,7 @@ This repo (`entros.io`) is the website, the verification dApp, and the documenta
 
 ## Integrate
 
-> Currently devnet; mainnet in preparation after the integrator pilot.
+> Current support is devnet-only. Mainnet remains gated on hardening, a coordinated artifact ceremony, external audit, and operational readiness.
 
 Three tiers, depending on how much UX control the integrator wants.
 
@@ -144,9 +139,9 @@ const isVerified = attestation?.isHuman && !attestation.expired;
 
 | Integration | What it does | Where |
 |---|---|---|
-| **SAS issuer** | Every successful verification triggers a Solana Attestation Service attestation on the user's wallet. Any dApp reads it without integrating Entros directly. | [`executor-node`](https://github.com/entros-protocol/executor-node) `/attest` |
-| **Agent Anchor** | Verified human binds to a registered AI agent via metadata on the Solana Agent Registry. One human, one anchor, one or more agents. | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) · [entros.io/agents](https://entros.io/agents) |
-| **Realms plugin** | Optional behavioral gate for DAO voting, using a Trust Score and recency threshold. Drops in via the standard voter-weight addin interface. | [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) |
+| **SAS issuer** | The SDK attempts a wallet-bound SAS attestation after successful verification. Issuance is separate and best-effort. | [`executor-node`](https://github.com/entros-protocol/executor-node) `/attest` |
+| **Agent Anchor** | A wallet that completed Entros verification can link registered AI agents through Solana Agent Registry metadata. | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) · [entros.io/agents](https://entros.io/agents) |
+| **Realms plugin** | On-chain voter-weight prototype deployed on devnet. The Realms JavaScript client and plugin chaining remain planned. | [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) |
 
 ---
 
@@ -166,10 +161,10 @@ const isVerified = attestation?.isHuman && !attestation.expired;
 
 ## Security
 
-Continuous adversarial testing across the T1 through T8 attack tiers. Public methodology, private parameter values. Responsible disclosure: contact@entros.io.
+The security taxonomy covers T1 through T8. Public aggregate results currently cover T1 through T4b. T5 remains open. Responsible disclosure: contact@entros.io.
 
 ---
 
 ## License
 
-MIT for every open repo in the org (per each repo's `LICENSE`). The behavioral validation service is proprietary; it runs as the production relayer's validation backend and is not published.
+MIT for each open repository in the organization, subject to its `LICENSE`. The private validation service runs behind the hosted devnet flow and is not published.

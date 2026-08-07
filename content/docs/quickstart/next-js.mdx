@@ -1,9 +1,9 @@
 ---
 title: Gate a Next.js route in five lines
-description: Drop EntrosGate into a Next.js app and require a verified human Trust Score before a page renders.
+description: Add EntrosGate to a Next.js app and require an Anchor policy before a page renders.
 ---
 
-The shortest path to a verified-human gate. Wrap any component in `<EntrosGate>`, set a `minTrustScore`, and the page renders only for wallets whose on-chain Anchor meets the threshold and verified recently enough.
+Wrap any component in `<EntrosGate>` and set a `minTrustScore`. The page renders only when the wallet's devnet Anchor satisfies the selected policy.
 
 This is the **Tier 3 read-only path**: you read existing on-chain Anchors rather than running verification yourself. It fits display, progressive disclosure, and gates where a live capture would cost more friction than the action is worth.
 

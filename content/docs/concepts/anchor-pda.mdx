@@ -3,11 +3,11 @@ title: Anchor PDA
 description: The on-chain identity record and how to read it.
 ---
 
-Each verified human has exactly one Anchor on Solana. The Anchor consists of two pieces of state: a non-transferable Token-2022 identity NFT held in the user's wallet, and a Program Derived Address called `IdentityState` that stores the score, fingerprint commitment, and verification metadata.
+Each wallet can have one Entros Anchor PDA on Solana. The Anchor combines a non-transferable Token-2022 token with an `IdentityState` account that stores score, commitment, and verification metadata. Population-level uniqueness remains an active protocol objective.
 
 ## Program identity
 
-The `entros-anchor` program owns the Anchor state. Devnet and mainnet share the same program ID:
+The `entros-anchor` program owns the Anchor state. It is deployed on devnet at:
 
 ```
 GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2
@@ -43,7 +43,7 @@ The account stores ownership, score, fingerprint commitments, and verification m
 | `owner` | `Pubkey` | 8 | Wallet that owns the Anchor |
 | `creation_timestamp` | `i64` | 40 | Unix timestamp of first verification |
 | `last_verification_timestamp` | `i64` | 48 | Unix timestamp of most recent verification |
-| `verification_count` | `u32` | 56 | Monotonic count of successful verifications |
+| `verification_count` | `u32` | 56 | Successful re-verifications since the latest identity reset |
 | `trust_score` | `u16` | 60 | Current Trust Score |
 | `current_commitment` | `[u8; 32]` | 62 | Latest behavioral fingerprint commitment |
 | `mint` | `Pubkey` | 94 | Address of the Anchor's Token-2022 mint |
@@ -62,17 +62,21 @@ The Anchor mint uses the Token-2022 `NonTransferable`, `MintCloseAuthority`, `Me
 
 ## Instructions
 
-The `entros-anchor` program exposes seven public instructions.
+The `entros-anchor` program exposes the following identity instructions.
 
-- **`mint_anchor`**—Initializes a new Anchor on first verification. Caller must supply a valid ZK proof from `entros-verifier`. Charges the protocol fee.
-- **`update_anchor`**—Re-verification path. Validates a proof whose `commitment_prev` public input matches the stored `current_commitment`, advances the score, charges the fee, and overwrites `current_commitment` with the new value.
-- **`reset_identity_state`**—Recovery path. Zeroes the score and clears the fingerprint commitment after a 7-day cooldown, allowing a user who has lost their device drift envelope to start fresh. Charges the fee.
-- **`authorize_new_wallet`**—First step of the wallet-migration flow. The current wallet co-signs with the new wallet to record `new_wallet` on the `IdentityState` and delegate the identity token to it. Can be re-run to revise the authorization before the second step.
-- **`migrate_identity`**—Second step of the wallet-migration flow. The authorized new wallet signs to transfer the identity (Trust Score, verification history, recent timestamps) to a fresh `IdentityState` PDA derived from its own pubkey, and the old mint is closed.
+- **`mint_anchor`** - Initializes a new Anchor after an enforced validator-signed receipt. Charges the protocol fee.
+- **`update_anchor`** - Re-verifies an Anchor. It checks the proof, updates the commitment, recalculates the score, and charges the fee.
+- **`reset_identity_state`** - Replaces an unusable baseline after a seven-day cooldown. It clears the score and verification history.
+- **`authorize_new_wallet`** - Records a successor wallet and delegates the identity token before migration.
+- **`migrate_identity`** - Moves the score and verification history to the authorized wallet. It closes the old mint.
+- **`set_encrypted_baseline`** - Stores the wallet-encrypted baseline blob.
+- **`rebaseline_anchor`** - Moves the Anchor to a new projection version after a validator-signed receipt.
+
+No Entros Anchor program is deployed on mainnet today. Mainnet deployment remains gated on hardening, a new ceremony, and external audit.
 
 ## Reading the Anchor
 
-Three idiomatic patterns:
+Use one of these patterns:
 
 | Context | Pattern |
 | --- | --- |
@@ -84,6 +88,6 @@ All three read the same canonical state.
 
 ## Where to look next
 
-- [Programs reference](/docs/reference/programs)—full instruction signatures and account constraints
-- [PDAs reference](/docs/reference/pdas)—every seed, every derivation
-- [Threat model](/docs/concepts/threat-model)—what the Anchor protects against
+- [Programs reference](/docs/reference/programs) - instruction signatures and account constraints
+- [PDAs reference](/docs/reference/pdas) - seeds and derivations
+- [Threat model](/docs/concepts/threat-model) - current protections and open boundaries

@@ -10,15 +10,15 @@ export const trustSignals: TrustSignal[] = [
   {
     icon: "shield",
     name: "Security Audit",
-    description: "Continuously red-teamed, 0% production pass.",
+    description: "Continuous adversarial testing with scoped results.",
     detail:
-      "17,000+ adversarial attempts across four tiers, 0% got through. Anchor constraints, PDA validation, and compute budget tested. External firm review ahead of mainnet.",
+      "Published T1 through T4b campaigns report their attack class, denominator, and observed pass rate. T5 remains open. External review remains a mainnet gate.",
     href: "/security",
   },
   {
     icon: "github",
     name: "Open Protocol",
-    description: "Protocol layer is fully public.",
+    description: "Client and on-chain protocol are public.",
     detail:
       "MIT licensed. 3 Anchor programs, 1 Circom circuit, 1 TypeScript SDK on GitHub. The server-side validation models stay proprietary.",
     href: "https://github.com/entros-protocol",
@@ -28,7 +28,7 @@ export const trustSignals: TrustSignal[] = [
     name: "Ecosystem Fit",
     description: "Integration surfaces mapped across Solana.",
     detail:
-      "SAS attestation issuer (live), Agent Anchor on 8004 registry (live on devnet), Realms voter-weight plugin (shipped on devnet). Integration surfaces mapped for Jupiter, Drift, Metaplex, Marinade, Tensor, Magic Eden, and Phantom.",
+      "Best-effort SAS issuance and Agent Anchor run on devnet. The Realms voter-weight program is an on-chain prototype. Client integration work remains open.",
     href: "/solutions",
   },
   {
@@ -36,7 +36,7 @@ export const trustSignals: TrustSignal[] = [
     name: "Devnet Live",
     description: "Programs deployed and accepting requests.",
     detail:
-      "Full test suite passing across all repos. Verification pipeline operational on Solana devnet.",
+      "The three protocol programs and the hosted verification flow run on Solana devnet. Mainnet remains gated on hardening, ceremony, and audit.",
     href: "/verify",
   },
 ];

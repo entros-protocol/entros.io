@@ -3,42 +3,45 @@ title: Anonymity Ring
 description: The off-chain validation layer that runs sanity and synthesis checks before a verification settles on-chain.
 ---
 
-The Anonymity Ring is the off-chain layer between the device's capture and the on-chain settlement. Its job is to inspect the 308-feature behavioral summary that arrives from the SDK and decide whether the captured signal is plausibly human before the proof is allowed to settle.
+The Anonymity Ring names the planned validator network. One team-operated private validation service performs the current off-chain checks.
 
 ## What runs in the layer today
 
-The check stack is implemented and runs against every verification on devnet. It is structured by tier, with each tier tightening the filter:
+The current service applies or records these check groups:
 
-- **Tier 1—feature-distribution sanity.** Each captured feature's value is compared against the population envelope of real human captures. Out-of-distribution values, replay signatures, and entropy violations are rejected before the proof is even examined.
-- **Tier 2—cross-modal temporal coupling.** Voice prosody, hand tremor, and touch dynamics must align across the same capture window. Real humans produce coupled signals—voice timing tracks with pointer micro-movement; pause envelopes correlate with motion variance. Captures whose modalities don't co-vary in human-plausible ways are rejected.
-- **Tier 3—proof-level invariants.** These are enforced inside the on-chain Hamming circuit. The new fingerprint must sit within Hamming distance of the previous, and above the anti-replay floor.
-- **Tier 4—phrase content binding.** The audio captured against the issued phrase challenge must transcribe to the issued phrase. Mismatched audio is rejected. Subsequent T4 waves extend this layer with synthesis-detection models trained against frontier voice generators.
+- **Tier 1: capture and distribution checks.** The service applies phrase, acoustic, entropy, timing, and feature-distribution policies.
+- **Tier 2: cross-signal temporal analysis.** The validator measures time-series relationships between submitted speech and motion. Entros is evaluating whether this signal adds reliable discrimination across human users, consumer devices, and adaptive synthesis.
+- **Tier 3: proof invariants.** Re-verification checks commitment openings and bounded fingerprint distance inside the circuit.
+- **Tier 4: phrase and synthesis checks.** The service compares the transcript with the issued phrase and applies the configured audio policy.
 
-Public adversarial waves T1 through T3 produced 16,000 attempts, all rejected. The T4a voice-synthesis study ran in four waves to isolate each defense layer's contribution against one canonical attack class: Wave 1 (50 attempts, 100% pass with temporal coupling in log-only mode—the counterfactual baseline); Wave 2 (10 attempts, 10% pass with temporal enforcement at threshold 0.10); Wave 3 (20 attempts, 0% pass with temporal enforcement plus phrase content binding); Wave 4 (1,000 attempts, 0% pass at scale, 95% confidence interval [0%, 0.37%]). The combined three-layer stack drops T4a from 100% to 0%. T4b then ran the same pipeline against real-time synthesized voice across two TTS model families and 58 synthetic voices speaking the issued phrase—0% reached the chain across 200 production-stack attempts. Full results at `entros.io/security`.
+The public security report gives campaign definitions, denominators, and observed results for T1 through T4b. T5 remains open. Results apply only to their named attack classes and configurations.
 
 ## What the layer sees and does not see
 
-The validator receives only what the device transmits: the 308-number summary, the proof, the new commitment, the audio for the phrase challenge, and a coarse, downsampled outline of the traced curve for the liveness check. It does not receive raw motion recordings or the full-resolution touch stream, and the audio is not retained after phrase validation completes. The transcription of the spoken phrase is logged for adversarial-wave debugging, since text alone carries no biometric content; raw audio waveforms are not.
+The service receives the 308-number summary, selected F0 and acceleration series, wallet address, phrase audio, sample rate, commitment data, receipt intent, client signals, capture timing, and a coarse curve outline.
+
+Raw motion and full-resolution touch streams stay on the client. The service processes phrase audio in memory and does not persist audio waveforms.
 
 ## What the proof attests, what the validator attests
 
-Two complementary claims:
+The settlement path has two forms:
 
-- The on-chain Groth16 proof attests that the new behavioral fingerprint sits within Hamming distance of the previous fingerprint, against the protocol's commitment scheme. It is the proof of *consistency*.
-- The off-chain validator attests that the captured signal has the structure of human behavior—sane feature distributions, coupled modalities, matched phrase content. It is the proof of *plausibility*.
+- First verification uses a validator-signed receipt bound to the new commitment.
+- Re-verification also uses a Groth16 proof. The proof checks both openings and the circuit's fingerprint-distance bounds.
+- The private service checks submitted evidence. It does not authenticate browser sensor origin.
 
-Both must hold for a verification to settle. The proof catches replay against a different Anchor; the validator catches synthesized captures and out-of-distribution submissions.
+The on-chain program verifies its required receipt or proof. The service supplies statistical evidence for the submitted capture. Neither mechanism alone proves sensor provenance.
 
 ## What "decentralized" means here, and what comes next
 
-The check stack that runs all of the above tiers is implemented and live today, operated by the Entros team. The next step is the multi-validator deployment topology around that engine: VRF-selected validator cohorts, BLS-aggregated sign-off, and slashable stake.
+The check stack runs behind one team-operated validation service today. The registry program contains SOL registration scaffolding. It does not select validators, assign requests, aggregate a quorum, distribute rewards, or slash stake.
 
-The decentralization plan is to spin up a permissionless validator set in which each node runs the same check stack independently, signs its outcome, and aggregates with the rest of a selected cohort. This is post-mainnet work; the validator economics live in the [registry program](/docs/reference/programs) and activate when the multi-validator architecture comes online.
+The planned network adds validator admission, request assignment, signed outcomes, quorum settlement, rewards, and slashing. Each mechanism requires a specification, implementation, and audit before activation. See the [program reference](/docs/reference/programs) for current scaffolding.
 
-This is a deliberate sequencing. Iterating the check stack against newly discovered attack vectors is faster inside a single team than across a permissionless validator set. Once the stack reaches a maturity bar where iteration happens on a slower cadence, the multi-validator architecture comes online with the same engine running across the ring.
+The current sequence keeps the changing check engine behind one service. A multi-validator release follows after the engine, distribution model, and settlement rules stabilize.
 
 ## Where to look next
 
-- [Threat model](/docs/concepts/threat-model)—what the validation layer is the defense against
-- [Roadmap: Medium-term](/docs/roadmap/medium-term)—the decentralization milestones
-- [Reference: Programs](/docs/reference/programs)—the registry program that gates validator participation
+- [Threat model](/docs/concepts/threat-model) - current controls and open boundaries
+- [Roadmap: Medium-term](/docs/roadmap/medium-term) - planned decentralization work
+- [Reference: Programs](/docs/reference/programs) - current registry scaffolding

@@ -1,44 +1,43 @@
 ---
 title: Costs
-description: The canonical numbers for fees, compute units, and rent.
+description: Protocol fee configuration, requested compute limits, and Solana rent examples.
 ---
 
-Two cost surfaces matter: the user pays a small fee per verification, and each on-chain operation consumes compute units against Solana's block budget.
+Wallet transactions use the on-chain fee configuration, Solana account rent, transaction fees, and requested compute limits.
 
 ## Protocol fee
 
-A single user transaction invokes one of the instructions below—not a sum across them. Per-action cost is 0.005 SOL.
+The deployed config account is the source of truth. Program initialization sets a 0.005 SOL default, and the authority can update it.
 
 | Operation | Fee | Configurable | When |
 | --- | --- | --- | --- |
-| `mint_anchor` | 0.005 SOL | `verification_fee` in `ProtocolConfig` | First verification (one-time per wallet) |
-| `update_anchor` | 0.005 SOL | same | Each subsequent re-verification |
-| `reset_identity_state` | 0.005 SOL | same | Recovery path, gated behind a 7-day cooldown |
+| `mint_anchor` | `verification_fee` | `ProtocolConfig` | First verification for a wallet |
+| `update_anchor` | `verification_fee` | `ProtocolConfig` | Each re-verification |
+| `reset_identity_state` | `verification_fee` | `ProtocolConfig` | Recovery after the seven-day cooldown |
 
-The two-signer `migrate_identity` flow used for wallet migration charges through a separate `migration_fee` field on `ProtocolConfig`, set independently of the main verification fee.
+The two-signer `migrate_identity` flow reads a separate `migration_fee` field from `ProtocolConfig`. The current registry interface exposes no public setter for that field.
 
-The fee is charged to the user in wallet-connected mode—signed and paid in the same transaction that mints or updates the Anchor. The walletless capture path on `entros.io/verify` is a no-wallet preview of the capture experience and incurs no protocol fee; it does not write on-chain identity, attestations, or Trust Score.
+The fee is charged in the wallet-connected transaction that mints or updates the Anchor. The public `entros.io/verify` route currently offers only wallet-connected verification. A future walletless tier can provide an ephemeral result without writing Anchor state.
 
-The fee accumulates in the `Treasury` PDA owned by `entros-registry`. The protocol authority (currently the team, decentralizing post-audit) draws from the treasury for protocol operations.
+The fee accumulates in the `Treasury` PDA owned by `entros-registry`. A future validator network can change the economic flow only after specification, implementation, and audit.
 
 ## Compute units
 
-The dominant on-chain cost is the Groth16 proof verification, which runs as part of the verification transaction alongside the `update_anchor` (re-verification) or `mint_anchor` (first verification) PDA write. The SDK pre-bundles a `ComputeBudgetProgram.setComputeUnitLimit` instruction so the batched transaction fits within Solana's compute budget: 300,000 when the encrypted-baseline write rides along, 250,000 otherwise.
+The dominant on-chain cost is Groth16 proof verification during re-verification. The SDK adds a `ComputeBudgetProgram.setComputeUnitLimit` instruction to each wallet transaction.
 
-| Operation | Ceiling CU |
+| Transaction | Requested CU |
 | --- | --- |
-| `verify_proof` (standalone, Groth16 verification) | ~123,000 |
-| Full re-verification transaction (`create_challenge` + `verify_proof` + `update_anchor` + `set_encrypted_baseline`) | ~167,000 |
-| Full first-verification transaction (`create_challenge` + `verify_proof` + `mint_anchor`) | ~240,000 |
-| Reading `IdentityState` (off-chain RPC) | 0 |
-| Cross-program PDA read of `IdentityState` | under 1,000 |
-| Voter-weight plugin `update_voter_weight_record` | ~5,000 |
+| First verification without encrypted baseline write | 200,000 |
+| First verification with encrypted baseline write | 250,000 |
+| Re-verification without encrypted baseline write | 250,000 |
+| Re-verification with encrypted baseline write | 300,000 |
+| Baseline reset | 200,000 |
 
-The above are upper bounds enforced by the regression suite—each ceiling is the worst-case measurement across ten runs of the LiteSVM test suite (entros-anchor + entros-verifier + entros-registry integration tests). The standalone `verify_proof` instruction at 123K fits comfortably within Solana's 200K default per-instruction budget. The batched first-verification path at 240K leaves ~10K headroom against the 250K request budget; the re-verification path at 167K leaves ~83K headroom. Selective migration of the hot-path instructions to Pinocchio post-mainnet is planned (see [Programs reference](/docs/reference/programs)) to restore additional headroom on the first-verification path.
+These values are configured request limits, not measured consumption. A reproducible compute benchmark remains planned before mainnet. It will record the program commits, Solana runtime, transaction shape, and observed units. The protocol can evaluate Pinocchio after those measurements identify a path that needs lower overhead.
 
 ## Rent
 
-Each new account on Solana requires rent-exempt funding. Numbers below are the amounts the programs actually fund on devnet, which for the mint exceeds bare rent on its declared data size because the metadata extension is funded up front.
+Each new account requires rent-exempt funding. The examples below depend on the cluster rent schedule. Query the target cluster before displaying a transaction estimate.
 
 | Account | Size | Rent | Refundable |
 | --- | --- | --- | --- |
@@ -47,17 +46,17 @@ Each new account on Solana requires rent-exempt funding. Numbers below are the a
 | Associated Token Account (Token-2022 with ImmutableOwner) | 174 bytes | 0.00210192 SOL | No |
 | `Challenge` | 90 bytes | 0.001517 SOL | Yes, via `close_challenge` |
 | `VerificationResult` | 182 bytes | 0.002158 SOL | Yes, via `close_verification_result` |
-| Agent metadata entry | governed by Solana Agent Registry | ~0.003 SOL | If marked mutable; immutable entries are permanent |
+| Agent metadata entry | Governed by Solana Agent Registry | Query the registry transaction | Immutable Entros entries remain allocated |
 
-Total user-side cost on first verification: protocol fee (0.005 SOL) plus rent for `IdentityState` + `Mint` + ATA (~0.01096 SOL one-time) ≈ **0.01596 SOL**, plus transaction fees.
+At the rent schedule used for this table, the three persistent first-verification accounts require about 0.01096 SOL. Add the live `verification_fee` and transaction fees.
 
-A re-verification costs **~0.00867 SOL**: the 0.005 SOL protocol fee, plus rent on the two per-attempt accounts the transaction opens (`Challenge` and `VerificationResult`), plus transaction fees. The persistent accounts are already funded. Both per-attempt accounts are reclaimable through `close_challenge` and `close_verification_result`, which recover 0.00367 SOL per verification once called.
+A re-verification funds `Challenge` and `VerificationResult` accounts in addition to the live fee and transaction fees. Their close instructions can return rent when a client invokes them.
 
 ## Economic notes
 
-The fee is set deliberately small per individual verification and high enough that holding many Anchors carries real cumulative cost. The `verification_fee` field on `ProtocolConfig` is updateable by the protocol authority via `update_protocol_config` and may evolve as the protocol decentralizes or as SOL economics shift.
+Detection decides whether a verification passes. The fee provides a secondary bound on repeated attempts. The protocol authority can update `verification_fee` through `update_protocol_config`.
 
 ## Where to look next
 
-- [Concepts: Trust Score](/docs/concepts/trust-score)—how the score's economics interact with the fee
-- [Reference: Programs](/docs/reference/programs)—full configurable surface of `ProtocolConfig`
+- [Concepts: Trust Score](/docs/concepts/trust-score) - score formula and policy guidance
+- [Reference: Programs](/docs/reference/programs) - the `ProtocolConfig` surface

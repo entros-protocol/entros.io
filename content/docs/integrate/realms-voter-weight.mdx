@@ -1,56 +1,66 @@
 ---
 title: Realms voter-weight plugin
-description: Gate a Realms DAO on Entros verification with the voter-weight addin.
+description: Current devnet program status and the remaining Realms client work.
 ---
 
-Realms supports voter-weight plugins: small programs that compute a voter's weight given their wallet, and feed that weight into governance accounting. Entros publishes a plugin that grants weight 1 to wallets that meet a configured Trust Score and recency, and 0 to wallets that don't.
+Entros has deployed an on-chain voter-weight addin prototype to Solana devnet. The program reads an Entros Anchor and writes voter weight `1` when the configured Trust Score and recency checks pass. An ineligible update returns an error.
 
-## Plugin program
+The normal Realms voting flow also needs a JavaScript client. That client must construct the plugin instructions and register with Governance UI. Entros has not shipped that layer yet.
 
-The voter-weight plugin is deployed at:
+## Devnet program
 
 ```
 99nwXzcugse3x8kxE9v6mxZiq8T9gHDoznaaG6qcw534
 ```
 
-The same program ID is used on devnet and mainnet.
+No Entros voter-weight program is deployed on mainnet.
 
-## Configuration
+## On-chain configuration
 
-The DAO authority creates a `Registrar` account scoped to the realm and governing token mint, with two fields:
+The realm authority creates a `Registrar` for one realm and governing token mint.
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `min_trust_score` | `u16` | Voters must have an Anchor with at least this score |
-| `max_verification_age` | `i64` | Maximum seconds since the most recent verification |
+| `min_trust_score` | `u16` | Minimum Entros Trust Score |
+| `max_verification_age` | `i64` | Maximum seconds since the latest verification |
 
-Pick `max_verification_age` from what the vote decides.
+The program supports these instructions:
 
-| Vote | `max_verification_age` |
-| --- | --- |
-| Treasury allocation, parameter change | `3_600` (1 hour) |
-| Standard proposal | `86_400` (1 day) |
-| Signalling, community poll | `604_800` (7 days) |
+- `create_registrar`
+- `update_registrar`
+- `close_registrar`
+- `create_voter_weight_record`
+- `update_voter_weight_record`
+- `close_voter_weight_record`
+- `create_max_voter_weight_record`
+- `update_max_voter_weight_record`
 
-A community DAO running standard proposals: `min_trust_score = 250`, `max_verification_age = 86_400`. Tighter windows ask voters to verify close to the vote, which is the point for anything that moves funds. The `/verify` flow takes twelve seconds.
+Manual program tests can create the accounts and exercise the checks on devnet. This does not make the plugin available through the normal Realms UI.
 
-## Wire-up steps
+## Remaining client work
 
-1. **Create the registrar.** From the realm authority, call `create_registrar` on the plugin with the realm pubkey, governing token mint, and the two configuration values.
-2. **Add the plugin in Realms.** In the Realms UI, navigate to the realm settings and attach the voter-weight addin program ID. The Registrar PDA you just created is the plugin's account.
-3. **Confirm the wiring.** Cast a test vote from a verified wallet. The plugin's `update_voter_weight_record` instruction runs on every vote attempt and produces a `VoterWeightRecord` showing weight 1 (eligible) or 0 (rejected).
+The planned Realms integration must add:
 
-## Composing with token-voter
+1. A typed JavaScript client for every program instruction.
+2. Governance UI registration and plugin metadata.
+3. Automatic instruction insertion before each governed action.
+4. Integration tests against a representative Realms proposal flow.
+5. A documented recovery path for stale or ineligible Anchor state.
 
-The plugin supports an optional `previous_voter_weight_plugin` field. Setting it points at another plugin (e.g. token-voter or NFT-voter) and the Entros plugin compounds onto that—a vote requires both the prior plugin's weight *and* an Entros pass. This pattern is useful when token weight should still matter, but only verified-human token holders can vote.
+## Plugin chaining
 
-## What this gives a DAO
+The current `Registrar` stores no predecessor plugin ID. `update_voter_weight_record` accepts no input voter-weight record. Entros therefore does not chain with token-voter, NFT-voter, or another addin today.
 
-One person, one vote, without document upload, KYC, or face scan. The threshold is the lever: low for open communities, high for treasury-controlling sub-DAOs. The plugin reads from the same Anchor PDAs as every other Entros integration; there is no separate enrollment.
+Chaining remains planned. The design must add a predecessor field, validate the input record owner and action, then define how Entros eligibility composes with the prior weight.
 
-The strength of the gate scales with the threshold. A threshold of 100 asks every voter for a single re-verification. A threshold of 500 asks for weeks of cadence, and every capture in that history is scored by the detection stack and compared across wallets before it counts. Choose the floor from the value behind the vote: the higher the floor, the longer the verified history behind each ballot that clears it.
+## Intended governance outcome
+
+The program currently enforces one unit of voter weight per eligible Anchor. Each wallet can have one Anchor PDA. Population-level uniqueness remains an open protocol objective, so this is not yet a one-person-one-vote guarantee.
+
+The intended outcome is governance where one returning human contributes one eligible vote without KYC or face scans. The client integration and uniqueness evidence must close before that claim becomes current behavior.
 
 ## Where to look next
 
-- [Concepts: Trust Score](/docs/concepts/trust-score)—how to pick the threshold for your DAO
-- [Reference: Programs](/docs/reference/programs)—full plugin instruction set
+- [Trust Score](/docs/concepts/trust-score)
+- [Programs reference](/docs/reference/programs)
+- [Roadmap](/docs/roadmap/current)

@@ -3,16 +3,16 @@ title: Medium-term
 description: What comes after mainnet. Decentralization of the Anonymity Ring, validator economics, multi-chain reads.
 ---
 
-The medium-term arc is decentralization. Today the protocol is operated by the team; the work in this window is making it stop needing the team.
+The medium-term goal is a validator network that does not depend on one team-operated service.
 
 ## Anonymity Ring decentralization
 
-The validation engine that runs all four tiers of checks is implemented and live today. The next step is the multi-validator deployment topology around that engine. The decentralization plan:
+The private validation engine runs behind the current devnet gateway. The registry contains SOL registration scaffolding but no selection, assignment, quorum, slashing, rewards, or delegation. The decentralization plan adds those mechanisms:
 
-- **Validator entry.** Stake against the registry program, run the validator binary, sign verification outcomes. Stake is SOL-denominated today; $ENTROS-denominated staking lands with this window.
-- **Slashable stake.** Validators that sign off on verifications later proven to be synthesized lose stake. Slashing conditions are defined in the registry program and enforced by an independent challenge process.
-- **Aggregated signatures.** A threshold of validator signatures is required for a verification to settle. The threshold and validator set size are configurable through the registry.
-- **Economic incentives.** A share of protocol fees flows to validators based on participation and accuracy.
+- **Validator entry.** Replace the current registration scaffolding with admission, assignment, and health checks. The planned economic layer uses $ENTROS.
+- **Slashable stake.** Specify objective evidence, penalties, appeals, and correlated-failure handling before implementing slashing.
+- **Aggregated signatures.** Add validator selection, a quorum rule, and an on-chain settlement format.
+- **Economic incentives.** Define a fee split that rewards measured validation quality without rewarding permissive decisions.
 
 Decentralization follows the external audit, once the check stack settles into a slower iteration cadence than day-one operation needs.
 
@@ -20,11 +20,11 @@ Decentralization follows the external audit, once the check stack settles into a
 
 How a third-party validator gets the check engine to run on their machine is a real architectural decision, not just an engineering one. Three patterns are on the table:
 
-- **Open-source the engine.** Anyone runs it. Maximum legitimacy; the cost is that the exact check thresholds and synthesis-detection signatures become public knowledge that adversaries can game.
-- **Attestable binary in a TEE.** Validators run a sealed binary inside Intel SGX, AWS Nitro, or similar; the chip's attestation vouches for "this is the official engine," and the check internals stay private. Operationally heavier but preserves the obscurity layer.
-- **Permissioned ring.** A curated set of operators each runs the private binary, with on-chain coordination but no permissionless entry. Cheapest path; familiar pattern (Wormhole guardians, Pyth publishers); least credentialed as "decentralized."
+- **Open engine.** Anyone can run the code. This also exposes operational checks and thresholds.
+- **Attested binary.** Validators can run a measured binary inside a supported trusted execution environment. Hardware attestation can bind the measured code to an outcome.
+- **Permissioned network.** Selected operators can run the private binary under on-chain coordination before permissionless admission exists.
 
-The choice is a tradeoff between trust assumption and adversarial cost. The protocol's current preference is the TEE path, with a permissioned ring as the practical fallback if attestation tooling adds too much operational friction at the validator-onboarding stage. The decision is finalized as part of the post-mainnet validator-economics rollout.
+The design must state its trust assumption, update process, and failure policy. The current research preference is an attested binary with a permissioned fallback. No distribution model is active today.
 
 ## Validator economics
 
@@ -42,28 +42,28 @@ The Anchor PDA lives on Solana. Other chains can verify a wallet's status via cr
 
 ## Reputation portability
 
-Reputation today is wallet-bound by default — users build Trust Score against a specific wallet through repeated verification. The `migrate_identity` instruction in the on-chain identity program lets a user move an established identity (Trust Score, verification history, recent timestamps) to a new wallet via a two-signer authorization pattern: the existing wallet authorizes the new one, then the new wallet completes the migration. This is shipped on devnet today.
+Reputation is wallet-bound by default. The devnet `migrate_identity` instruction moves Trust Score and verification history through a two-signer authorization flow.
 
-The medium-term work is the policy layer around it — when to allow migration (cooldowns, score caps), how to prevent score-laundering attacks where one identity is reused to bootstrap multiple wallets, and how integrators surface migration status to users (e.g., "this score was transferred from wallet X on date Y"). The protocol-level discussion is balancing user mobility against attack resistance.
+The medium-term policy must define cooldowns, score caps, migration history, and anti-reuse rules. Integrators also need a clear migration status.
 
 ## Scaling considerations
 
-The Sybil registry today compares each new verification against every existing wallet's stored fingerprint with a single similarity threshold. This binary gate works correctly at the devnet pilot scale (hundreds to low thousands of wallets) and through the integrator pilots described in [near-term](/docs/roadmap/near-term).
+The current private registry compares each new server-side fingerprint with stored fingerprints from other wallets. It uses a full scan and one configured Hamming-distance policy.
 
-At ecosystem scale (millions of wallets on mainnet) the underlying tradeoff every behavioral biometric system faces becomes load-bearing. Re-verifying the *same* person against the *same* stored fingerprint (1:1 match) is well-served by behavioral signals — that is how Trust Score's continuity check works today. Distinguishing one person from *every other person* in the population (1:N deduplication) requires discrimination orders of magnitude sharper than 1:1, and no published behavioral biometric system achieves that at planetary scale without supplementary signals.
+The protocol has not yet established a population-scale precision-recall curve. Offline evaluation must measure same-wallet drift, cross-wallet separation, and threshold behavior before mainnet claims.
 
 The medium-term architectural shift is from binary gating to **probabilistic scoring with ensemble signals**:
 
-- **Scoped comparison** instead of universal — partition the registry by domain, recency, or integrator context so each verification compares against a relevant slice rather than all global state.
-- **Multi-signal ensemble** — combine the behavioral fingerprint with attestation history (SAS records), cross-protocol signals (existing identity systems on Solana and beyond), and Trust Score recency. No single signal carries the full discrimination weight.
-- **Probabilistic outcomes** — surface a confidence score to integrators rather than a binary pass/fail, letting different use cases pick their own discrimination point on the precision-recall curve.
+- **Scoped comparison.** Partition candidates by documented context when that partition does not create an evasion path.
+- **Evidence ensemble.** Combine behavioral distance with recency, attestation history, and compatible external signals.
+- **Measured outcomes.** Publish calibrated operating points and let integrators select a policy for their risk level.
 
-This is the same direction every production identity system has converged on — Aadhaar uses iris and fingerprint plus demographics; Worldcoin uses iris plus the orb-network Sybil layer; behavioral systems supplement with device signals. Entros's contribution is occupying the **behavioral temporal consistency** slot in that ensemble, complementary to anatomical and document-based approaches rather than replacing them.
+Entros aims to supply the behavioral continuity signal in a broader evidence stack. It complements anatomical, credential, and application-specific systems.
 
 Calibration of the new scoring system uses empirical fingerprint distributions across a larger and more diverse population than the current pilot. The design publishes as that data comes in.
 
 ## Where to look next
 
-- [Long-term](/docs/roadmap/long-term)—the protocol as public infrastructure
-- [Concepts: Anonymity Ring](/docs/concepts/anonymity-ring)—what decentralizes
-- [How to influence](/docs/roadmap/how-to-influence)—the RFC process
+- [Long-term](/docs/roadmap/long-term) - the protocol as public infrastructure
+- [Concepts: Anonymity Ring](/docs/concepts/anonymity-ring) - the current service and planned network
+- [How to influence](/docs/roadmap/how-to-influence) - the RFC process

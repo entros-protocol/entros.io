@@ -372,7 +372,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           attestation_pda: attestationPda,
           tx_sig: result.txSignature,
           trust_score: trustScore,
-          cluster: params.cluster,
+          cluster: "devnet",
         };
         emitVerified(ctx, payload);
         setState({ step: "verified" });
@@ -468,9 +468,11 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
         </button>
       </div>
       <p className="text-center text-xs text-muted">
-        Raw data is never stored.
+        Raw recordings are not retained.
         <br />
-        Only the proof and a statistical summary persist.
+        Derived features support validation.
+        <br />
+        Commitments and proofs persist.
       </p>
     </div>
   );

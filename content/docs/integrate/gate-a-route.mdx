@@ -52,7 +52,10 @@ When the default fallback doesn't fit your design, supply your own:
     <div className="rounded-xl border p-6">
       <h2>Verify to claim</h2>
       <p>Claiming needs a Trust Score of 500 and a verification from the last hour.</p>
-      <EntrosVerify onVerified={() => location.reload()} />
+      <EntrosVerify
+        integratorKey="your-integrator-key"
+        onVerified={() => location.reload()}
+      />
     </div>
   }
 >

@@ -21,12 +21,10 @@ export function ThreatModel() {
               // ASSUMED CAPABILITIES
             </p>
             <p className="mt-4 text-base leading-relaxed text-foreground/70 md:text-lg">
-              A well-resourced adversary with access to modern voice
-              cloning (XTTS-v2, F5-TTS, ElevenLabs), generative models
-              for biometric time-series, full source-code access to our
-              public components (SDK, circuits, on-chain programs),
-              unlimited wallets and devnet SOL, and days to weeks of
-              time per attack campaign.
+              A well-resourced adversary can control the browser client,
+              modify the public SDK, generate submitted signals, operate many
+              wallets, and study public programs and circuits. The private
+              service must treat every client field as untrusted.
             </p>
           </div>
 
@@ -35,12 +33,10 @@ export function ThreatModel() {
               // OUT OF SCOPE
             </p>
             <p className="mt-4 text-base leading-relaxed text-foreground/55 md:text-lg">
-              We do not assume the adversary can compromise user
-              devices, mount physical hardware attacks on phones, or
-              access our private defense-layer infrastructure. Those
-              are separate threat categories covered by standard
-              client-side hardening, hardware root-of-trust guidance,
-              and infrastructure security practice respectively.
+              Wallet-key compromise, coercion, physical attacks against
+              device hardware, and compromise of private service
+              infrastructure are separate threat categories. Native app and
+              device attestation remain planned for a higher-assurance tier.
             </p>
           </div>
         </div>

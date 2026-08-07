@@ -1,14 +1,14 @@
 # Entros Protocol: A Framework for Temporally-Consistent, Decentralized Proof-of-Personhood
 
 **Original Date:** June 27, 2025
-**Updated:** August 6, 2026
-**Word Count:** Approx. 8500
+**Updated:** August 7, 2026
+**Word Count:** Approx. 7600
 
 ---
 
 ## Abstract
 
-The proliferation of sophisticated AI and bot networks necessitates robust methods for verifying human uniqueness and liveness in digital ecosystems. Existing Proof-of-Personhood (PoP) solutions rely on centralized authorities, invasive static biometrics, or socially-correlatable data, creating vulnerabilities in privacy, security, and accessibility. We introduce the Entros Protocol, a decentralized framework for PoP and Self-Sovereign Identity built on Solana. The core innovation is *temporal consistency*: the assertion that human identity is best proven not by a static secret, but by the bounded, chaotic drift of biological and behavioral patterns over time. The framework captures multi-modal behavioral data (voice prosody, hand tremor, touch dynamics) during a configurable behavioral challenge, extracts a 308-dimensional feature vector, and produces a 256-bit locality-sensitive hash via SimHash. A Groth16 zero-knowledge proof verifies that consecutive fingerprints fall within a bounded Hamming distance without revealing either value. Attestations are anchored to non-transferable identity tokens (SPL Token-2022) with progressive Trust Scores. We provide formal security definitions, analyze the protocol against replay, synthesis, and Sybil attacks, introduce a graduated trust model distinguishing first-time liveness checks from sustained temporal consistency, and present benchmarks from a working implementation deployed on Solana devnet.
+The proliferation of sophisticated AI and bot networks necessitates methods for verifying human uniqueness and liveness in digital ecosystems. Existing Proof-of-Personhood (PoP) solutions rely on centralized authorities, static biometrics, or socially correlatable data. These approaches create different privacy, security, and access tradeoffs. We introduce the Entros Protocol, a decentralized framework for PoP and Self-Sovereign Identity built on Solana. The core innovation is *temporal consistency*: the assertion that human identity is best proven by biological and behavioral change over time, not by one static secret. The framework captures multi-modal behavioral data during a configurable challenge, extracts a 308-dimensional feature vector, and produces a 256-bit locality-sensitive hash via SimHash. A Groth16 zero-knowledge proof verifies that consecutive fingerprints fall within a bounded Hamming distance without revealing either value. Attestations are anchored to non-transferable identity tokens (SPL Token-2022) with progressive Trust Scores. We provide formal security definitions, analyze replay, synthesis, and Sybil attacks, distinguish first-capture validation from returning-user continuity, and present benchmarks from a working Solana devnet implementation.
 
 **Keywords:** *Proof-of-Personhood (PoP), Decentralized Identity (DID), Behavioral Biometrics, Zero-Knowledge Proofs, Groth16, SimHash, Liveness Detection, Temporal Consistency, Solana.*
 
@@ -18,19 +18,19 @@ The proliferation of sophisticated AI and bot networks necessitates robust metho
 
 The distinction between human and artificial actors in digital systems is increasingly blurred. Sybil attacks [1], where a single adversary creates numerous fake identities, undermine fair token distribution, democratic governance in DAOs, and the integrity of social platforms. The problem intensifies as generative AI produces increasingly realistic synthetic media.
 
-Most current PoP systems rely on a single, static biometric secret—iris (Worldcoin [5]), palm print (VeryAI), or face—that, once captured, serves as a permanent anatomical identifier. BrightID [6] takes a different approach using social graph analysis, which depends on coordinated verification events. These designs optimize for different properties: strong uniqueness guarantees at the cost of revocability, or social trust at the cost of coordination overhead. Entros explores a third axis: consistency of dynamic behavior over time, which is both bounded enough to uniquely identify and variable enough to be naturally revocable.
+Most current PoP systems rely on a single, static biometric secret, such as an iris, palm print, or face. BrightID [6] takes a different approach using social graph analysis, which depends on coordinated verification events. These designs optimize for different properties. Entros explores a third axis: whether dynamic behavior can support revocable continuity and population-level uniqueness without exposing a permanent anatomical template.
 
-The Entros Protocol operates on a different principle. A human is not a static data point; they are a continuous, dynamic process. The behavioral signature of a living human—the micro-perturbations in voice, the involuntary tremor in hand movement, the idiosyncratic pressure patterns of touch—drifts over time in a bounded, chaotic pattern that is unique to each individual. AI can mimic a snapshot of this signature. Sustaining a temporally-consistent imitation across weeks and months, against a detection stack that scores every capture, is a materially harder problem than producing a single convincing sample.
+The Entros Protocol operates on a different principle. A human is a continuous, dynamic process. Voice, motion, and touch can carry behavioral patterns that change over time while retaining useful continuity. Entros tests whether those patterns can separate returning users, different users, and adaptive synthesis across consumer devices. The protocol treats that separation as an empirical requirement, not an assumption.
 
 Instead of asking *"What is your secret?"*, the protocol asks *"Are you still you?"*.
 
 #### **1.1. Contributions**
 
 1. A multi-modal behavioral capture protocol (the *Liveness Interlock*) that extracts a 308-dimensional feature vector from voice, motion, and touch data captured simultaneously over a configurable window.
-2. A locality-sensitive hashing pipeline (*SimHash*) that produces a 256-bit *Temporal Fingerprint* where intra-person Hamming distance is bounded and inter-person distance is wider, with continuous calibration against the verified user population to maintain the discrimination gap. Operational thresholds are part of the validation service's adversarial-resistance posture and are not published.
+2. A locality-sensitive hashing pipeline (*SimHash*) that produces a 256-bit behavioral fingerprint. The research program measures whether same-person and cross-person distances form a usable operating region. Operational thresholds remain private.
 3. A Groth16 zero-knowledge circuit that proves two Poseidon-committed fingerprints fall within a bounded Hamming distance, without revealing either fingerprint.
-4. A non-transferable on-chain identity token (the *Entros Anchor*) with a progressive Trust Score that rewards sustained temporal consistency over time.
-5. A graduated trust model that honestly distinguishes first-time liveness checks from sustained behavioral consistency, with integrator-controlled trust thresholds.
+4. A non-transferable on-chain identity token (the *Entros Anchor*) with a progressive Trust Score based on successful verification history and account age.
+5. A graduated trust model that separates first-capture validation, returning-user continuity, and portable wallet state.
 6. A working implementation deployed on Solana devnet with end-to-end browser-based verification.
 
 #### **1.2. Paper Organization**
@@ -43,15 +43,15 @@ Section 2 defines the Temporal-Biometric Hash pipeline. Section 3 presents the Z
 
 #### **2.1. Design Objectives**
 
-The Temporal-Biometric Hash (TBH) pipeline must satisfy five properties:
+The Temporal-Biometric Hash (TBH) pipeline targets five properties. The first three require population and adversarial evidence before they become protocol guarantees.
 
 **Definition 1 (TBH Requirements).** *A TBH scheme is a tuple of algorithms (Challenge, Capture, Extract, Hash, Commit) satisfying:*
 
 1. **Uniqueness.** *Fingerprints from distinct individuals have high expected Hamming distance:* `E[d_H(F_A, F_B)] ≈ n/2` *for n-bit fingerprints, A ≠ B.*
 2. **Temporal Consistency.** *Fingerprints from the same individual across sessions have bounded distance:* `d_H(F_t, F_{t+Δ}) ∈ [δ_min, δ_max]` *with high probability.*
 3. **Spoof Resistance.** *Generating a fingerprint F' such that* `d_H(F', F_target) < δ_max` *requires knowledge of the target's behavioral characteristics across multiple modalities.*
-4. **Privacy.** *The fingerprint F_T is never transmitted. Only a Poseidon commitment* `H_TBH = Poseidon(F_T, s)` *is published on-chain. The underlying feature vector is transmitted to the validation server as a fixed-size statistical summary for provenance validation but is not stored (Section 6.8).*
-5. **Efficiency.** *All operations run on consumer hardware within a browser context.*
+4. **Privacy.** *The client-side fingerprint F_T is not transmitted. On-chain state can include Poseidon commitments, zero-knowledge proofs, and an encrypted baseline blob. The validation service receives phrase audio, derived features, bounded time-series contours, a coarse curve outline, and request metadata. It derives a separate server-side fingerprint for cross-wallet analysis (Section 6.8).*
+5. **Efficiency.** *Client hashing and proving run on consumer hardware. Private validation runs in the server tier.*
 
 #### **2.2. Challenge Generation**
 
@@ -65,13 +65,13 @@ The protocol issues a nonce-seeded challenge consisting of two components:
 
 The original protocol design (June 2025 – April 2026) specified a 70-syllable nonsense vocabulary on the theory that non-semantic phrases would (a) prevent dictionary-based audio deepfake attacks by enlarging the synthesis target space and (b) elicit distinctive prosodic variation that text-to-speech systems would struggle to reproduce. Empirical deployment in early 2026 forced a revision of both claims.
 
-**Threat-model evolution.** The "dictionary-based deepfake" model assumes adversaries pre-synthesize libraries of TTS audio for known phrases—a pattern that real-time streaming TTS has obsoleted. As of 2026, Cartesia Sonic Turbo and ElevenLabs Flash v2.5 generate arbitrary text at ≤100 ms time-to-first-audio for sub-cent unit cost, and self-hosted XTTS-v2 runs at RTF 0.3× on commodity GPUs. The ASVspoof 5 benchmark [28] abandoned the pre-synthesis library attack class entirely, focusing on real-time synthesis as the empirically dominant threat. Combinatorial vocabulary size (70⁵ vs. 1357⁵) does not affect an attacker who never needs to pre-compute.
+**Threat-model evolution.** The "dictionary-based deepfake" model assumes adversaries pre-synthesize libraries of TTS audio for known phrases. Real-time streaming TTS has made that pattern obsolete. As of 2026, Cartesia Sonic Turbo and ElevenLabs Flash v2.5 generate arbitrary text at ≤100 ms time-to-first-audio for sub-cent unit cost, and self-hosted XTTS-v2 runs at RTF 0.3× on commodity GPUs. The ASVspoof 5 benchmark [25] abandoned the pre-synthesis library attack class entirely, focusing on real-time synthesis as the empirically dominant threat. Combinatorial vocabulary size (70⁵ vs. 1357⁵) does not affect an attacker who never needs to pre-compute.
 
-**Prosodic discrimination is vocabulary-independent.** Modern deepfake-detection literature [29] extracts the human-vs-synth signal from cycle-level perturbation statistics—jitter, shimmer, harmonic-to-noise ratio, and microtremor F0—measured over voiced segments. These features are physical correlates of vocal-fold biomechanics and laryngeal control, independent of the lexical identity of the spoken content. The same prosodic asymmetry that distinguishes a human from a synthesizer on "elephant mountain coffee" also distinguishes them on "ba le fa ki te"; choosing nonsense provides no incremental discrimination on the prosodic axis the literature treats as load-bearing.
+**Prosodic discrimination is vocabulary-independent.** Modern deepfake-detection literature [26] extracts the human-vs-synth signal from cycle-level perturbation statistics. These include jitter, shimmer, harmonic-to-noise ratio, and microtremor F0 measured over voiced segments. These features are physical correlates of vocal-fold biomechanics and laryngeal control, independent of the lexical identity of the spoken content. The same prosodic asymmetry that distinguishes a human from a synthesizer on "elephant mountain coffee" also distinguishes them on "ba le fa ki te". Choosing nonsense provides no incremental discrimination on the prosodic axis the literature treats as load-bearing.
 
-**ASR accuracy is vocabulary-dependent and asymmetric in the defender's favor.** The protocol's content-binding check requires the validation server to verify that the audio matches the issued phrase. Both Whisper [30] and Wav2Vec2-Phoneme [31] exhibit substantially higher error rates on out-of-distribution input than on natural language. Whisper's autoregressive decoder hallucinates training-corpus filler ("Thanks for watching") on nonsense input—observed at ~30 % false-reject rate on clean human speech of nonsense syllables. Wav2Vec2-Phoneme operates in the right primitive (CTC forced alignment, not transcription) but its baseline phoneme error rate of 10–15 % on out-of-distribution phonotactics compounds against the per-phoneme matching metric, yielding a discrimination gap of only 10–15 percentage points between right and wrong content—too narrow to threshold reliably. On real English words, Whisper-tiny.en operates in its training distribution with WER ≈ 5–6 % on LibriSpeech test-clean, and word-level Levenshtein on a curated dictionary gives a discrete signal whose collision probability between two random 5-word phrases is < 0.1 %.
+**ASR accuracy is vocabulary-dependent and asymmetric in the defender's favor.** The protocol's content-binding check requires the validation server to verify that the audio matches the issued phrase. Both Whisper [27] and Wav2Vec2-Phoneme [28] exhibit substantially higher error rates on out-of-distribution input than on natural language. Whisper's autoregressive decoder hallucinates training-corpus filler such as "Thanks for watching" on nonsense input. Tests observed an approximate 30 percent false-reject rate on clean human speech of nonsense syllables. Wav2Vec2-Phoneme operates in the right primitive through CTC forced alignment, but its baseline phoneme error rate compounds against the per-phoneme matching metric. This yields a discrimination gap of only 10–15 percentage points between right and wrong content, which is too narrow to threshold reliably. On real English words, Whisper-tiny.en operates in its training distribution with WER ≈ 5–6 % on LibriSpeech test-clean, and word-level Levenshtein on a curated dictionary gives a discrete signal whose collision probability between two random 5-word phrases is < 0.1 %.
 
-**Curated real-word vocabulary.** The shipped implementation uses a 1,357-word neutral-vocabulary English dictionary curated by length (4–8 letters), syllable count (1–3), VADER-positive sentiment, hand-blocklist content safety filters, and homophone/substring-collision pruning. The combinatorial defense remains: 1,357⁵ ≈ 4.6 × 10¹⁵ unique 5-word phrases, infeasible to pre-synthesize. The discrimination gap on the shipped Whisper-tiny.en + word-level Levenshtein pipeline is approximately 95 percentage points (mean right-phrase distance 0.07 vs. mean wrong-content distance 1.0 across calibration trials)—an order-of-magnitude improvement over the v2 phoneme-level pipeline. Per-session unpredictability is preserved by uniform random sampling from the public dictionary; per Kerckhoffs's principle, the protocol's security depends on nonce freshness, the content-binding check itself, and the orthogonal Tier 1 acoustic and Tier 2 cross-modal defenses (§6.3, §5.2.4)—not on the secrecy of the vocabulary.
+**Curated real-word vocabulary.** The shipped implementation uses a 1,357-word neutral-vocabulary English dictionary curated by length (4–8 letters), syllable count (1–3), VADER-positive sentiment, hand-blocklist content safety filters, and homophone/substring-collision pruning. The 1,357⁵ challenge space preserves per-session unpredictability and content binding. It does not stop real-time synthesis. The shipped Whisper-tiny.en and word-level Levenshtein pipeline produced a 95 percentage-point separation between right-phrase and wrong-content calibration samples. This measurement covers phrase matching, not human-versus-synthetic classification.
 
 #### **2.3. Multi-Modal Data Acquisition**
 
@@ -89,7 +89,7 @@ Raw time-series data is distilled into a 308-dimensional feature vector `v ∈ �
 
 **Pre-processing.** Audio is captured at 16 kHz and normalized to RMS 0.05 at the SDK source so amplitude features and downstream spectral features are stable across mic gains and device hardware. A pre-emphasis filter with coefficient 0.97 is applied before MFCC framing.
 
-**Fundamental frequency, perturbation, and LTAS (44 features).** F0 statistics and delta, jitter measures (local, RAP, PPQ5, DDP), shimmer measures (local, APQ3, APQ5, DDA), harmonics-to-noise ratio (HNR), voicing ratio, amplitude moments, and Long-Term Average Spectrum (LTAS) statistics (spectral centroid, rolloff, flatness, spread). F0 is trivial for TTS engines to match, but jitter and shimmer measure involuntary micro-perturbations that synthetic speech produces with unnaturally low or uniform values. HNR detects synthetic audio because TTS engines produce unnaturally clean signals without the breath noise present in real speech.
+**Fundamental frequency, perturbation, and LTAS (44 features).** F0 statistics and delta, jitter measures (local, RAP, PPQ5, DDP), shimmer measures (local, APQ3, APQ5, DDA), harmonics-to-noise ratio (HNR), voicing ratio, amplitude moments, and Long-Term Average Spectrum (LTAS) statistics (spectral centroid, rolloff, flatness, spread). These features measure pitch behavior, cycle-level perturbation, noise, and spectral shape. Their discrimination against current synthesis systems is an empirical property of the complete validator.
 
 **MFCCs and delta-MFCCs (72 features).** Mel-Frequency Cepstral Coefficients capture vocal-tract spectral envelope shape across mel-warped frequency bands. Per-coefficient statistics (mean, variance, skewness, kurtosis) over the capture window are computed for the 12 cepstral coefficients C1–C12, plus their temporal first derivatives over the same window. MFCCs and delta-MFCCs are the dominant speaker-discrimination signal in modern speech-recognition literature.
 
@@ -103,7 +103,7 @@ Raw time-series data is distilled into a 308-dimensional feature vector `v ∈ �
 
 **Kinematic Features (`v_kin ∈ ℝ^81`)**
 
-**Jerk, jounce, and path dynamics (54 features).** The third (jerk) and fourth (jounce) time derivatives of pointer coordinates, plus path curvature, directional entropy, speed and acceleration profiles, micro-correction frequency, pause ratios, path efficiency, segment length distribution, speed jitter variance, normalized path length, and angle autocorrelation. Involuntary human movements exhibit characteristic high-frequency jerk signatures that scripted movements lack. These features capture habitual motor control patterns unique to each individual [10].
+**Jerk, jounce, and path dynamics (54 features).** The third (jerk) and fourth (jounce) time derivatives of pointer coordinates, plus path curvature, directional entropy, speed and acceleration profiles, micro-correction frequency, pause ratios, path efficiency, segment length distribution, speed jitter variance, normalized path length, and angle autocorrelation. These features describe motor-control patterns that the validator evaluates alongside the other modalities [10].
 
 **FFT band energies (12 features).** Cooley-Tukey FFT band energy across four frequency bands (0–2, 2–6, 6–12, 12–30 Hz) for each of three accelerometer axes.
 
@@ -129,7 +129,7 @@ Raw time-series data is distilled into a 308-dimensional feature vector `v ∈ �
 
 #### **2.5. Feature Fusion and SimHash**
 
-**Normalization.** The feature vector is normalized through a multi-stage server-side pipeline so that each feature contributes meaningfully to the SimHash projection regardless of its natural unit magnitude, identity-bearing anatomical features stay dominant, and session-noise features do not drive the bit pattern. Non-finite values are sanitized to zero. Specific normalization parameters form part of the validation service's adversarial-resistance posture and are not published—disclosing them would let attackers craft synthetic features that pass normalization while evading the discrimination the pipeline is designed to enforce.
+**Normalization.** The client normalizes each modality group before computing its local fingerprint. The validation service independently applies bounded normalization, modality weighting, and optional population whitening before its cross-wallet projection. Both paths sanitize non-finite values. The server parameters remain private because they form part of the active detection policy.
 
 **Concatenation.** The three vectors are concatenated: `v_fused = [v_audio ‖ v_kin ‖ v_touch] ∈ ℝ^308`.
 
@@ -148,7 +148,7 @@ The problem of protecting biometric templates while enabling matching has a subs
 
 Entros's behavioral biometrics present a different challenge. The signal is inherently non-stationary: voice prosody shifts with health, touch dynamics change with device, kinematic patterns evolve with habit. The "errors" between sessions are not noise to be corrected but genuine temporal variation that carries identity information. Fuzzy extractors' error-correction model does not apply because the variation is structured, not random. Cancelable transforms do not apply because the template itself drifts by design.
 
-Entros addresses this through a different construction: SimHash produces a locality-sensitive fingerprint where bounded drift maps to bounded Hamming distance, and a Groth16 circuit proves that this distance falls within the expected range. The Poseidon commitment provides the revocability property—a user can generate a new salt to produce a fresh commitment without changing their behavioral profile. Recent work on practical fuzzy extractors for iris biometrics [16] achieves 105 bits of entropy with 92% true accept rate, providing a useful benchmark: Entros's 256-bit SimHash must be evaluated not by bit-length but by effective entropy under adversarial feature distributions, a question we identify as future work.
+Entros uses SimHash to map vector similarity into Hamming distance, then uses Groth16 to prove that the distance falls inside a configured range. Population evaluation must determine whether real behavioral captures occupy a useful range. A user can rotate the Poseidon salt and commitment without changing the underlying fingerprint. Recent work on practical fuzzy extractors for iris biometrics [16] achieves 105 bits of entropy with 92% true accept rate, providing a useful benchmark: Entros's 256-bit SimHash must be evaluated by effective entropy under adversarial feature distributions, not by bit length.
 
 #### **2.7. Poseidon Commitment**
 
@@ -178,9 +178,9 @@ The Hamming distance circuit is a Groth16 [4] arithmetic circuit over BN254 with
 
 The Hamming distance is computed via bitwise XOR and popcount, expressed as R1CS constraints: for each bit position `i`, `d_i = F_T_new[i] + F_T_prev[i] - 2 · F_T_new[i] · F_T_prev[i]`, then `d_H = Σ d_i` for `i = 1…256`.
 
-The minimum distance constraint (`δ_min = 3`) prevents exact replay attacks. The threshold (`δ_max = 96`) rejects fingerprints from different people.
+The minimum distance constraint (`δ_min = 3`) prevents exact replay attacks. The maximum distance (`δ_max = 96`) is the configured continuity boundary. Population evaluation must establish its false-match and false-reject behavior.
 
-**Soundness guarantees.** Groth16 provides computational knowledge soundness under the Generic Group Model and the q-Power Knowledge of Exponent assumption [4]. For Entros's circuit, this means no probabilistic polynomial-time adversary can produce a valid proof for a false statement—wrong Hamming distance or wrong Poseidon preimage—except with negligible probability. The structured reference string introduces a trust assumption: an adversary who knows the toxic waste from *all* Phase 2 ceremony contributors can forge proofs. The multi-party ceremony ensures this requires universal collusion among independent participants.
+**Soundness guarantees.** Groth16 provides computational knowledge soundness under the Generic Group Model and the q-Power Knowledge of Exponent assumption [4]. For Entros's circuit, this means no probabilistic polynomial-time adversary can produce a valid proof for a false statement, except with negligible probability. The current single-contributor Phase 2 setup adds a development trust assumption. A completed multi-party ceremony would reduce that risk to collusion among all ceremony contributors.
 
 #### **3.2. On-Chain Verification**
 
@@ -203,18 +203,18 @@ Groth16 requires a structured reference string (SRS) from a trusted setup ceremo
 
 #### **4.1. The Entros Token**
 
-The protocol's economic security is anchored by a native utility token, a standard SPL mint launched on a public bonding curve. The identity Anchor described in Section 3 is a separate Token-2022 mint carrying the NonTransferable extension; the two are distinct assets with distinct standards.
+The planned economic layer uses a native utility token, a standard SPL mint launched on a public bonding curve. The identity Anchor described in Section 3 is a separate Token-2022 mint carrying the NonTransferable extension. The two assets use different standards and are not connected on-chain today.
 
 1. **Staking.** Validators stake Entros tokens as slashable collateral to participate in the Anonymity Ring.
 2. **Delegation.** Holders who do not run a node delegate stake to a validator, sharing the accuracy-weighted rewards and the slashing risk.
 3. **Verification capacity.** Integrators stake Entros for discounted or unlimited verifications via capacity tiers.
-4. **Economic governance.** Holders direct treasury allocation, the verification fee, validator admission policy, and ecosystem funding. Detection parameters are excluded: Trust Score weights, Hamming bounds, and validation thresholds are set by calibration against measured data and adversarial results, and published as a changelog.
+4. **Economic governance.** Holders direct treasury allocation, the verification fee, validator admission policy, and ecosystem funding. Detection parameters remain outside token voting. A governed calibration process can version safe public changes without publishing exploitable thresholds.
 
-None of these mechanisms are active in the current devnet deployment. Verification fees and validator stake are SOL-denominated today, and each mechanism activates in phases as the validator network decentralizes.
+None of these token mechanisms are active in the current devnet deployment. The deployed programs charge a configurable SOL verification fee. The registry also contains SOL deposit scaffolding, but it does not select validators, assign work, slash deposits, or distribute rewards.
 
 #### **4.2. User-Pays Model**
 
-Users pay a small protocol fee (~0.005 SOL) per verification. This is trivial for any Solana user, and enough that holding many Anchors carries a real recurring cost. Integrators read on-chain verification state for free via `verifyEntrosAttestation()`—no escrow, no API keys, no billing relationship.
+Wallet-connected users pay the configurable protocol fee for each verification. Program initialization uses a 0.005 SOL default, and the authority can update it. Integrators can read on-chain Anchor state without a protocol billing relationship. The fee bounds attempt volume and does not determine whether a capture passes.
 
 #### **4.3. Validation Cycle**
 
@@ -236,21 +236,21 @@ The on-chain data structure stores: `owner` (Pubkey), `creation_timestamp` (i64)
 
 #### **5.2. Progressive Trust Score**
 
-The Trust Score is a function of the temporal pattern of verifications, not their count. Repeat verifications within the same rolling 24-hour window collapse into a single contribution; once the 52-slot window saturates, additional same-window verifications reduce the score by displacing older history. Sustained verification across distinct days over months is the only path to a high score. The formula combines three components:
+The Trust Score is a function of verification span and account age, not raw verification count. The program divides the previous 84 days into twelve seven-day bins. A week contributes once when it contains at least one successful verification. The formula combines two active components and one deprecated component:
 
-**Recency-weighted count (continuous decay).** The 52-slot timestamp window is first deduplicated by 24-hour bucket (sliding 24-hour slice from `now`), so only one verification per rolling 24-hour period contributes. Each remaining unique-day timestamp contributes points using a continuous decay function of the exact elapsed seconds: `300_000 / (3000 + days_since_scaled)` where `days_since_scaled = elapsed_seconds * 100 / 86400` (representing days multiplied by 100 for a continuous 14.4-minute resolution decay), scaled by `base_trust_increment / 100`. This smooth decay eliminates the sharp 24h bucket boundary and prevents timing exploits.
+**Weekly span score.** Each active week receives `base_trust_increment × (12 - k) / 12`, where `k = 0` is the current week. More recent weeks receive more weight. Multiple verifications inside one week do not increase that week's contribution.
 
 **Regularity bonus (deprecated).** The regularity bonus is set to 0. The legacy model rewarded low gap variance, which inadvertently paid for the precision of machine cron jobs; deprecating it removes this automated script reward vector.
 
-**Age bonus.** `⌊√min(age_days, 365)⌋ × 4`, using deterministic integer square root. Doubling the weight of the age/span bonus rewards active human longevity over high-frequency checks.
+**Age bonus.** `⌊√min(age_days, 365)⌋ × 4`, using deterministic integer square root. This rewards account longevity without rewarding high-frequency checks.
 
 The score is capped at a configurable maximum (currently 10,000) and computed on-chain during the `update_anchor` instruction, reading parameters from a cross-program PDA.
 
 #### **5.3. Verification Modes**
 
-Wallet-connected mode is the primary flow. The user pays the per-verification fee, signs the transaction, mints an Entros Anchor, and builds an on-chain Trust Score queryable by any integrator. Each verification produces a SAS attestation that integrators read for free. The economic surface—per-verification fees plus per-wallet funding—means the number of Anchors an operator holds is bounded by what they are willing to fund.
+Wallet-connected mode is the primary flow. A first verification requires a validator-signed receipt before the program mints an Entros Anchor. A returning verification supplies a Groth16 continuity proof before the program updates the Anchor and Trust Score. SAS issuance is a separate best-effort step when the executor and credential authority are configured.
 
-Walletless mode is a secondary liveness tier for use cases that need a captcha-equivalent signal without onboarding a wallet. The behavioral fingerprint is stored locally (encrypted with AES-256-GCM, key as non-extractable `CryptoKey` in IndexedDB). The identity is device-bound and ephemeral. Clearing storage resets it. No on-chain Anchor, no portable Trust Score. This tier is not currently offered in the reference application. A walletless decision rests on a single capture with no prior baseline to compare against, which is a harder problem than returning-user consistency. It opens when that decision is measured rather than assumed.
+Walletless mode is a secondary SDK and relayer design for applications that do not onboard a user wallet. The behavioral fingerprint remains in a device-local encrypted baseline. Clearing storage resets that continuity. This mode does not create a portable user-owned Anchor or Trust Score. The reference application does not currently offer it. Its first-capture decision remains an open measurement question.
 
 ---
 
@@ -270,88 +270,88 @@ Walletless mode is a secondary liveness tier for use cases that need a captcha-e
 
 **Theorem 1 (Replay Resistance).** *An adversary replaying a previously-captured fingerprint F_T verbatim is rejected except with negligible probability, under the knowledge soundness of Groth16.*
 
-*Proof.* A replayed fingerprint produces `d_H(F_T, F_T) = 0 < δ_min = 3`. The circuit outputs `false` for the range check `δ_min ≤ d_H < δ_max`. By the knowledge soundness of Groth16, no valid proof exists for a false statement. The on-chain verifier rejects the transaction. Additionally, challenge nonces are single-use and time-limited (5 minutes), preventing replay of the proof itself. ∎
+*Proof.* A replayed fingerprint produces `d_H(F_T, F_T) = 0 < δ_min = 3`. The circuit outputs `false` for the range check `δ_min ≤ d_H < δ_max`. By the knowledge soundness of Groth16, no valid proof exists for a false statement. The on-chain verifier rejects the transaction. The program consumes a challenge nonce after a successful verification and rejects later reuse. A failed transaction preserves the nonce for a legitimate retry until its 5-minute expiry. ∎
 
 #### **6.3. Synthetic Data Attacks**
 
-**Claim 1 (Multi-Modal Synthesis Difficulty).** *An adversary must simultaneously synthesize realistic data across all three modalities (voice, motion, touch) such that the fused 308-dimensional feature vector produces a SimHash fingerprint within Hamming distance δ_max of the target.*
+**Research question 1 (Coordinated synthesis).** *Can the complete validation stack distinguish coordinated synthetic evidence from genuine captures across supported devices and users?*
 
 The defense is layered:
 
-**Feature-level.** The 308-dimensional feature vector captures involuntary biological processes: vocal jitter/shimmer from laryngeal muscle micro-contractions, kinematic jerk from neuromuscular control loops, touch pressure from fingertip biomechanics. Each dimension presents a distinct synthesis challenge. Jitter measures, for instance, capture perturbation rates that TTS engines produce with unnaturally low variance [11].
+**Feature-level.** The 308-dimensional feature vector summarizes voice, motion, and touch behavior. The private validator evaluates its distributions and relationships against the active policy. No feature count or individual statistic establishes synthesis resistance by itself.
 
-**Cross-modal correlation.** SimHash projects the concatenated vector onto shared hyperplanes. Each output bit depends on features from all modalities jointly. An adversary cannot spoof modalities independently—the cross-modal correlations must be consistent.
+**Joint projection.** SimHash projects the concatenated vector onto shared hyperplanes, so each output bit depends on features from all modalities at once and no single modality determines the fingerprint alone. The projection mixes the modalities. It does not test a relationship between them, and it is not the layer that establishes one.
 
 **Entropy scoring.** The extraction pipeline measures Shannon entropy and jitter variance per sensor stream. Synthetic data with low or uniform entropy is flagged before reaching the hashing stage.
 
-We do not claim synthesis is impossible. We claim that synthesis which survives the full detection stack is difficult to produce and difficult to sustain across sessions, and that the cost of attempting it at scale grows with the number of identities involved.
+Entros treats synthesis resistance as an empirical property of the complete validation stack. The red-team program measures each attack class against the deployed configuration. It does not derive a joint success rate from assumed per-modality probabilities.
 
-**Empirical context.** Serwadda and Phoha [17] demonstrated that spoofing mouse dynamics—even with full knowledge of the target's behavioral profile—required extensive per-target training and achieved limited success rates. Entros requires spoofing three modalities simultaneously. Under an independence assumption, if single-modality spoofing succeeds with probability p_v (voice), p_m (motion), and p_t (touch), the joint success rate is p_v · p_m · p_t. Even generous estimates of 0.3 per modality yield ~2.7% joint success per attempt.
+**Empirical context.** Serwadda and Phoha [17] found that spoofing mouse dynamics required per-target training and achieved limited success. Their result supports behavioral dynamics as one component of a measured, multi-signal validation stack. Entros tests coordinated synthesis against the complete stack rather than estimating protection from independent modality probabilities.
 
-**Voice modality resilience.** Modern text-to-speech systems can clone voice timbre from seconds of reference audio. However, Entros's voice features specifically target involuntary laryngeal micro-perturbations (jitter, shimmer, HNR) rather than perceptual voice quality. ASVspoof challenge results [11] confirm that TTS outputs exhibit unnaturally low jitter variance and unnaturally high HNR compared to natural speech. While this gap is narrowing as synthesis quality improves, the multi-modal fusion ensures that voice is one signal among three, not a single point of failure. Behavioral biometric systems using ZK verification have independently demonstrated practical false accept rates below 1% [18].
+Pouw et al. [23] observed alignment between vocal amplitude and upper-limb kinetics in a controlled sustained-vocalization study. That result motivates future event-locked research. It does not validate the current lagged F0-to-acceleration statistic, which remains research telemetry.
+
+**Voice modality evidence.** Entros extracts jitter, shimmer, HNR, spectral, and contour features rather than relying only on voice timbre. ASVspoof research [11] motivates those measurements. Current TTS families and recording conditions can change their value, so Entros measures voice ablations and coordinated attacks against the full stack. Behavioral biometric systems using ZK verification have reported false accept rates below 1% in their own settings [18]. Those results do not establish an Entros rate.
 
 #### **6.4. Sybil Attacks**
 
-Each wallet maps to exactly one Entros Anchor (enforced by PDA derivation). Creating k fake identities requires:
+Each wallet maps to one Entros Anchor through PDA derivation. This rule prevents duplicate Anchors for one wallet. It does not establish that different wallets belong to different people.
 
-1. k funded Solana wallets (SOL cost)
-2. k independent behavioral profiles, each sustained across regular re-verifications
-3. k × m verification fees over m re-verification cycles
+The active detection layer compares a new server-derived fingerprint with recent fingerprints registered to other wallets. Similarity can trigger the configured duplicate-identity policy. The population operating curve remains under evaluation, so Entros does not present that comparison as a completed uniqueness guarantee.
 
-The Trust Score penalizes new accounts (age bonus starts at 0) and requires sustained active history (age/span bonus rewards duration of engagement). Across 1,000 identities held to Trust Score > 500 for thirteen weeks at weekly cadence, the protocol collects 65 SOL in fees (1,000 × 13 × 0.005 SOL), and Solana charges ~13 SOL in one-time per-identity account rent (1,000 × ~0.013 SOL for mint, ATA, IdentityState, and per-verification records), for a total of ~78 SOL. This arithmetic prices the residual attempt volume only: it assumes captures that already survive the active detection stack for the full campaign duration, and says nothing about the probability of reaching that state. Fees alone do not bound a high-value airdrop allocation, which is why they sit outermost rather than first. Asymmetry compounds over time. The attacker pays continuously against an evolving detection stack, with no advance knowledge of which targets will materialise—most lucrative airdrops are unannounced, forcing speculative deployment months before any chance of recoupment. The equilibrium shifts against sustained Sybil farming at scale, not against any single attack.
+Trust Score rewards successful verification across weekly time bins and account age. The configurable SOL fee bounds the volume of attempts that reach those checks. Neither mechanism replaces duplicate-identity detection.
 
 #### **6.4.1. Layered Sybil Resistance**
 
-Entros's Sybil resistance operates through three independent layers. Behavioral comparison is the layer that detects duplicate identities; the other two bound how many attempts an adversary can sustain against it:
+Entros combines three controls. Behavioral comparison addresses duplicate-wallet similarity. History and fees shape how applications consume that signal:
 
-* **Economic deterrence.** Each verification costs the user SOL and each wallet requires funding, so the cost of holding many Anchors scales linearly with their number. This bounds attempt volume; it does not decide whether any capture passes.
-* **Temporal deterrence.** Trust Score rewards consistency over time. Weekly re-verifications across months carry more weight than bulk verifications in a single session, so a score reflects sustained presence and cannot be reached by volume alone.
-* **Behavioral fingerprint comparison.** The server-side registry compares each new verification's SimHash fingerprint against existing entries. One person operating multiple wallets produces clustered fingerprints that the registry detects. The discriminative power of the 308-feature behavioral fingerprint is being empirically calibrated through data collection from diverse users.
+* **Behavioral comparison.** The private validator compares each new fingerprint with bounded recent fingerprints associated with other wallets. The population evaluation measures false matches, missed duplicates, device effects, and threshold behavior.
+* **Verification history.** Trust Score rewards successful verification across distinct weekly bins. Frequent checks inside one week do not increase that week's contribution.
+* **Attempt-volume bound.** The configured SOL fee and per-wallet limits constrain request volume. They do not decide whether a capture passes.
 
-These layers are complementary. Behavioral comparison makes duplicate identities detectable, temporal requirements mean a single capture proves little, and economic cost bounds how many attempts an adversary can mount against the first two. An attacker must defeat all three simultaneously. The fingerprint registry's effectiveness improves as empirical data informs threshold calibration, and the architecture supports evolution toward probabilistic risk scoring as the user population grows.
+These controls are complementary. The cross-wallet comparison remains the direct uniqueness mechanism. Its effectiveness depends on the measured same-person and cross-person distributions. The architecture supports updated projections and risk policies as that evidence grows.
 
 #### **6.5. Privacy**
 
 **Theorem 2 (Zero-Knowledge Privacy).** *The on-chain verifier learns only that the Hamming distance between two fingerprints falls within [δ_min, δ_max). It learns neither fingerprint, neither salt, nor any feature vector.*
 
-*Proof.* By the zero-knowledge property of Groth16, the proof reveals nothing beyond the truth of the statement. The public inputs are Poseidon commitments (computationally hiding under the discrete logarithm assumption on BN254) and the threshold parameters. The fingerprints and salts are private witnesses. ∎
+*Proof.* Groth16 reveals no private witness beyond the public statement. The public inputs are the two Poseidon commitments and the distance bounds. The fingerprints and salts remain private witnesses. Commitment privacy depends on Poseidon preimage resistance and secret, high-entropy salts. ∎
 
-Raw biometric data is destroyed after feature extraction. On-chain, only the Poseidon commitment is stored—computationally hiding under standard assumptions.
+The client discards raw motion and touch after feature extraction. The validation service processes phrase audio for transcription and then discards it. On-chain state includes commitments, proofs, and encrypted baseline material.
 
-**SimHash reversibility.** Recent work has demonstrated pre-image attacks on locality-sensitive hashes [21], showing that SimHash fingerprints contain recoverable information about the original input. Entros's architecture addresses this at two levels: (1) the SimHash fingerprint is never transmitted or stored on-chain—only the Poseidon commitment is public, and the ZK proof reveals nothing beyond the Hamming distance range; (2) the fingerprint stored locally for re-verification is encrypted with AES-256-GCM using a non-extractable `CryptoKey` in IndexedDB, requiring device-level compromise to access. In wallet-connected mode, an additional copy is held on chain in a per-wallet PDA as AES-256-GCM ciphertext keyed to a deterministic Ed25519 `signMessage` signature over a domain-separated payload; only the wallet that wrote it can derive the key and decrypt, making the baseline recoverable across devices while remaining opaque to all other observers. The blob's plaintext is a 32-byte SimHash fingerprint plus a 32-byte commitment salt—64 bytes total. It contains neither raw sensor data nor the 308 statistical features; both are destroyed earlier in the pipeline. Even if decrypted under wallet compromise, the SimHash is non-invertible to the original feature vector, and the original feature vector is itself a statistical summary rather than a recording. The symmetric encryption is quantum-resistant under standard assumptions about Grover's algorithm on AES-256; the wallet-signature-derived key derivation is not, sharing the same post-quantum migration concern as every Ed25519-based Solana primitive. SimHash is not relied upon as a privacy-preserving representation; the Poseidon commitment provides that property.
+**SimHash reversibility.** Recent work has demonstrated pre-image attacks on locality-sensitive hashes [21]. This shows that SimHash fingerprints can contain recoverable information about their inputs. Entros does not publish the plaintext fingerprint. The protocol publishes its Poseidon commitment and a proof that reveals only the Hamming distance range. The fingerprint stored locally for re-verification uses AES-256-GCM with a non-extractable `CryptoKey` in IndexedDB. In wallet-connected mode, a per-wallet PDA stores another encrypted copy. Its key derives from a domain-separated Ed25519 `signMessage` signature. The blob contains a 32-byte fingerprint and a 32-byte commitment salt. It contains neither raw sensor data nor the 308 statistical features. Wallet compromise can expose the fingerprint and salt, so Entros does not treat SimHash as a privacy-preserving representation. The Poseidon commitment provides that boundary. AES-256 remains quantum-resistant under standard assumptions about Grover's algorithm. The Ed25519-derived key path shares Solana's post-quantum migration concern.
 
 #### **6.6. Attack Cost Under the Detection Stack**
 
 The protocol does not claim to make spoofing impossible. The primary defense is detection: every capture is scored against the detection layers described above before it reaches the chain. Economic cost is a secondary layer that bounds the volume of attempts an adversary can mount, not the mechanism that decides whether any single capture passes. The defense is layered:
 
-* **Feature-level:** Realistic multi-modal sensor data across 308 dimensions is hard to synthesize.
+* **Feature-level:** The private validator scores the 308 derived features and bounded same-window signals against measured policy.
 * **Circuit-level:** Replays (d_H = 0) and imposters (d_H > δ_max) are rejected.
 * **Entropy scoring:** Low-entropy synthetic data is flagged before hashing.
 * **Economic:** Each verification costs SOL and each wallet requires funding, which bounds attempt volume. Trust Score rewards months of consistency over bursts.
 
 #### **6.7. Graduated Trust Model**
 
-First-time verification establishes a behavioral baseline. With no prior fingerprint, the Hamming distance circuit does not fire. The protocol functions as a multi-modal liveness check, relying on feature extraction quality to distinguish human from synthetic data.
+First-time verification establishes a behavioral baseline after the private validator accepts the capture and signs a mint receipt. With no prior fingerprint, the Hamming distance circuit does not run. This creates a first-capture policy result, not a cryptographic proof of sensor provenance or human presence.
 
 Temporal consistency applies from the second verification onward. Each returning session checks behavioral drift against the stored fingerprint.
 
 **Definition 3 (Trust Tiers).** *The protocol defines three trust tiers based on verification history:*
 
-1. **Liveness** *(first walletless verification). Multi-modal sensor data was captured from a likely human. No temporal consistency. Signal strength: low. Suitable for captcha-equivalent use cases.*
-2. **Device-bound consistency** *(returning walletless verification). Behavioral drift matches a device-local fingerprint. Signal strength: medium. Suitable for session authentication, content gating.*
-3. **Portable identity** *(wallet-connected with Trust Score). Persistent on-chain Anchor with months of behavioral consistency visible to all integrators. Signal strength: high. Suitable for airdrop eligibility, DAO governance and DeFi access controls, read alongside a verification at the point of the gated action.*
+1. **First-capture validation** *(first verification).* The server policy accepted one capture. No continuity proof exists yet. A wallet-connected mint also requires a validator-signed receipt.
+2. **Device-bound continuity** *(returning walletless verification).* A Groth16 proof places the new fingerprint inside the configured distance interval from a device-local baseline.
+3. **Portable wallet continuity** *(wallet-connected verification).* An on-chain Anchor records accepted verification history, the current commitment, and Trust Score.
 
-Tiers 1 and 2 require walletless mode, which the protocol defines and the reference application does not currently offer. Tier 3 is the live flow.
+Tier 2 uses walletless mode, which the protocol defines but the reference application does not offer. The live wallet-connected flow starts at Tier 1 and adds Tier 3 continuity on return.
 
 In wallet-connected mode the user pays the per-verification fee, so each Anchor carries a recurring cost to its holder, and integrators read on-chain state for free.
 
-The Anchor exposes two fields, and an integrator reads both. The Trust Score describes how consistently a wallet has verified. `last_verification_timestamp` describes how recently. For an action of consequence, an integrator triggers a verification when the action happens and reads the Anchor immediately after, so the history it reads belongs to an operator who is present. The protocol provides the signal. The integrator sets the threshold and the window.
+The Anchor exposes Trust Score and `last_verification_timestamp`. Trust Score describes accepted verification history. The timestamp describes recency. An integrator can require a fresh verification before a gated action and then read both fields. The result remains a protocol policy signal rather than authenticated sensor provenance.
 
-A bot that clears local storage before each walletless verification is perpetually at Tier 1, a liveness check with no temporal history. High-value integrations can require Tier 2 or Tier 3, making this strategy ineffective for anything beyond basic captcha equivalence.
+Clearing local storage removes walletless continuity. Applications that require returning history can reject a first-capture result or require the wallet-connected tier.
 
 #### **6.8. Browser Trust Model and Server-Side Validation**
 
-The current implementation executes the entire verification pipeline—sensor capture, feature extraction, SimHash computation, Poseidon commitment, and Groth16 proof generation—within the browser. This architecture maximizes privacy: raw biometric data is never persisted, and the ZK proof and statistical summary are the only artifacts retained. However, the browser is an untrusted execution environment. An adversary controlling the browser can override sensor APIs (injecting synthetic audio via getUserMedia, dispatching fabricated PointerEvents), manipulate the feature extraction pipeline, or submit pre-computed proofs generated from optimized synthetic data.
+The browser performs sensor capture, feature extraction, SimHash computation, Poseidon commitment, and Groth16 proof generation. It keeps an encrypted baseline locally. The validation service processes phrase audio and the statistical summary. The protocol persists commitments, proofs, encrypted baseline material, and account state. The browser remains an untrusted execution environment. An adversary controlling it can override sensor APIs, manipulate feature extraction, or submit pre-computed proofs from synthetic data. The deployed browser tier combines automation-framework signals, challenge-response phrase checks, private statistical validation, and cross-wallet registry analysis. Planned progressive server challenges, WebAuthn request binding, and native attestation will strengthen client integrity and limit pre-composed evidence.
 
 The ZK proof provides a deterministic guarantee: the Hamming distance either falls within [δ_min, δ_max) or the proof is invalid. This is necessary but not sufficient. A valid proof confirms the *mathematical relationship* between two fingerprints but cannot confirm the *provenance* of the underlying sensor data.
 
@@ -359,25 +359,25 @@ The protocol implements a two-level validation architecture:
 
 **Level 1 (client-side, deterministic).** The Groth16 proof, as currently implemented. Provides mathematical certainty that the Hamming distance constraint is satisfied.
 
-**Level 2 (server-side, statistical).** The 308-dimensional feature vector is transmitted alongside the proof to a validation server. The server applies statistical analysis using models inaccessible to the client: per-feature entropy distributions (synthetic data exhibits entropy profiles outside expected human ranges), and jitter variance ratio analysis (text-to-speech engines produce unnaturally low jitter variance compared to natural speech [11]). The server-side models are not published, and the same-window time-series analysis runs on signals the client does not control end to end.
+**Level 2 (server-side, statistical).** Before proof generation, the client transmits the 308-dimensional feature vector, phrase audio, bounded contours, curve outline, and request metadata. The server applies private statistical models and challenge-response checks. Its same-window analysis runs over client-supplied signals. It provides statistical evidence rather than sensor provenance.
 
-This architecture preserves the core privacy property. The feature vector is a fixed-size statistical summary (means, variances, spectral coefficients)—not raw time-series data. It cannot be used to reconstruct the original audio, motion, or touch signals. The ZK proof continues to ensure the fingerprint itself is never revealed. The feature vector provides a complementary signal for provenance validation without compromising the zero-knowledge property of the identity proof.
+The feature vector contains fixed-size statistics rather than raw motion or full-resolution touch streams. The request also carries bounded F0 and acceleration contours for same-window analysis. The ZK proof hides the client fingerprint. These inputs support statistical validation but do not authenticate sensor origin.
 
 The feature vector could alternatively be processed within a Trusted Execution Environment (TEE) where even the server operator cannot inspect individual feature vectors, providing an additional privacy guarantee for high-sensitivity deployments.
 
-#### **6.9. Device Attestation**
+#### **6.9. Device and App Integrity**
 
-Browser-based sensor APIs provide no guarantee that captured data originates from physical hardware. A complementary defense is device attestation: verifying the integrity of the execution environment before behavioral capture begins.
+Browser-based sensor APIs do not authenticate the physical source of submitted data. Entros therefore treats browser verification as a risk-scored tier and is researching stronger request binding for native clients.
 
-A native mobile application can perform deterministic checks unavailable to browser JavaScript: whether the device is rooted or jailbroken, whether the application binary has been tampered with or instrumented (e.g., Frida, Xposed), whether the execution environment is an emulator rather than physical hardware, and whether sensor APIs are being intercepted by hooking frameworks. Hardware attestation APIs (Android's Play Integrity, iOS's DeviceCheck) provide cryptographic proof of device integrity signed by the platform vendor.
+App Attest and Play Integrity can return vendor-signed evidence about a recognized app instance and device environment. The planned native tier will bind that evidence to a server nonce and the final request digest, then verify freshness and replay state server-side. This strengthens confidence that an approved app instance authorized the request. It does not by itself prove sensor origin, human presence, or uniqueness.
 
-This constitutes a *positive security model*: rather than detecting characteristics of bots (negative model, probabilistic), the system verifies characteristics known to be genuine (positive model, deterministic). Device attestation forms the foundation layer. Behavioral biometric verification with ZK proofs operates on top of it. The combination addresses both the provenance question (did this data come from a real device?) and the identity question (is this behavioral pattern consistent with the claimed identity?).
+WebAuthn can add registered-credential authorization and continuity evidence to browser submissions. Progressive server challenges can also limit evidence prepared before a session. Entros evaluates these controls as separate layers because each establishes a different property.
 
-A native application also unlocks sensor modalities that browsers restrict: persistent accelerometer access with a single permission grant on iOS (browsers re-prompt each session), pressure-sensitive touch data on supported Android devices, and background re-verification without requiring the user to open a web page.
+The native application also provides direct access to IMU and touch capabilities that browsers restrict. Those signals support behavioral validation without turning device attestation into a personhood claim.
 
 #### **6.10. Empirical Adversarial Validation**
 
-The theoretical defenses described in Sections 6.1–6.9 are validated empirically through a continuous internal red team program. An adversarial testing harness submits synthesized feature vectors to the production validation service over HTTP, measuring per-tier pass rates against the live Tier 1 enforcement layer—the gate preceding on-chain submission. An attempt that fails Tier 1 cannot proceed to challenge fetch, ZK proof generation, or transaction submission, so a 0% Tier 1 pass rate implies a 0% on-chain anchor creation rate by construction.
+The protocol evaluates defined attack classes through a continuous internal red-team program. The harness submits synthesized evidence to the deployed validation service and records denominators, observed pass rates, and enforcement state. A validator rejection stops the reference flow before on-chain submission. Results apply only to the tested attack class and configuration.
 
 The attack taxonomy spans eight tiers ordered by sophistication. Results for the first three tiers (the highest-priority attacks implementable without external TTS models) are summarized below.
 
@@ -392,7 +392,7 @@ T1 exercises trivial procedural synthesis (sine-wave harmonics with additive noi
 
 T3b applies distributional constraints derived from published voice science norms, maintaining physiologically plausible feature values throughout the optimization. Inter-feature consistency checks (e.g., perturbation measure ratios inherent to vocal fold mechanics) prevent the optimizer from producing individually plausible but structurally impossible feature combinations.
 
-T4 extends the program to modern neural voice synthesis, which the tiers above deliberately exclude. T4a paired pre-recorded human voice with procedural motion and moved from a 100% pass counterfactual to 0% across four progressive defense waves, closing at 1,000 attempts with a 95% confidence interval of [0%, 0.37%]. T4b synthesized the issued challenge phrase in real time across two TTS model families and 58 voices; 0% of 200 attempts cleared the full production stack. T5 (coupled cross-modal synthesis) is underway. T6–T8 (identity theft, replay perturbation, adaptive probing) are planned. Aggregate results are published at entros.io/security. Attack implementation code remains private per responsible-disclosure convention.
+T4 extends the program to modern neural voice synthesis, which the tiers above deliberately exclude. T4a paired pre-recorded human voice with procedural motion and moved from a 100% pass counterfactual to 0% across four progressive defense waves, closing at 1,000 attempts with a 95% confidence interval of [0%, 0.37%]. T4b synthesized the issued challenge phrase in real time across two TTS model families and 58 voices. None of 200 attempts cleared the tested full-stack configuration. T5 remains open. T6–T8 remain planned and do not start before T5 meets its closure criteria. Aggregate results are published at entros.io/security. Attack implementation code remains private.
 
 ---
 
@@ -400,27 +400,29 @@ T4 extends the program to modern neural voice synthesis, which the tiers above d
 
 **Worldcoin** [5] uses iris scanning to create a unique biometric identifier per person. The approach provides strong uniqueness guarantees through a dedicated hardware device (the Orb), which enforces a controlled capture environment. The tradeoff is a permanent anatomical template: because an iris scan cannot be changed, it cannot be revoked if the template is ever exposed. Entros's behavioral signature drifts naturally over time, making re-verification both the consistency check and the revocation mechanism.
 
-**BrightID** [6] verifies uniqueness through social graph analysis, where users vouch for each other in verification parties. The approach trades hardware cost for coordination overhead. Users must attend verification events, and the trust model assumes non-colluding participants. Entros's approach requires neither coordination nor hardware: verification happens on a single device.
+**BrightID** [6] verifies uniqueness through social graph analysis, where users vouch for each other in verification parties. The approach trades dedicated hardware for coordination overhead. Entros targets verification on a consumer device without a coordinated social event.
 
-**Reclaim Protocol** [7] proves ownership of existing web2 accounts via TLS session proofs. It answers "do you control this account?"—not "are you human?" Entros and Reclaim are complementary: Reclaim proves account ownership, Entros proves the account owner is human.
+**Reclaim Protocol** [7] proves ownership of existing web2 accounts via TLS session proofs. It answers "do you control this account?" Entros targets a complementary behavioral personhood signal.
 
-**Traditional CAPTCHA** (reCAPTCHA [8], hCaptcha, Turnstile) provides session-level bot detection using behavioral signals, browser fingerprinting, and centralized machine learning classifiers. The advantages are maturity and a vast training dataset (Google processes billions of sessions). The disadvantages are privacy concerns (behavioral data sent to Google), lack of identity persistence (no concept of "the same human returning"), binary output (pass/fail with no graduated trust), and vulnerability to captcha-solving services. Entros's first walletless verification provides comparable liveness detection; its graduated trust model provides capabilities CAPTCHA fundamentally cannot.
+**Traditional CAPTCHA** (reCAPTCHA [8], hCaptcha, Turnstile) provides session-level bot detection using behavioral signals, browser fingerprinting, and centralized classifiers. Entros is researching whether a private behavioral baseline and portable wallet history can add continuity to that session-level model. The current first-capture path has not established a CAPTCHA-equivalent operating curve.
 
-**VeryAI** uses palm print biometrics with on-device processing, sharing Entros's commitment to never storing raw biometrics. Its palm print is a static identifier, which provides strong one-shot uniqueness but does not capture behavioral drift across sessions. Entros's behavioral temporal consistency model is complementary to this kind of static-biometric design: a palm print proves you exist; Entros proves you're the same human returning over months.
+**VeryAI** uses palm print biometrics with on-device processing. Its palm print is a static anatomical identifier. Entros targets a complementary form of returning-user continuity through behavioral change across sessions.
 
 **Behavioral biometrics with ZK proofs.** Hamm et al. [18] demonstrate continuous authentication using interactive and non-interactive ZK proofs over behavioral features, achieving a false accept rate of 0.65% and false reject rate of 0.48%. Their system validates that ZK verification of behavioral biometrics is practical, though their architecture targets session-level continuous authentication rather than cross-session identity persistence. Multi-modal fusion approaches for behavioral authentication [20] confirm that combining touch, keystroke, and accelerometer data improves both accuracy and spoofing resistance over single-modality systems.
 
-**Formal frameworks for proof of personhood.** Choudhuri et al. [19] provide the first rigorous cryptographic formalization of proof of personhood, defining ideal functionalities for Sybil-resistance, authenticated personhood, and unlinkability. Their framework assumes trusted authorities issue personhood credentials. Entros derives personhood from behavioral biometrics without a trusted issuer, which is more decentralized but harder to formalize under their model. Mapping Entros's security properties to this framework is identified as future work.
+**Formal frameworks for proof of personhood.** Choudhuri et al. [19] provide a cryptographic formalization of proof of personhood, defining ideal functionalities for Sybil resistance, authenticated personhood, and unlinkability. Their framework assumes trusted authorities issue personhood credentials. Entros is testing whether behavioral evidence can support a personhood credential without an anatomical issuer. Mapping each Entros claim to this framework remains future work.
 
-**Regulatory positioning.** Proof-of-personhood systems that transmit or store biometric data have faced enforcement actions under GDPR and regional biometric-data laws, with cited concerns including collection, storage, and cross-border transfer of biometric templates. Entros's architecture is designed to avoid these triggers by construction: raw biometric data is never stored or retained server-side, and only a 308-dimensional statistical summary and a zero-knowledge proof persist. This places Entros's data flows closer to a standard web analytics fingerprint than to a biometric collection pipeline.
+**Data-handling boundary.** Raw motion and full-resolution touch remain on the device. The validation service processes phrase audio, derived features, bounded contours, a coarse curve outline, and request metadata. Persistent protocol state can include commitments, proofs, encrypted baseline material, and account data. Deployers must assess the biometric-data rules that apply to their jurisdiction and use case.
 
 ---
 
 ### **8. Implementation and Benchmarks**
 
-The protocol is deployed on Solana devnet with six components: three Anchor/Rust on-chain programs with full constraint validation and on-chain Trust Score; a Groth16/Circom circuit (2,010 constraints) with trusted setup; the Pulse SDK (TypeScript, published on npm, 60 SDK tests including an 8-phase adversarial pen test harness); a server-side validation service (Rust, 32 tests); an executor node (Rust, live on Railway) providing the relayer API with rate limiting and commitment registry; and a demo application (Next.js on Vercel) with walletless and wallet-connected flows. A Realms DAO voter weight plugin (38 tests) provides governance integration. Total test coverage: 155 tests across all repos.
+The devnet implementation has three Anchor programs, a Groth16 circuit, a published TypeScript SDK, a private Rust validation service, a Rust gateway and relayer, and a hosted wallet-connected application. A separate voter-weight addin is deployed on devnet as an on-chain prototype. The walletless API exists in the SDK and relayer, but the reference application does not offer that mode. Repository test suites and CI gates cover each component. Exact counts remain in the versioned test output instead of this paper.
 
-The protocol fee treasury is live on devnet, collecting 0.005 SOL per verification. The fee is deducted atomically within the batched verification transaction and is admin-adjustable. Treasury balance is publicly auditable on Solana Explorer.
+The protocol fee treasury is live on devnet. Program initialization uses a 0.005 SOL default, and the authority can update the value. The transaction transfers the configured fee atomically with a successful mint or update. Treasury state is publicly auditable on Solana Explorer.
+
+The devnet programs remain upgradeable under the current development authority. The mainnet plan adds hardware-backed custody, an observable upgrade delay, and an independent recovery path before external value depends on that authority.
 
 #### **8.1. Performance Benchmarks**
 
@@ -442,19 +444,19 @@ The total pipeline from button click to on-chain proof depends on the configured
 
 Desktop verification operates with reduced sensor modalities. Mouse pointer dynamics serve as a proxy for hand movement, but capture wrist and finger motion rather than the arm and trunk movement available via mobile accelerometers. No touch pressure data is available from standard mice or trackpads. The effective dimensionality of the behavioral fingerprint is lower on desktop.
 
-Published research quantifies the gap. Multi-modal touch and IMU fusion on mobile devices reports EER below 1% [27]. Desktop-only behavioral authentication (keystroke dynamics and mouse movement) reports EER in the 6–13% range across multiple studies. The difference reflects the richer sensor environment available on mobile: accelerometer, gyroscope, magnetometer, and capacitive touch digitizer with pressure sensitivity.
+Published research quantifies the gap. Multi-modal touch and IMU fusion on mobile devices reports EER below 1% [24]. Desktop-only behavioral authentication (keystroke dynamics and mouse movement) reports EER in the 6–13% range across multiple studies. The difference reflects the richer sensor environment available on mobile: accelerometer, gyroscope, magnetometer, and capacitive touch digitizer with pressure sensitivity.
 
-Entros accepts desktop verification as a valid but weaker signal. The verification produces a legitimate behavioral fingerprint and ZK proof regardless of device. Trust Score accumulates identically. The server-side validation applies the same checks. The practical difference is that desktop fingerprints have lower inter-person discriminability, and the Sybil registry threshold may need to be more conservative for desktop-only users.
+The current web flow accepts desktop captures with fewer sensor capabilities. A returning desktop verification can still produce a fingerprint and ZK continuity proof. The validator records the device context and applies its configured policy. Population evaluation must measure desktop and mobile distributions separately before assigning a comparative assurance level.
 
-The mobile application, targeting the Solana dApp Store, is the production target for strongest verification signal. Native sensor APIs provide sub-millisecond accelerometer timestamps, touch pressure data, and persistent background access without per-session permission prompts.
+The native mobile application is the planned higher-assurance client and targets the Solana dApp Store. It provides direct IMU, microphone, touch, native proving, and Mobile Wallet Adapter integration. Representative-device testing and request-bound platform attestation remain release work.
 
 ---
 
 ### **9. Conclusion and Future Work**
 
-The Entros Protocol presents a framework for Proof-of-Personhood through temporal behavioral consistency. By measuring bounded, chaotic drift in multi-modal biometric signals over time, it provides graduated trust properties that static biometrics and session-level captcha do not.
+The Entros Protocol presents a framework for Proof-of-Personhood through temporal behavioral continuity. It combines private validation, committed behavioral fingerprints, zero-knowledge continuity proofs, and portable wallet history. Population separation and first-capture liveness remain measured protocol requirements.
 
-The protocol is precise about what it proves. First-time verification is a liveness check; temporal consistency compounds over repeated sessions, and the graduated trust model makes that explicit rather than presenting a false binary. The defense against sophisticated synthesis is multi-modal detection under temporal consistency, with economic cost bounding the volume of attempts mounted against it.
+The cryptographic proof establishes a bounded relationship between two committed fingerprints. The private validator decides whether a submitted capture satisfies the active statistical policy. First verification relies on that policy and a signed receipt. Returning verification adds the continuity proof. Fees bound request volume after detection.
 
 **Future work:**
 
@@ -463,12 +465,12 @@ The protocol is precise about what it proves. First-time verification is a liven
 * Full on-chain token economics: validator staking, delegation, capacity tiers, and economic governance wired to the utility token.
 * Cross-chain reads of the Solana attestation from other chains, via an attestation relay rather than a redeployment of the protocol.
 * Formal analysis of SimHash collision probability bounds under adversarial feature distributions.
-* Cross-wallet fingerprint comparison is implemented in the server-side validation layer. The executor maintains a registry of SimHash fingerprints and compares each new verification against existing entries. If the Hamming distance between a new fingerprint and any existing entry falls below δ_max, the verification is flagged as a potential duplicate identity. Empirical investigation of the persistence of involuntary behavioral features across deliberate behavioral modification is ongoing.
-* Server-side feature validation is implemented as described in Section 6.8. The validation models, thresholds, and detection algorithms are proprietary—the protocol layer is open source for trust and auditability, the defense layer is private for security. This follows the emerging open-core defense model in decentralized systems: on-chain programs are transparent and independently verifiable, off-chain defense logic is private.
-* Adversarial testing was conducted across eight phases: exact replay (blocked by δ_min), naive synthesis (passes client-side pipeline), sustained re-verification (100% success rate without server-side validation), human-to-bot handoff, cross-modality correlation analysis, Sybil cost modeling, feature-level optimization (converges in 251 iterations), and full-pipeline random search (90% success rate without server-side validation). These results motivated the implementation of server-side validation as a required defense layer.
-* Device attestation via native application. Hardware integrity verification before behavioral capture, implementing a positive security model as described in Section 6.9.
+* Cross-wallet fingerprint comparison is implemented in the private validation service. The registry keeps bounded recent server-derived fingerprints and compares a new wallet against other wallets. Population evaluation must establish an operating curve before this becomes a uniqueness claim.
+* Server-side feature validation is implemented as described in Section 6.8. The client and on-chain protocol are public. Validation models, thresholds, and active detection policy remain private.
+* Adversarial testing continues against defined attack classes. Entros publishes aggregate denominators and observed outcomes after each safe, completed campaign. T5 remains open, and T6 remains blocked on its closure criteria.
+* Request-bound native attestation. Research App Attest and Play Integrity as stronger app and device integrity evidence for the native tier.
 
-The protocol is open source and published as a defensive disclosure to establish prior art. Source code, circuit definitions, and SDK are available at `github.com/entros-protocol`.
+The client SDK, circuit definitions, and on-chain programs are open source and published as a defensive disclosure. The private validation and red-team repositories remain closed as defense-in-depth.
 
 ---
 
@@ -496,12 +498,9 @@ The protocol is open source and published as a defensive disclosure to establish
 20. Mahfouz, A., Mostafa, H., Mahmoud, T. M., et al. "M2auth: A multimodal behavioral biometric authentication using feature-level fusion." *Neural Computing and Applications*, vol. 36, pp. 21781-21799, 2024.
 21. Paik, S., Hwang, C., Kim, S., and Seo, J. H. "On the reversibility of locality-sensitive hashing-based biometric template protections." *IEEE Trans. Dependable and Secure Computing*, 2025.
 22. Gabizon, A., Williamson, Z. J., and Ciobotaru, O. "PLONK: Permutations over Lagrange-bases for oecumenical noninteractive arguments of knowledge." *IACR ePrint 2019/953*, 2019.
-23. "Countries that have banned or investigated Worldcoin." BitPinas, 2026. https://bitpinas.com/learn-how-to-guides/list-countries-banned-investigated-worldcoin/
-24. Zang, Y., et al. "SONAR: A Synthetic AI-Audio Detection Framework and Benchmark." *arXiv:2410.04324*, 2024–2025.
-25. Chen, Y., et al. "VoiceRadar: A New Paradigm of Voice Deepfake Detection via Micro-Frequency Estimation." *Proc. NDSS*, 2025.
-26. Pouw, W., et al. "The human voice aligns with whole-body kinetics." *Proc. Royal Society B*, 2025.
-27. Stragapede, G., et al. "BioMoTouch: Touch-Based Behavioral Authentication Using Motion and Touch Sensor Fusion." *arXiv:2604.07071*, 2025.
-28. Wang, X., Delgado, H., Tak, H., et al. "ASVspoof 5: Crowdsourced speech data, deepfakes, and adversarial attacks at scale." *arXiv:2408.08739*, 2024.
-29. Verma, K., et al. "Pitch Imperfect: Detecting Audio Deepfakes Through Acoustic Prosody Analysis." *arXiv:2502.14726*, 2025.
-30. Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., and Sutskever, I. "Robust speech recognition via large-scale weak supervision." *arXiv:2212.04356*, 2022.
-31. Baevski, A., Zhou, H., Mohamed, A., and Auli, M. "wav2vec 2.0: A framework for self-supervised learning of speech representations." *Proc. NeurIPS*, 2020.
+23. Pouw, W., et al. "The human voice aligns with whole-body kinetics." *Proc. Royal Society B*, 2025.
+24. Stragapede, G., et al. "BioMoTouch: Touch-Based Behavioral Authentication Using Motion and Touch Sensor Fusion." *arXiv:2604.07071*, 2025.
+25. Wang, X., Delgado, H., Tak, H., et al. "ASVspoof 5: Crowdsourced speech data, deepfakes, and adversarial attacks at scale." *arXiv:2408.08739*, 2024.
+26. Verma, K., et al. "Pitch Imperfect: Detecting Audio Deepfakes Through Acoustic Prosody Analysis." *arXiv:2502.14726*, 2025.
+27. Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., and Sutskever, I. "Robust speech recognition via large-scale weak supervision." *arXiv:2212.04356*, 2022.
+28. Baevski, A., Zhou, H., Mohamed, A., and Auli, M. "wav2vec 2.0: A framework for self-supervised learning of speech representations." *Proc. NeurIPS*, 2020.

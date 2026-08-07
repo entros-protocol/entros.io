@@ -15,7 +15,7 @@ import type { Cluster } from "./types";
 
 const VALID_INTEGRATOR_KEY = /^[a-z0-9_-]{1,64}$/;
 const ORIGIN_PATTERN = /^https?:\/\/[^/]+$/;
-const VALID_CLUSTERS = new Set<Cluster>(["devnet", "mainnet-beta"]);
+const VALID_CLUSTERS = new Set<Cluster>(["devnet"]);
 const MIN_TRUST_SCORE_BOUNDS = { min: 0, max: 10000 } as const;
 
 export interface ParsedEmbedParams {

@@ -10,7 +10,7 @@
  * cause silent message rejection on the consumer side. Keep them aligned.
  */
 
-export type Cluster = "devnet" | "mainnet-beta";
+export type Cluster = "devnet";
 
 export type EmbedMessageType =
   | "entros/verified"

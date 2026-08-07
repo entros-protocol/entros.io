@@ -4,7 +4,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Red Team Attack Arena",
   description:
-    "Interactive simulator showing how the Entros liveness engine and Composite Risk Score react to different bot and automated attack profiles.",
+    "Public threat-model illustrations for the Entros validation boundary, without operational detector thresholds.",
   path: "/attack",
 });
 
@@ -22,7 +22,8 @@ export default function AttackArenaPage() {
           </h1>
 
           <p className="mt-7 max-w-2xl text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
-            Try to bypass the liveness engine or test preset bot scenarios to observe the Composite Risk Score (CRS) engine live.
+            Explore the classes of evidence Entros examines during adversarial
+            testing. Operational detector policy stays private.
           </p>
         </div>
       </section>

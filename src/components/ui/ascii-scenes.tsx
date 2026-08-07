@@ -24,31 +24,6 @@ function plot(
   }
 }
 
-function plotLine(
-  tier: Uint8Array,
-  char: Uint8Array,
-  cols: number,
-  rows: number,
-  x0: number,
-  y0: number,
-  x1: number,
-  y1: number,
-  v: number,
-  ch: 0 | 1
-) {
-  const dx = x1 - x0;
-  const dy = y1 - y0;
-  const steps = Math.max(Math.abs(dx), Math.abs(dy * 2)) | 0;
-  if (steps === 0) {
-    plot(tier, char, cols, rows, x0, y0, v, ch);
-    return;
-  }
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    plot(tier, char, cols, rows, x0 + dx * t, y0 + dy * t, v, ch);
-  }
-}
-
 function plotCircle(
   tier: Uint8Array,
   char: Uint8Array,

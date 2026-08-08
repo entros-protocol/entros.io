@@ -2,18 +2,27 @@
 
 import { createContext, useContext, useMemo } from "react";
 import { PulseSDK, type PulseConfig } from "@entros/pulse-sdk";
+import { resolveRelayerTransport } from "@/lib/relay-transport";
 
 const PulseContext = createContext<PulseSDK | null>(null);
 
 export function PulseProvider({ children }: { children: React.ReactNode }) {
   const sdk = useMemo(() => {
+    const relayer = resolveRelayerTransport({
+      isDevelopment: process.env.NODE_ENV === "development",
+      localProxyEnabled:
+        process.env.NEXT_PUBLIC_ENTROS_LOCAL_EXECUTOR_PROXY === "1",
+      browserOrigin: typeof window === "undefined" ? undefined : window.location.origin,
+      publicRelayerUrl: process.env.NEXT_PUBLIC_RELAYER_URL,
+      publicRelayerApiKey: process.env.NEXT_PUBLIC_RELAYER_API_KEY,
+    });
     const config: PulseConfig = {
       cluster:
         (process.env.NEXT_PUBLIC_SOLANA_CLUSTER as PulseConfig["cluster"]) ??
         "devnet",
       rpcEndpoint: process.env.NEXT_PUBLIC_SOLANA_RPC,
-      relayerUrl: process.env.NEXT_PUBLIC_RELAYER_URL,
-      relayerApiKey: process.env.NEXT_PUBLIC_RELAYER_API_KEY,
+      relayerUrl: relayer.relayerUrl,
+      relayerApiKey: relayer.relayerApiKey,
       wasmUrl: process.env.NEXT_PUBLIC_WASM_URL,
       zkeyUrl: process.env.NEXT_PUBLIC_ZKEY_URL,
       debug: process.env.NODE_ENV === "development",

@@ -9,7 +9,9 @@ The protocol publishes the SDK as `@entros/pulse-sdk` on npm. Programs are deplo
 
 ### 4.x
 
-Current published version: `4.5.0`. The 4.x line canonicalises capture at 16 kHz and reworks the transport and failure taxonomy.
+Current published version: `4.6.0`. The 4.x line canonicalises capture at 16 kHz and reworks the transport and failure taxonomy.
+
+**4.6.0** Adds optional population study context to validation requests. It validates grant fields and generates each record identifier with Web Crypto. Integration tests now derive the verification key from the proving key used for each proof.
 
 **4.5.0** Poseidon moved from `circomlibjs` to a zero-dependency implementation, producing the same field element with far less behind it. The proving key and the crypto modules now load during capture rather than after it. Golden vectors compare with a relative tolerance, so they hold across processor architectures.
 

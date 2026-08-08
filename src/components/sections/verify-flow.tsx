@@ -1,11 +1,19 @@
 "use client";
 
-import { Component, useReducer } from "react";
+import { Component, useCallback, useReducer, useState, useSyncExternalStore } from "react";
+import type { StudyRecordStatus } from "@entros/pulse-sdk";
 import {
   verifyReducer,
   initialState,
 } from "@/components/verify/verify-state-machine";
 import { VerifyWalletConnected } from "./verify-wallet-connected";
+import { StudyConsent } from "@/components/verify/study-consent";
+import type { ActiveStudyGrant } from "@/lib/population-study";
+import {
+  clearStudyInvitationFragment,
+  readStudyInvitationFromFragment,
+  requestStudyEnrolment,
+} from "@/lib/population-study";
 
 // Walletless preview is not exposed on the public verify route: the
 // preview path didn't run real validation, so a user could pass by being
@@ -51,6 +59,56 @@ class VerifyErrorBoundary extends Component<
 
 export function VerifyFlow() {
   const [state, dispatch] = useReducer(verifyReducer, initialState);
+  const invitation = useSyncExternalStore(
+    () => () => undefined,
+    readStudyInvitationFromFragment,
+    () => null,
+  );
+  const [studyDecision, setStudyDecision] = useState<"pending" | "normal" | "joined">("pending");
+  const [studyGrant, setStudyGrant] = useState<ActiveStudyGrant | null>(null);
+  const [studyStatus, setStudyStatus] = useState<StudyRecordStatus | null>(null);
+  const [studyJoined, setStudyJoined] = useState(false);
+  const [studyTokenPending, setStudyTokenPending] = useState(false);
+  const [studyComplete, setStudyComplete] = useState(false);
+
+  const handleStudyReady = useCallback((grant: ActiveStudyGrant | null) => {
+    clearStudyInvitationFragment();
+    setStudyGrant(grant);
+    setStudyJoined(grant !== null);
+    setStudyDecision(grant ? "joined" : "normal");
+  }, []);
+
+  const handleStudyRecordStatus = useCallback(
+    async (status: StudyRecordStatus | undefined) => {
+      if (!studyGrant) return;
+      setStudyStatus(status ?? "technical_failure");
+      if (studyGrant.definition.preview_only || status === "disabled") {
+        setStudyGrant(null);
+        setStudyComplete(true);
+        return;
+      }
+      if (studyGrant.trial_index >= studyGrant.trial_limit) {
+        setStudyGrant(null);
+        setStudyComplete(true);
+        return;
+      }
+
+      setStudyTokenPending(true);
+      setStudyGrant(null);
+      try {
+        const nextGrant = await requestStudyEnrolment(
+          studyGrant.invitation,
+          studyGrant.definition,
+        );
+        setStudyGrant(nextGrant);
+      } catch {
+        setStudyComplete(true);
+      } finally {
+        setStudyTokenPending(false);
+      }
+    },
+    [studyGrant],
+  );
 
   function handleBoundaryError() {
     dispatch({ type: "RESET" });
@@ -63,11 +121,32 @@ export function VerifyFlow() {
           processing / failed / verified. Content centers vertically within
           the fixed container, occasional whitespace in shorter states is
           the deliberate trade-off for layout stability across the flow. */}
-      <div className="mx-auto flex h-[620px] md:h-[660px] max-w-xl flex-col justify-center border border-border px-8 py-10">
+      <div className="mx-auto flex min-h-[620px] md:min-h-[660px] max-w-xl flex-col justify-center border border-border px-8 py-10">
         <VerifyErrorBoundary onError={handleBoundaryError}>
-          <VerifyWalletConnected state={state} dispatch={dispatch} />
+          {invitation && studyDecision === "pending" ? (
+            <StudyConsent invitation={invitation} onReady={handleStudyReady} />
+          ) : (
+            <VerifyWalletConnected
+              state={state}
+              dispatch={dispatch}
+              studyGrant={studyGrant}
+              studyCaptureBlocked={studyTokenPending}
+              onStudyRecordStatus={handleStudyRecordStatus}
+            />
+          )}
         </VerifyErrorBoundary>
       </div>
+      {studyJoined && studyStatus && (
+        <p className="text-center font-mono text-xs uppercase tracking-[0.14em] text-foreground/45" aria-live="polite">
+          {studyTokenPending
+            ? "Preparing the next research trial"
+            : studyStatus !== "recorded" && studyStatus !== "replayed"
+              ? "Verification finished. Research capture was not recorded."
+              : studyComplete
+                ? "Research trials complete"
+                : "Research capture recorded"}
+        </p>
+      )}
     </div>
   );
 }

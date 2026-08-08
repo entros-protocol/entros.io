@@ -14,6 +14,8 @@ import {
   isClientOriginReason,
   phaseChargesAttempt,
   MAX_VERIFICATION_MS,
+  createStudyContext,
+  type StudyRecordStatus,
 } from "@entros/pulse-sdk";
 import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
@@ -31,6 +33,7 @@ import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
 import { usePulse } from "@/components/providers/pulse-provider";
 import { useWalletError } from "@/components/providers/wallet-provider";
 import { Wallet } from "lucide-react";
+import type { ActiveStudyGrant } from "@/lib/population-study";
 
 function commitmentToHex(bytes: Uint8Array): string {
   return (
@@ -61,9 +64,15 @@ const MAX_ATTEMPTS = 3;
 export function VerifyWalletConnected({
   state,
   dispatch,
+  studyGrant,
+  studyCaptureBlocked = false,
+  onStudyRecordStatus,
 }: {
   state: VerifyState;
   dispatch: React.ActionDispatch<[action: VerifyAction]>;
+  studyGrant?: ActiveStudyGrant | null;
+  studyCaptureBlocked?: boolean;
+  onStudyRecordStatus?: (status: StudyRecordStatus | undefined) => void | Promise<void>;
 }) {
   const { connected, wallet, publicKey } = useWallet();
   const { connection } = useConnection();
@@ -254,6 +263,7 @@ export function VerifyWalletConnected({
       : null;
 
   async function handleStart(intent: "verify" | "reset" = "verify") {
+    if (studyCaptureBlocked) return;
     if (startingRef.current) return;
     startingRef.current = true;
     // Verify and reset are different operations and must not share the
@@ -311,7 +321,17 @@ export function VerifyWalletConnected({
       // no unmount cleanup). Using the detached node silently broke the
       // reset flow: pointer events fired on the new DIV but listeners sat
       // on the dead one, yielding 0 touch samples.
-      const session = pulse.createSession(document.body);
+      const studyContext = studyGrant
+        ? createStudyContext(
+            {
+              token: studyGrant.token,
+              feature_schema_version: studyGrant.definition.feature_schema_version,
+              projection_version: studyGrant.definition.projection_version,
+            },
+            navigator.maxTouchPoints > 0 ? "web-mobile" : "web-desktop",
+          )
+        : undefined;
+      const session = pulse.createSession(document.body, studyContext);
       sessionRef.current = session;
 
       // Motion first—DeviceMotionEvent.requestPermission() requires an active
@@ -494,7 +514,10 @@ export function VerifyWalletConnected({
     );
 
     Promise.race([proofPromise, timeoutPromise])
-      .then((result) => {
+      .then(async (result) => {
+        if (studyGrant) {
+          void Promise.resolve(onStudyRecordStatus?.(result.studyRecordStatus)).catch(() => undefined);
+        }
         dispatch({ type: "PROOF_COMPLETE" });
         if (result.compositeRiskScore !== undefined) {
           console.log(`[Entros] Verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`);
@@ -694,7 +717,7 @@ export function VerifyWalletConnected({
         <div className="flex justify-center">
           <button
             onClick={() => handleStart("verify")}
-            disabled={requesting || micPermissionState === "denied"}
+            disabled={requesting || micPermissionState === "denied" || studyCaptureBlocked}
             className="
               inline-flex items-center justify-center gap-2
               rounded-full bg-foreground px-6 py-3
@@ -703,7 +726,11 @@ export function VerifyWalletConnected({
               disabled:cursor-not-allowed disabled:opacity-50
             "
           >
-            {requesting ? "Requesting access..." : "Start Verification"}
+            {studyCaptureBlocked
+              ? "Preparing next research trial..."
+              : requesting
+                ? "Requesting access..."
+                : "Start Verification"}
           </button>
         </div>
         <p className="text-center text-xs text-muted">

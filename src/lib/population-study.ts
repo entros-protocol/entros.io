@@ -1,3 +1,5 @@
+import type { StudyRecordStatus } from "@entros/pulse-sdk";
+
 export const POPULATION_STUDY_CONSENT_VERSION = "2026-08-08";
 
 export const POPULATION_STUDY_CONSENT_TEXT = [
@@ -32,6 +34,25 @@ export interface StudyEnrolment {
 export interface ActiveStudyGrant extends StudyEnrolment {
   invitation: string;
   definition: StudyDefinition;
+}
+
+export type StudyStatusUpdate =
+  | { confirmed: false }
+  | { confirmed: true; status: StudyRecordStatus };
+
+/**
+ * Advance a study only when the server confirms its storage outcome.
+ *
+ * A missing status means the client did not receive a study response. The
+ * request may have failed before upload, so consuming the grant would turn a
+ * later verification retry into an unlabelled non-study capture.
+ */
+export function resolveStudyStatusUpdate(
+  status: StudyRecordStatus | undefined,
+): StudyStatusUpdate {
+  return status === undefined
+    ? { confirmed: false }
+    : { confirmed: true, status };
 }
 
 function isUnsignedInteger(value: unknown, maximum: number): value is number {

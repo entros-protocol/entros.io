@@ -3,6 +3,7 @@ import { createStudyContext } from "@entros/pulse-sdk";
 import {
   parseStudyDefinition,
   parseStudyEnrolment,
+  resolveStudyStatusUpdate,
 } from "../src/lib/population-study";
 
 const definition = {
@@ -47,5 +48,16 @@ describe("population study response parsing", () => {
     expect(parseStudyEnrolment({ ...enrolment, token: "short" })).toBeNull();
     expect(parseStudyEnrolment({ ...enrolment, session_id: "z".repeat(32) })).toBeNull();
     expect(parseStudyEnrolment({ ...enrolment, trial_index: 4 })).toBeNull();
+  });
+
+  it("retains the active grant when the server returns no storage status", () => {
+    expect(resolveStudyStatusUpdate(undefined)).toEqual({ confirmed: false });
+  });
+
+  it("advances the study only after an explicit storage status", () => {
+    expect(resolveStudyStatusUpdate("recorded")).toEqual({
+      confirmed: true,
+      status: "recorded",
+    });
   });
 });

@@ -13,6 +13,7 @@ import {
   clearStudyInvitationFragment,
   readStudyInvitationFromFragment,
   requestStudyEnrolment,
+  resolveStudyStatusUpdate,
 } from "@/lib/population-study";
 
 // Walletless preview is not exposed on the public verify route: the
@@ -80,9 +81,10 @@ export function VerifyFlow() {
 
   const handleStudyRecordStatus = useCallback(
     async (status: StudyRecordStatus | undefined) => {
-      if (!studyGrant) return;
-      setStudyStatus(status ?? "technical_failure");
-      if (studyGrant.definition.preview_only || status === "disabled") {
+      const update = resolveStudyStatusUpdate(status);
+      if (!studyGrant || !update.confirmed) return;
+      setStudyStatus(update.status);
+      if (studyGrant.definition.preview_only || update.status === "disabled") {
         setStudyGrant(null);
         setStudyComplete(true);
         return;

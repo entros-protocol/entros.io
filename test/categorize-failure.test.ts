@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { categorizeFailure } from "../src/components/verify/categorize-failure";
+import {
+  categorizeFailure,
+  requiresBaselineRecoveryChoice,
+} from "../src/components/verify/categorize-failure";
 
 /**
  * Failure routing, pinned against the two production defects of 2026-07-31.
@@ -193,5 +196,20 @@ describe("reset CTA", () => {
       });
       expect(routed).toHaveProperty("canReset", false);
     }
+  });
+
+  it("uses cancel only when reset is the alternative to baseline recovery", () => {
+    for (const kind of [
+      "no-portable-baseline",
+      "signing-unavailable",
+      "missing-baseline",
+      "stale-baseline",
+    ] as const) {
+      expect(requiresBaselineRecoveryChoice({ kind, canReset: true })).toBe(true);
+    }
+    expect(
+      requiresBaselineRecoveryChoice({ kind: "drift-too-high", canReset: true }),
+    ).toBe(false);
+    expect(requiresBaselineRecoveryChoice({ kind: "validation-rejected" })).toBe(false);
   });
 });

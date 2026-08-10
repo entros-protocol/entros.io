@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
-  POPULATION_STUDY_CONSENT_TEXT,
   POPULATION_STUDY_CONSENT_VERSION,
   parseStudyDefinition,
+  studyConsentDocument,
   type StudyDefinition,
 } from "@/lib/population-study";
 import { readBoundedJson } from "@/lib/server/read-bounded-json";
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   const definition = parseStudyDefinition(upstream.body);
   if (!definition) return noStoreJson({ error: "Study service returned an invalid response" }, 502);
   const localHash = createHash("sha256")
-    .update(POPULATION_STUDY_CONSENT_TEXT.join("\n"), "utf8")
+    .update(studyConsentDocument(definition), "utf8")
     .digest("hex");
   if (
     definition.consent_version !== POPULATION_STUDY_CONSENT_VERSION ||
@@ -68,13 +68,18 @@ async function proxyStudy(path: string, body: unknown) {
       signal: controller.signal,
       cache: "no-store",
     });
-    const responseBody = await response.json().catch(() => ({ error: "Invalid study response" }));
     if (!response.ok) {
+      const responseBody = await response
+        .json()
+        .catch(() => ({ error: "Invalid study response" }));
       return {
         ok: false as const,
         response: noStoreJson(responseBody, response.status),
       };
     }
+    const responseBody = await response
+      .json()
+      .catch(() => ({ error: "Invalid study response" }));
     return { ok: true as const, body: responseBody };
   } catch {
     return {
@@ -95,7 +100,7 @@ function localPreview(path: string, body: unknown) {
     };
   }
   const consentHash = createHash("sha256")
-    .update(POPULATION_STUDY_CONSENT_TEXT.join("\n"), "utf8")
+    .update(studyConsentDocument({ retention_days: 14, trial_limit: 3 }), "utf8")
     .digest("hex");
   return {
     ok: true as const,
@@ -105,8 +110,11 @@ function localPreview(path: string, body: unknown) {
       consent_hash_hex: consentHash,
       retention_days: 14,
       trial_limit: 3,
+      visit_gap_secs: 14_400,
       feature_schema_version: 3,
       projection_version: 0,
+      seed_generation_id: "local-preview-seed",
+      projection_config_id: "local-preview-projection",
       collects_full_vector: true,
       preview_only: true,
     } satisfies StudyDefinition,

@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, useCallback, useReducer, useState, useSyncExternalStore } from "react";
+import { Component, useCallback, useEffect, useReducer, useRef } from "react";
 import type { StudyRecordStatus } from "@entros/pulse-sdk";
 import {
   verifyReducer,
@@ -10,11 +10,17 @@ import { VerifyWalletConnected } from "./verify-wallet-connected";
 import { StudyConsent } from "@/components/verify/study-consent";
 import type { ActiveStudyGrant } from "@/lib/population-study";
 import {
-  clearStudyInvitationFragment,
-  readStudyInvitationFromFragment,
+  clearPendingStudyEnrolmentId,
+  consumeStudyInvitationFromFragment,
+  pendingStudyEnrolmentId,
   requestStudyEnrolment,
-  resolveStudyStatusUpdate,
+  resolveStudyGrant,
+  studyProgressMessage,
 } from "@/lib/population-study";
+import {
+  initialStudyFlowState,
+  studyFlowReducer,
+} from "@/components/verify/study-flow-state";
 
 // Walletless preview is not exposed on the public verify route: the
 // preview path didn't run real validation, so a user could pass by being
@@ -60,57 +66,95 @@ class VerifyErrorBoundary extends Component<
 
 export function VerifyFlow() {
   const [state, dispatch] = useReducer(verifyReducer, initialState);
-  const invitation = useSyncExternalStore(
-    () => () => undefined,
-    readStudyInvitationFromFragment,
-    () => null,
+  const [study, studyDispatch] = useReducer(
+    studyFlowReducer,
+    initialStudyFlowState,
   );
-  const [studyDecision, setStudyDecision] = useState<"pending" | "normal" | "joined">("pending");
-  const [studyGrant, setStudyGrant] = useState<ActiveStudyGrant | null>(null);
-  const [studyStatus, setStudyStatus] = useState<StudyRecordStatus | null>(null);
-  const [studyJoined, setStudyJoined] = useState(false);
-  const [studyTokenPending, setStudyTokenPending] = useState(false);
-  const [studyComplete, setStudyComplete] = useState(false);
+  const studyTokenRequestRef = useRef(false);
+  const studyRequestGenerationRef = useRef(0);
+
+  useEffect(() => {
+    const consumeInvitation = () => {
+      const nextInvitation = consumeStudyInvitationFromFragment();
+      if (!nextInvitation) return;
+      studyRequestGenerationRef.current += 1;
+      studyTokenRequestRef.current = false;
+      studyDispatch({ type: "LOAD_INVITATION", invitation: nextInvitation });
+      dispatch({ type: "RESET" });
+    };
+    consumeInvitation();
+    window.addEventListener("hashchange", consumeInvitation);
+    return () => window.removeEventListener("hashchange", consumeInvitation);
+  }, []);
 
   const handleStudyReady = useCallback((grant: ActiveStudyGrant | null) => {
-    clearStudyInvitationFragment();
-    setStudyGrant(grant);
-    setStudyJoined(grant !== null);
-    setStudyDecision(grant ? "joined" : "normal");
+    studyDispatch({ type: "READY", grant });
   }, []);
 
   const handleStudyRecordStatus = useCallback(
-    async (status: StudyRecordStatus | undefined) => {
-      const update = resolveStudyStatusUpdate(status);
-      if (!studyGrant || !update.confirmed) return;
-      setStudyStatus(update.status);
-      if (studyGrant.definition.preview_only || update.status === "disabled") {
-        setStudyGrant(null);
-        setStudyComplete(true);
-        return;
-      }
-      if (studyGrant.trial_index >= studyGrant.trial_limit) {
-        setStudyGrant(null);
-        setStudyComplete(true);
-        return;
-      }
-
-      setStudyTokenPending(true);
-      setStudyGrant(null);
-      try {
-        const nextGrant = await requestStudyEnrolment(
-          studyGrant.invitation,
-          studyGrant.definition,
-        );
-        setStudyGrant(nextGrant);
-      } catch {
-        setStudyComplete(true);
-      } finally {
-        setStudyTokenPending(false);
-      }
+    (status: StudyRecordStatus | undefined) => {
+      if (!study.grant) return;
+      const resolution = resolveStudyGrant(study.grant, status);
+      if (resolution.state === "unconfirmed") return;
+      studyDispatch({
+        type: "RECORD_STATUS",
+        progress: {
+          status: resolution.status,
+          trialIndex: study.grant.trial_index,
+          trialLimit: study.grant.trial_limit,
+          completionReason:
+            resolution.state === "complete" ? resolution.reason : null,
+        },
+        continuation:
+          resolution.state === "awaiting_participant"
+            ? {
+                invitation: resolution.invitation,
+                definition: resolution.definition,
+              }
+            : null,
+      });
     },
-    [studyGrant],
+    [study.grant],
   );
+
+  const handleNextStudyTrial = useCallback(async () => {
+    if (!study.continuation || studyTokenRequestRef.current) return;
+    const requestGeneration = ++studyRequestGenerationRef.current;
+    const enrolmentId = pendingStudyEnrolmentId(study.continuation.definition);
+    studyTokenRequestRef.current = true;
+    studyDispatch({ type: "NEXT_PENDING" });
+    try {
+      const nextGrant = await requestStudyEnrolment(
+        study.continuation.invitation,
+        study.continuation.definition,
+        enrolmentId,
+      );
+      if (requestGeneration !== studyRequestGenerationRef.current) return;
+      clearPendingStudyEnrolmentId(study.continuation.definition);
+      studyDispatch({ type: "NEXT_READY", grant: nextGrant });
+      dispatch({ type: "RESET" });
+    } catch {
+      if (requestGeneration !== studyRequestGenerationRef.current) return;
+      studyDispatch({
+        type: "NEXT_FAILED",
+        message:
+          "The next study trial could not be prepared. Try again when you are ready.",
+      });
+    } finally {
+      if (requestGeneration !== studyRequestGenerationRef.current) return;
+      studyTokenRequestRef.current = false;
+    }
+  }, [study.continuation]);
+
+  const handleLeaveStudy = useCallback(() => {
+    studyRequestGenerationRef.current += 1;
+    studyTokenRequestRef.current = false;
+    if (study.continuation) {
+      clearPendingStudyEnrolmentId(study.continuation.definition);
+    }
+    studyDispatch({ type: "LEAVE" });
+    dispatch({ type: "RESET" });
+  }, [study.continuation]);
 
   function handleBoundaryError() {
     dispatch({ type: "RESET" });
@@ -125,29 +169,44 @@ export function VerifyFlow() {
           the deliberate trade-off for layout stability across the flow. */}
       <div className="mx-auto flex min-h-[620px] md:min-h-[660px] max-w-xl flex-col justify-center border border-border px-8 py-10">
         <VerifyErrorBoundary onError={handleBoundaryError}>
-          {invitation && studyDecision === "pending" ? (
-            <StudyConsent invitation={invitation} onReady={handleStudyReady} />
+          {study.invitation && study.decision === "pending" ? (
+            <StudyConsent
+              key={study.invitation}
+              invitation={study.invitation}
+              onReady={handleStudyReady}
+            />
           ) : (
             <VerifyWalletConnected
               state={state}
               dispatch={dispatch}
-              studyGrant={studyGrant}
-              studyCaptureBlocked={studyTokenPending}
+              studyGrant={study.grant}
+              studyCaptureBlocked={study.tokenPending}
               onStudyRecordStatus={handleStudyRecordStatus}
+              onStudyNextTrial={handleNextStudyTrial}
+              onStudyLeave={handleLeaveStudy}
+              studyNextTrialPending={study.tokenPending}
+              studyNextTrialAvailable={study.continuation !== null}
+              studySessionActive={study.decision === "joined"}
             />
           )}
         </VerifyErrorBoundary>
       </div>
-      {studyJoined && studyStatus && (
-        <p className="text-center font-mono text-xs uppercase tracking-[0.14em] text-foreground/45" aria-live="polite">
-          {studyTokenPending
-            ? "Preparing the next research trial"
-            : studyStatus !== "recorded" && studyStatus !== "replayed"
-              ? "Verification finished. Research capture was not recorded."
-              : studyComplete
-                ? "Research trials complete"
-                : "Research capture recorded"}
-        </p>
+      {study.decision === "joined" && study.progress && (
+        <div className="space-y-2 text-center" aria-live="polite">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-foreground/45">
+            {study.tokenPending
+              ? "Preparing the next research trial"
+              : studyProgressMessage(
+                  study.progress.status,
+                  study.progress.trialIndex,
+                  study.progress.trialLimit,
+                  study.progress.completionReason,
+                )}
+          </p>
+          {study.tokenError && (
+            <p className="text-xs text-danger">{study.tokenError}</p>
+          )}
+        </div>
       )}
     </div>
   );

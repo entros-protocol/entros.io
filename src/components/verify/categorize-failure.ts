@@ -260,6 +260,15 @@ export type FailureKind =
   | { kind: "drift-too-high"; canReset: boolean }
   | { kind: "generic"; message: string };
 
+export function requiresBaselineRecoveryChoice(failure: FailureKind): boolean {
+  return (
+    failure.kind === "no-portable-baseline" ||
+    failure.kind === "signing-unavailable" ||
+    failure.kind === "missing-baseline" ||
+    failure.kind === "stale-baseline"
+  );
+}
+
 /**
  * Pick the surface for a failure.
  *

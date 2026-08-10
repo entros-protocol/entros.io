@@ -15,7 +15,11 @@ import {
 import { type RetryableReason } from "@entros/pulse-sdk";
 
 import type { FailureContext } from "./types";
-import { categorizeFailure, failureSpend } from "./categorize-failure";
+import {
+  categorizeFailure,
+  failureSpend,
+  requiresBaselineRecoveryChoice,
+} from "./categorize-failure";
 
 import { buildShareUrl, buildTwitterIntent } from "@/lib/share";
 
@@ -109,6 +113,9 @@ export function VerifiedView({
   trustScore,
   showShare = false,
   portableBaseline,
+  actionPending = false,
+  secondaryActionLabel,
+  onSecondaryAction,
 }: {
   commitment: string;
   txSignature?: string;
@@ -127,6 +134,9 @@ export function VerifiedView({
   /** Caller-controlled gate. Off for the baseline-reset flow so the share
    * row never appears there. */
   showShare?: boolean;
+  actionPending?: boolean;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
   /**
    * False when the verification landed but wrote no portable copy of the
    * baseline. `undefined` in walletless mode, where none is written at all.
@@ -213,12 +223,26 @@ export function VerifiedView({
           </div>
         )}
       </div>
-      <button
-        onClick={onReset}
-        className="text-sm text-muted hover:text-foreground transition-colors"
-      >
-        {tryAgainLabel}
-      </button>
+      <div className="flex flex-col items-center gap-3">
+        <button
+          onClick={onReset}
+          disabled={actionPending}
+          aria-busy={actionPending}
+          className="text-sm text-muted hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {tryAgainLabel}
+        </button>
+        {secondaryActionLabel && onSecondaryAction && (
+          <button
+            type="button"
+            onClick={onSecondaryAction}
+            disabled={actionPending}
+            className="text-xs text-foreground/45 transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {secondaryActionLabel}
+          </button>
+        )}
+      </div>
       {canShare && (
         <div className="flex justify-center gap-3">
           <button
@@ -292,11 +316,15 @@ export function SoftFailedView({
   attemptsRemaining,
   onTryAgain,
   onCancel,
+  tryAgainLabel = "Try again",
+  actionPending = false,
 }: {
   reason: string;
   attemptsRemaining: number;
   onTryAgain: () => void;
   onCancel: () => void;
+  tryAgainLabel?: string;
+  actionPending?: boolean;
 }) {
   // Widened for the lookup because `reason` arrives from the server as a
   // plain string. The exhaustiveness that matters is on the table's
@@ -325,15 +353,19 @@ export function SoftFailedView({
       <div className="flex flex-col-reverse gap-2 items-center sm:flex-row sm:justify-center">
         <button
           onClick={onCancel}
-          className="rounded-full border border-border px-6 py-2 text-sm text-muted hover:text-foreground hover:border-border-hover transition-colors"
+          disabled={actionPending}
+          aria-busy={actionPending}
+          className="rounded-full border border-border px-6 py-2 text-sm text-muted hover:text-foreground hover:border-border-hover transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           onClick={onTryAgain}
-          className="rounded-full border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan hover:bg-cyan/20 transition-colors"
+          disabled={actionPending}
+          aria-busy={actionPending}
+          className="rounded-full border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan hover:bg-cyan/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Try again
+          {tryAgainLabel}
         </button>
       </div>
     </div>
@@ -395,9 +427,12 @@ export function FailedView({
   opaque,
   baselineRecovery,
   onReset,
+  onCancel,
   onResetBaseline,
   userPaysFees = true,
   retryAfterSec,
+  retryLabel = "Try again",
+  actionPending = false,
 }: {
   error: string;
   /** SDK reason code, when one survived. Routes the cooldown screen. */
@@ -409,6 +444,9 @@ export function FailedView({
    */
   retryAfterSec?: number;
   onReset: () => void;
+  onCancel?: () => void;
+  retryLabel?: string;
+  actionPending?: boolean;
   onResetBaseline?: () => void;
   /**
    * Whether the connected wallet is the fee payer. False on the walletless
@@ -429,7 +467,8 @@ export function FailedView({
   let footnote: string | null = null;
   let primaryCta: { label: string; href: string } | null = null;
   let secondaryAction: { label: string; onClick: () => void; tone: "danger" } | null = null;
-  let dismissLabel = "Try again";
+  let dismissLabel = retryLabel;
+  let dismissAction = onReset;
 
   switch (failure.kind) {
     case "relayer-down":
@@ -463,7 +502,6 @@ export function FailedView({
           onClick: onResetBaseline,
           tone: "danger",
         };
-        dismissLabel = "Cancel";
       }
       break;
     case "signing-unavailable":
@@ -478,7 +516,6 @@ export function FailedView({
           onClick: onResetBaseline,
           tone: "danger",
         };
-        dismissLabel = "Cancel";
       }
       break;
     case "missing-baseline":
@@ -491,7 +528,6 @@ export function FailedView({
           onClick: onResetBaseline,
           tone: "danger",
         };
-        dismissLabel = "Cancel";
       }
       break;
     case "stale-baseline":
@@ -504,7 +540,6 @@ export function FailedView({
           onClick: onResetBaseline,
           tone: "danger",
         };
-        dismissLabel = "Cancel";
       }
       break;
     case "cooldown-active": {
@@ -627,6 +662,11 @@ export function FailedView({
       break;
   }
 
+  if (secondaryAction && requiresBaselineRecoveryChoice(failure)) {
+    dismissLabel = "Cancel";
+    dismissAction = onCancel ?? onReset;
+  }
+
   // What the attempt cost, when it cost anything. Every phase up to and
   // including the wallet prompt spends nothing, so this is silent on the large
   // majority of failures. It is here because the alternative was what shipped
@@ -664,9 +704,12 @@ export function FailedView({
       {primaryCta && (
         <a
           href={primaryCta.href}
-          target="_blank"
+          target={actionPending ? undefined : "_blank"}
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan hover:bg-cyan/20 transition-colors"
+          aria-disabled={actionPending}
+          tabIndex={actionPending ? -1 : undefined}
+          onClick={actionPending ? (event) => event.preventDefault() : undefined}
+          className="inline-flex items-center gap-2 rounded-full border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan hover:bg-cyan/20 transition-colors aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
         >
           {primaryCta.label}
           <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
@@ -674,15 +717,19 @@ export function FailedView({
       )}
       <div className="flex flex-col-reverse gap-2 items-center sm:flex-row sm:justify-center">
         <button
-          onClick={onReset}
-          className="rounded-full border border-border px-6 py-2 text-sm text-muted hover:text-foreground hover:border-border-hover transition-colors"
+          onClick={dismissAction}
+          disabled={actionPending}
+          aria-busy={actionPending}
+          className="rounded-full border border-border px-6 py-2 text-sm text-muted hover:text-foreground hover:border-border-hover transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           {dismissLabel}
         </button>
         {secondaryAction && (
           <button
             onClick={secondaryAction.onClick}
-            className="rounded-full border border-danger/30 bg-danger/10 px-6 py-2 text-sm font-medium text-danger hover:bg-danger/20 transition-colors"
+            disabled={actionPending}
+            aria-busy={actionPending}
+            className="rounded-full border border-danger/30 bg-danger/10 px-6 py-2 text-sm font-medium text-danger hover:bg-danger/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             {secondaryAction.label}
           </button>

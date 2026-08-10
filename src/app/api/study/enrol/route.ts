@@ -1,9 +1,9 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
-  POPULATION_STUDY_CONSENT_TEXT,
   POPULATION_STUDY_CONSENT_VERSION,
   parseStudyEnrolment,
+  studyConsentDocument,
 } from "@/lib/population-study";
 import { readBoundedJson } from "@/lib/server/read-bounded-json";
 
@@ -27,6 +27,8 @@ export async function POST(request: Request) {
     typeof body.invitation !== "string" ||
     typeof body.consent_version !== "string" ||
     typeof body.consent_hash_hex !== "string" ||
+    typeof body.enrolment_id !== "string" ||
+    !/^[0-9a-f]{32}$/.test(body.enrolment_id) ||
     body.accepted !== true
   ) {
     return noStoreJson({ error: "Invalid consent response" }, 400);
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
     body.invitation === "local-preview-20260808";
   if (isLocalPreview) {
     const consentHash = createHash("sha256")
-      .update(POPULATION_STUDY_CONSENT_TEXT.join("\n"), "utf8")
+      .update(studyConsentDocument({ retention_days: 14, trial_limit: 3 }), "utf8")
       .digest("hex");
     if (
       body.consent_version !== POPULATION_STUDY_CONSENT_VERSION ||
@@ -48,9 +50,16 @@ export async function POST(request: Request) {
     ) {
       return noStoreJson({ error: "Invalid consent response" }, 400);
     }
+    const previewToken = createHash("sha256")
+      .update(`local-preview-token:${body.enrolment_id}`, "utf8")
+      .digest();
+    const previewSession = createHash("sha256")
+      .update(`local-preview-session:${body.enrolment_id}`, "utf8")
+      .digest("hex")
+      .slice(0, 32);
     return noStoreJson({
-      token: randomBytes(32).toString("base64url"),
-      session_id: randomBytes(16).toString("hex"),
+      token: previewToken.toString("base64url"),
+      session_id: previewSession,
       trial_index: 1,
       trial_limit: 3,
       expires_in: 3_600,
@@ -72,10 +81,11 @@ export async function POST(request: Request) {
       signal: controller.signal,
       cache: "no-store",
     });
-    const responseBody = await response.json().catch(() => null);
     if (!response.ok) {
+      const responseBody = await response.json().catch(() => null);
       return noStoreJson(responseBody ?? { error: "Invalid study response" }, response.status);
     }
+    const responseBody = await response.json().catch(() => null);
     const enrolment = parseStudyEnrolment(responseBody);
     return enrolment
       ? noStoreJson(enrolment)

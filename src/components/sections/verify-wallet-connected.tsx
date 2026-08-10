@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
@@ -55,6 +55,10 @@ import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 // counter just drives the UX inside a session.
 const MAX_ATTEMPTS = 3;
 
+const subscribeToStaticCapability = () => () => undefined;
+const readMotionCapability = () => navigator.maxTouchPoints > 0;
+const readServerMotionCapability = () => false;
+
 // The retryable-reason list used to live here as a literal, alongside five
 // other copies across this repo and entros-mobile. They had drifted: the same
 // rejection offered a retry here and dead-ended on mobile. `reasonDisposition`
@@ -67,12 +71,22 @@ export function VerifyWalletConnected({
   studyGrant,
   studyCaptureBlocked = false,
   onStudyRecordStatus,
+  onStudyNextTrial,
+  onStudyLeave,
+  studyNextTrialAvailable = false,
+  studyNextTrialPending = false,
+  studySessionActive = false,
 }: {
   state: VerifyState;
   dispatch: React.ActionDispatch<[action: VerifyAction]>;
   studyGrant?: ActiveStudyGrant | null;
   studyCaptureBlocked?: boolean;
   onStudyRecordStatus?: (status: StudyRecordStatus | undefined) => void | Promise<void>;
+  onStudyNextTrial?: () => void | Promise<void>;
+  onStudyLeave?: () => void;
+  studyNextTrialAvailable?: boolean;
+  studyNextTrialPending?: boolean;
+  studySessionActive?: boolean;
 }) {
   const { connected, wallet, publicKey } = useWallet();
   const { connection } = useConnection();
@@ -85,7 +99,11 @@ export function VerifyWalletConnected({
   const touchRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<PulseSession | null>(null);
   const [audioLevel, setAudioLevel] = useState(0);
-  const [hasMotion, setHasMotion] = useState(false);
+  const hasMotion = useSyncExternalStore(
+    subscribeToStaticCapability,
+    readMotionCapability,
+    readServerMotionCapability,
+  );
   const [requesting, setRequesting] = useState(false);
   const [processingStage, setProcessingStage] = useState("Extracting features...");
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -95,7 +113,15 @@ export function VerifyWalletConnected({
   // sliding-window dedup in update_anchor's recency formula collapses
   // verifications inside the same 24h slice into one contribution, so
   // verifying twice within 24h is a UX surprise unless we flag it.
-  const [lastVerificationTimestamp, setLastVerificationTimestamp] = useState<number | null>(null);
+  const [verificationTimestamp, setVerificationTimestamp] = useState<{
+    wallet: string;
+    value: number | null;
+  } | null>(null);
+  const connectedWallet = connected && publicKey ? publicKey.toBase58() : null;
+  const lastVerificationTimestamp =
+    verificationTimestamp?.wallet === connectedWallet
+      ? verificationTimestamp.value
+      : null;
   // Trust score read from IdentityState offset 60 immediately after a
   // successful verification, used to populate the post-verify share card's
   // OG image + tweet copy. Keyed by the verification's tx signature so
@@ -149,9 +175,6 @@ export function VerifyWalletConnected({
   const [micPermissionState, setMicPermissionState] = useState<
     "granted" | "denied" | "prompt" | "unknown"
   >("unknown");
-  useEffect(() => {
-    setHasMotion(navigator.maxTouchPoints > 0);
-  }, []);
   // Drop the surfaced wallet error once the wallet successfully connects.
   // Keeps the banner from lingering after a retry that resolved the issue
   // (e.g., user toggled Phantom to devnet and reconnected). `clearWalletError`
@@ -202,10 +225,10 @@ export function VerifyWalletConnected({
   // (first-time users + network blips render the idle view without the hint).
   useEffect(() => {
     if (!publicKey || !connected) {
-      setLastVerificationTimestamp(null);
       return;
     }
     let cancelled = false;
+    const walletAddress = publicKey.toBase58();
     const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
     const [identityPda] = PublicKey.findProgramAddressSync(
       [new TextEncoder().encode("identity"), publicKey.toBuffer()],
@@ -214,14 +237,21 @@ export function VerifyWalletConnected({
     connection
       .getAccountInfo(identityPda)
       .then((account: { data: Uint8Array } | null) => {
-        if (cancelled || !account || account.data.length < 56) return;
+        if (cancelled) return;
+        if (!account || account.data.length < 56) {
+          setVerificationTimestamp({ wallet: walletAddress, value: null });
+          return;
+        }
         const view = new DataView(
           account.data.buffer,
           account.data.byteOffset,
           account.data.byteLength,
         );
         const ts = Number(view.getBigInt64(48, true));
-        if (ts > 0) setLastVerificationTimestamp(ts);
+        setVerificationTimestamp({
+          wallet: walletAddress,
+          value: ts > 0 ? ts : null,
+        });
       })
       .catch(() => {
         /* silent—hint just doesn't render */
@@ -447,6 +477,7 @@ export function VerifyWalletConnected({
   }
 
   async function handleResetBaselineClick() {
+    if (studyNextTrialPending) return;
     if (!publicKey) {
       setResetDialogOpen(true);
       return;
@@ -614,6 +645,27 @@ export function VerifyWalletConnected({
     dispatch({ type: "RESET" });
   }
 
+  function handleResultRetry() {
+    if (studyNextTrialPending) return;
+    if (studyNextTrialAvailable && onStudyNextTrial) {
+      void Promise.resolve(onStudyNextTrial()).catch(() => undefined);
+      return;
+    }
+    if (studySessionActive && !studyGrant && onStudyLeave) {
+      onStudyLeave();
+      return;
+    }
+    handleReset();
+  }
+
+  function handleResultCancel() {
+    if (studySessionActive && onStudyLeave) {
+      onStudyLeave();
+      return;
+    }
+    handleReset();
+  }
+
   if (!connected) {
     return (
       <div className="text-center space-y-6">
@@ -767,13 +819,29 @@ export function VerifyWalletConnected({
   if (state.step === "processing") return <ProvingView stage={processingStage} />;
   if (state.step === "signing") return <SigningView />;
 
+  const leaveStudyAfterResult =
+    studySessionActive && !studyGrant && !studyNextTrialAvailable;
+  const studyResultActionLabel = studyNextTrialAvailable
+    ? "Start next study trial"
+    : studyGrant
+      ? "Retry study trial"
+    : leaveStudyAfterResult
+      ? "Continue with normal verification"
+      : null;
+
   if (state.step === "soft_failed") {
     return (
       <SoftFailedView
         reason={state.reason}
         attemptsRemaining={state.attemptsRemaining}
-        onTryAgain={() => handleStart(state.intent)}
-        onCancel={handleReset}
+        onTryAgain={
+          studyNextTrialAvailable || leaveStudyAfterResult
+            ? handleResultRetry
+            : () => handleStart(state.intent)
+        }
+        onCancel={handleResultCancel}
+        tryAgainLabel={studyResultActionLabel ?? "Try again"}
+        actionPending={studyNextTrialPending}
       />
     );
   }
@@ -791,8 +859,17 @@ export function VerifyWalletConnected({
             ? "Fresh baseline stored on this device. Trust Score starts at 0 and rebuilds with future verifications."
             : "Transaction confirmed on Solana devnet"
         }
-        tryAgainLabel={wasReset ? "Verify now" : "Verify again"}
-        onReset={handleReset}
+        tryAgainLabel={
+          studyResultActionLabel
+            ? studyResultActionLabel
+            : wasReset
+              ? "Verify now"
+              : "Verify again"
+        }
+        onReset={handleResultRetry}
+        actionPending={studyNextTrialPending}
+        secondaryActionLabel={studyNextTrialAvailable ? "Finish for now" : undefined}
+        onSecondaryAction={studyNextTrialAvailable ? handleResultCancel : undefined}
         walletPubkey={publicKey?.toBase58()}
         trustScore={trustScore}
         showShare={!wasReset}
@@ -810,7 +887,10 @@ export function VerifyWalletConnected({
           opaque={state.opaque}
           baselineRecovery={state.baselineRecovery}
           retryAfterSec={state.retryAfterSec}
-          onReset={handleReset}
+          onReset={handleResultRetry}
+          onCancel={handleResultCancel}
+          retryLabel={studyResultActionLabel ?? "Try again"}
+          actionPending={studyNextTrialPending}
           onResetBaseline={handleResetBaselineClick}
         />
         <ResetBaselineDialog

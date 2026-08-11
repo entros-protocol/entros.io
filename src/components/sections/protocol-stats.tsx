@@ -4,12 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { PROGRAM_IDS } from "@entros/pulse-sdk";
+import { PROGRAM_IDS, SAS_CONFIG } from "@entros/pulse-sdk";
 import { ArrowRight, ExternalLink, Loader2, ShieldAlert } from "lucide-react";
 
 const IDENTITY_STATE_DISC_B58 = "T7d2447Yv5U";
-const SAS_PROGRAM_ID = "22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG";
-const ENTROS_CREDENTIAL_PDA = "GaPTkZC6JEGds1G5h645qyUrogx7NWghR2JgjvKQwTDo";
 
 interface OnChainStats {
   totalAnchors: number;
@@ -51,7 +49,7 @@ export function ProtocolStats() {
 
     (async () => {
       const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
-      const sasProgramId = new PublicKey(SAS_PROGRAM_ID);
+      const sasProgramId = new PublicKey(SAS_CONFIG.programId);
 
       const [accounts, attestations] = await Promise.all([
         connection.getProgramAccounts(programId, {
@@ -59,7 +57,7 @@ export function ProtocolStats() {
           dataSlice: { offset: 48, length: 14 },
         }),
         connection.getProgramAccounts(sasProgramId, {
-          filters: [{ memcmp: { offset: 33, bytes: ENTROS_CREDENTIAL_PDA } }],
+          filters: [{ memcmp: { offset: 33, bytes: SAS_CONFIG.entrosCredentialPda } }],
           dataSlice: { offset: 0, length: 0 },
         }),
       ]);

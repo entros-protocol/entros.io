@@ -63,6 +63,24 @@ describe("population study response parsing", () => {
     expect(parseStudyDefinition({ ...definition, consent_hash_hex: "short" })).toBeNull();
     expect(parseStudyDefinition({ ...definition, trial_limit: 0 })).toBeNull();
     expect(parseStudyDefinition({ ...definition, retention_days: Number.NaN })).toBeNull();
+    expect(
+      parseStudyDefinition({
+        ...definition,
+        projection_version: 1,
+        feature_schema_version: 3,
+      }),
+    ).toBeNull();
+    expect(parseStudyDefinition({ ...definition, projection_version: 2 })).toBeNull();
+  });
+
+  it("accepts the version 1 feature schema", () => {
+    expect(
+      parseStudyDefinition({
+        ...definition,
+        projection_version: 1,
+        feature_schema_version: 4,
+      }),
+    ).not.toBeNull();
   });
 
   it("accepts the bounded enrolment contract", () => {

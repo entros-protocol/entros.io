@@ -70,6 +70,7 @@ export function DashboardAnchorView() {
         const mintPubkey = new PublicKey(mintBytes);
         const lastResetTimestamp =
           data.length >= 551 ? Number(view.getBigInt64(543, true)) : 0;
+        const projectionVersion = data.length >= 585 ? view.getUint16(583, true) : 0;
 
         setIdentity({
           owner: publicKey.toBase58(),
@@ -80,6 +81,7 @@ export function DashboardAnchorView() {
           currentCommitment,
           mint: mintPubkey.toBase58(),
           lastResetTimestamp,
+          projectionVersion,
         });
       })
       .catch(() => setError("Failed to fetch identity state"))

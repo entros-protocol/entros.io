@@ -20,7 +20,7 @@ function grant(trialIndex = 1): ActiveStudyGrant {
       retention_days: 30,
       trial_limit: 5,
       visit_gap_secs: 14_400,
-      feature_schema_version: 3,
+      feature_schema_version: 4,
       projection_version: 1,
       seed_generation_id: "seed-generation",
       projection_config_id: "projection-config",

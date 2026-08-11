@@ -1,4 +1,7 @@
-import type { StudyRecordStatus } from "@entros/pulse-sdk";
+import {
+  featureSchemaVersionForProjection,
+  type StudyRecordStatus,
+} from "@entros/pulse-sdk";
 
 export const POPULATION_STUDY_CONSENT_VERSION = "2026-08-10";
 
@@ -214,6 +217,16 @@ export function parseStudyDefinition(value: unknown): StudyDefinition | null {
     typeof candidate.collects_full_vector !== "boolean" ||
     (candidate.preview_only !== undefined && typeof candidate.preview_only !== "boolean")
   ) {
+    return null;
+  }
+  try {
+    if (
+      candidate.feature_schema_version !==
+      featureSchemaVersionForProjection(candidate.projection_version)
+    ) {
+      return null;
+    }
+  } catch {
     return null;
   }
   return candidate as unknown as StudyDefinition;

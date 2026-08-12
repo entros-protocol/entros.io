@@ -1,8 +1,11 @@
+import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createStudyContext } from "@entros/pulse-sdk";
 import {
   POPULATION_STUDY_CONSENT_TEXT,
   hasStudyConsentAcknowledgement,
+  hasExactStudyEnrolmentFields,
+  isPublicStudyDefinitionRequest,
   parseStudyDefinition,
   parseStudyEnrolment,
   rememberStudyConsentAcknowledgement,
@@ -12,15 +15,16 @@ import {
   studyConsentDocument,
   studyProgressMessage,
   createStudyEnrolmentId,
+  createStudyEnrolmentMessage,
   clearPendingStudyEnrolmentId,
-  consumeStudyInvitationFromFragment,
   pendingStudyEnrolmentId,
+  studyAuthorizationIsFresh,
   studyEnrolmentStorageKey,
 } from "../src/lib/population-study";
 
 const definition = {
   study_id: "devnet-population-20260808",
-  consent_version: "2026-08-10",
+  consent_version: "2026-08-13",
   consent_hash_hex: "a".repeat(64),
   retention_days: 14,
   trial_limit: 3,
@@ -42,8 +46,13 @@ const enrolment = {
 
 const activeGrant = {
   ...enrolment,
-  invitation: "study-invitation-value",
   definition,
+  authorization: {
+    wallet_address: "wallet-address",
+    signature_hex: "ab".repeat(64),
+    authorization_id: "cd".repeat(16),
+    signed_at: 1_775_000_000,
+  },
 };
 
 afterEach(() => {
@@ -110,12 +119,38 @@ describe("population study response parsing", () => {
     );
   });
 
+  it("names encrypted wallet grouping and excludes KYC data", () => {
+    const text = POPULATION_STUDY_CONSENT_TEXT.join(" ");
+    expect(text).toContain("encrypted study record includes the Solana wallet");
+    expect(text).toContain("does not request your legal name or other KYC data");
+  });
+
+  it("builds the canonical wallet enrolment message", () => {
+    expect(
+      createStudyEnrolmentMessage(
+        definition,
+        "wallet-address",
+        "00112233445566778899aabbccddeeff",
+        1_775_000_000,
+      ),
+    ).toBe(
+      `Entros Protocol - Population Study Enrolment\nStudy: ${definition.study_id}\nWallet: wallet-address\nConsent version: ${definition.consent_version}\nConsent hash: ${definition.consent_hash_hex}\nAuthorization: 00112233445566778899aabbccddeeff\nSigned at: 1775000000`,
+    );
+  });
+
   it("binds retention and trial limits into the consent document", () => {
     const original = studyConsentDocument(definition);
     expect(original).toContain("14 days");
-    expect(original).toContain("up to 3 trials");
+    expect(original).toContain("up to 3 study trials");
     expect(studyConsentDocument({ ...definition, retention_days: 365 })).not.toBe(original);
     expect(studyConsentDocument({ ...definition, trial_limit: 4 })).not.toBe(original);
+  });
+
+  it("pins the wallet-bound production consent hash", () => {
+    const document = studyConsentDocument({ retention_days: 30, trial_limit: 5 });
+    expect(createHash("sha256").update(document, "utf8").digest("hex")).toBe(
+      "917a46836ff71db393e93aecca9e068722a908c6c0bf0cba6cee498de0a7bcdd",
+    );
   });
 
   it("retains an active grant when storage is unconfirmed", () => {
@@ -129,8 +164,8 @@ describe("population study response parsing", () => {
     expect(resolveStudyGrant(activeGrant, "recorded")).toEqual({
       state: "awaiting_participant",
       status: "recorded",
-      invitation: activeGrant.invitation,
       definition,
+      authorization: activeGrant.authorization,
       completed_trial_index: 1,
     });
   });
@@ -185,24 +220,36 @@ describe("population study response parsing", () => {
       setItem: (key: string, value: string) => values.set(key, value),
       removeItem: (key: string) => values.delete(key),
     };
-    const first = pendingStudyEnrolmentId(definition, storage);
-    const retry = pendingStudyEnrolmentId(definition, storage);
+    const wallet = "wallet-one";
+    const first = pendingStudyEnrolmentId(definition, wallet, storage);
+    const retry = pendingStudyEnrolmentId(definition, wallet, storage);
     expect(retry).toBe(first);
-    expect(values.get(studyEnrolmentStorageKey(definition))).toBe(first);
+    expect(values.get(studyEnrolmentStorageKey(definition, wallet))).toBe(first);
+    expect(pendingStudyEnrolmentId(definition, "wallet-two", storage)).not.toBe(first);
 
-    expect(clearPendingStudyEnrolmentId(definition, storage)).toBe(true);
-    const nextTrial = pendingStudyEnrolmentId(definition, storage);
+    expect(clearPendingStudyEnrolmentId(definition, wallet, storage)).toBe(true);
+    const nextTrial = pendingStudyEnrolmentId(definition, wallet, storage);
     expect(nextTrial).not.toBe(first);
   });
 
   it("replaces malformed pending enrolment identifiers", () => {
-    const values = new Map([[studyEnrolmentStorageKey(definition), "not-an-id"]]);
+    const wallet = "wallet-one";
+    const values = new Map([[studyEnrolmentStorageKey(definition, wallet), "not-an-id"]]);
     const storage = {
       getItem: (key: string) => values.get(key) ?? null,
       setItem: (key: string, value: string) => values.set(key, value),
       removeItem: (key: string) => values.delete(key),
     };
-    expect(pendingStudyEnrolmentId(definition, storage)).toMatch(/^[0-9a-f]{32}$/);
+    expect(pendingStudyEnrolmentId(definition, wallet, storage)).toMatch(/^[0-9a-f]{32}$/);
+  });
+
+  it("reuses only fresh wallet-bound authorizations", () => {
+    expect(studyAuthorizationIsFresh(activeGrant.authorization, "wallet-address", 1_775_000_800))
+      .toBe(true);
+    expect(studyAuthorizationIsFresh(activeGrant.authorization, "another-wallet", 1_775_000_800))
+      .toBe(false);
+    expect(studyAuthorizationIsFresh(activeGrant.authorization, "wallet-address", 1_775_000_841))
+      .toBe(false);
   });
 
   it("caches only the study identifier and normalized consent hash", () => {
@@ -262,28 +309,33 @@ describe("population study response parsing", () => {
     expect(rememberStudyConsentAcknowledgement(definition)).toBe(false);
   });
 
-  it("consumes valid and malformed invitation fragments immediately", () => {
-    let replaced = "";
-    const browser = {
-      location: {
-        hash: "#study=valid-study-invitation&view=compact",
-        pathname: "/verify",
-        search: "?source=test",
-      },
-      history: {
-        replaceState: (_state: null, _title: string, url: string) => {
-          replaced = url;
-        },
-      },
+});
+
+describe("population study request boundaries", () => {
+  it("accepts only the empty public definition request", () => {
+    expect(isPublicStudyDefinitionRequest({})).toBe(true);
+    expect(
+      isPublicStudyDefinitionRequest({ invitation: "legacy-participant-capability" }),
+    ).toBe(false);
+  });
+
+  it("rejects legacy enrolment request fields", () => {
+    const enrolmentRequest = {
+      wallet_id: "11111111111111111111111111111111",
+      signature_hex: "ab".repeat(64),
+      authorization_id: "cd".repeat(16),
+      signed_at: 1_775_000_000,
+      consent_version: "2026-08-13",
+      consent_hash_hex: "a".repeat(64),
+      enrolment_id: "0123456789abcdef0123456789abcdef",
+      accepted: true,
     };
-    vi.stubGlobal("window", browser);
-
-    expect(consumeStudyInvitationFromFragment()).toBe("valid-study-invitation");
-    expect(replaced).toBe("/verify?source=test#view=compact");
-
-    browser.location.hash = "#study=short";
-    replaced = "";
-    expect(consumeStudyInvitationFromFragment()).toBeNull();
-    expect(replaced).toBe("/verify?source=test");
+    expect(hasExactStudyEnrolmentFields(enrolmentRequest)).toBe(true);
+    expect(
+      hasExactStudyEnrolmentFields({
+        ...enrolmentRequest,
+        invitation: "legacy-participant-capability",
+      }),
+    ).toBe(false);
   });
 });

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
   POPULATION_STUDY_CONSENT_VERSION,
+  isPublicStudyDefinitionRequest,
   parseStudyDefinition,
   studyConsentDocument,
   type StudyDefinition,
@@ -16,17 +17,17 @@ function noStoreJson(body: unknown, status = 200) {
 }
 
 export async function POST(request: Request) {
-  let body: { invitation?: unknown } | null;
+  let body: Record<string, unknown> | null;
   try {
-    body = (await readBoundedJson(request, MAX_BODY_BYTES)) as { invitation?: unknown };
+    body = (await readBoundedJson(request, MAX_BODY_BYTES)) as Record<string, unknown>;
   } catch (error) {
     const status = error instanceof RangeError ? 413 : 400;
     return noStoreJson({ error: status === 413 ? "Request too large" : "Invalid request" }, status);
   }
-  if (typeof body?.invitation !== "string") {
-    return noStoreJson({ error: "Invalid invitation" }, 400);
+  if (!isPublicStudyDefinitionRequest(body)) {
+    return noStoreJson({ error: "Invalid request" }, 400);
   }
-  const upstream = await proxyStudy("/study/definition", { invitation: body.invitation });
+  const upstream = await proxyStudy("/study/definition", {});
   if (!upstream.ok) return upstream.response;
 
   const definition = parseStudyDefinition(upstream.body);
@@ -92,11 +93,15 @@ async function proxyStudy(path: string, body: unknown) {
 }
 
 function localPreview(path: string, body: unknown) {
-  const invitation = (body as { invitation?: unknown }).invitation;
-  if (path !== "/study/definition" || invitation !== "local-preview-20260808") {
+  if (
+    path !== "/study/definition" ||
+    !body ||
+    typeof body !== "object" ||
+    Object.keys(body).length !== 0
+  ) {
     return {
       ok: false as const,
-      response: noStoreJson({ error: "Study invitation unavailable" }, 404),
+      response: noStoreJson({ error: "Study unavailable" }, 404),
     };
   }
   const consentHash = createHash("sha256")
@@ -105,7 +110,7 @@ function localPreview(path: string, body: unknown) {
   return {
     ok: true as const,
     body: {
-      study_id: "local-interface-preview",
+      study_id: "local-wallet-study-preview",
       consent_version: POPULATION_STUDY_CONSENT_VERSION,
       consent_hash_hex: consentHash,
       retention_days: 14,

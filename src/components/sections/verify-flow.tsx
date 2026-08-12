@@ -2,6 +2,7 @@
 
 import { Component, useCallback, useEffect, useReducer, useRef } from "react";
 import type { StudyRecordStatus } from "@entros/pulse-sdk";
+import { useWallet } from "@solana/wallet-adapter-react";
 import {
   verifyReducer,
   initialState,
@@ -11,10 +12,12 @@ import { StudyConsent } from "@/components/verify/study-consent";
 import type { ActiveStudyGrant } from "@/lib/population-study";
 import {
   clearPendingStudyEnrolmentId,
-  consumeStudyInvitationFromFragment,
+  createStudyAuthorization,
+  fetchStudyDefinition,
   pendingStudyEnrolmentId,
   requestStudyEnrolment,
   resolveStudyGrant,
+  studyAuthorizationIsFresh,
   studyProgressMessage,
 } from "@/lib/population-study";
 import {
@@ -65,6 +68,8 @@ class VerifyErrorBoundary extends Component<
 }
 
 export function VerifyFlow() {
+  const { connected, publicKey, signMessage } = useWallet();
+  const walletAddress = connected && publicKey ? publicKey.toBase58() : null;
   const [state, dispatch] = useReducer(verifyReducer, initialState);
   const [study, studyDispatch] = useReducer(
     studyFlowReducer,
@@ -74,18 +79,30 @@ export function VerifyFlow() {
   const studyRequestGenerationRef = useRef(0);
 
   useEffect(() => {
-    const consumeInvitation = () => {
-      const nextInvitation = consumeStudyInvitationFromFragment();
-      if (!nextInvitation) return;
+    const controller = new AbortController();
+    fetchStudyDefinition(controller.signal)
+      .then((definition) => {
+        studyDispatch({ type: "DEFINITION_READY", definition });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          studyDispatch({ type: "STUDY_UNAVAILABLE" });
+        }
+      });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (
+      study.grant &&
+      walletAddress !== study.grant.authorization.wallet_address
+    ) {
       studyRequestGenerationRef.current += 1;
       studyTokenRequestRef.current = false;
-      studyDispatch({ type: "LOAD_INVITATION", invitation: nextInvitation });
+      studyDispatch({ type: "LEAVE" });
       dispatch({ type: "RESET" });
-    };
-    consumeInvitation();
-    window.addEventListener("hashchange", consumeInvitation);
-    return () => window.removeEventListener("hashchange", consumeInvitation);
-  }, []);
+    }
+  }, [study.grant, walletAddress]);
 
   const handleStudyReady = useCallback((grant: ActiveStudyGrant | null) => {
     studyDispatch({ type: "READY", grant });
@@ -108,8 +125,8 @@ export function VerifyFlow() {
         continuation:
           resolution.state === "awaiting_participant"
             ? {
-                invitation: resolution.invitation,
                 definition: resolution.definition,
+                authorization: resolution.authorization,
               }
             : null,
       });
@@ -118,19 +135,42 @@ export function VerifyFlow() {
   );
 
   const handleNextStudyTrial = useCallback(async () => {
-    if (!study.continuation || studyTokenRequestRef.current) return;
+    if (
+      !study.continuation ||
+      !walletAddress ||
+      !signMessage ||
+      studyTokenRequestRef.current
+    ) {
+      return;
+    }
     const requestGeneration = ++studyRequestGenerationRef.current;
-    const enrolmentId = pendingStudyEnrolmentId(study.continuation.definition);
+    const enrolmentId = pendingStudyEnrolmentId(
+      study.continuation.definition,
+      walletAddress,
+    );
     studyTokenRequestRef.current = true;
     studyDispatch({ type: "NEXT_PENDING" });
     try {
+      const authorization = studyAuthorizationIsFresh(
+        study.continuation.authorization,
+        walletAddress,
+      )
+        ? study.continuation.authorization
+        : await createStudyAuthorization(
+            study.continuation.definition,
+            walletAddress,
+            signMessage,
+          );
       const nextGrant = await requestStudyEnrolment(
-        study.continuation.invitation,
+        authorization,
         study.continuation.definition,
         enrolmentId,
       );
       if (requestGeneration !== studyRequestGenerationRef.current) return;
-      clearPendingStudyEnrolmentId(study.continuation.definition);
+      clearPendingStudyEnrolmentId(
+        study.continuation.definition,
+        walletAddress,
+      );
       studyDispatch({ type: "NEXT_READY", grant: nextGrant });
       dispatch({ type: "RESET" });
     } catch {
@@ -144,13 +184,16 @@ export function VerifyFlow() {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
       studyTokenRequestRef.current = false;
     }
-  }, [study.continuation]);
+  }, [signMessage, study.continuation, walletAddress]);
 
   const handleLeaveStudy = useCallback(() => {
     studyRequestGenerationRef.current += 1;
     studyTokenRequestRef.current = false;
     if (study.continuation) {
-      clearPendingStudyEnrolmentId(study.continuation.definition);
+      clearPendingStudyEnrolmentId(
+        study.continuation.definition,
+        study.continuation.authorization.wallet_address,
+      );
     }
     studyDispatch({ type: "LEAVE" });
     dispatch({ type: "RESET" });
@@ -169,10 +212,15 @@ export function VerifyFlow() {
           the deliberate trade-off for layout stability across the flow. */}
       <div className="mx-auto flex min-h-[620px] md:min-h-[660px] max-w-xl flex-col justify-center border border-border px-8 py-10">
         <VerifyErrorBoundary onError={handleBoundaryError}>
-          {study.invitation && study.decision === "pending" ? (
+          {study.definition &&
+          study.decision === "pending" &&
+          walletAddress &&
+          signMessage ? (
             <StudyConsent
-              key={study.invitation}
-              invitation={study.invitation}
+              key={`${study.definition.study_id}:${walletAddress}`}
+              definition={study.definition}
+              walletAddress={walletAddress}
+              signMessage={signMessage}
               onReady={handleStudyReady}
             />
           ) : (

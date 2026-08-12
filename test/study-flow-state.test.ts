@@ -12,10 +12,15 @@ function grant(trialIndex = 1): ActiveStudyGrant {
     trial_index: trialIndex,
     trial_limit: 5,
     expires_in: 3_600,
-    invitation: "study-invitation",
+    authorization: {
+      wallet_address: "wallet-address",
+      signature_hex: "ab".repeat(64),
+      authorization_id: "cd".repeat(16),
+      signed_at: 1_775_000_000,
+    },
     definition: {
       study_id: "population-study",
-      consent_version: "2026-08-10",
+      consent_version: "2026-08-13",
       consent_hash_hex: "ab".repeat(32),
       retention_days: 30,
       trial_limit: 5,
@@ -30,7 +35,25 @@ function grant(trialIndex = 1): ActiveStudyGrant {
 }
 
 describe("study flow state", () => {
-  it("replaces an active study atomically when a new invitation arrives", () => {
+  it("keeps normal verification available when the study is unavailable or declined", () => {
+    expect(
+      studyFlowReducer(initialStudyFlowState, { type: "STUDY_UNAVAILABLE" }),
+    ).toEqual({
+      ...initialStudyFlowState,
+      decision: "normal",
+    });
+
+    const offered = studyFlowReducer(initialStudyFlowState, {
+      type: "DEFINITION_READY",
+      definition: grant().definition,
+    });
+    expect(studyFlowReducer(offered, { type: "READY", grant: null })).toEqual({
+      ...initialStudyFlowState,
+      decision: "normal",
+    });
+  });
+
+  it("replaces active state when the public definition changes", () => {
     const joined = studyFlowReducer(initialStudyFlowState, {
       type: "READY",
       grant: grant(),
@@ -41,12 +64,13 @@ describe("study flow state", () => {
         tokenPending: true,
         tokenError: "old error",
       },
-      { type: "LOAD_INVITATION", invitation: "replacement" },
+      { type: "DEFINITION_READY", definition: grant().definition },
     );
 
     expect(pending).toEqual({
       ...initialStudyFlowState,
-      invitation: "replacement",
+      definition: grant().definition,
+      decision: "pending",
     });
   });
 
@@ -65,8 +89,8 @@ describe("study flow state", () => {
         completionReason: null,
       },
       continuation: {
-        invitation: firstGrant.invitation,
         definition: firstGrant.definition,
+        authorization: firstGrant.authorization,
       },
     });
     const pending = studyFlowReducer(recorded, { type: "NEXT_PENDING" });

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
   POPULATION_STUDY_CONSENT_VERSION,
+  hasExactStudyEnrolmentFields,
   parseStudyEnrolment,
   studyConsentDocument,
 } from "@/lib/population-study";
@@ -9,7 +10,6 @@ import { readBoundedJson } from "@/lib/server/read-bounded-json";
 
 const MAX_BODY_BYTES = 2_048;
 const NO_STORE_HEADERS = { "Cache-Control": "no-store" } as const;
-
 function noStoreJson(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: NO_STORE_HEADERS });
 }
@@ -23,8 +23,16 @@ export async function POST(request: Request) {
     return noStoreJson({ error: status === 413 ? "Request too large" : "Invalid request" }, status);
   }
   if (
-    !body ||
-    typeof body.invitation !== "string" ||
+    !hasExactStudyEnrolmentFields(body) ||
+    typeof body.wallet_id !== "string" ||
+    !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(body.wallet_id) ||
+    typeof body.signature_hex !== "string" ||
+    !/^[0-9a-fA-F]{128}$/.test(body.signature_hex) ||
+    typeof body.authorization_id !== "string" ||
+    !/^[0-9a-f]{32}$/.test(body.authorization_id) ||
+    typeof body.signed_at !== "number" ||
+    !Number.isSafeInteger(body.signed_at) ||
+    body.signed_at <= 0 ||
     typeof body.consent_version !== "string" ||
     typeof body.consent_hash_hex !== "string" ||
     typeof body.enrolment_id !== "string" ||
@@ -38,8 +46,7 @@ export async function POST(request: Request) {
   const relayerApiKey = process.env.RELAYER_API_KEY;
   const isLocalPreview =
     process.env.NODE_ENV === "development" &&
-    process.env.ENTROS_STUDY_LOCAL_PREVIEW === "1" &&
-    body.invitation === "local-preview-20260808";
+    process.env.ENTROS_STUDY_LOCAL_PREVIEW === "1";
   if (isLocalPreview) {
     const consentHash = createHash("sha256")
       .update(studyConsentDocument({ retention_days: 14, trial_limit: 3 }), "utf8")
@@ -51,10 +58,10 @@ export async function POST(request: Request) {
       return noStoreJson({ error: "Invalid consent response" }, 400);
     }
     const previewToken = createHash("sha256")
-      .update(`local-preview-token:${body.enrolment_id}`, "utf8")
+      .update(`local-preview-token:${body.wallet_id}:${body.enrolment_id}`, "utf8")
       .digest();
     const previewSession = createHash("sha256")
-      .update(`local-preview-session:${body.enrolment_id}`, "utf8")
+      .update(`local-preview-session:${body.wallet_id}:${body.enrolment_id}`, "utf8")
       .digest("hex")
       .slice(0, 32);
     return noStoreJson({

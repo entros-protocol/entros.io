@@ -3,14 +3,25 @@ import {
   type StudyRecordStatus,
 } from "@entros/pulse-sdk";
 
-export const POPULATION_STUDY_CONSENT_VERSION = "2026-08-10";
+export const POPULATION_STUDY_CONSENT_VERSION = "2026-08-13";
+
+const STUDY_ENROLMENT_FIELDS = new Set([
+  "wallet_id",
+  "signature_hex",
+  "authorization_id",
+  "signed_at",
+  "consent_version",
+  "consent_hash_hex",
+  "enrolment_id",
+  "accepted",
+]);
 
 export const POPULATION_STUDY_CONSENT_TEXT = [
   "You are invited to an Entros devnet population study.",
   "The study uses the same voice, trace, and natural device movement capture as normal verification.",
   "With your consent, Entros stores an encrypted 256-bit behavioral fingerprint and an encrypted 308-value statistical feature summary. The summary contains measurements derived from your voice, trace, and natural device movement. Entros also stores validation outcomes and timing summaries.",
-  "The study does not store phrase audio, raw motion, raw touch, the traced path, challenge words, transcripts, wallet addresses, IP addresses, or browser identifiers.",
-  "The study groups repeat trials with a random study-only participant tag. It does not use your wallet for study grouping.",
+  "The encrypted study record includes the Solana wallet you connect. Entros uses the wallet to group repeat trials with the Anchor and Trust Score that you control.",
+  "The study does not request your legal name or other KYC data. It does not store phrase audio, raw motion, raw touch, the traced path, challenge words, transcripts, IP addresses, or browser identifiers.",
   "You can continue with normal devnet verification without joining the study.",
 ] as const;
 
@@ -31,10 +42,23 @@ export interface StudyDefinition {
 
 type ConsentTerms = Pick<StudyDefinition, "retention_days" | "trial_limit">;
 
+export function isPublicStudyDefinitionRequest(value: unknown): boolean {
+  return !!value && typeof value === "object" && Object.keys(value).length === 0;
+}
+
+export function hasExactStudyEnrolmentFields(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== "object") return false;
+  const fields = Object.keys(value);
+  return (
+    fields.length === STUDY_ENROLMENT_FIELDS.size &&
+    fields.every((field) => STUDY_ENROLMENT_FIELDS.has(field))
+  );
+}
+
 export function studyConsentParagraphs(terms: ConsentTerms): readonly string[] {
   return [
     ...POPULATION_STUDY_CONSENT_TEXT,
-    `Entros retains this study record for ${terms.retention_days} days. This invitation allows up to ${terms.trial_limit} trials.`,
+    `Entros retains this study record for ${terms.retention_days} days. You can submit up to ${terms.trial_limit} study trials.`,
   ];
 }
 
@@ -50,9 +74,16 @@ export interface StudyEnrolment {
   expires_in: number;
 }
 
+export interface StudyAuthorization {
+  wallet_address: string;
+  signature_hex: string;
+  authorization_id: string;
+  signed_at: number;
+}
+
 export interface ActiveStudyGrant extends StudyEnrolment {
-  invitation: string;
   definition: StudyDefinition;
+  authorization: StudyAuthorization;
 }
 
 export type StudyStatusUpdate =
@@ -69,8 +100,8 @@ export type StudyGrantResolution =
   | {
       state: "awaiting_participant";
       status: StudyRecordStatus;
-      invitation: string;
       definition: StudyDefinition;
+      authorization: StudyAuthorization;
       completed_trial_index: number;
     };
 
@@ -118,8 +149,8 @@ export function resolveStudyGrant(
   return {
     state: "awaiting_participant",
     status,
-    invitation: grant.invitation,
     definition: grant.definition,
+    authorization: grant.authorization,
     completed_trial_index: grant.trial_index,
   };
 }
@@ -139,12 +170,12 @@ export function studyProgressMessage(
   }
   if (completionReason === "exhausted") {
     return recorded
-      ? `Research trial ${trialIndex} of ${trialLimit} recorded. This invitation has no study trials left.`
-      : `Research trial ${trialIndex} of ${trialLimit} finished, but no study record was saved. This invitation has no study trials left.`;
+      ? `Research trial ${trialIndex} of ${trialLimit} recorded. This wallet has no study trials left.`
+      : `Research trial ${trialIndex} of ${trialLimit} finished, but no study record was saved. This wallet has no study trials left.`;
   }
   return recorded
-    ? `Research trial ${trialIndex} of ${trialLimit} recorded. You can do another now or reopen this invitation link later while it remains active.`
-    : `Research trial ${trialIndex} of ${trialLimit} finished, but no study record was saved. You can try another now or reopen this invitation link later while it remains active.`;
+    ? `Research trial ${trialIndex} of ${trialLimit} recorded. You can do another now or return later while the study remains active.`
+    : `Research trial ${trialIndex} of ${trialLimit} finished, but no study record was saved. You can try another now or return later while the study remains active.`;
 }
 
 export function studyConsentStorageKey(definition: StudyDefinition): string {
@@ -256,48 +287,26 @@ export function parseStudyEnrolment(value: unknown): StudyEnrolment | null {
   return candidate as unknown as StudyEnrolment;
 }
 
-export function readStudyInvitationFromFragment(): string | null {
-  const fragment = new URLSearchParams(window.location.hash.slice(1));
-  const invitation = fragment.get("study");
-  if (!invitation || invitation.length < 16 || invitation.length > 256) return null;
-  return /^[\x21-\x7e]+$/.test(invitation) ? invitation : null;
-}
-
-export function consumeStudyInvitationFromFragment(): string | null {
-  const fragment = new URLSearchParams(window.location.hash.slice(1));
-  if (!fragment.has("study")) return null;
-  const invitation = readStudyInvitationFromFragment();
-  clearStudyInvitationFragment();
-  return invitation;
-}
-
-export function clearStudyInvitationFragment(): void {
-  const fragment = new URLSearchParams(window.location.hash.slice(1));
-  fragment.delete("study");
-  const remaining = fragment.toString();
-  window.history.replaceState(
-    null,
-    "",
-    `${window.location.pathname}${window.location.search}${remaining ? `#${remaining}` : ""}`,
-  );
-}
-
 export function createStudyEnrolmentId(): string {
   const bytes = new Uint8Array(16);
   globalThis.crypto.getRandomValues(bytes);
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export function studyEnrolmentStorageKey(definition: StudyDefinition): string {
-  return `${ENROLMENT_STORAGE_PREFIX}:${definition.study_id}:${definition.consent_hash_hex.toLowerCase()}`;
+export function studyEnrolmentStorageKey(
+  definition: StudyDefinition,
+  walletAddress: string,
+): string {
+  return `${ENROLMENT_STORAGE_PREFIX}:${definition.study_id}:${definition.consent_hash_hex.toLowerCase()}:${walletAddress}`;
 }
 
 export function pendingStudyEnrolmentId(
   definition: StudyDefinition,
+  walletAddress: string,
   storage: EnrolmentStorage | null = browserEnrolmentStorage(),
 ): string {
   if (!storage) return createStudyEnrolmentId();
-  const key = studyEnrolmentStorageKey(definition);
+  const key = studyEnrolmentStorageKey(definition, walletAddress);
   try {
     const existing = storage.getItem(key);
     if (existing && /^[0-9a-f]{32}$/.test(existing)) return existing;
@@ -311,11 +320,12 @@ export function pendingStudyEnrolmentId(
 
 export function clearPendingStudyEnrolmentId(
   definition: StudyDefinition,
+  walletAddress: string,
   storage: EnrolmentStorage | null = browserEnrolmentStorage(),
 ): boolean {
   if (!storage) return false;
   try {
-    storage.removeItem(studyEnrolmentStorageKey(definition));
+    storage.removeItem(studyEnrolmentStorageKey(definition, walletAddress));
     return true;
   } catch {
     return false;
@@ -331,8 +341,80 @@ function browserEnrolmentStorage(): EnrolmentStorage | null {
   }
 }
 
+export function createStudyEnrolmentMessage(
+  definition: StudyDefinition,
+  walletAddress: string,
+  authorizationId: string,
+  signedAt: number,
+): string {
+  return [
+    "Entros Protocol - Population Study Enrolment",
+    `Study: ${definition.study_id}`,
+    `Wallet: ${walletAddress}`,
+    `Consent version: ${definition.consent_version}`,
+    `Consent hash: ${definition.consent_hash_hex}`,
+    `Authorization: ${authorizationId}`,
+    `Signed at: ${signedAt}`,
+  ].join("\n");
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+export async function createStudyAuthorization(
+  definition: StudyDefinition,
+  walletAddress: string,
+  signMessage: (message: Uint8Array) => Promise<Uint8Array>,
+): Promise<StudyAuthorization> {
+  const authorizationId = createStudyEnrolmentId();
+  const signedAt = Math.floor(Date.now() / 1_000);
+  const message = createStudyEnrolmentMessage(
+    definition,
+    walletAddress,
+    authorizationId,
+    signedAt,
+  );
+  const signature = await signMessage(new TextEncoder().encode(message));
+  if (signature.length !== 64) {
+    throw new Error("The wallet returned an invalid study signature.");
+  }
+  return {
+    wallet_address: walletAddress,
+    signature_hex: bytesToHex(signature),
+    authorization_id: authorizationId,
+    signed_at: signedAt,
+  };
+}
+
+export function studyAuthorizationIsFresh(
+  authorization: StudyAuthorization,
+  walletAddress: string,
+  now = Math.floor(Date.now() / 1_000),
+): boolean {
+  return (
+    authorization.wallet_address === walletAddress &&
+    authorization.signed_at <= now + 30 &&
+    authorization.signed_at >= now - 840
+  );
+}
+
+export async function fetchStudyDefinition(signal?: AbortSignal): Promise<StudyDefinition> {
+  const response = await fetch("/api/study/definition", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+    signal,
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("The population study is unavailable.");
+  const definition = parseStudyDefinition(await response.json());
+  if (!definition) throw new Error("The population study returned an invalid response.");
+  return definition;
+}
+
 export async function requestStudyEnrolment(
-  invitation: string,
+  authorization: StudyAuthorization,
   definition: StudyDefinition,
   enrolmentId: string,
 ): Promise<ActiveStudyGrant> {
@@ -340,7 +422,10 @@ export async function requestStudyEnrolment(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      invitation,
+      wallet_id: authorization.wallet_address,
+      signature_hex: authorization.signature_hex,
+      authorization_id: authorization.authorization_id,
+      signed_at: authorization.signed_at,
       consent_version: definition.consent_version,
       consent_hash_hex: definition.consent_hash_hex,
       enrolment_id: enrolmentId,
@@ -351,5 +436,5 @@ export async function requestStudyEnrolment(
   if (!response.ok) throw new Error("Study enrolment could not be completed.");
   const enrolment = parseStudyEnrolment(await response.json());
   if (!enrolment) throw new Error("Study enrolment returned an invalid response.");
-  return { ...enrolment, invitation, definition };
+  return { ...enrolment, definition, authorization };
 }

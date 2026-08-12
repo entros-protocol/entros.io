@@ -2,8 +2,8 @@ import type { StudyRecordStatus } from "@entros/pulse-sdk";
 import type { ActiveStudyGrant } from "@/lib/population-study";
 
 export interface StudyContinuation {
-  invitation: string;
   definition: ActiveStudyGrant["definition"];
+  authorization: ActiveStudyGrant["authorization"];
 }
 
 export interface StudyProgress {
@@ -14,8 +14,8 @@ export interface StudyProgress {
 }
 
 export interface StudyFlowState {
-  invitation: string | null;
-  decision: "pending" | "normal" | "joined";
+  definition: ActiveStudyGrant["definition"] | null;
+  decision: "loading" | "pending" | "normal" | "joined";
   grant: ActiveStudyGrant | null;
   progress: StudyProgress | null;
   continuation: StudyContinuation | null;
@@ -24,8 +24,8 @@ export interface StudyFlowState {
 }
 
 export const initialStudyFlowState: StudyFlowState = {
-  invitation: null,
-  decision: "pending",
+  definition: null,
+  decision: "loading",
   grant: null,
   progress: null,
   continuation: null,
@@ -34,7 +34,8 @@ export const initialStudyFlowState: StudyFlowState = {
 };
 
 export type StudyFlowAction =
-  | { type: "LOAD_INVITATION"; invitation: string }
+  | { type: "DEFINITION_READY"; definition: ActiveStudyGrant["definition"] }
+  | { type: "STUDY_UNAVAILABLE" }
   | { type: "READY"; grant: ActiveStudyGrant | null }
   | {
       type: "RECORD_STATUS";
@@ -51,11 +52,14 @@ export function studyFlowReducer(
   action: StudyFlowAction,
 ): StudyFlowState {
   switch (action.type) {
-    case "LOAD_INVITATION":
+    case "DEFINITION_READY":
       return {
         ...initialStudyFlowState,
-        invitation: action.invitation,
+        definition: action.definition,
+        decision: "pending",
       };
+    case "STUDY_UNAVAILABLE":
+      return { ...initialStudyFlowState, decision: "normal" };
     case "READY":
       return {
         ...initialStudyFlowState,

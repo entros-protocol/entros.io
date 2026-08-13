@@ -32,7 +32,7 @@ import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
 import { usePulse } from "@/components/providers/pulse-provider";
 import { useWalletError } from "@/components/providers/wallet-provider";
-import { Wallet } from "lucide-react";
+import { AlertTriangle, Wallet } from "lucide-react";
 import type { ActiveStudyGrant } from "@/lib/population-study";
 
 function commitmentToHex(bytes: Uint8Array): string {
@@ -59,6 +59,51 @@ const subscribeToStaticCapability = () => () => undefined;
 const readMotionCapability = () => navigator.maxTouchPoints > 0;
 const readServerMotionCapability = () => false;
 
+function DevnetWalletRequirements({
+  connected = false,
+}: {
+  connected?: boolean;
+}) {
+  return (
+    <div className="mx-auto w-full max-w-sm rounded-lg border border-amber-500/35 bg-amber-500/10 px-5 py-4 text-left">
+      <div className="flex items-start gap-3">
+        <AlertTriangle
+          className="mt-0.5 size-5 shrink-0 text-amber-500"
+          aria-hidden="true"
+        />
+        <div className="space-y-3">
+          <p className="text-sm font-semibold text-foreground">
+            Prepare a Solana Devnet wallet
+          </p>
+          <ol className="space-y-2 text-sm leading-relaxed text-foreground/75">
+            <li>1. Set your wallet network to Solana Devnet.</li>
+            <li>
+              2. Add free devnet SOL from the{" "}
+              <a
+                href="https://faucet.solana.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan underline transition-colors hover:text-foreground"
+              >
+                Solana faucet
+              </a>
+              .
+            </li>
+            <li>
+              3. {connected
+                ? "Confirm this is the wallet you want to verify."
+                : "Connect the wallet you want to verify."}
+            </li>
+          </ol>
+          <p className="text-xs leading-relaxed text-foreground/55">
+            Devnet SOL has no monetary value.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // The retryable-reason list used to live here as a literal, alongside five
 // other copies across this repo and entros-mobile. They had drifted: the same
 // rejection offered a retry here and dead-ended on mobile. `reasonDisposition`
@@ -76,6 +121,9 @@ export function VerifyWalletConnected({
   studyNextTrialAvailable = false,
   studyNextTrialPending = false,
   studySessionActive = false,
+  studyPreparationRequired = false,
+  studyPreparationError,
+  onStudyPrepare,
 }: {
   state: VerifyState;
   dispatch: React.ActionDispatch<[action: VerifyAction]>;
@@ -87,6 +135,9 @@ export function VerifyWalletConnected({
   studyNextTrialAvailable?: boolean;
   studyNextTrialPending?: boolean;
   studySessionActive?: boolean;
+  studyPreparationRequired?: boolean;
+  studyPreparationError?: string | null;
+  onStudyPrepare?: () => void | Promise<void>;
 }) {
   const { connected, wallet, publicKey } = useWallet();
   const { connection } = useConnection();
@@ -674,6 +725,7 @@ export function VerifyWalletConnected({
           Connect your Solana wallet to verify with full self-custody. You sign
           the verification transaction directly.
         </p>
+        <DevnetWalletRequirements />
         {walletError && (
           <div className="mx-auto max-w-sm rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
             <div className="flex items-start gap-2">
@@ -691,12 +743,65 @@ export function VerifyWalletConnected({
             </div>
           </div>
         )}
-        <WalletConnectButton className="!rounded-full !border !border-border !bg-surface !text-foreground !font-mono !text-sm" />
+        <WalletConnectButton
+          className="!rounded-full !border !border-border !bg-surface !text-foreground !font-mono !text-sm"
+          showDesktopHint={false}
+        />
       </div>
     );
   }
 
   if (state.step === "idle") {
+    if (studyPreparationRequired) {
+      return (
+        <div className="space-y-6 text-center">
+          <div>
+            <div className="mb-4 inline-flex">
+              <ConnectedWalletPill size="sm" />
+            </div>
+            <p className="font-mono text-base font-semibold text-foreground">
+              Confirm your study wallet
+            </p>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-foreground/70">
+              Review the connected wallet, then sign the study authorization.
+              This does not send a transaction or spend devnet SOL.
+            </p>
+          </div>
+
+          <DevnetWalletRequirements connected />
+
+          {studyPreparationError && (
+            <p className="mx-auto max-w-sm text-sm text-danger" role="alert">
+              {studyPreparationError}
+            </p>
+          )}
+
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => void onStudyPrepare?.()}
+              disabled={studyCaptureBlocked || !onStudyPrepare}
+              className="rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {studyCaptureBlocked
+                ? "Preparing verification..."
+                : "Continue to verification"}
+            </button>
+            {onStudyLeave && (
+              <button
+                type="button"
+                onClick={onStudyLeave}
+                disabled={studyCaptureBlocked}
+                className="rounded-full border border-border px-6 py-3 text-sm text-foreground/70 transition-colors hover:border-foreground/35 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Continue without study
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     // Cadence hint. `update_anchor` scores weekly bin activation, so a second
     // verification inside the same week does not raise the score. It costs
     // nothing either: the activity ring records one entry per bin, so

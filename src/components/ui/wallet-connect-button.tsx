@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { AlertTriangle } from "lucide-react";
 import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
@@ -20,18 +20,23 @@ const WalletMultiButton = dynamic(
  * to the real value on mount and on subsequent media-query changes.
  */
 function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
+  const subscribe = useCallback((notify: () => void) => {
     const mq = window.matchMedia(query);
-    setMatches(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+    const handler = () => notify();
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, [query]);
+  const getSnapshot = useCallback(
+    () => window.matchMedia(query).matches,
+    [query],
+  );
 
-  return matches;
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
+
+const subscribeToStaticBrowserValue = () => () => undefined;
+const readAndroidPlatform = () => /Android/i.test(navigator.userAgent);
+const readServerAndroidPlatform = () => false;
 
 /**
  * Mobile-only hint. Branches by platform: Android can use the Solana Mobile
@@ -44,12 +49,11 @@ function useMediaQuery(query: string): boolean {
 function MobileWalletHint() {
   const { connected } = useWallet();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  // SSR mismatch guard: initialize to false on server + first client render,
-  // promote to the real value in useEffect. Same pattern useMediaQuery uses.
-  const [isAndroid, setIsAndroid] = useState(false);
-  useEffect(() => {
-    setIsAndroid(/Android/i.test(navigator.userAgent));
-  }, []);
+  const isAndroid = useSyncExternalStore(
+    subscribeToStaticBrowserValue,
+    readAndroidPlatform,
+    readServerAndroidPlatform,
+  );
 
   if (!isMobile || connected) return null;
 
@@ -125,9 +129,11 @@ function DevnetHint() {
 export function WalletConnectButton({
   className,
   align = "center",
+  showDesktopHint = true,
 }: {
   className?: string;
   align?: "start" | "center";
+  showDesktopHint?: boolean;
 }) {
   const { connected } = useWallet();
 
@@ -143,7 +149,7 @@ export function WalletConnectButton({
         <WalletMultiButton className={className} />
       )}
       <MobileWalletHint />
-      <DevnetHint />
+      {showDesktopHint && <DevnetHint />}
     </div>
   );
 }

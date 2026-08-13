@@ -15,7 +15,7 @@ export interface StudyProgress {
 
 export interface StudyFlowState {
   definition: ActiveStudyGrant["definition"] | null;
-  decision: "loading" | "pending" | "normal" | "joined";
+  decision: "loading" | "pending" | "consented" | "normal" | "joined";
   grant: ActiveStudyGrant | null;
   progress: StudyProgress | null;
   continuation: StudyContinuation | null;
@@ -36,6 +36,10 @@ export const initialStudyFlowState: StudyFlowState = {
 export type StudyFlowAction =
   | { type: "DEFINITION_READY"; definition: ActiveStudyGrant["definition"] }
   | { type: "STUDY_UNAVAILABLE" }
+  | { type: "CONSENT_ACCEPTED" }
+  | { type: "PREPARE_PENDING" }
+  | { type: "PREPARE_READY"; grant: ActiveStudyGrant }
+  | { type: "PREPARE_FAILED"; message: string }
   | { type: "READY"; grant: ActiveStudyGrant | null }
   | {
       type: "RECORD_STATUS";
@@ -60,6 +64,33 @@ export function studyFlowReducer(
       };
     case "STUDY_UNAVAILABLE":
       return { ...initialStudyFlowState, decision: "normal" };
+    case "CONSENT_ACCEPTED":
+      if (!state.definition) return state;
+      return {
+        ...initialStudyFlowState,
+        definition: state.definition,
+        decision: "consented",
+      };
+    case "PREPARE_PENDING":
+      if (state.decision !== "consented" || !state.definition) return state;
+      return {
+        ...state,
+        tokenPending: true,
+        tokenError: null,
+      };
+    case "PREPARE_READY":
+      return {
+        ...initialStudyFlowState,
+        decision: "joined",
+        grant: action.grant,
+      };
+    case "PREPARE_FAILED":
+      if (state.decision !== "consented") return state;
+      return {
+        ...state,
+        tokenPending: false,
+        tokenError: action.message,
+      };
     case "READY":
       return {
         ...initialStudyFlowState,

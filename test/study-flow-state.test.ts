@@ -53,6 +53,50 @@ describe("study flow state", () => {
     });
   });
 
+  it("records consent before requesting wallet authorization", () => {
+    const offered = studyFlowReducer(initialStudyFlowState, {
+      type: "DEFINITION_READY",
+      definition: grant().definition,
+    });
+
+    expect(studyFlowReducer(offered, { type: "CONSENT_ACCEPTED" })).toEqual({
+      ...initialStudyFlowState,
+      definition: grant().definition,
+      decision: "consented",
+    });
+  });
+
+  it("keeps consented onboarding visible while preparing the first trial", () => {
+    const consented = {
+      ...initialStudyFlowState,
+      definition: grant().definition,
+      decision: "consented" as const,
+    };
+    const pending = studyFlowReducer(consented, { type: "PREPARE_PENDING" });
+    const failed = studyFlowReducer(pending, {
+      type: "PREPARE_FAILED",
+      message: "Try again",
+    });
+    const ready = studyFlowReducer(failed, {
+      type: "PREPARE_READY",
+      grant: grant(),
+    });
+
+    expect(pending).toEqual({
+      ...consented,
+      tokenPending: true,
+    });
+    expect(failed).toEqual({
+      ...consented,
+      tokenError: "Try again",
+    });
+    expect(ready).toEqual({
+      ...initialStudyFlowState,
+      decision: "joined",
+      grant: grant(),
+    });
+  });
+
   it("replaces active state when the public definition changes", () => {
     const joined = studyFlowReducer(initialStudyFlowState, {
       type: "READY",

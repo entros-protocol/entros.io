@@ -9,7 +9,6 @@ import {
 } from "@/components/verify/verify-state-machine";
 import { VerifyWalletConnected } from "./verify-wallet-connected";
 import { StudyConsent } from "@/components/verify/study-consent";
-import type { ActiveStudyGrant } from "@/lib/population-study";
 import {
   clearPendingStudyEnrolmentId,
   createStudyAuthorization,
@@ -104,9 +103,68 @@ export function VerifyFlow() {
     }
   }, [study.grant, walletAddress]);
 
-  const handleStudyReady = useCallback((grant: ActiveStudyGrant | null) => {
-    studyDispatch({ type: "READY", grant });
+  const handleStudyConsentAccepted = useCallback(() => {
+    studyDispatch({ type: "CONSENT_ACCEPTED" });
   }, []);
+
+  const handleStudyDeclined = useCallback(() => {
+    studyDispatch({ type: "READY", grant: null });
+  }, []);
+
+  const handlePrepareStudyTrial = useCallback(async () => {
+    if (
+      study.decision !== "consented" ||
+      !study.definition ||
+      !walletAddress ||
+      studyTokenRequestRef.current
+    ) {
+      return;
+    }
+
+    if (!signMessage) {
+      studyDispatch({
+        type: "PREPARE_FAILED",
+        message: "This wallet cannot sign the study authorization message.",
+      });
+      return;
+    }
+
+    const requestGeneration = ++studyRequestGenerationRef.current;
+    const enrolmentId = pendingStudyEnrolmentId(
+      study.definition,
+      walletAddress,
+    );
+    studyTokenRequestRef.current = true;
+    studyDispatch({ type: "PREPARE_PENDING" });
+
+    try {
+      const authorization = await createStudyAuthorization(
+        study.definition,
+        walletAddress,
+        signMessage,
+      );
+      const grant = await requestStudyEnrolment(
+        authorization,
+        study.definition,
+        enrolmentId,
+      );
+      if (requestGeneration !== studyRequestGenerationRef.current) return;
+      clearPendingStudyEnrolmentId(study.definition, walletAddress);
+      studyDispatch({ type: "PREPARE_READY", grant });
+    } catch (reason) {
+      if (requestGeneration !== studyRequestGenerationRef.current) return;
+      studyDispatch({
+        type: "PREPARE_FAILED",
+        message:
+          reason instanceof Error
+            ? reason.message
+            : "Study trial authorization failed. Try again.",
+      });
+    } finally {
+      if (requestGeneration !== studyRequestGenerationRef.current) return;
+      studyTokenRequestRef.current = false;
+    }
+  }, [signMessage, study.decision, study.definition, walletAddress]);
 
   const handleStudyRecordStatus = useCallback(
     (status: StudyRecordStatus | undefined) => {
@@ -213,15 +271,12 @@ export function VerifyFlow() {
       <div className="mx-auto flex min-h-[620px] md:min-h-[660px] max-w-xl flex-col justify-center border border-border px-8 py-10">
         <VerifyErrorBoundary onError={handleBoundaryError}>
           {study.definition &&
-          study.decision === "pending" &&
-          walletAddress &&
-          signMessage ? (
+          study.decision === "pending" ? (
             <StudyConsent
-              key={`${study.definition.study_id}:${walletAddress}`}
+              key={study.definition.study_id}
               definition={study.definition}
-              walletAddress={walletAddress}
-              signMessage={signMessage}
-              onReady={handleStudyReady}
+              onAccept={handleStudyConsentAccepted}
+              onDecline={handleStudyDeclined}
             />
           ) : (
             <VerifyWalletConnected
@@ -235,6 +290,11 @@ export function VerifyFlow() {
               studyNextTrialPending={study.tokenPending}
               studyNextTrialAvailable={study.continuation !== null}
               studySessionActive={study.decision === "joined"}
+              studyPreparationRequired={study.decision === "consented"}
+              studyPreparationError={
+                study.decision === "consented" ? study.tokenError : null
+              }
+              onStudyPrepare={handlePrepareStudyTrial}
             />
           )}
         </VerifyErrorBoundary>

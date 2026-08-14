@@ -24,15 +24,8 @@ import {
   studyFlowReducer,
 } from "@/components/verify/study-flow-state";
 
-// Walletless preview is not exposed on the public verify route: the
-// preview path didn't run real validation, so a user could pass by being
-// silent for 12 seconds — the impression that creates is incompatible with
-// the article's claims about behavioral verification. Driving every tester
-// through the wallet-connected (real-validation) path is the only honest
-// signal. The walletless components (`verify-walletless.tsx`,
-// `verify-mode-toggle.tsx`) and the `VerifyMode` type alias remain in the
-// codebase so the path can be restored as a clearly-labelled product demo
-// later, or upgraded to a real-validation walletless tier.
+// The public route exposes wallet-connected validation only. The walletless
+// scaffolding remains unavailable until it supports real validation.
 
 class VerifyErrorBoundary extends Component<
   { children: React.ReactNode; onError: () => void },

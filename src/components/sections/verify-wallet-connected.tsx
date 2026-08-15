@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
-import { PublicKey } from "@solana/web3.js";
+import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import {
   type PulseSession,
   type LissajousParams,
@@ -34,6 +34,12 @@ import { usePulse } from "@/components/providers/pulse-provider";
 import { useWalletError } from "@/components/providers/wallet-provider";
 import { AlertTriangle, Wallet } from "lucide-react";
 import type { ActiveStudyGrant } from "@/lib/population-study";
+import {
+  createSigningDiagnosticWallet,
+  signingDiagnosticEnabled,
+  stringifySigningDiagnosticReport,
+  type SigningDiagnosticReport,
+} from "@/lib/signing-flow-diagnostic";
 
 function commitmentToHex(bytes: Uint8Array): string {
   return (
@@ -58,6 +64,15 @@ const MAX_ATTEMPTS = 3;
 const subscribeToStaticCapability = () => () => undefined;
 const readMotionCapability = () => navigator.maxTouchPoints > 0;
 const readServerMotionCapability = () => false;
+const readSigningDiagnosticCapability = () =>
+  signingDiagnosticEnabled({
+    nodeEnv: process.env.NODE_ENV,
+    publicFlag: process.env.NEXT_PUBLIC_SIGNING_DIAGNOSTIC,
+    diagnosticRpc: process.env.NEXT_PUBLIC_SIGNING_DIAGNOSTIC_RPC,
+    hostname: window.location.hostname,
+    search: window.location.search,
+  });
+const readServerSigningDiagnosticCapability = () => false;
 
 function DevnetWalletRequirements({
   connected = false,
@@ -100,6 +115,99 @@ function DevnetWalletRequirements({
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SigningDiagnosticPanel({
+  report,
+  onDownload,
+  onDiscard,
+}: {
+  report: SigningDiagnosticReport;
+  onDownload: () => void;
+  onDiscard: () => void;
+}) {
+  const errorCount = report.simulations.filter(
+    (simulation) => simulation.err !== null,
+  ).length;
+  return (
+    <section className="mx-auto w-full max-w-xl rounded-xl border border-cyan/30 bg-cyan/5 p-5 text-left">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
+            Local transaction diagnostic
+          </p>
+          <p className="mt-2 text-sm text-foreground/70">
+            {report.transactionKind === "mint" ? "Mint" : "Re-verification"}
+            {" simulation complete. "}
+            {errorCount === 0
+              ? "Every RPC returned a clean result."
+              : `${errorCount} RPC result${errorCount === 1 ? " contains" : "s contain"} an error.`}
+          </p>
+        </div>
+        <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/45">
+          Report v{report.reportVersion}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {report.simulations.map((simulation) => (
+          <div
+            key={`${simulation.endpoint}-${simulation.variant}`}
+            className="rounded-lg border border-border bg-background/50 p-3"
+          >
+            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-foreground/45">
+              {simulation.endpoint} · {simulation.variant}
+            </p>
+            <div className="mt-2 flex items-center justify-between gap-3 text-xs">
+              <span className={simulation.err === null ? "text-cyan" : "text-amber-500"}>
+                {simulation.err === null ? "Clean" : "Error returned"}
+              </span>
+              <span className="font-mono text-foreground/65">
+                {simulation.unitsConsumed === null
+                  ? "CU unavailable"
+                  : `${simulation.unitsConsumed.toLocaleString()} CU`}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-4 text-xs leading-relaxed text-foreground/55">
+        The report excludes transaction bytes, wallet identifiers, proofs,
+        commitments, signatures, and RPC URLs.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={onDownload}
+          className="rounded-full border border-cyan/35 px-4 py-2 font-mono text-xs text-cyan transition-colors hover:border-cyan hover:text-foreground"
+        >
+          Download redacted JSON
+        </button>
+        <button
+          type="button"
+          onClick={onDiscard}
+          className="rounded-full border border-border px-4 py-2 font-mono text-xs text-foreground/60 transition-colors hover:border-foreground/35 hover:text-foreground"
+        >
+          Discard report
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function SigningDiagnosticNotice() {
+  return (
+    <div className="mx-auto max-w-sm rounded-lg border border-cyan/30 bg-cyan/5 px-4 py-3">
+      <p className="text-center font-mono text-xs text-cyan">
+        Local transaction diagnostic enabled
+      </p>
+      <p className="mt-2 text-center text-xs leading-relaxed text-foreground/60">
+        The next verification will simulate its transaction on two devnet RPC
+        endpoints before the wallet request.
+      </p>
     </div>
   );
 }
@@ -158,6 +266,13 @@ export function VerifyWalletConnected({
   const [requesting, setRequesting] = useState(false);
   const [processingStage, setProcessingStage] = useState("Extracting features...");
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const signingDiagnosticActive = useSyncExternalStore(
+    subscribeToStaticCapability,
+    readSigningDiagnosticCapability,
+    readServerSigningDiagnosticCapability,
+  );
+  const [signingDiagnosticReport, setSigningDiagnosticReport] =
+    useState<SigningDiagnosticReport | null>(null);
   // Unix seconds of the connected wallet's most recent on-chain verification,
   // read directly from IdentityState offset 48. Used to render a cadence hint
   // explaining that Trust Score only increments after a 24-hour gap—the
@@ -357,6 +472,7 @@ export function VerifyWalletConnected({
       transportFailuresRef.current = 0;
     }
     intentRef.current = intent;
+    if (intent === "verify") setSigningDiagnosticReport(null);
     setRequesting(true);
     setChallengePhrase(null);
     setChallengeCurve(undefined);
@@ -575,12 +691,35 @@ export function VerifyWalletConnected({
     // from the SDK rather than written down, so raising a clock there raises
     // this in step. It should never fire.
     const backstopMs = MAX_VERIFICATION_MS + 30_000;
+    const diagnosticRpc = process.env.NEXT_PUBLIC_SIGNING_DIAGNOSTIC_RPC;
+    const completionWallet =
+      signingDiagnosticActive &&
+      diagnosticRpc &&
+      intentRef.current === "verify" &&
+      wallet?.adapter
+        ? createSigningDiagnosticWallet(wallet.adapter, {
+            publicEndpoint: new Connection(
+              clusterApiUrl("devnet"),
+              {
+                commitment: "confirmed",
+                disableRetryOnRateLimit: true,
+              },
+            ),
+            configuredEndpoint: new Connection(diagnosticRpc, {
+              commitment: "confirmed",
+              disableRetryOnRateLimit: true,
+            }),
+            onReport: setSigningDiagnosticReport,
+            onStatus: setProcessingStage,
+            rpcMinimumIntervalMs: 1_100,
+          })
+        : wallet?.adapter;
     const proofPromise =
       intentRef.current === "reset"
-        ? session.completeReset(wallet?.adapter, connection, (stage) => {
+        ? session.completeReset(completionWallet, connection, (stage) => {
             setProcessingStage(stage);
           })
-        : session.complete(wallet?.adapter, connection, (stage) => {
+        : session.complete(completionWallet, connection, (stage) => {
             setProcessingStage(stage);
           }, outline);
     const timeoutPromise = new Promise<never>((_, reject) =>
@@ -717,6 +856,27 @@ export function VerifyWalletConnected({
     handleReset();
   }
 
+  function downloadSigningDiagnostic() {
+    if (!signingDiagnosticReport) return;
+    const json = stringifySigningDiagnosticReport(signingDiagnosticReport);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `entros-${signingDiagnosticReport.transactionKind}-simulation-${Date.now()}.json`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  const diagnosticPanel =
+    signingDiagnosticActive && signingDiagnosticReport ? (
+      <SigningDiagnosticPanel
+        report={signingDiagnosticReport}
+        onDownload={downloadSigningDiagnostic}
+        onDiscard={() => setSigningDiagnosticReport(null)}
+      />
+    ) : null;
+
   if (!connected) {
     return (
       <div className="text-center space-y-6">
@@ -725,6 +885,7 @@ export function VerifyWalletConnected({
           Connect your Solana wallet to verify with full self-custody. You sign
           the verification transaction directly.
         </p>
+        {signingDiagnosticActive && <SigningDiagnosticNotice />}
         <DevnetWalletRequirements />
         {walletError && (
           <div className="mx-auto max-w-sm rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
@@ -890,6 +1051,7 @@ export function VerifyWalletConnected({
                 : "Start Verification"}
           </button>
         </div>
+        {signingDiagnosticActive && <SigningDiagnosticNotice />}
         <p className="text-center text-xs text-muted">
           Raw recordings are not retained.
           <br />
@@ -921,8 +1083,22 @@ export function VerifyWalletConnected({
     );
   }
 
-  if (state.step === "processing") return <ProvingView stage={processingStage} />;
-  if (state.step === "signing") return <SigningView />;
+  if (state.step === "processing") {
+    return (
+      <div className="space-y-6">
+        <ProvingView stage={processingStage} />
+        {diagnosticPanel}
+      </div>
+    );
+  }
+  if (state.step === "signing") {
+    return (
+      <div className="space-y-6">
+        <SigningView />
+        {diagnosticPanel}
+      </div>
+    );
+  }
 
   const leaveStudyAfterResult =
     studySessionActive && !studyGrant && !studyNextTrialAvailable;
@@ -954,31 +1130,34 @@ export function VerifyWalletConnected({
   if (state.step === "verified") {
     const wasReset = state.intent === "reset";
     return (
-      <VerifiedView
-        commitment={state.commitment}
-        txSignature={state.txSignature}
-        portableBaseline={state.portableBaseline}
-        title={wasReset ? "Baseline reset" : "Verified"}
-        subtitle={
-          wasReset
-            ? "Fresh baseline stored on this device. Trust Score starts at 0 and rebuilds with future verifications."
-            : "Transaction confirmed on Solana devnet"
-        }
-        tryAgainLabel={
-          studyResultActionLabel
-            ? studyResultActionLabel
-            : wasReset
-              ? "Verify now"
-              : "Verify again"
-        }
-        onReset={handleResultRetry}
-        actionPending={studyNextTrialPending}
-        secondaryActionLabel={studyNextTrialAvailable ? "Finish for now" : undefined}
-        onSecondaryAction={studyNextTrialAvailable ? handleResultCancel : undefined}
-        walletPubkey={publicKey?.toBase58()}
-        trustScore={trustScore}
-        showShare={!wasReset}
-      />
+      <div className="space-y-6">
+        <VerifiedView
+          commitment={state.commitment}
+          txSignature={state.txSignature}
+          portableBaseline={state.portableBaseline}
+          title={wasReset ? "Baseline reset" : "Verified"}
+          subtitle={
+            wasReset
+              ? "Fresh baseline stored on this device. Trust Score starts at 0 and rebuilds with future verifications."
+              : "Transaction confirmed on Solana devnet"
+          }
+          tryAgainLabel={
+            studyResultActionLabel
+              ? studyResultActionLabel
+              : wasReset
+                ? "Verify now"
+                : "Verify again"
+          }
+          onReset={handleResultRetry}
+          actionPending={studyNextTrialPending}
+          secondaryActionLabel={studyNextTrialAvailable ? "Finish for now" : undefined}
+          onSecondaryAction={studyNextTrialAvailable ? handleResultCancel : undefined}
+          walletPubkey={publicKey?.toBase58()}
+          trustScore={trustScore}
+          showShare={!wasReset}
+        />
+        {diagnosticPanel}
+      </div>
     );
   }
 
@@ -1003,6 +1182,7 @@ export function VerifyWalletConnected({
           onCancel={() => setResetDialogOpen(false)}
           onConfirm={handleResetBaselineConfirm}
         />
+        {diagnosticPanel}
       </>
     );
   }

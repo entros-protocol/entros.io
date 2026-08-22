@@ -30,32 +30,38 @@ function formatDate(unixSeconds: number): string {
   });
 }
 
+type AnchorFetchState =
+  | { requestKey: string; status: "ready"; identity: IdentityState | null }
+  | { requestKey: string; status: "error" };
+
 export function DashboardAnchorView() {
   const { publicKey, connected } = useWallet();
   const { connection } = useConnection();
-  const [identity, setIdentity] = useState<IdentityState | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const walletAddress = connected ? (publicKey?.toBase58() ?? null) : null;
+  const requestKey = walletAddress
+    ? `${connection.rpcEndpoint}:${walletAddress}`
+    : null;
+  const [anchorState, setAnchorState] = useState<AnchorFetchState | null>(null);
 
   useEffect(() => {
-    if (!publicKey || !connected) {
-      setIdentity(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
+    if (!walletAddress || !requestKey) return;
+
+    let cancelled = false;
 
     const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
+    const owner = new PublicKey(walletAddress);
     const [identityPda] = PublicKey.findProgramAddressSync(
-      [new TextEncoder().encode("identity"), publicKey.toBuffer()],
+      [new TextEncoder().encode("identity"), owner.toBuffer()],
       programId
     );
 
-    connection
-      .getAccountInfo(identityPda)
-      .then((account: { data: Uint8Array } | null) => {
+    void (async () => {
+      try {
+        const account = await connection.getAccountInfo(identityPda);
+        if (cancelled) return;
+
         if (!account || account.data.length < 62) {
-          setIdentity(null);
+          setAnchorState({ requestKey, status: "ready", identity: null });
           return;
         }
         const data = account.data;
@@ -72,21 +78,37 @@ export function DashboardAnchorView() {
           data.length >= 551 ? Number(view.getBigInt64(543, true)) : 0;
         const projectionVersion = data.length >= 585 ? view.getUint16(583, true) : 0;
 
-        setIdentity({
-          owner: publicKey.toBase58(),
-          creationTimestamp,
-          lastVerificationTimestamp,
-          verificationCount,
-          trustScore,
-          currentCommitment,
-          mint: mintPubkey.toBase58(),
-          lastResetTimestamp,
-          projectionVersion,
+        setAnchorState({
+          requestKey,
+          status: "ready",
+          identity: {
+            owner: walletAddress,
+            creationTimestamp,
+            lastVerificationTimestamp,
+            verificationCount,
+            trustScore,
+            currentCommitment,
+            mint: mintPubkey.toBase58(),
+            lastResetTimestamp,
+            projectionVersion,
+          },
         });
-      })
-      .catch(() => setError("Failed to fetch identity state"))
-      .finally(() => setLoading(false));
-  }, [publicKey, connected, connection]);
+      } catch {
+        if (!cancelled) setAnchorState({ requestKey, status: "error" });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [connection, requestKey, walletAddress]);
+
+  const currentState =
+    requestKey && anchorState?.requestKey === requestKey ? anchorState : null;
+  const loading = requestKey !== null && currentState === null;
+  const error = currentState?.status === "error";
+  const identity =
+    currentState?.status === "ready" ? currentState.identity : null;
 
   // Disconnected state
   if (!connected) {
@@ -140,7 +162,9 @@ export function DashboardAnchorView() {
           {walletPill}
           <div className="flex flex-col items-center gap-4 border border-border py-20 text-center">
             <ShieldAlert className="h-8 w-8 text-danger" strokeWidth={1.5} />
-            <p className="text-sm text-foreground/65">{error}</p>
+            <p className="text-sm text-foreground/65">
+              Failed to fetch identity state
+            </p>
           </div>
         </div>
       </section>

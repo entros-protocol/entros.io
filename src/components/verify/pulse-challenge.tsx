@@ -126,25 +126,18 @@ export function PulseChallenge({
   // 3-second countdown before capture begins
   useEffect(() => {
     if (captureStarted) return;
+    let remaining = 3;
     const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
+      remaining -= 1;
+      setCountdown(remaining);
+      if (remaining === 0) {
+        clearInterval(interval);
+        setCaptureStarted(true);
+        onCaptureWindowOpenRef.current?.();
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, [captureStarted]);
-
-  // When countdown hits 0, start capture
-  useEffect(() => {
-    if (countdown === 0 && !captureStarted) {
-      setCaptureStarted(true);
-      onCaptureWindowOpenRef.current?.();
-    }
-  }, [countdown, captureStarted]);
 
   // Capture timer—starts after countdown
   // onComplete is stored in a ref to avoid restarting the interval when the

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import type { Connection } from "@solana/web3.js";
 import { PublicKey } from "@solana/web3.js";
@@ -22,6 +22,7 @@ import {
 } from "@/lib/embed/post-message";
 import type { EmbedErrorReason, VerifiedPayload } from "@/lib/embed/types";
 import { deriveAttestationPda } from "@/lib/embed/attestation-pda";
+import { useMotionCapability } from "@/hooks/use-motion-capability";
 
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
 import { ProvingView, SigningView } from "@/components/verify/step-views";
@@ -150,7 +151,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
 
   const [state, setState] = useState<State>({ step: "idle" });
   const [audioLevel, setAudioLevel] = useState(0);
-  const [hasMotion, setHasMotion] = useState(false);
+  const hasMotion = useMotionCapability();
   const [requesting, setRequesting] = useState(false);
   const [processingStage, setProcessingStage] = useState(
     "Extracting features...",
@@ -169,10 +170,6 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     }),
     [params.parentOrigin, params.requestId],
   );
-
-  useEffect(() => {
-    setHasMotion(navigator.maxTouchPoints > 0);
-  }, []);
 
   function fail(reason: EmbedErrorReason) {
     emitError(ctx, reason);

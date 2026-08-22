@@ -52,6 +52,7 @@ function commitmentToHex(bytes: Uint8Array): string {
 
 import { evaluateResetCooldown } from "@/lib/cooldown";
 import { sanitizeErrorMessage } from "@/lib/sanitize-error";
+import { useMotionCapability } from "@/hooks/use-motion-capability";
 
 // Soft-reject retry budget. When attemptsUsed < MAX_ATTEMPTS
 // and the server returns a user-recoverable reason, the client routes to
@@ -62,8 +63,6 @@ import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 const MAX_ATTEMPTS = 3;
 
 const subscribeToStaticCapability = () => () => undefined;
-const readMotionCapability = () => navigator.maxTouchPoints > 0;
-const readServerMotionCapability = () => false;
 const readSigningDiagnosticCapability = () =>
   signingDiagnosticEnabled({
     nodeEnv: process.env.NODE_ENV,
@@ -258,11 +257,7 @@ export function VerifyWalletConnected({
   const touchRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<PulseSession | null>(null);
   const [audioLevel, setAudioLevel] = useState(0);
-  const hasMotion = useSyncExternalStore(
-    subscribeToStaticCapability,
-    readMotionCapability,
-    readServerMotionCapability,
-  );
+  const hasMotion = useMotionCapability();
   const [requesting, setRequesting] = useState(false);
   const [processingStage, setProcessingStage] = useState("Extracting features...");
   const [resetDialogOpen, setResetDialogOpen] = useState(false);

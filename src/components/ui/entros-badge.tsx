@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { PROGRAM_IDS } from "@entros/pulse-sdk";
 import { Loader2 } from "lucide-react";
@@ -8,6 +8,10 @@ import { cn } from "@/lib/utils";
 
 const EXPECTED_SIZE = 62;
 const ENTROS_PROGRAM_ID = new PublicKey(PROGRAM_IDS.entrosAnchor);
+const DEFAULT_DEVNET_CONNECTION = new Connection(
+  "https://api.devnet.solana.com",
+  "confirmed",
+);
 
 /**
  * A badge reports state, it does not gate. It shows when the wallet last
@@ -29,67 +33,74 @@ interface EntrosBadgeProps {
   className?: string;
 }
 
+type ParsedWallet =
+  | { status: "empty" | "invalid" }
+  | { status: "valid"; publicKey: PublicKey };
+
+interface BadgeFetchState {
+  requestKey: string;
+  trustScore: number | null;
+  lastVerifiedAt: number | null;
+}
+
 export function EntrosBadge({ walletAddress, connection, className }: EntrosBadgeProps) {
-  const [loading, setLoading] = useState(true);
-  const [trustScore, setTrustScore] = useState<number | null>(null);
-  const [lastVerifiedAt, setLastVerifiedAt] = useState<number | null>(null);
-  const [invalid, setInvalid] = useState(false);
+  const parsedWallet = useMemo<ParsedWallet>(() => {
+    if (!walletAddress) return { status: "empty" };
+    try {
+      return { status: "valid", publicKey: new PublicKey(walletAddress) };
+    } catch {
+      return { status: "invalid" };
+    }
+  }, [walletAddress]);
+  const activeConnection = connection ?? DEFAULT_DEVNET_CONNECTION;
+  const requestKey =
+    parsedWallet.status === "valid"
+      ? `${activeConnection.rpcEndpoint}:${parsedWallet.publicKey.toBase58()}`
+      : null;
+  const [badgeState, setBadgeState] = useState<BadgeFetchState | null>(null);
 
   useEffect(() => {
-    if (!walletAddress) {
-      setTrustScore(null);
-      setInvalid(false);
-      setLoading(false);
-      return;
-    }
+    if (parsedWallet.status !== "valid" || !requestKey) return;
 
-    let pubkey: PublicKey;
-    try {
-      pubkey = new PublicKey(walletAddress);
-      setInvalid(false);
-    } catch {
-      setInvalid(true);
-      setTrustScore(null);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
     let isMounted = true;
 
     const timeoutId = setTimeout(() => {
       const fetchIdentity = async () => {
         try {
           const [identityPda] = PublicKey.findProgramAddressSync(
-            [new TextEncoder().encode("identity"), pubkey.toBuffer()],
+            [
+              new TextEncoder().encode("identity"),
+              parsedWallet.publicKey.toBuffer(),
+            ],
             ENTROS_PROGRAM_ID
           );
 
-          // If no connection prop is passed, use a default devnet connection
-          const conn = connection || new Connection("https://api.devnet.solana.com", "confirmed");
-          
-          const account = await conn.getAccountInfo(identityPda);
-          
+          const account = await activeConnection.getAccountInfo(identityPda);
+
           if (isMounted) {
             if (!account || account.data.length < EXPECTED_SIZE) {
-              setTrustScore(null);
-              setLastVerifiedAt(null);
+              setBadgeState({
+                requestKey,
+                trustScore: null,
+                lastVerifiedAt: null,
+              });
             } else {
               const data = account.data;
               const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-              // Trust score is a u16 at offset 60, last verification an i64 at 48.
-              setTrustScore(view.getUint16(60, true));
-              setLastVerifiedAt(Number(view.getBigInt64(48, true)));
+              setBadgeState({
+                requestKey,
+                trustScore: view.getUint16(60, true),
+                lastVerifiedAt: Number(view.getBigInt64(48, true)),
+              });
             }
           }
         } catch {
           if (isMounted) {
-            setTrustScore(null);
-            setLastVerifiedAt(null);
-          }
-        } finally {
-          if (isMounted) {
-            setLoading(false);
+            setBadgeState({
+              requestKey,
+              trustScore: null,
+              lastVerifiedAt: null,
+            });
           }
         }
       };
@@ -101,7 +112,14 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [walletAddress, connection]);
+  }, [activeConnection, parsedWallet, requestKey]);
+
+  const currentState =
+    requestKey && badgeState?.requestKey === requestKey ? badgeState : null;
+  const invalid = parsedWallet.status === "invalid";
+  const loading = parsedWallet.status === "valid" && currentState === null;
+  const trustScore = currentState?.trustScore ?? null;
+  const lastVerifiedAt = currentState?.lastVerifiedAt ?? null;
 
   return (
     <div

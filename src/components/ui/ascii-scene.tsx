@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 const FRAME_INTERVAL_MS = 33;
@@ -50,8 +50,7 @@ export function AsciiScene({
 }: AsciiSceneProps) {
   const preRef = useRef<HTMLPreElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
-  const renderRef = useRef(render);
-  renderRef.current = render;
+  const renderFrame = useEffectEvent(render);
 
   useEffect(() => {
     if (!fit) return;
@@ -120,7 +119,7 @@ export function AsciiScene({
 
       tier.fill(0);
       char.fill(0);
-      renderRef.current(cols, rows, tier, char, t, dt);
+      renderFrame(cols, rows, tier, char, t, dt);
 
       let html = "";
       let lastTier = -1;

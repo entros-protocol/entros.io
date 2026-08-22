@@ -1,22 +1,8 @@
 /**
- * Fail when the served research paper PDF disagrees with the markdown rendered
- * at /paper.
+ * Fail when the served paper and rendered markdown have different update dates.
  *
- * The two are separate hand-maintained copies of the same paper. The PDF is
- * built from a LaTeX source in a different, private repository, so nothing
- * makes them move together. Between 2026-08-01 and 2026-08-05 the site served
- * a PDF four days behind the markdown, because updating one is a manual step
- * that nobody owned.
- *
- * The `Updated:` line is the one field that changes whenever either is edited,
- * so comparing it catches the drift without parsing the whole document.
- *
- * Needs `pdftotext` from poppler. An earlier version inflated the PDF content
- * streams directly to avoid the dependency, but typeset text arrives as glyph
- * runs split across operators and the date was never recoverable. That version
- * passed every time, which is worse than no check at all.
- *
- * Run: node scripts/check-paper-sync.mjs
+ * The release artifacts have separate source files. The `Updated:` field binds
+ * them without parsing the full document. Poppler supplies `pdftotext`.
  */
 
 import { readFileSync } from "node:fs";
@@ -67,8 +53,7 @@ if (pdf !== md) {
   console.error(`  ${PDF}: ${pdf}`);
   console.error(`  ${MARKDOWN}: ${md}`);
   console.error("");
-  console.error("Rebuild the PDF from the LaTeX source, then commit it here:");
-  console.error("  sh scripts/build-paper.sh   (in the entros-docs checkout)");
+  console.error("Rebuild the PDF from its LaTeX source, then commit the result.");
   process.exit(1);
 }
 

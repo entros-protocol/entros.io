@@ -18,6 +18,10 @@ interface OnChainStats {
   attestationCount: number;
 }
 
+type StatsFetchState =
+  | { endpoint: string; status: "ready"; stats: OnChainStats }
+  | { endpoint: string; status: "error" };
+
 function formatTimestamp(unix: number): string {
   return new Date(unix * 1000).toLocaleDateString("en-US", {
     month: "short",
@@ -38,16 +42,13 @@ function timeAgo(unix: number): string {
 
 export function ProtocolStats() {
   const { connection } = useConnection();
-  const [stats, setStats] = useState<OnChainStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const endpoint = connection.rpcEndpoint;
+  const [statsState, setStatsState] = useState<StatsFetchState | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
-    (async () => {
+    void (async () => {
       const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
       const sasProgramId = new PublicKey(SAS_CONFIG.programId);
 
@@ -67,13 +68,17 @@ export function ProtocolStats() {
       const attestationCount = attestations.length;
 
       if (accounts.length === 0) {
-        setStats({
-          totalAnchors: 0,
-          averageTrustScore: 0,
-          highestTrustScore: 0,
-          totalVerifications: 0,
-          mostRecentTimestamp: null,
-          attestationCount,
+        setStatsState({
+          endpoint,
+          status: "ready",
+          stats: {
+            totalAnchors: 0,
+            averageTrustScore: 0,
+            highestTrustScore: 0,
+            totalVerifications: 0,
+            mostRecentTimestamp: null,
+            attestationCount,
+          },
         });
         return;
       }
@@ -100,30 +105,33 @@ export function ProtocolStats() {
 
       if (cancelled) return;
 
-      setStats({
-        totalAnchors: accounts.length,
-        averageTrustScore:
-          accounts.length > 0 ? Math.round(totalTrust / accounts.length) : 0,
-        highestTrustScore: highestTrust,
-        totalVerifications,
-        mostRecentTimestamp: mostRecentTimestamp > 0 ? mostRecentTimestamp : null,
-        attestationCount,
+      setStatsState({
+        endpoint,
+        status: "ready",
+        stats: {
+          totalAnchors: accounts.length,
+          averageTrustScore: Math.round(totalTrust / accounts.length),
+          highestTrustScore: highestTrust,
+          totalVerifications,
+          mostRecentTimestamp:
+            mostRecentTimestamp > 0 ? mostRecentTimestamp : null,
+          attestationCount,
+        },
       });
     })()
       .catch(() => {
-        if (!cancelled)
-          setError(
-            "Failed to fetch on-chain stats. The RPC may be rate-limited—try again shortly."
-          );
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setStatsState({ endpoint, status: "error" });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [connection]);
+  }, [connection, endpoint]);
+
+  const currentState = statsState?.endpoint === endpoint ? statsState : null;
+  const loading = currentState === null;
+  const error = currentState?.status === "error";
+  const stats = currentState?.status === "ready" ? currentState.stats : null;
 
   return (
     <section>
@@ -161,7 +169,8 @@ export function ProtocolStats() {
           <div className="mt-12 flex flex-col items-center justify-center gap-4 border border-border py-24">
             <ShieldAlert className="h-6 w-6 text-danger" strokeWidth={1.5} />
             <p className="max-w-sm text-center text-sm text-foreground/65">
-              {error}
+              Failed to fetch on-chain stats. The RPC may be rate-limited. Try
+              again shortly.
             </p>
           </div>
         )}

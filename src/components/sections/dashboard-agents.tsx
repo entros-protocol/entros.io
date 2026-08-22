@@ -19,6 +19,10 @@ interface OwnedAgentWithStatus extends OwnedAgent {
   queryFailed: boolean;
 }
 
+type OwnedAgentsFetchState =
+  | { requestKey: string; status: "ready"; agents: OwnedAgentWithStatus[] }
+  | { requestKey: string; status: "error" };
+
 async function fetchLiveTrustScore(
   walletAddress: string,
   connection: Connection
@@ -61,11 +65,12 @@ export function DashboardAgents() {
   const wallet = useWallet();
   const { connected, publicKey } = wallet;
   const { connection } = useConnection();
-
-  const [ownedAgents, setOwnedAgents] = useState<OwnedAgentWithStatus[]>([]);
-  const [loadingAgents, setLoadingAgents] = useState(false);
-  const [scanned, setScanned] = useState(false);
-  const [indexerError, setIndexerError] = useState(false);
+  const walletAddress = connected ? (publicKey?.toBase58() ?? null) : null;
+  const requestKey = walletAddress
+    ? `${connection.rpcEndpoint}:${walletAddress}`
+    : null;
+  const [ownedAgentsState, setOwnedAgentsState] =
+    useState<OwnedAgentsFetchState | null>(null);
   const [attestingAsset, setAttestingAsset] = useState<string | null>(null);
   const [attestErrorAsset, setAttestErrorAsset] = useState<{ asset: string; message: string } | null>(null);
 
@@ -78,28 +83,18 @@ export function DashboardAgents() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!connected || !publicKey) {
-      setOwnedAgents([]);
-      setScanned(false);
-      setIndexerError(false);
-      return;
-    }
+    if (!walletAddress || !requestKey) return;
 
     let cancelled = false;
-    setLoadingAgents(true);
-    setScanned(false);
-    setIndexerError(false);
 
-    (async () => {
+    void (async () => {
       const { agents, error: indexerFailed } = await fetchAgentsByOwner(
-        publicKey.toBase58()
+        walletAddress
       );
       if (cancelled) return;
 
       if (indexerFailed) {
-        setIndexerError(true);
-        setOwnedAgents([]);
-        setScanned(true);
+        setOwnedAgentsState({ requestKey, status: "error" });
         return;
       }
 
@@ -118,16 +113,25 @@ export function DashboardAgents() {
       );
 
       if (cancelled) return;
-      setOwnedAgents(withStatus);
-      setScanned(true);
-    })().finally(() => {
-      if (!cancelled) setLoadingAgents(false);
+      setOwnedAgentsState({ requestKey, status: "ready", agents: withStatus });
+    })().catch(() => {
+      if (!cancelled) setOwnedAgentsState({ requestKey, status: "error" });
     });
 
     return () => {
       cancelled = true;
     };
-  }, [connected, publicKey, connection]);
+  }, [connection, requestKey, walletAddress]);
+
+  const currentAgentsState =
+    requestKey && ownedAgentsState?.requestKey === requestKey
+      ? ownedAgentsState
+      : null;
+  const loadingAgents = requestKey !== null && currentAgentsState === null;
+  const scanned = currentAgentsState !== null;
+  const indexerError = currentAgentsState?.status === "error";
+  const ownedAgents =
+    currentAgentsState?.status === "ready" ? currentAgentsState.agents : [];
 
   if (!connected) return null;
 
@@ -188,13 +192,29 @@ export function DashboardAgents() {
         const liveTrustScore = updated
           ? await fetchLiveTrustScore(updated.wallet, connection)
           : null;
-        setOwnedAgents((prev) =>
-          prev.map((a) =>
-            a.asset === asset
-              ? { ...a, entrosOperator: updated, liveTrustScore, queryFailed: false }
-              : a
-          )
-        );
+        setOwnedAgentsState((previous) => {
+          if (
+            !requestKey ||
+            previous?.requestKey !== requestKey ||
+            previous.status !== "ready"
+          ) {
+            return previous;
+          }
+
+          return {
+            ...previous,
+            agents: previous.agents.map((agent) =>
+              agent.asset === asset
+                ? {
+                    ...agent,
+                    entrosOperator: updated,
+                    liveTrustScore,
+                    queryFailed: false,
+                  }
+                : agent
+            ),
+          };
+        });
       } else {
         setAttestErrorAsset({ asset, message: result.error ?? "Attestation failed" });
       }

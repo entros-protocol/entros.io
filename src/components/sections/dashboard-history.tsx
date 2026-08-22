@@ -15,59 +15,108 @@ function formatTimestamp(unixSeconds: number): string {
   });
 }
 
+interface VerificationHistory {
+  mintTimestamp: number | null;
+  reVerifications: number[];
+  verificationCount: number;
+  lastResetTimestamp: number;
+}
+
+type HistoryFetchState =
+  | { requestKey: string; status: "ready"; history: VerificationHistory }
+  | { requestKey: string; status: "error" };
+
+const EMPTY_HISTORY: VerificationHistory = {
+  mintTimestamp: null,
+  reVerifications: [],
+  verificationCount: 0,
+  lastResetTimestamp: 0,
+};
+
 export function DashboardHistory() {
   const { publicKey, connected } = useWallet();
   const { connection } = useConnection();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [mintTimestamp, setMintTimestamp] = useState<number | null>(null);
-  const [reVerifications, setReVerifications] = useState<number[]>([]);
-  const [verificationCount, setVerificationCount] = useState(0);
-  const [lastResetTimestamp, setLastResetTimestamp] = useState<number>(0);
+  const walletAddress = connected ? (publicKey?.toBase58() ?? null) : null;
+  const requestKey = walletAddress
+    ? `${connection.rpcEndpoint}:${walletAddress}`
+    : null;
+  const [historyState, setHistoryState] = useState<HistoryFetchState | null>(
+    null,
+  );
 
   useEffect(() => {
-    if (!publicKey || !connected) {
-      setMintTimestamp(null);
-      setReVerifications([]);
-      setLastResetTimestamp(0);
-      return;
-    }
-    setLoading(true);
-    setError(null);
+    if (!walletAddress || !requestKey) return;
 
-    (async () => {
+    let cancelled = false;
+
+    void (async () => {
       const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
+      const owner = new PublicKey(walletAddress);
       const [identityPda] = PublicKey.findProgramAddressSync(
-        [new TextEncoder().encode("identity"), publicKey.toBuffer()],
+        [new TextEncoder().encode("identity"), owner.toBuffer()],
         programId
       );
-      const account = await connection.getAccountInfo(identityPda);
-      if (!account || account.data.length < 207) {
-        setMintTimestamp(null);
-        setReVerifications([]);
-        setLastResetTimestamp(0);
-        return;
+
+      try {
+        const account = await connection.getAccountInfo(identityPda);
+        if (cancelled) return;
+
+        if (!account || account.data.length < 207) {
+          setHistoryState({
+            requestKey,
+            status: "ready",
+            history: EMPTY_HISTORY,
+          });
+          return;
+        }
+
+        const view = new DataView(
+          account.data.buffer,
+          account.data.byteOffset,
+          account.data.byteLength,
+        );
+        const timestamps: number[] = [];
+        const slotCount = account.data.length >= 543 ? 52 : 10;
+        for (let i = 0; i < slotCount; i++) {
+          const timestamp = Number(view.getBigInt64(127 + i * 8, true));
+          if (timestamp > 0) timestamps.push(timestamp);
+        }
+
+        setHistoryState({
+          requestKey,
+          status: "ready",
+          history: {
+            mintTimestamp: Number(view.getBigInt64(40, true)),
+            reVerifications: timestamps,
+            verificationCount: view.getUint32(56, true),
+            lastResetTimestamp:
+              account.data.length >= 551
+                ? Number(view.getBigInt64(543, true))
+                : 0,
+          },
+        });
+      } catch {
+        if (!cancelled) setHistoryState({ requestKey, status: "error" });
       }
+    })();
 
-      const view = new DataView(account.data.buffer, account.data.byteOffset, account.data.byteLength);
-      setMintTimestamp(Number(view.getBigInt64(40, true)));
-      setVerificationCount(view.getUint32(56, true));
+    return () => {
+      cancelled = true;
+    };
+  }, [connection, requestKey, walletAddress]);
 
-      const timestamps: number[] = [];
-      const slotCount = account.data.length >= 543 ? 52 : 10;
-      for (let i = 0; i < slotCount; i++) {
-        const ts = Number(view.getBigInt64(127 + i * 8, true));
-        if (ts > 0) timestamps.push(ts);
-      }
-      setReVerifications(timestamps);
-
-      setLastResetTimestamp(
-        account.data.length >= 551 ? Number(view.getBigInt64(543, true)) : 0
-      );
-    })()
-      .catch(() => setError("Failed to load verification history"))
-      .finally(() => setLoading(false));
-  }, [publicKey, connected, connection]);
+  const currentState =
+    requestKey && historyState?.requestKey === requestKey ? historyState : null;
+  const loading = requestKey !== null && currentState === null;
+  const error = currentState?.status === "error";
+  const history =
+    currentState?.status === "ready" ? currentState.history : EMPTY_HISTORY;
+  const {
+    mintTimestamp,
+    reVerifications,
+    verificationCount,
+    lastResetTimestamp,
+  } = history;
 
   if (!connected) return null;
 
@@ -89,7 +138,9 @@ export function DashboardHistory() {
         )}
 
         {error && (
-          <p className="mt-12 text-sm text-foreground/55">{error}</p>
+          <p className="mt-12 text-sm text-foreground/55">
+            Failed to load verification history
+          </p>
         )}
 
         {!loading && !error && !mintTimestamp && (

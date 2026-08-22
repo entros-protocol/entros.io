@@ -88,6 +88,10 @@ import { Loader2, ShieldAlert, Wallet } from "lucide-react";
  * has ever written is longer than this.
  */
 const EXPECTED_SIZE = 62;
+const DEFAULT_DEVNET_CONNECTION = new Connection(
+  "https://api.devnet.solana.com",
+  "confirmed",
+);
 
 /** One day. Long enough for a session, short enough to mean something. */
 const DEFAULT_MAX_VERIFICATION_AGE = 86_400;
@@ -136,6 +140,11 @@ type FetchState =
   | { status: "no-identity" }
   | { status: "ready"; trustScore: number; lastVerifiedAt: number };
 
+type StoredFetchState = { requestKey: string } & Exclude<
+  FetchState,
+  { status: "loading" | "disconnected" }
+>;
+
 export function EntrosGate({
   minTrustScore,
   maxVerificationAge = DEFAULT_MAX_VERIFICATION_AGE,
@@ -146,30 +155,31 @@ export function EntrosGate({
 }: EntrosGateProps) {
   const { publicKey, connected } = useWallet();
   const { connection } = useConnection();
-  const [fetchState, setFetchState] = useState<FetchState>({ status: "loading" });
+  const walletAddress = connected ? (publicKey?.toBase58() ?? null) : null;
+  const activeConnection = connection ?? DEFAULT_DEVNET_CONNECTION;
+  const requestKey = walletAddress
+    ? \`\${activeConnection.rpcEndpoint}:\${walletAddress}\`
+    : null;
+  const [storedState, setStoredState] = useState<StoredFetchState | null>(null);
 
   useEffect(() => {
-    if (!connected || !publicKey) {
-      setFetchState({ status: "disconnected" });
-      return;
-    }
+    if (!walletAddress || !requestKey) return;
 
-    setFetchState({ status: "loading" });
     let isMounted = true;
+    const owner = new PublicKey(walletAddress);
 
     const timeoutId = setTimeout(() => {
       (async () => {
         try {
           const [identityPda] = PublicKey.findProgramAddressSync(
-            [new TextEncoder().encode("identity"), publicKey.toBuffer()],
+            [new TextEncoder().encode("identity"), owner.toBuffer()],
             ENTROS_PROGRAM_ID,
           );
-          const conn = connection ?? new Connection("https://api.devnet.solana.com", "confirmed");
-          const account = await conn.getAccountInfo(identityPda);
+          const account = await activeConnection.getAccountInfo(identityPda);
           if (!isMounted) return;
 
           if (!account || account.data.length < EXPECTED_SIZE) {
-            setFetchState({ status: "no-identity" });
+            setStoredState({ requestKey, status: "no-identity" });
             return;
           }
 
@@ -178,14 +188,15 @@ export function EntrosGate({
             account.data.byteOffset,
             account.data.byteLength,
           );
-          setFetchState({
+          setStoredState({
+            requestKey,
             status: "ready",
             trustScore: view.getUint16(60, true),
             // i64 at offset 48. Unix seconds fit in a Number until year 275760.
             lastVerifiedAt: Number(view.getBigInt64(48, true)),
           });
         } catch {
-          if (isMounted) setFetchState({ status: "no-identity" });
+          if (isMounted) setStoredState({ requestKey, status: "no-identity" });
         }
       })();
     }, 300);
@@ -194,7 +205,13 @@ export function EntrosGate({
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [publicKey, connected, connection]);
+  }, [activeConnection, requestKey, walletAddress]);
+
+  const currentState =
+    requestKey && storedState?.requestKey === requestKey ? storedState : null;
+  const fetchState: FetchState = !walletAddress
+    ? { status: "disconnected" }
+    : currentState ?? { status: "loading" };
 
   // Both comparisons happen at render time, not in the fetch effect. Changing
   // either threshold re-renders without triggering a new RPC call.

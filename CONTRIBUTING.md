@@ -35,10 +35,15 @@ cargo test
 **TypeScript**
 
 ```bash
-npx eslint .
-npx tsc --noEmit
+npm ci
+node scripts/check-paper-sync.mjs
+npm run lint
+npm run typecheck
 npm test
+npm run build
 ```
+
+The paper check requires `pdftotext` from Poppler.
 
 **Anchor programs**
 

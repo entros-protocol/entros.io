@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { MAX_VERIFICATION_MS, type PulseSession } from "@entros/pulse-sdk";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
@@ -9,6 +9,7 @@ import { usePulse } from "@/components/providers/pulse-provider";
 import { generateWalletlessPhrase } from "@/data/walletless-phrase-words";
 import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 import { Radio } from "lucide-react";
+import { useMotionCapability } from "@/hooks/use-motion-capability";
 
 function commitmentToHex(bytes: Uint8Array): string {
   return (
@@ -30,7 +31,7 @@ export function VerifyWalletless({
   const touchRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<PulseSession | null>(null);
   const [audioLevel, setAudioLevel] = useState(0);
-  const [hasMotion, setHasMotion] = useState(false);
+  const hasMotion = useMotionCapability();
   const [requesting, setRequesting] = useState(false);
   const [processingStage, setProcessingStage] = useState("Extracting features...");
   const startingRef = useRef(false);
@@ -45,10 +46,6 @@ export function VerifyWalletless({
   const [walletlessPhrase, setWalletlessPhrase] = useState<string>(() =>
     generateWalletlessPhrase(5),
   );
-
-  useEffect(() => {
-    setHasMotion(navigator.maxTouchPoints > 0);
-  }, []);
 
   async function handleStart() {
     if (startingRef.current) return;

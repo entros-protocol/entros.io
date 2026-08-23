@@ -86,6 +86,26 @@ export interface ActiveStudyGrant extends StudyEnrolment {
   authorization: StudyAuthorization;
 }
 
+export type StudyEnrolmentFailure =
+  | "study_trial_limit_reached"
+  | "study_enrolment_expired"
+  | "study_enrolment_conflict"
+  | "study_enrolment_unavailable";
+
+const STUDY_ENROLMENT_FAILURES = new Set<StudyEnrolmentFailure>([
+  "study_trial_limit_reached",
+  "study_enrolment_expired",
+  "study_enrolment_conflict",
+  "study_enrolment_unavailable",
+]);
+
+export class StudyEnrolmentRequestError extends Error {
+  constructor(readonly code: StudyEnrolmentFailure | null) {
+    super(studyEnrolmentFailureMessage(code));
+    this.name = "StudyEnrolmentRequestError";
+  }
+}
+
 export type StudyStatusUpdate =
   | { confirmed: false }
   | { confirmed: true; status: StudyRecordStatus };
@@ -287,6 +307,31 @@ export function parseStudyEnrolment(value: unknown): StudyEnrolment | null {
   return candidate as unknown as StudyEnrolment;
 }
 
+export function parseStudyEnrolmentFailure(
+  value: unknown,
+): StudyEnrolmentFailure | null {
+  if (!value || typeof value !== "object") return null;
+  const error = (value as Record<string, unknown>).error;
+  return typeof error === "string" &&
+    STUDY_ENROLMENT_FAILURES.has(error as StudyEnrolmentFailure)
+    ? (error as StudyEnrolmentFailure)
+    : null;
+}
+
+function studyEnrolmentFailureMessage(code: StudyEnrolmentFailure | null): string {
+  switch (code) {
+    case "study_trial_limit_reached":
+      return "You have completed all available study trials.";
+    case "study_enrolment_expired":
+    case "study_enrolment_conflict":
+      return "The study authorization expired. Sign again to continue.";
+    case "study_enrolment_unavailable":
+      return "Study enrolment is temporarily unavailable. Try again.";
+    default:
+      return "Study enrolment could not be completed.";
+  }
+}
+
 export function createStudyEnrolmentId(): string {
   const bytes = new Uint8Array(16);
   globalThis.crypto.getRandomValues(bytes);
@@ -433,7 +478,10 @@ export async function requestStudyEnrolment(
     }),
     cache: "no-store",
   });
-  if (!response.ok) throw new Error("Study enrolment could not be completed.");
+  if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null);
+    throw new StudyEnrolmentRequestError(parseStudyEnrolmentFailure(body));
+  }
   const enrolment = parseStudyEnrolment(await response.json());
   if (!enrolment) throw new Error("Study enrolment returned an invalid response.");
   return { ...enrolment, definition, authorization };

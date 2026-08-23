@@ -21,6 +21,7 @@ export interface StudyFlowState {
   continuation: StudyContinuation | null;
   tokenPending: boolean;
   tokenError: string | null;
+  tokenRetryAllowed: boolean;
 }
 
 export const initialStudyFlowState: StudyFlowState = {
@@ -31,6 +32,7 @@ export const initialStudyFlowState: StudyFlowState = {
   continuation: null,
   tokenPending: false,
   tokenError: null,
+  tokenRetryAllowed: true,
 };
 
 export type StudyFlowAction =
@@ -39,7 +41,7 @@ export type StudyFlowAction =
   | { type: "CONSENT_ACCEPTED" }
   | { type: "PREPARE_PENDING" }
   | { type: "PREPARE_READY"; grant: ActiveStudyGrant }
-  | { type: "PREPARE_FAILED"; message: string }
+  | { type: "PREPARE_FAILED"; message: string; retryAllowed?: boolean }
   | { type: "READY"; grant: ActiveStudyGrant | null }
   | {
       type: "RECORD_STATUS";
@@ -77,6 +79,7 @@ export function studyFlowReducer(
         ...state,
         tokenPending: true,
         tokenError: null,
+        tokenRetryAllowed: true,
       };
     case "PREPARE_READY":
       return {
@@ -90,6 +93,7 @@ export function studyFlowReducer(
         ...state,
         tokenPending: false,
         tokenError: action.message,
+        tokenRetryAllowed: action.retryAllowed ?? true,
       };
     case "READY":
       return {

@@ -6,6 +6,10 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { PROGRAM_IDS, SAS_CONFIG } from "@entros/pulse-sdk";
 import { ArrowRight, ExternalLink, Loader2, ShieldAlert } from "lucide-react";
+import {
+  DEVNET_SAS_CREDENTIALS,
+  distinctAttestationCount,
+} from "@/lib/sas-attestation-stats";
 
 const IDENTITY_STATE_DISC_B58 = "T7d2447Yv5U";
 
@@ -52,20 +56,26 @@ export function ProtocolStats() {
       const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
       const sasProgramId = new PublicKey(SAS_CONFIG.programId);
 
-      const [accounts, attestations] = await Promise.all([
+      const [accounts, ...attestationGroups] = await Promise.all([
         connection.getProgramAccounts(programId, {
           filters: [{ memcmp: { offset: 0, bytes: IDENTITY_STATE_DISC_B58 } }],
           dataSlice: { offset: 48, length: 14 },
         }),
-        connection.getProgramAccounts(sasProgramId, {
-          filters: [{ memcmp: { offset: 33, bytes: SAS_CONFIG.entrosCredentialPda } }],
-          dataSlice: { offset: 0, length: 0 },
-        }),
+        ...DEVNET_SAS_CREDENTIALS.map((credential) =>
+          connection.getProgramAccounts(sasProgramId, {
+            filters: [{ memcmp: { offset: 33, bytes: credential } }],
+            dataSlice: { offset: 0, length: 0 },
+          }),
+        ),
       ]);
 
       if (cancelled) return;
 
-      const attestationCount = attestations.length;
+      const attestationCount = distinctAttestationCount(
+        attestationGroups.map((group) =>
+          group.map(({ pubkey }) => pubkey.toBase58()),
+        ),
+      );
 
       if (accounts.length === 0) {
         setStatsState({
@@ -201,9 +211,9 @@ export function ProtocolStats() {
                   sub: "Highest on the network",
                 },
                 {
-                  label: "SAS attestations",
+                  label: "SAS attestation records",
                   value: stats.attestationCount.toLocaleString(),
-                  sub: "Issued via Solana Attestation Service",
+                  sub: "Current and legacy devnet credentials",
                 },
               ].map((stat) => (
                 <div

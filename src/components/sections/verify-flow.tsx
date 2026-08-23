@@ -16,6 +16,7 @@ import {
   pendingStudyEnrolmentId,
   requestStudyEnrolment,
   resolveStudyGrant,
+  StudyEnrolmentRequestError,
   studyAuthorizationIsFresh,
   studyProgressMessage,
 } from "@/lib/population-study";
@@ -146,12 +147,23 @@ export function VerifyFlow() {
       studyDispatch({ type: "PREPARE_READY", grant });
     } catch (reason) {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
+      if (
+        reason instanceof StudyEnrolmentRequestError &&
+        (reason.code === "study_enrolment_expired" ||
+          reason.code === "study_enrolment_conflict")
+      ) {
+        clearPendingStudyEnrolmentId(study.definition, walletAddress);
+      }
       studyDispatch({
         type: "PREPARE_FAILED",
         message:
           reason instanceof Error
             ? reason.message
             : "Study trial authorization failed. Try again.",
+        retryAllowed:
+          !(reason instanceof StudyEnrolmentRequestError) ||
+          (reason.code !== null &&
+            reason.code !== "study_trial_limit_reached"),
       });
     } finally {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
@@ -287,6 +299,7 @@ export function VerifyFlow() {
               studyPreparationError={
                 study.decision === "consented" ? study.tokenError : null
               }
+              studyPreparationRetryAllowed={study.tokenRetryAllowed}
               onStudyPrepare={handlePrepareStudyTrial}
             />
           )}

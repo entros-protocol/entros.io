@@ -230,6 +230,7 @@ export function VerifyWalletConnected({
   studySessionActive = false,
   studyPreparationRequired = false,
   studyPreparationError,
+  studyPreparationRetryAllowed = true,
   onStudyPrepare,
 }: {
   state: VerifyState;
@@ -244,6 +245,7 @@ export function VerifyWalletConnected({
   studySessionActive?: boolean;
   studyPreparationRequired?: boolean;
   studyPreparationError?: string | null;
+  studyPreparationRetryAllowed?: boolean;
   onStudyPrepare?: () => void | Promise<void>;
 }) {
   const { connected, wallet, publicKey } = useWallet();
@@ -935,15 +937,26 @@ export function VerifyWalletConnected({
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button
               type="button"
-              onClick={() => void onStudyPrepare?.()}
-              disabled={studyCaptureBlocked || !onStudyPrepare}
+              onClick={() =>
+                studyPreparationRetryAllowed
+                  ? void onStudyPrepare?.()
+                  : onStudyLeave?.()
+              }
+              disabled={
+                studyCaptureBlocked ||
+                (studyPreparationRetryAllowed
+                  ? !onStudyPrepare
+                  : !onStudyLeave)
+              }
               className="rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {studyCaptureBlocked
                 ? "Preparing verification..."
-                : "Continue to verification"}
+                : studyPreparationRetryAllowed
+                  ? "Continue to verification"
+                  : "Continue with normal verification"}
             </button>
-            {onStudyLeave && (
+            {onStudyLeave && studyPreparationRetryAllowed && (
               <button
                 type="button"
                 onClick={onStudyLeave}

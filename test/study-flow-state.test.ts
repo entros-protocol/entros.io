@@ -97,6 +97,26 @@ describe("study flow state", () => {
     });
   });
 
+  it("routes terminal enrolment failures to normal verification", () => {
+    const consented = {
+      ...initialStudyFlowState,
+      definition: grant().definition,
+      decision: "consented" as const,
+    };
+
+    expect(
+      studyFlowReducer(consented, {
+        type: "PREPARE_FAILED",
+        message: "All trials are complete.",
+        retryAllowed: false,
+      }),
+    ).toEqual({
+      ...consented,
+      tokenError: "All trials are complete.",
+      tokenRetryAllowed: false,
+    });
+  });
+
   it("replaces active state when the public definition changes", () => {
     const joined = studyFlowReducer(initialStudyFlowState, {
       type: "READY",

@@ -15,10 +15,8 @@ const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
  * the browser fetch is same-origin (no CORS preflight, no inlined env
  * dependency, no header to omit).
  *
- * Returns the executor body shape unchanged: `{ nonce: number[],
- * phrase: string, expires_in: number }`. Callers parse `nonce` to
- * `Uint8Array` and rename `expires_in` → `expiresIn` themselves so the
- * shape on the wire matches the executor's documented contract.
+ * Returns the executor response unchanged. The client validates the nonce,
+ * phrase, lifetime, and server-issued curve before capture.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

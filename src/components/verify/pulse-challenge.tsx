@@ -7,8 +7,11 @@ import {
   type LissajousParams,
   type CurveTracePoint,
 } from "@entros/pulse-sdk";
+import { appendBoundedPoint } from "../../lib/bounded-trace";
 
 const CAPTURE_DURATION_S = 12;
+const OUTLINE_SOURCE_LIMIT = 512;
+const DISPLAY_POINT_LIMIT = 256;
 /**
  * Grace period between the final tick rendering and handing the capture back,
  * so the user sees the counter reach zero rather than the view swapping under
@@ -17,18 +20,24 @@ const CAPTURE_DURATION_S = 12;
 const CAPTURE_SETTLE_MS = 300;
 
 const AUDIO_BAR_COUNT = 12;
-const BAR_OFFSETS = Array.from({ length: AUDIO_BAR_COUNT }, (_, i) =>
-  0.6 + 0.4 * Math.sin(i * 1.3)
+const BAR_OFFSETS = Array.from(
+  { length: AUDIO_BAR_COUNT },
+  (_, i) => 0.6 + 0.4 * Math.sin(i * 1.3),
 );
 const TOUCH_BAR_COUNT = 10;
-const TOUCH_BAR_OFFSETS = Array.from({ length: TOUCH_BAR_COUNT }, (_, i) =>
-  0.4 + 0.6 * Math.sin(i * 0.9 + 0.5)
+const TOUCH_BAR_OFFSETS = Array.from(
+  { length: TOUCH_BAR_COUNT },
+  (_, i) => 0.4 + 0.6 * Math.sin(i * 0.9 + 0.5),
 );
-const MOTION_BAR_HEIGHTS = Array.from({ length: 6 }, () => 4 + Math.random() * 16);
+const MOTION_BAR_HEIGHTS = Array.from(
+  { length: 6 },
+  () => 4 + Math.random() * 16,
+);
 
 export function PulseChallenge({
   onComplete,
   onCaptureWindowOpen,
+  onCaptureError,
   touchRef,
   audioLevel = 0,
   hasMotion = true,
@@ -37,12 +46,11 @@ export function PulseChallenge({
 }: {
   onComplete: (outline: CurveTracePoint[]) => void;
   /**
-   * Fired the instant the speak prompt appears, so the SDK can discard the
-   * dead air it recorded while the challenge was being fetched and the
-   * countdown was running. Without it that silence is fingerprinted and
-   * uploaded as though it were speech.
+   * Starts SDK touch capture against the mounted trace surface. The speak
+   * prompt opens only after this callback resolves.
    */
-  onCaptureWindowOpen?: () => void;
+  onCaptureWindowOpen?: (surface: HTMLDivElement) => void | Promise<void>;
+  onCaptureError?: (error: unknown) => void;
   touchRef?: React.RefObject<HTMLDivElement | null>;
   audioLevel?: number;
   hasMotion?: boolean;
@@ -53,11 +61,13 @@ export function PulseChallenge({
   const [countdown, setCountdown] = useState(3);
   const [captureStarted, setCaptureStarted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [tracePath, setTracePath] = useState("");
   const [touchLevel, setTouchLevel] = useState(0);
-  const traceRef = useRef<string[]>([]);
+  const touchLevelRef = useRef(0);
+  const displayPointsRef = useRef<CurveTracePoint[]>([]);
   const outlineRef = useRef<CurveTracePoint[]>([]);
   const svgContainerRef = useRef<HTMLDivElement>(null);
+  const tracePathRef = useRef<SVGPathElement>(null);
+  const traceFrameRef = useRef<number | null>(null);
   const lastTouchPos = useRef<{ x: number; y: number } | null>(null);
   const completedRef = useRef(false);
   const [audioHintVisible, setAudioHintVisible] = useState(false);
@@ -78,9 +88,11 @@ export function PulseChallenge({
   // so a value that lands one commit later costs nothing.
   const onCompleteRef = useRef(onComplete);
   const onCaptureWindowOpenRef = useRef(onCaptureWindowOpen);
+  const onCaptureErrorRef = useRef(onCaptureError);
   useEffect(() => {
     onCompleteRef.current = onComplete;
     onCaptureWindowOpenRef.current = onCaptureWindowOpen;
+    onCaptureErrorRef.current = onCaptureError;
   });
 
   const phrase = providedPhrase;
@@ -127,16 +139,32 @@ export function PulseChallenge({
   useEffect(() => {
     if (captureStarted) return;
     let remaining = 3;
+    let cancelled = false;
     const interval = setInterval(() => {
       remaining -= 1;
       setCountdown(remaining);
       if (remaining === 0) {
         clearInterval(interval);
-        setCaptureStarted(true);
-        onCaptureWindowOpenRef.current?.();
+        const surface = svgContainerRef.current;
+        if (!surface) {
+          onCaptureErrorRef.current?.(
+            new Error("Touch surface was not mounted before capture"),
+          );
+          return;
+        }
+        void Promise.resolve(onCaptureWindowOpenRef.current?.(surface))
+          .then(() => {
+            if (!cancelled) setCaptureStarted(true);
+          })
+          .catch((error: unknown) => {
+            if (!cancelled) onCaptureErrorRef.current?.(error);
+          });
       }
     }, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [captureStarted]);
 
   // Capture timer—starts after countdown
@@ -146,44 +174,93 @@ export function PulseChallenge({
   // before it ever fires).
   useEffect(() => {
     if (!captureStarted) return;
+    let nextElapsed = 0;
+    let settleTimer: ReturnType<typeof setTimeout> | null = null;
     const interval = setInterval(() => {
-      setElapsed((prev) => {
-        const next = prev + 1;
-        if (next >= CAPTURE_DURATION_S && !completedRef.current) {
-          completedRef.current = true;
-          clearInterval(interval);
-          setTimeout(() => onCompleteRef.current(outlineRef.current), CAPTURE_SETTLE_MS);
-        }
-        return next;
-      });
+      nextElapsed += 1;
+      setElapsed(nextElapsed);
+      if (nextElapsed >= CAPTURE_DURATION_S && !completedRef.current) {
+        completedRef.current = true;
+        clearInterval(interval);
+        settleTimer = setTimeout(
+          () => onCompleteRef.current(outlineRef.current),
+          CAPTURE_SETTLE_MS,
+        );
+      }
     }, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (settleTimer !== null) {
+        clearTimeout(settleTimer);
+      }
+    };
   }, [captureStarted]);
 
   // Touch trace handler
-  const handlePointer = useCallback((e: PointerEvent) => {
-    const container = svgContainerRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 200;
-    const y = ((e.clientY - rect.top) / rect.height) * 200;
+  const handlePointer = useCallback(
+    (e: PointerEvent) => {
+      if (!captureStarted) return;
+      const container = svgContainerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      if (
+        !Number.isFinite(rect.width) ||
+        !Number.isFinite(rect.height) ||
+        rect.width <= 0 ||
+        rect.height <= 0
+      ) {
+        return;
+      }
+      const unitX = (e.clientX - rect.left) / rect.width;
+      const unitY = (e.clientY - rect.top) / rect.height;
+      if (unitX < 0 || unitX > 1 || unitY < 0 || unitY > 1) return;
+      const x = unitX * 200;
+      const y = unitY * 200;
 
-    if (lastTouchPos.current) {
-      const dx = x - lastTouchPos.current.x;
-      const dy = y - lastTouchPos.current.y;
-      const vel = Math.sqrt(dx * dx + dy * dy);
-      setTouchLevel((prev) => prev * 0.6 + vel * 0.02);
-    }
-    lastTouchPos.current = { x, y };
+      if (e.type === "pointerdown" && "setPointerCapture" in container) {
+        try {
+          container.setPointerCapture(e.pointerId);
+        } catch {
+          // The SDK still validates the path when pointer capture is unavailable.
+        }
+      }
 
-    // Raw {x,y,t} for the curve-trace outline — viewBox-200 coords (same frame as
-    // the reference curve); timestamps are used only for equal-time resampling in
-    // the SDK before send. Parallel to the render-only SVG-string trace below.
-    outlineRef.current.push({ x, y, t: performance.now() });
+      if (lastTouchPos.current) {
+        const dx = x - lastTouchPos.current.x;
+        const dy = y - lastTouchPos.current.y;
+        const vel = Math.sqrt(dx * dx + dy * dy);
+        const nextTouchLevel = touchLevelRef.current * 0.6 + vel * 0.02;
+        touchLevelRef.current = nextTouchLevel;
+      }
+      lastTouchPos.current = { x, y };
 
-    const cmd = traceRef.current.length === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
-    traceRef.current.push(cmd);
-    setTracePath(traceRef.current.join(""));
+      const point = { x, y, t: performance.now() };
+      appendBoundedPoint(outlineRef.current, point, OUTLINE_SOURCE_LIMIT);
+      appendBoundedPoint(displayPointsRef.current, point, DISPLAY_POINT_LIMIT);
+      if (traceFrameRef.current === null) {
+        traceFrameRef.current = requestAnimationFrame(() => {
+          traceFrameRef.current = null;
+          const points = displayPointsRef.current;
+          const path = points
+            .map(
+              (entry, index) =>
+                `${index === 0 ? "M" : "L"} ${entry.x} ${entry.y}`,
+            )
+            .join(" ");
+          tracePathRef.current?.setAttribute("d", path);
+          setTouchLevel(touchLevelRef.current);
+        });
+      }
+    },
+    [captureStarted],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (traceFrameRef.current !== null) {
+        cancelAnimationFrame(traceFrameRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -202,7 +279,10 @@ export function PulseChallenge({
         firstVoicedAtRef.current = now;
       }
       lastVoicedAtRef.current = now;
-      if (!hasSpokenEnoughRef.current && now - firstVoicedAtRef.current >= 800) {
+      if (
+        !hasSpokenEnoughRef.current &&
+        now - firstVoicedAtRef.current >= 800
+      ) {
         hasSpokenEnoughRef.current = true;
         setAudioHintVisible(false);
       }
@@ -230,7 +310,9 @@ export function PulseChallenge({
       if (Date.now() - captureStart < 2000) return;
       const lastVoiced = lastVoicedAtRef.current;
       const quietFor =
-        lastVoiced == null ? Date.now() - captureStart : Date.now() - lastVoiced;
+        lastVoiced == null
+          ? Date.now() - captureStart
+          : Date.now() - lastVoiced;
       setAudioHintVisible(quietFor >= 2000);
     }, 500);
     return () => clearInterval(interval);
@@ -249,7 +331,8 @@ export function PulseChallenge({
 
   useEffect(() => {
     if (!touchRef || !("current" in touchRef)) return;
-    const mutableRef = touchRef as React.MutableRefObject<HTMLDivElement | null>;
+    const mutableRef =
+      touchRef as React.MutableRefObject<HTMLDivElement | null>;
     if (svgContainerRef.current) {
       mutableRef.current = svgContainerRef.current;
     }
@@ -261,24 +344,6 @@ export function PulseChallenge({
     };
   }, [touchRef, captureStarted]);
 
-  // --- Countdown screen ---
-  if (!captureStarted) {
-    return (
-      <div className="flex flex-col items-center justify-center py-8 space-y-4">
-        <p className="text-sm text-foreground/70">Recording starts in...</p>
-        <p className="font-mono text-6xl font-bold text-cyan tabular-nums">
-          {countdown}
-        </p>
-        <p className="text-xs text-muted">
-          {hasMotion
-            ? "Speak clearly and trace the curve with your finger"
-            : "Speak clearly and trace the curve with your mouse"}
-        </p>
-      </div>
-    );
-  }
-
-  // --- Active capture ---
   const remaining = Math.max(0, CAPTURE_DURATION_S - elapsed);
   const progress = (elapsed / CAPTURE_DURATION_S) * 100;
   const normalizedAudio = Math.min(audioLevel * 25, 1);
@@ -287,36 +352,53 @@ export function PulseChallenge({
 
   return (
     <div className="space-y-5">
-      {/* Timer */}
-      <div className="text-center">
-        <p className="font-mono text-3xl font-bold text-foreground tabular-nums">
-          {remaining}s
-        </p>
-        <div className="mt-2 mx-auto max-w-xs h-1.5 rounded-full bg-surface overflow-hidden">
-          <div
-            className="h-full rounded-full bg-cyan transition-all duration-1000 ease-linear"
-            style={{ width: `${progress}%` }}
-          />
+      {!captureStarted ? (
+        <div className="text-center space-y-2">
+          <p className="text-sm text-foreground/70">
+            {countdown > 0 ? "Recording starts in..." : "Preparing capture..."}
+          </p>
+          <p className="font-mono text-6xl font-bold text-cyan tabular-nums">
+            {countdown}
+          </p>
+          <p className="text-xs text-muted">
+            {hasMotion
+              ? "Speak clearly and trace the curve with your finger"
+              : "Speak clearly and trace the curve with your mouse"}
+          </p>
         </div>
-      </div>
-
-      {/* Phrase */}
-      <div className="text-center">
-        <p className="text-xs font-mono uppercase tracking-widest text-cyan mb-1">
-          Speak this phrase
-        </p>
-        <p
-          className="text-lg font-mono font-bold transition-all duration-150 md:text-xl"
-          style={{
-            color: isVoiceActive ? "var(--color-foreground)" : "var(--color-muted)",
-            textShadow: isVoiceActive
-              ? `0 0 ${10 + normalizedAudio * 20}px rgba(0, 240, 255, ${0.15 + normalizedAudio * 0.3})`
-              : "none",
-          }}
-        >
-          &ldquo;{phrase}&rdquo;
-        </p>
-      </div>
+      ) : (
+        <>
+          <div className="text-center">
+            <p className="font-mono text-3xl font-bold text-foreground tabular-nums">
+              {remaining}s
+            </p>
+            <div className="mt-2 mx-auto max-w-xs h-1.5 rounded-full bg-surface overflow-hidden">
+              <div
+                className="h-full rounded-full bg-cyan transition-[width] duration-1000 ease-linear"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-xs font-mono uppercase tracking-widest text-cyan mb-1">
+              Speak this phrase
+            </p>
+            <p
+              className="text-lg font-mono font-bold transition-[color,text-shadow] duration-150 md:text-xl"
+              style={{
+                color: isVoiceActive
+                  ? "var(--color-foreground)"
+                  : "var(--color-muted)",
+                textShadow: isVoiceActive
+                  ? `0 0 ${10 + normalizedAudio * 20}px rgba(0, 240, 255, ${0.15 + normalizedAudio * 0.3})`
+                  : "none",
+              }}
+            >
+              &ldquo;{phrase}&rdquo;
+            </p>
+          </div>
+        </>
+      )}
 
       {/* Curve */}
       <div>
@@ -337,92 +419,98 @@ export function PulseChallenge({
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            {tracePath && (
-              <path
-                d={tracePath}
-                fill="none"
-                stroke="var(--color-cyan)"
-                strokeWidth="3"
-                strokeOpacity="0.95"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
+            <path
+              ref={tracePathRef}
+              d=""
+              fill="none"
+              stroke="var(--color-cyan)"
+              strokeWidth="3"
+              strokeOpacity="0.95"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
       </div>
 
       {/* Sensor indicators */}
-      <div className={`grid gap-3 text-center ${hasMotion ? "grid-cols-3" : "grid-cols-2"}`}>
-        <div className="p-2.5">
-          <div className="h-7 flex items-center justify-center">
-            <div className="flex gap-[2px] items-end">
-              {BAR_OFFSETS.map((offset, i) => (
-                <div
-                  key={i}
-                  className="w-1 bg-cyan/60 rounded-full"
-                  style={{
-                    height: `${2 + normalizedAudio * 32 * offset}px`,
-                    transition: "height 100ms ease",
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-          <p className="mt-1 text-[10px] text-muted font-mono">Voice</p>
-        </div>
-
-        {hasMotion && (
+      {captureStarted && (
+        <div
+          className={`grid gap-3 text-center ${hasMotion ? "grid-cols-3" : "grid-cols-2"}`}
+        >
           <div className="p-2.5">
             <div className="h-7 flex items-center justify-center">
               <div className="flex gap-[2px] items-end">
-                {Array.from({ length: 6 }).map((_, i) => (
+                {BAR_OFFSETS.map((offset, i) => (
                   <div
                     key={i}
-                    className="w-1.5 bg-solana-purple/60 rounded-full animate-pulse"
+                    className="w-1 bg-cyan/60 rounded-full"
                     style={{
-                      height: `${MOTION_BAR_HEIGHTS[i]}px`,
-                      animationDelay: `${i * 0.2}s`,
+                      height: `${2 + normalizedAudio * 32 * offset}px`,
+                      transition: "height 100ms ease",
                     }}
                   />
                 ))}
               </div>
             </div>
-            <p className="mt-1 text-[10px] text-muted font-mono">Motion</p>
+            <p className="mt-1 text-[10px] text-muted font-mono">Voice</p>
           </div>
-        )}
 
-        <div className="p-2.5">
-          <div className="h-7 flex items-center justify-center">
-            <div className="flex gap-[2px] items-end">
-              {TOUCH_BAR_OFFSETS.map((offset, i) => (
-                <div
-                  key={i}
-                  className="w-1 bg-solana-green/60 rounded-full"
-                  style={{
-                    height: `${3 + normalizedTouch * 32 * offset}px`,
-                    transition: "height 120ms ease-out",
-                  }}
-                />
-              ))}
+          {hasMotion && (
+            <div className="p-2.5">
+              <div className="h-7 flex items-center justify-center">
+                <div className="flex gap-[2px] items-end">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-1.5 bg-solana-purple/60 rounded-full animate-pulse"
+                      style={{
+                        height: `${MOTION_BAR_HEIGHTS[i]}px`,
+                        animationDelay: `${i * 0.2}s`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className="mt-1 text-[10px] text-muted font-mono">Motion</p>
             </div>
-          </div>
-          <p className="mt-1 text-[10px] text-muted font-mono">Touch</p>
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <div className="min-h-[1rem]" role="status" aria-live="polite">
-          {audioHintVisible && (
-            <p className="text-center text-xs text-warning">
-              Microphone audio is too quiet. Try speaking up or moving closer.
-            </p>
           )}
+
+          <div className="p-2.5">
+            <div className="h-7 flex items-center justify-center">
+              <div className="flex gap-[2px] items-end">
+                {TOUCH_BAR_OFFSETS.map((offset, i) => (
+                  <div
+                    key={i}
+                    className="w-1 bg-solana-green/60 rounded-full"
+                    style={{
+                      height: `${3 + normalizedTouch * 32 * offset}px`,
+                      transition: "height 120ms ease-out",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            <p className="mt-1 text-[10px] text-muted font-mono">Touch</p>
+          </div>
         </div>
-        <p className="text-center text-xs text-muted">
-          All sensors recording simultaneously. Raw recordings are not retained.
-        </p>
-      </div>
+      )}
+
+      {captureStarted && (
+        <div className="space-y-1.5">
+          <div className="min-h-[1rem]" role="status" aria-live="polite">
+            {audioHintVisible && (
+              <p className="text-center text-xs text-warning">
+                Microphone audio is too quiet. Try speaking up or moving closer.
+              </p>
+            )}
+          </div>
+          <p className="text-center text-xs text-muted">
+            All sensors recording simultaneously. Raw recordings are not
+            retained.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

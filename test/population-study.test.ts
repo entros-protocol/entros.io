@@ -72,9 +72,13 @@ describe("population study response parsing", () => {
   });
 
   it("rejects malformed definitions", () => {
-    expect(parseStudyDefinition({ ...definition, consent_hash_hex: "short" })).toBeNull();
+    expect(
+      parseStudyDefinition({ ...definition, consent_hash_hex: "short" }),
+    ).toBeNull();
     expect(parseStudyDefinition({ ...definition, trial_limit: 0 })).toBeNull();
-    expect(parseStudyDefinition({ ...definition, retention_days: Number.NaN })).toBeNull();
+    expect(
+      parseStudyDefinition({ ...definition, retention_days: Number.NaN }),
+    ).toBeNull();
     expect(
       parseStudyDefinition({
         ...definition,
@@ -82,7 +86,13 @@ describe("population study response parsing", () => {
         feature_schema_version: 3,
       }),
     ).toBeNull();
-    expect(parseStudyDefinition({ ...definition, projection_version: 2 })).toBeNull();
+    expect(
+      parseStudyDefinition({
+        ...definition,
+        projection_version: 2,
+        feature_schema_version: 4,
+      }),
+    ).toBeNull();
   });
 
   it("accepts the version 1 feature schema", () => {
@@ -95,13 +105,25 @@ describe("population study response parsing", () => {
     ).not.toBeNull();
   });
 
+  it("accepts the version 2 feature schema", () => {
+    expect(
+      parseStudyDefinition({
+        ...definition,
+        projection_version: 2,
+        feature_schema_version: 5,
+      }),
+    ).not.toBeNull();
+  });
+
   it("accepts the bounded enrolment contract", () => {
     expect(parseStudyEnrolment(enrolment)).toEqual(enrolment);
   });
 
   it("rejects malformed enrolments", () => {
     expect(parseStudyEnrolment({ ...enrolment, token: "short" })).toBeNull();
-    expect(parseStudyEnrolment({ ...enrolment, session_id: "z".repeat(32) })).toBeNull();
+    expect(
+      parseStudyEnrolment({ ...enrolment, session_id: "z".repeat(32) }),
+    ).toBeNull();
     expect(parseStudyEnrolment({ ...enrolment, trial_index: 4 })).toBeNull();
   });
 
@@ -142,7 +164,9 @@ describe("population study response parsing", () => {
   it("names encrypted wallet grouping and excludes KYC data", () => {
     const text = POPULATION_STUDY_CONSENT_TEXT.join(" ");
     expect(text).toContain("encrypted study record includes the Solana wallet");
-    expect(text).toContain("does not request your legal name or other KYC data");
+    expect(text).toContain(
+      "does not request your legal name or other KYC data",
+    );
   });
 
   it("builds the canonical wallet enrolment message", () => {
@@ -162,12 +186,19 @@ describe("population study response parsing", () => {
     const original = studyConsentDocument(definition);
     expect(original).toContain("14 days");
     expect(original).toContain("up to 3 study trials");
-    expect(studyConsentDocument({ ...definition, retention_days: 365 })).not.toBe(original);
-    expect(studyConsentDocument({ ...definition, trial_limit: 4 })).not.toBe(original);
+    expect(
+      studyConsentDocument({ ...definition, retention_days: 365 }),
+    ).not.toBe(original);
+    expect(studyConsentDocument({ ...definition, trial_limit: 4 })).not.toBe(
+      original,
+    );
   });
 
   it("pins the wallet-bound production consent hash", () => {
-    const document = studyConsentDocument({ retention_days: 30, trial_limit: 5 });
+    const document = studyConsentDocument({
+      retention_days: 30,
+      trial_limit: 5,
+    });
     expect(createHash("sha256").update(document, "utf8").digest("hex")).toBe(
       "917a46836ff71db393e93aecca9e068722a908c6c0bf0cba6cee498de0a7bcdd",
     );
@@ -244,32 +275,57 @@ describe("population study response parsing", () => {
     const first = pendingStudyEnrolmentId(definition, wallet, storage);
     const retry = pendingStudyEnrolmentId(definition, wallet, storage);
     expect(retry).toBe(first);
-    expect(values.get(studyEnrolmentStorageKey(definition, wallet))).toBe(first);
-    expect(pendingStudyEnrolmentId(definition, "wallet-two", storage)).not.toBe(first);
+    expect(values.get(studyEnrolmentStorageKey(definition, wallet))).toBe(
+      first,
+    );
+    expect(pendingStudyEnrolmentId(definition, "wallet-two", storage)).not.toBe(
+      first,
+    );
 
-    expect(clearPendingStudyEnrolmentId(definition, wallet, storage)).toBe(true);
+    expect(clearPendingStudyEnrolmentId(definition, wallet, storage)).toBe(
+      true,
+    );
     const nextTrial = pendingStudyEnrolmentId(definition, wallet, storage);
     expect(nextTrial).not.toBe(first);
   });
 
   it("replaces malformed pending enrolment identifiers", () => {
     const wallet = "wallet-one";
-    const values = new Map([[studyEnrolmentStorageKey(definition, wallet), "not-an-id"]]);
+    const values = new Map([
+      [studyEnrolmentStorageKey(definition, wallet), "not-an-id"],
+    ]);
     const storage = {
       getItem: (key: string) => values.get(key) ?? null,
       setItem: (key: string, value: string) => values.set(key, value),
       removeItem: (key: string) => values.delete(key),
     };
-    expect(pendingStudyEnrolmentId(definition, wallet, storage)).toMatch(/^[0-9a-f]{32}$/);
+    expect(pendingStudyEnrolmentId(definition, wallet, storage)).toMatch(
+      /^[0-9a-f]{32}$/,
+    );
   });
 
   it("reuses only fresh wallet-bound authorizations", () => {
-    expect(studyAuthorizationIsFresh(activeGrant.authorization, "wallet-address", 1_775_000_800))
-      .toBe(true);
-    expect(studyAuthorizationIsFresh(activeGrant.authorization, "another-wallet", 1_775_000_800))
-      .toBe(false);
-    expect(studyAuthorizationIsFresh(activeGrant.authorization, "wallet-address", 1_775_000_841))
-      .toBe(false);
+    expect(
+      studyAuthorizationIsFresh(
+        activeGrant.authorization,
+        "wallet-address",
+        1_775_000_800,
+      ),
+    ).toBe(true);
+    expect(
+      studyAuthorizationIsFresh(
+        activeGrant.authorization,
+        "another-wallet",
+        1_775_000_800,
+      ),
+    ).toBe(false);
+    expect(
+      studyAuthorizationIsFresh(
+        activeGrant.authorization,
+        "wallet-address",
+        1_775_000_841,
+      ),
+    ).toBe(false);
   });
 
   it("caches only the study identifier and normalized consent hash", () => {
@@ -282,14 +338,18 @@ describe("population study response parsing", () => {
       ...definition,
       consent_hash_hex: "A".repeat(64),
     };
-    expect(rememberStudyConsentAcknowledgement(uppercaseDefinition, storage)).toBe(true);
+    expect(
+      rememberStudyConsentAcknowledgement(uppercaseDefinition, storage),
+    ).toBe(true);
     expect([...values.entries()]).toEqual([
       [studyConsentStorageKey(uppercaseDefinition), "1"],
     ]);
     expect(studyConsentStorageKey(uppercaseDefinition)).toBe(
       `entros:study-consent:v1:${definition.study_id}:${"a".repeat(64)}`,
     );
-    expect(hasStudyConsentAcknowledgement(uppercaseDefinition, storage)).toBe(true);
+    expect(hasStudyConsentAcknowledgement(uppercaseDefinition, storage)).toBe(
+      true,
+    );
     expect(
       hasStudyConsentAcknowledgement(
         { ...uppercaseDefinition, study_id: "another-study" },
@@ -314,7 +374,9 @@ describe("population study response parsing", () => {
       },
     };
     expect(hasStudyConsentAcknowledgement(definition, storage)).toBe(false);
-    expect(rememberStudyConsentAcknowledgement(definition, storage)).toBe(false);
+    expect(rememberStudyConsentAcknowledgement(definition, storage)).toBe(
+      false,
+    );
   });
 
   it("treats blocked browser storage access as a cache miss", () => {
@@ -328,7 +390,6 @@ describe("population study response parsing", () => {
     expect(hasStudyConsentAcknowledgement(definition)).toBe(false);
     expect(rememberStudyConsentAcknowledgement(definition)).toBe(false);
   });
-
 });
 
 describe("population study request boundaries", () => {
@@ -359,7 +420,9 @@ describe("population study request boundaries", () => {
   it("accepts only the empty public definition request", () => {
     expect(isPublicStudyDefinitionRequest({})).toBe(true);
     expect(
-      isPublicStudyDefinitionRequest({ invitation: "legacy-participant-capability" }),
+      isPublicStudyDefinitionRequest({
+        invitation: "legacy-participant-capability",
+      }),
     ).toBe(false);
   });
 

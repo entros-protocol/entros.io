@@ -6,7 +6,6 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import {
   type PulseSession,
-  type LissajousParams,
   type CurveTracePoint,
   PROGRAM_IDS,
   fetchIdentityState,
@@ -17,7 +16,10 @@ import {
   createStudyContext,
   type StudyRecordStatus,
 } from "@entros/pulse-sdk";
-import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
+import {
+  fetchChallengeViaProxy,
+  type ChallengeResponse,
+} from "@/lib/relay-challenge";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
 import {
@@ -53,6 +55,10 @@ function commitmentToHex(bytes: Uint8Array): string {
 import { evaluateResetCooldown } from "@/lib/cooldown";
 import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 import { useMotionCapability } from "@/hooks/use-motion-capability";
+import {
+  bindPulseValidationChallenge,
+  stopPulseCapture,
+} from "@/lib/pulse-session";
 
 // Soft-reject retry budget. When attemptsUsed < MAX_ATTEMPTS
 // and the server returns a user-recoverable reason, the client routes to
@@ -104,7 +110,8 @@ function DevnetWalletRequirements({
               .
             </li>
             <li>
-              3. {connected
+              3.{" "}
+              {connected
                 ? "Confirm this is the wallet you want to verify."
                 : "Connect the wallet you want to verify."}
             </li>
@@ -160,7 +167,11 @@ function SigningDiagnosticPanel({
               {simulation.endpoint} · {simulation.variant}
             </p>
             <div className="mt-2 flex items-center justify-between gap-3 text-xs">
-              <span className={simulation.err === null ? "text-cyan" : "text-amber-500"}>
+              <span
+                className={
+                  simulation.err === null ? "text-cyan" : "text-amber-500"
+                }
+              >
                 {simulation.err === null ? "Clean" : "Error returned"}
               </span>
               <span className="font-mono text-foreground/65">
@@ -237,7 +248,9 @@ export function VerifyWalletConnected({
   dispatch: React.ActionDispatch<[action: VerifyAction]>;
   studyGrant?: ActiveStudyGrant | null;
   studyCaptureBlocked?: boolean;
-  onStudyRecordStatus?: (status: StudyRecordStatus | undefined) => void | Promise<void>;
+  onStudyRecordStatus?: (
+    status: StudyRecordStatus | undefined,
+  ) => void | Promise<void>;
   onStudyNextTrial?: () => void | Promise<void>;
   onStudyLeave?: () => void;
   studyNextTrialAvailable?: boolean;
@@ -256,12 +269,13 @@ export function VerifyWalletConnected({
   // button; clears automatically when the wallet successfully connects.
   const { lastError: walletError, clearError: clearWalletError } =
     useWalletError();
-  const touchRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<PulseSession | null>(null);
   const [audioLevel, setAudioLevel] = useState(0);
   const hasMotion = useMotionCapability();
   const [requesting, setRequesting] = useState(false);
-  const [processingStage, setProcessingStage] = useState("Extracting features...");
+  const [processingStage, setProcessingStage] = useState(
+    "Extracting features...",
+  );
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const signingDiagnosticActive = useSyncExternalStore(
     subscribeToStaticCapability,
@@ -296,15 +310,10 @@ export function VerifyWalletConnected({
     tx: string;
     score: number;
   } | null>(null);
-  // Server-issued challenge phrase. Fetched from the
-  // executor's /challenge endpoint during handleStart so the PulseChallenge
-  // displays the authoritative phrase the validation service will
-  // phoneme-match. Null when no fetch has happened yet or the executor was
-  // unreachable—PulseChallenge falls back to client-generated copy in
-  // that case and phrase content binding skips server-side (Tier 1 still
-  // runs).
-  const [challengePhrase, setChallengePhrase] = useState<string | null>(null);
-  const [challengeCurve, setChallengeCurve] = useState<LissajousParams | undefined>(undefined);
+  // Keep the server nonce, lifetime, phrase, and curve together until the
+  // session binds them. A missing or malformed challenge stops capture.
+  const [validationChallenge, setValidationChallenge] =
+    useState<ChallengeResponse | null>(null);
   const startingRef = useRef(false);
   const voicedFramesRef = useRef(0);
   // Intent is tracked alongside the state-machine mirror so the
@@ -355,9 +364,7 @@ export function VerifyWalletConnected({
     let status: PermissionStatus | null = null;
     const handleChange = () => {
       if (!cancelled && status) {
-        setMicPermissionState(
-          status.state as "granted" | "denied" | "prompt",
-        );
+        setMicPermissionState(status.state as "granted" | "denied" | "prompt");
       }
     };
     navigator.permissions
@@ -369,7 +376,7 @@ export function VerifyWalletConnected({
         if (cancelled) return;
         status = s;
         setMicPermissionState(s.state as "granted" | "denied" | "prompt");
-        s.addEventListener("change", handleChange);
+        s.onchange = handleChange;
       })
       .catch(() => {
         // Permissions API rejected (Firefox sometimes throws on unsupported
@@ -378,7 +385,7 @@ export function VerifyWalletConnected({
       });
     return () => {
       cancelled = true;
-      if (status) status.removeEventListener("change", handleChange);
+      if (status) status.onchange = null;
     };
   }, []);
 
@@ -433,7 +440,7 @@ export function VerifyWalletConnected({
   // dispatches but before the RPC's account cache catches up.
   const verifySuccessTx =
     state.step === "verified" && state.intent === "verify"
-      ? state.txSignature ?? null
+      ? (state.txSignature ?? null)
       : null;
   useEffect(() => {
     if (!verifySuccessTx || !publicKey) return;
@@ -471,8 +478,7 @@ export function VerifyWalletConnected({
     intentRef.current = intent;
     if (intent === "verify") setSigningDiagnosticReport(null);
     setRequesting(true);
-    setChallengePhrase(null);
-    setChallengeCurve(undefined);
+    setValidationChallenge(null);
     // Reset the voiced-frame counter before any await so a synchronous
     // throw in startMotion / challenge fetch can't leak the previous
     // attempt's count into the rejection-path override evaluation in
@@ -492,40 +498,31 @@ export function VerifyWalletConnected({
       // .requestPermission()` on iOS consumes the active user-gesture token,
       // and awaiting a network round-trip between the click and the motion
       // prompt silently drops that token—motion permission denied.
-      // Awaiting happens after audio/motion/touch permissions resolve but
+      // Awaiting happens after audio and motion permissions resolve but
       // before START_CAPTURE; null → fail the verification with a clear
       // error rather than silently fall back to nonsense.
-      const challengePromise: Promise<{ phrase: string; curve?: LissajousParams } | null> = publicKey
-        ? fetchChallengeViaProxy(publicKey.toBase58())
-            .then((c) => ({ phrase: c.phrase, curve: c.curve }))
-            .catch((err: unknown) => {
-              if (process.env.NODE_ENV === "development") {
-                const msg = err instanceof Error ? err.message : String(err);
-                console.warn(`[verify] challenge fetch failed: ${msg}`);
-              }
-              return null;
-            })
+      const challengePromise: Promise<ChallengeResponse | null> = publicKey
+        ? fetchChallengeViaProxy(publicKey.toBase58()).catch((err: unknown) => {
+            if (process.env.NODE_ENV === "development") {
+              const msg = err instanceof Error ? err.message : String(err);
+              console.warn(`[verify] challenge fetch failed: ${msg}`);
+            }
+            return null;
+          })
         : Promise.resolve(null);
 
-      // Always attach touch capture to document.body. The PulseChallenge
-      // curve DIV is only mounted AFTER we dispatch START_CAPTURE below, so
-      // touchRef.current at this point is either null (first run) or a
-      // detached node from a prior render (retained because
-      // pulse-challenge.tsx assigns the ref manually in a useEffect with
-      // no unmount cleanup). Using the detached node silently broke the
-      // reset flow: pointer events fired on the new DIV but listeners sat
-      // on the dead one, yielding 0 touch samples.
       const studyContext = studyGrant
         ? createStudyContext(
             {
               token: studyGrant.token,
-              feature_schema_version: studyGrant.definition.feature_schema_version,
+              feature_schema_version:
+                studyGrant.definition.feature_schema_version,
               projection_version: studyGrant.definition.projection_version,
             },
             navigator.maxTouchPoints > 0 ? "web-mobile" : "web-desktop",
           )
         : undefined;
-      const session = pulse.createSession(document.body, studyContext);
+      const session = pulse.createSession(undefined, studyContext);
       sessionRef.current = session;
 
       // Motion first—DeviceMotionEvent.requestPermission() requires an active
@@ -537,7 +534,8 @@ export function VerifyWalletConnected({
           if (!session.isMotionCapturing()) {
             dispatch({
               type: "VERIFICATION_FAILED",
-              error: "Motion permission denied. Please allow motion access and try again.",
+              error:
+                "Motion permission denied. Please allow motion access and try again.",
               failedAt: "capture",
             });
             return;
@@ -545,7 +543,8 @@ export function VerifyWalletConnected({
         } catch {
           dispatch({
             type: "VERIFICATION_FAILED",
-            error: "Motion permission denied. Please allow motion access and try again.",
+            error:
+              "Motion permission denied. Please allow motion access and try again.",
             failedAt: "capture",
           });
           return;
@@ -578,15 +577,15 @@ export function VerifyWalletConnected({
           if (audioFrameCount % 2 === 0) setAudioLevel(rms);
         });
       } catch {
+        await stopPulseCapture(session);
         dispatch({
           type: "VERIFICATION_FAILED",
-          error: "Microphone access denied. Please allow microphone permission and try again.",
+          error:
+            "Microphone access denied. Please allow microphone permission and try again.",
           failedAt: "capture",
         });
         return;
       }
-
-      session.startTouch().catch(() => session.skipTouch());
 
       // Await the parallel challenge fetch now that permissions have
       // resolved. The 3-second countdown inside PulseChallenge gives
@@ -597,17 +596,30 @@ export function VerifyWalletConnected({
       // binding server-side.
       const challenge = await challengePromise;
       if (!challenge || !challenge.phrase) {
+        await stopPulseCapture(session);
         dispatch({
           type: "VERIFICATION_FAILED",
-          error: "Verification service unavailable. Please refresh and try again.",
+          error:
+            "Verification service unavailable. Please refresh and try again.",
           // The challenge fetch is part of setting the capture up, and its
           // failure is the relayer being unreachable.
           failedAt: "capture",
         });
         return;
       }
-      setChallengePhrase(challenge.phrase);
-      setChallengeCurve(challenge.curve);
+      try {
+        bindPulseValidationChallenge(session, challenge);
+      } catch {
+        await stopPulseCapture(session);
+        dispatch({
+          type: "VERIFICATION_FAILED",
+          error:
+            "The verification challenge expired during setup. Start again.",
+          failedAt: "capture",
+        });
+        return;
+      }
+      setValidationChallenge(challenge);
 
       dispatch({ type: "START_CAPTURE", intent });
     } finally {
@@ -667,17 +679,48 @@ export function VerifyWalletConnected({
    * appears during the microphone's cold start, which means the buffer opens
    * with the challenge fetch and the three-second countdown in it.
    */
-  function handleCaptureWindowOpen() {
-    sessionRef.current?.markCaptureStart();
+  async function handleCaptureWindowOpen(surface: HTMLDivElement) {
+    const session = sessionRef.current;
+    if (!session) throw new Error("Verification session is unavailable");
+    await session.startTouch({
+      eventTarget: surface,
+      coordinateSurface: surface,
+    });
+    session.markCaptureStart();
+  }
+
+  async function handleCaptureError(error: unknown) {
+    const session = sessionRef.current;
+    if (session) await stopPulseCapture(session);
+    dispatch({
+      type: "VERIFICATION_FAILED",
+      error:
+        error instanceof Error
+          ? sanitizeErrorMessage(error.message)
+          : "Touch capture could not start. Try again.",
+      failedAt: "capture",
+    });
   }
 
   async function handleCaptureComplete(outline: CurveTracePoint[]) {
     const session = sessionRef.current;
     if (!session) return;
 
-    try { await session.stopAudio(); } catch { /* skipped */ }
-    try { await session.stopMotion(); } catch { /* skipped */ }
-    try { await session.stopTouch(); } catch { /* skipped */ }
+    try {
+      await session.stopAudio();
+    } catch {
+      /* skipped */
+    }
+    try {
+      await session.stopMotion();
+    } catch {
+      /* skipped */
+    }
+    try {
+      await session.stopTouch();
+    } catch {
+      /* skipped */
+    }
 
     dispatch({ type: "CAPTURE_DONE" });
 
@@ -695,13 +738,10 @@ export function VerifyWalletConnected({
       intentRef.current === "verify" &&
       wallet?.adapter
         ? createSigningDiagnosticWallet(wallet.adapter, {
-            publicEndpoint: new Connection(
-              clusterApiUrl("devnet"),
-              {
-                commitment: "confirmed",
-                disableRetryOnRateLimit: true,
-              },
-            ),
+            publicEndpoint: new Connection(clusterApiUrl("devnet"), {
+              commitment: "confirmed",
+              disableRetryOnRateLimit: true,
+            }),
             configuredEndpoint: new Connection(diagnosticRpc, {
               commitment: "confirmed",
               disableRetryOnRateLimit: true,
@@ -716,9 +756,14 @@ export function VerifyWalletConnected({
         ? session.completeReset(completionWallet, connection, (stage) => {
             setProcessingStage(stage);
           })
-        : session.complete(completionWallet, connection, (stage) => {
-            setProcessingStage(stage);
-          }, outline);
+        : session.complete(
+            completionWallet,
+            connection,
+            (stage) => {
+              setProcessingStage(stage);
+            },
+            outline,
+          );
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(
         () =>
@@ -728,17 +773,21 @@ export function VerifyWalletConnected({
             ),
           ),
         backstopMs,
-      )
+      ),
     );
 
     Promise.race([proofPromise, timeoutPromise])
       .then(async (result) => {
         if (studyGrant) {
-          void Promise.resolve(onStudyRecordStatus?.(result.studyRecordStatus)).catch(() => undefined);
+          void Promise.resolve(
+            onStudyRecordStatus?.(result.studyRecordStatus),
+          ).catch(() => undefined);
         }
         dispatch({ type: "PROOF_COMPLETE" });
         if (result.compositeRiskScore !== undefined) {
-          console.log(`[Entros] Verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`);
+          console.log(
+            `[Entros] Verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`,
+          );
         }
         if (result.success) {
           attemptsUsedRef.current = 0;
@@ -823,7 +872,7 @@ export function VerifyWalletConnected({
 
   function handleReset() {
     sessionRef.current = null;
-    (touchRef as React.MutableRefObject<HTMLDivElement | null>).current = null;
+    setValidationChallenge(null);
     setAudioLevel(0);
     // Wipe the retry budget when the user explicitly resets—a fresh
     // session starts at 0 attempts used.
@@ -944,9 +993,7 @@ export function VerifyWalletConnected({
               }
               disabled={
                 studyCaptureBlocked ||
-                (studyPreparationRetryAllowed
-                  ? !onStudyPrepare
-                  : !onStudyLeave)
+                (studyPreparationRetryAllowed ? !onStudyPrepare : !onStudyLeave)
               }
               className="rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -979,7 +1026,9 @@ export function VerifyWalletConnected({
     const DAY_SEC = 86400;
     const nowSec = Math.floor(Date.now() / 1000);
     const secondsSinceLastVerif =
-      lastVerificationTimestamp !== null ? nowSec - lastVerificationTimestamp : null;
+      lastVerificationTimestamp !== null
+        ? nowSec - lastVerificationTimestamp
+        : null;
     const showCadenceHint =
       secondsSinceLastVerif !== null &&
       secondsSinceLastVerif >= 0 &&
@@ -989,7 +1038,9 @@ export function VerifyWalletConnected({
         ? Math.floor(secondsSinceLastVerif / 3600)
         : 0;
     const hoursAgoLabel =
-      hoursAgo === 0 ? "less than an hour" : `${hoursAgo} hour${hoursAgo === 1 ? "" : "s"}`;
+      hoursAgo === 0
+        ? "less than an hour"
+        : `${hoursAgo} hour${hoursAgo === 1 ? "" : "s"}`;
 
     return (
       <div className="space-y-6">
@@ -1005,19 +1056,31 @@ export function VerifyWalletConnected({
             simultaneously for 12 seconds. Then sign with your wallet.
           </p>
         </div>
-        <div className={`grid gap-4 mx-auto max-w-sm ${hasMotion ? "grid-cols-3" : "grid-cols-2"}`}>
+        <div
+          className={`grid gap-4 mx-auto max-w-sm ${hasMotion ? "grid-cols-3" : "grid-cols-2"}`}
+        >
           <div className="flex flex-col items-center gap-2 text-center">
             <span className="text-cyan font-mono text-xl font-bold">1</span>
-            <span className="text-sm text-foreground/70">Speak the displayed phrase</span>
+            <span className="text-sm text-foreground/70">
+              Speak the displayed phrase
+            </span>
           </div>
           <div className="flex flex-col items-center gap-2 text-center">
-            <span className="text-solana-green font-mono text-xl font-bold">2</span>
-            <span className="text-sm text-foreground/70">Trace the curve on screen</span>
+            <span className="text-solana-green font-mono text-xl font-bold">
+              2
+            </span>
+            <span className="text-sm text-foreground/70">
+              Trace the curve on screen
+            </span>
           </div>
           {hasMotion && (
             <div className="flex flex-col items-center gap-2 text-center">
-              <span className="text-solana-purple font-mono text-xl font-bold">3</span>
-              <span className="text-sm text-foreground/70">Move naturally throughout</span>
+              <span className="text-solana-purple font-mono text-xl font-bold">
+                3
+              </span>
+              <span className="text-sm text-foreground/70">
+                Move naturally throughout
+              </span>
             </div>
           )}
         </div>
@@ -1025,25 +1088,29 @@ export function VerifyWalletConnected({
           <div className="mx-auto max-w-sm rounded-lg border border-cyan/20 bg-cyan/5 px-4 py-3">
             <p className="text-center text-xs text-foreground/70 leading-relaxed">
               You verified {hoursAgoLabel} ago. Trust Score grows with the
-              number of separate weeks you verify in, so this one will not
-              raise it. Verifying again is free of any penalty, and an
-              integrator can ask for a fresh check whenever it needs one.
+              number of separate weeks you verify in, so this one will not raise
+              it. Verifying again is free of any penalty, and an integrator can
+              ask for a fresh check whenever it needs one.
             </p>
           </div>
         )}
         {micPermissionState === "denied" && (
           <div className="mx-auto max-w-sm rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
             <p className="text-center text-xs text-foreground/70 leading-relaxed">
-              Microphone access is blocked for this site. Click the lock icon
-              in your address bar, set Microphone to Allow, then refresh this
-              page to verify.
+              Microphone access is blocked for this site. Click the lock icon in
+              your address bar, set Microphone to Allow, then refresh this page
+              to verify.
             </p>
           </div>
         )}
         <div className="flex justify-center">
           <button
             onClick={() => handleStart("verify")}
-            disabled={requesting || micPermissionState === "denied" || studyCaptureBlocked}
+            disabled={
+              requesting ||
+              micPermissionState === "denied" ||
+              studyCaptureBlocked
+            }
             className="
               inline-flex items-center justify-center gap-2
               rounded-full bg-foreground px-6 py-3
@@ -1075,18 +1142,18 @@ export function VerifyWalletConnected({
     // Invariant: handleStart only dispatches START_CAPTURE after the
     // server-issued phrase is in state, so challengePhrase is non-null
     // here. Guard kept for type safety.
-    if (!challengePhrase) {
+    if (!validationChallenge) {
       return null;
     }
     return (
       <PulseChallenge
         onComplete={handleCaptureComplete}
         onCaptureWindowOpen={handleCaptureWindowOpen}
-        touchRef={touchRef}
+        onCaptureError={handleCaptureError}
         audioLevel={audioLevel}
         hasMotion={hasMotion}
-        phrase={challengePhrase}
-        curve={challengeCurve}
+        phrase={validationChallenge.phrase}
+        curve={validationChallenge.curve}
       />
     );
   }
@@ -1114,9 +1181,9 @@ export function VerifyWalletConnected({
     ? "Start next study trial"
     : studyGrant
       ? "Retry study trial"
-    : leaveStudyAfterResult
-      ? "Continue with normal verification"
-      : null;
+      : leaveStudyAfterResult
+        ? "Continue with normal verification"
+        : null;
 
   if (state.step === "soft_failed") {
     return (
@@ -1158,8 +1225,12 @@ export function VerifyWalletConnected({
           }
           onReset={handleResultRetry}
           actionPending={studyNextTrialPending}
-          secondaryActionLabel={studyNextTrialAvailable ? "Finish for now" : undefined}
-          onSecondaryAction={studyNextTrialAvailable ? handleResultCancel : undefined}
+          secondaryActionLabel={
+            studyNextTrialAvailable ? "Finish for now" : undefined
+          }
+          onSecondaryAction={
+            studyNextTrialAvailable ? handleResultCancel : undefined
+          }
           walletPubkey={publicKey?.toBase58()}
           trustScore={trustScore}
           showShare={!wasReset}

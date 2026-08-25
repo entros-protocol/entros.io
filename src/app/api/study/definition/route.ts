@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
+  CLIENT_PROJECTION_VERSION,
+  featureSchemaVersionForProjection,
+} from "@entros/pulse-sdk";
+import {
   POPULATION_STUDY_CONSENT_VERSION,
   isPublicStudyDefinitionRequest,
   parseStudyDefinition,
@@ -19,10 +23,16 @@ function noStoreJson(body: unknown, status = 200) {
 export async function POST(request: Request) {
   let body: Record<string, unknown> | null;
   try {
-    body = (await readBoundedJson(request, MAX_BODY_BYTES)) as Record<string, unknown>;
+    body = (await readBoundedJson(request, MAX_BODY_BYTES)) as Record<
+      string,
+      unknown
+    >;
   } catch (error) {
     const status = error instanceof RangeError ? 413 : 400;
-    return noStoreJson({ error: status === 413 ? "Request too large" : "Invalid request" }, status);
+    return noStoreJson(
+      { error: status === 413 ? "Request too large" : "Invalid request" },
+      status,
+    );
   }
   if (!isPublicStudyDefinitionRequest(body)) {
     return noStoreJson({ error: "Invalid request" }, 400);
@@ -31,7 +41,11 @@ export async function POST(request: Request) {
   if (!upstream.ok) return upstream.response;
 
   const definition = parseStudyDefinition(upstream.body);
-  if (!definition) return noStoreJson({ error: "Study service returned an invalid response" }, 502);
+  if (!definition)
+    return noStoreJson(
+      { error: "Study service returned an invalid response" },
+      502,
+    );
   const localHash = createHash("sha256")
     .update(studyConsentDocument(definition), "utf8")
     .digest("hex");
@@ -39,13 +53,19 @@ export async function POST(request: Request) {
     definition.consent_version !== POPULATION_STUDY_CONSENT_VERSION ||
     definition.consent_hash_hex !== localHash
   ) {
-    return noStoreJson({ error: "The active consent document is unavailable" }, 503);
+    return noStoreJson(
+      { error: "The active consent document is unavailable" },
+      503,
+    );
   }
   return noStoreJson(definition);
 }
 
 async function proxyStudy(path: string, body: unknown) {
-  if (process.env.NODE_ENV === "development" && process.env.ENTROS_STUDY_LOCAL_PREVIEW === "1") {
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.ENTROS_STUDY_LOCAL_PREVIEW === "1"
+  ) {
     return localPreview(path, body);
   }
   const relayerUrl = process.env.RELAYER_URL;
@@ -105,8 +125,14 @@ function localPreview(path: string, body: unknown) {
     };
   }
   const consentHash = createHash("sha256")
-    .update(studyConsentDocument({ retention_days: 14, trial_limit: 3 }), "utf8")
+    .update(
+      studyConsentDocument({ retention_days: 14, trial_limit: 3 }),
+      "utf8",
+    )
     .digest("hex");
+  const projectionVersion = CLIENT_PROJECTION_VERSION;
+  const featureSchemaVersion =
+    featureSchemaVersionForProjection(projectionVersion);
   return {
     ok: true as const,
     body: {
@@ -116,10 +142,10 @@ function localPreview(path: string, body: unknown) {
       retention_days: 14,
       trial_limit: 3,
       visit_gap_secs: 14_400,
-      feature_schema_version: 4,
-      projection_version: 1,
-      seed_generation_id: "local-preview-seed-v1",
-      projection_config_id: "local-preview-projection-v1",
+      feature_schema_version: featureSchemaVersion,
+      projection_version: projectionVersion,
+      seed_generation_id: `local-preview-seed-v${projectionVersion}`,
+      projection_config_id: `local-preview-projection-v${projectionVersion}`,
       collects_full_vector: true,
       preview_only: true,
     } satisfies StudyDefinition,

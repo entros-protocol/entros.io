@@ -19,16 +19,35 @@
  */
 import type { LissajousParams } from "@entros/pulse-sdk";
 
+const MIN_CAPTURE_START_LIFETIME_MS = 120_000;
+const ISSUED_CURVE_RATIOS = new Set(["1:2", "2:3", "3:4", "3:5", "4:5"]);
+const ISSUED_CURVE_ANCHORS = new Set([
+  "0:0",
+  "100:0",
+  "0:100",
+  "100:100",
+  "50:50",
+]);
+
 export interface ChallengeResponse {
   nonce: Uint8Array;
   phrase: string;
   expiresIn: number;
-  curve?: LissajousParams;
+  expiresAtMs: number;
+  curve: LissajousParams;
+}
+
+export function challengeCanStartCapture(
+  challenge: Pick<ChallengeResponse, "expiresAtMs">,
+  nowMs = performance.now(),
+): boolean {
+  return challenge.expiresAtMs - nowMs >= MIN_CAPTURE_START_LIFETIME_MS;
 }
 
 export async function fetchChallengeViaProxy(
   walletAddress: string,
 ): Promise<ChallengeResponse> {
+  const requestedAtMs = performance.now();
   const url = `/api/relay-challenge?wallet=${encodeURIComponent(walletAddress)}`;
 
   const controller = new AbortController();
@@ -49,7 +68,9 @@ export async function fetchChallengeViaProxy(
   }
 
   if (!response.ok) {
-    throw new Error(`Relay returned ${response.status} for /api/relay-challenge`);
+    throw new Error(
+      `Relay returned ${response.status} for /api/relay-challenge`,
+    );
   }
 
   const body = (await response.json()) as {
@@ -66,28 +87,53 @@ export async function fetchChallengeViaProxy(
     };
   };
 
-  if (!Array.isArray(body.nonce) || body.nonce.length !== 32) {
+  if (
+    !Array.isArray(body.nonce) ||
+    body.nonce.length !== 32 ||
+    body.nonce.some(
+      (value) => !Number.isInteger(value) || value < 0 || value > 255,
+    )
+  ) {
     throw new Error("Relay returned malformed nonce; expected 32-byte array");
   }
   if (typeof body.phrase !== "string" || body.phrase.trim().length === 0) {
     throw new Error("Relay returned empty challenge phrase");
   }
+  if (!Number.isFinite(body.expires_in) || body.expires_in <= 0) {
+    throw new Error("Relay returned invalid challenge lifetime");
+  }
 
-  const curve: LissajousParams | undefined = body.curve
-    ? {
-        a: body.curve.a,
-        b: body.curve.b,
-        delta: body.curve.delta,
-        points: body.curve.points ?? 200,
-        anchorX: body.curve.anchor_x,
-        anchorY: body.curve.anchor_y,
-      }
-    : undefined;
+  const issuedCurve = body.curve;
+  if (
+    !issuedCurve ||
+    !Number.isInteger(issuedCurve.a) ||
+    !Number.isInteger(issuedCurve.b) ||
+    !ISSUED_CURVE_RATIOS.has(`${issuedCurve.a}:${issuedCurve.b}`) ||
+    !Number.isFinite(issuedCurve.delta) ||
+    issuedCurve.delta < Math.PI * 0.25 ||
+    issuedCurve.delta > Math.PI * 0.75 ||
+    issuedCurve.points !== 200 ||
+    !Number.isInteger(issuedCurve.anchor_x) ||
+    !Number.isInteger(issuedCurve.anchor_y) ||
+    !ISSUED_CURVE_ANCHORS.has(`${issuedCurve.anchor_x}:${issuedCurve.anchor_y}`)
+  ) {
+    throw new Error("Relay returned malformed challenge curve");
+  }
+
+  const curve: LissajousParams = {
+    a: issuedCurve.a,
+    b: issuedCurve.b,
+    delta: issuedCurve.delta,
+    points: issuedCurve.points,
+    anchorX: issuedCurve.anchor_x,
+    anchorY: issuedCurve.anchor_y,
+  };
 
   return {
     nonce: Uint8Array.from(body.nonce),
     phrase: body.phrase,
     expiresIn: body.expires_in,
+    expiresAtMs: requestedAtMs + body.expires_in * 1_000,
     curve,
   };
 }

@@ -7,11 +7,15 @@ import { PublicKey } from "@solana/web3.js";
 import { Wallet } from "lucide-react";
 import {
   type PulseSession,
+  type CurveTracePoint,
   PROGRAM_IDS,
   MAX_VERIFICATION_MS,
   isClientOriginReason,
 } from "@entros/pulse-sdk";
-import { fetchChallengeViaProxy } from "@/lib/relay-challenge";
+import {
+  fetchChallengeViaProxy,
+  type ChallengeResponse,
+} from "@/lib/relay-challenge";
 
 import type { ParsedEmbedParams } from "@/lib/embed/url-params";
 import type { EmbedContext } from "@/lib/embed/post-message";
@@ -29,6 +33,10 @@ import { ProvingView, SigningView } from "@/components/verify/step-views";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
 import { usePulse } from "@/components/providers/pulse-provider";
+import {
+  bindPulseValidationChallenge,
+  stopPulseCapture,
+} from "@/lib/pulse-session";
 
 import {
   PREV_COMMITMENT_MISMATCH_PATTERN,
@@ -71,7 +79,6 @@ const BACKSTOP_ERROR_NAME = "EntrosBackstopTimeout";
 // The `validation_unavailable` literal used to be redeclared here. It now
 // comes from the SDK's taxonomy via `isClientOriginReason`, which also covers
 // `validation_timeout`, a failure this surface previously could not name.
-
 
 /**
  * Reads `trust_score` directly from the IdentityState PDA via a byte
@@ -156,11 +163,11 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
   const [processingStage, setProcessingStage] = useState(
     "Extracting features...",
   );
-  const [challengePhrase, setChallengePhrase] = useState<string | null>(null);
+  const [validationChallenge, setValidationChallenge] =
+    useState<ChallengeResponse | null>(null);
 
   const sessionRef = useRef<PulseSession | null>(null);
   const startingRef = useRef(false);
-  const touchRef = useRef<HTMLDivElement>(null);
   const submittingEmittedRef = useRef(false);
 
   const ctx = useMemo<EmbedContext>(
@@ -180,7 +187,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     if (startingRef.current) return;
     startingRef.current = true;
     setRequesting(true);
-    setChallengePhrase(null);
+    setValidationChallenge(null);
     submittingEmittedRef.current = false;
 
     try {
@@ -189,23 +196,23 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
       // verify-wallet-connected.tsx) prohibits awaiting network round-trips
       // before the motion prompt — we only await the challenge AFTER all
       // permissions resolve, just before transitioning to the capturing UI.
-      const challengePromise: Promise<string | null> = publicKey
-        ? fetchChallengeViaProxy(publicKey.toBase58())
-            .then((c) => c.phrase)
-            .catch(() => null)
+      const challengePromise: Promise<ChallengeResponse | null> = publicKey
+        ? fetchChallengeViaProxy(publicKey.toBase58()).catch(() => null)
         : Promise.resolve(null);
 
-      const session = pulse.createSession(document.body);
+      const session = pulse.createSession();
       sessionRef.current = session;
 
       if (hasMotion) {
         try {
           await session.startMotion();
           if (!session.isMotionCapturing()) {
+            await stopPulseCapture(session);
             fail("validation_failed");
             return;
           }
         } catch {
+          await stopPulseCapture(session);
           fail("validation_failed");
           return;
         }
@@ -220,23 +227,30 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           if (audioFrameCount % 2 === 0) setAudioLevel(rms);
         });
       } catch {
+        await stopPulseCapture(session);
         fail("validation_failed");
         return;
       }
-
-      session.startTouch().catch(() => session.skipTouch());
 
       // Fail the verification if no phrase came back. The previous
       // silent fallback to client-generated nonsense produced a broken
       // UX (gibberish syllables) and bypassed phrase content binding
       // server-side, opening a bypass for any path that blocks the
       // /challenge fetch.
-      const phrase = await challengePromise;
-      if (!phrase) {
+      const challenge = await challengePromise;
+      if (!challenge) {
+        await stopPulseCapture(session);
         fail("network_error");
         return;
       }
-      setChallengePhrase(phrase);
+      try {
+        bindPulseValidationChallenge(session, challenge);
+      } catch {
+        await stopPulseCapture(session);
+        fail("timeout");
+        return;
+      }
+      setValidationChallenge(challenge);
 
       emitHeartbeat(ctx, "capturing");
       setState({ step: "capturing" });
@@ -252,11 +266,23 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
    * appears during the microphone's cold start, which means the buffer opens
    * with the challenge fetch and the countdown inside it.
    */
-  function handleCaptureWindowOpen() {
-    sessionRef.current?.markCaptureStart();
+  async function handleCaptureWindowOpen(surface: HTMLDivElement) {
+    const session = sessionRef.current;
+    if (!session) throw new Error("Verification session is unavailable");
+    await session.startTouch({
+      eventTarget: surface,
+      coordinateSurface: surface,
+    });
+    session.markCaptureStart();
   }
 
-  async function handleCaptureComplete() {
+  async function handleCaptureError() {
+    const session = sessionRef.current;
+    if (session) await stopPulseCapture(session);
+    fail("validation_failed");
+  }
+
+  async function handleCaptureComplete(outline: CurveTracePoint[]) {
     const session = sessionRef.current;
     if (!session) return;
 
@@ -293,6 +319,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           setState({ step: "signing" });
         }
       },
+      outline,
     );
 
     const timeoutPromise = new Promise<never>((_, reject) =>
@@ -306,7 +333,9 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     Promise.race([proofPromise, timeoutPromise])
       .then(async (result) => {
         if (result.compositeRiskScore !== undefined) {
-          console.log(`[Entros] Embed popup verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`);
+          console.log(
+            `[Entros] Embed popup verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`,
+          );
         }
         if (!result.success) {
           // `validation_unavailable` is the SDK's signal for an unreachable
@@ -341,7 +370,10 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
             setState({ step: "failed-baseline-stale" });
             return;
           }
-          fail(bucketForResult(result) ?? (errorMsg ? categorizeError(errorMsg) : "unknown"));
+          fail(
+            bucketForResult(result) ??
+              (errorMsg ? categorizeError(errorMsg) : "unknown"),
+          );
           return;
         }
 
@@ -396,17 +428,18 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     // Invariant: handleStart only transitions to "capturing" after the
     // server-issued phrase is in state, so challengePhrase is non-null
     // here. Guard kept for type safety.
-    if (!challengePhrase) {
+    if (!validationChallenge) {
       return null;
     }
     return (
       <PulseChallenge
         onComplete={handleCaptureComplete}
         onCaptureWindowOpen={handleCaptureWindowOpen}
-        touchRef={touchRef}
+        onCaptureError={handleCaptureError}
         audioLevel={audioLevel}
         hasMotion={hasMotion}
-        phrase={challengePhrase}
+        phrase={validationChallenge.phrase}
+        curve={validationChallenge.curve}
       />
     );
   }

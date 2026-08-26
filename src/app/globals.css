@@ -24,6 +24,15 @@
   --color-border: rgba(0, 0, 0, 0.08);
   --color-border-hover: rgba(0, 196, 212, 0.3);
   --color-effect: rgba(0, 160, 180, 0.6);
+  --verification-surface-border: rgba(26, 26, 31, 0.07);
+  --verification-surface-start: rgba(240, 240, 236, 0.78);
+  --verification-surface-end: rgba(250, 250, 248, 0.98);
+  --verification-surface-highlight: rgba(26, 26, 31, 0.03);
+  --verification-surface-shadow: rgba(26, 26, 31, 0.06);
+  --verification-accent-border: rgba(10, 173, 188, 0.1);
+  --verification-accent-wash: rgba(10, 173, 188, 0.075);
+  --verification-accent-text: #007888;
+  --verification-focus-ring: #007888;
 }
 
 .dark {
@@ -42,6 +51,15 @@
   --color-border: rgba(255, 255, 255, 0.06);
   --color-border-hover: rgba(0, 240, 255, 0.2);
   --color-effect: rgba(0, 240, 255, 0.6);
+  --verification-surface-border: rgba(232, 230, 224, 0.07);
+  --verification-surface-start: rgba(10, 10, 15, 0.92);
+  --verification-surface-end: rgba(0, 0, 0, 0.98);
+  --verification-surface-highlight: rgba(255, 255, 255, 0.035);
+  --verification-surface-shadow: rgba(0, 0, 0, 0.42);
+  --verification-accent-border: rgba(34, 211, 230, 0.1);
+  --verification-accent-wash: rgba(34, 211, 230, 0.075);
+  --verification-accent-text: #22d3ee;
+  --verification-focus-ring: #22d3ee;
 }
 
 /* ----------------------------------------------------------------
@@ -132,6 +150,34 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
+}
+
+/* Verification result and notice surfaces use light structure and layered depth. */
+.verification-surface {
+  border: 1px solid var(--verification-surface-border);
+  background: linear-gradient(
+    145deg,
+    var(--verification-surface-start) 0%,
+    var(--verification-surface-end) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 var(--verification-surface-highlight),
+    0 20px 56px var(--verification-surface-shadow);
+}
+
+.verification-surface--accent {
+  border-color: var(--verification-accent-border);
+  background:
+    radial-gradient(
+      circle at 14% -18%,
+      var(--verification-accent-wash),
+      transparent 54%
+    ),
+    linear-gradient(
+      145deg,
+      var(--verification-surface-start) 0%,
+      var(--verification-surface-end) 100%
+    );
 }
 
 /* Minimal scrollbars for code blocks and overflow containers */

@@ -47,13 +47,24 @@ describe("PulseChallenge", () => {
     });
 
     expect(touchRef.current?.querySelector("svg")).toBeNull();
+    expect(touchRef.current?.getAttribute("aria-hidden")).toBe("true");
+    expect(touchRef.current?.parentElement?.className).toContain(
+      "min-h-[340px]",
+    );
     expect(container.textContent).not.toContain("Trace the curve");
+    expect(container.textContent).toContain("Recording starts in");
+    expect(container.textContent).toContain("Get ready to speak and trace.");
+    expect(container.textContent).toContain(
+      "When recording starts, say the phrase and trace the curve with your finger.",
+    );
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(3_000);
     });
     expect(onCaptureWindowOpen).toHaveBeenCalledOnce();
     expect(touchRef.current?.querySelector("svg")).toBeNull();
+    expect(container.textContent).toContain("Preparing capture");
+    expect(container.textContent).not.toContain("Ready");
 
     await act(async () => {
       openCaptureWindow?.();
@@ -61,7 +72,9 @@ describe("PulseChallenge", () => {
     });
 
     expect(touchRef.current?.querySelector("svg")).not.toBeNull();
+    expect(touchRef.current?.getAttribute("aria-hidden")).toBe("false");
     expect(container.textContent).toContain("Trace the curve");
+    expect(container.textContent).not.toContain("Recording starts in");
   });
 
   it("mounts one trace surface before touch capture starts", async () => {

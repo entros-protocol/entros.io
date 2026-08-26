@@ -25,6 +25,45 @@ afterEach(async () => {
 });
 
 describe("PulseChallenge", () => {
+  it("keeps the issued curve hidden until capture starts", async () => {
+    const touchRef = createRef<HTMLDivElement>();
+    let openCaptureWindow: (() => void) | undefined;
+    const onCaptureWindowOpen = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          openCaptureWindow = resolve;
+        }),
+    );
+
+    await act(async () => {
+      root.render(
+        <PulseChallenge
+          phrase="amber cedar drift maple orbit"
+          touchRef={touchRef}
+          onComplete={vi.fn()}
+          onCaptureWindowOpen={onCaptureWindowOpen}
+        />,
+      );
+    });
+
+    expect(touchRef.current?.querySelector("svg")).toBeNull();
+    expect(container.textContent).not.toContain("Trace the curve");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000);
+    });
+    expect(onCaptureWindowOpen).toHaveBeenCalledOnce();
+    expect(touchRef.current?.querySelector("svg")).toBeNull();
+
+    await act(async () => {
+      openCaptureWindow?.();
+      await Promise.resolve();
+    });
+
+    expect(touchRef.current?.querySelector("svg")).not.toBeNull();
+    expect(container.textContent).toContain("Trace the curve");
+  });
+
   it("mounts one trace surface before touch capture starts", async () => {
     const touchRef = createRef<HTMLDivElement>();
     const onCaptureWindowOpen = vi.fn(async (surface: HTMLDivElement) => {
@@ -75,7 +114,9 @@ describe("PulseChallenge", () => {
     await act(async () => Promise.resolve());
 
     const surface = touchRef.current!;
-    vi.spyOn(surface, "getBoundingClientRect").mockReturnValue({
+    const measureSurface = vi
+      .spyOn(surface, "getBoundingClientRect")
+      .mockReturnValue({
       left: 0,
       top: 0,
       right: 200,
@@ -85,7 +126,7 @@ describe("PulseChallenge", () => {
       x: 0,
       y: 0,
       toJSON: () => ({}),
-    });
+      });
     const commitsBefore = commits;
 
     await act(async () => {
@@ -102,9 +143,11 @@ describe("PulseChallenge", () => {
     });
 
     expect(commits - commitsBefore).toBeLessThanOrEqual(2);
-    expect(
-      surface.querySelectorAll("path")[1]?.getAttribute("d")?.length,
-    ).toBeGreaterThan(0);
+    expect(measureSurface).toHaveBeenCalledOnce();
+    const displayedPath =
+      surface.querySelectorAll("path")[1]?.getAttribute("d") ?? "";
+    expect(displayedPath.length).toBeGreaterThan(0);
+    expect(displayedPath.match(/[ML]/g)?.length).toBeLessThanOrEqual(2);
   });
 
   it("ignores display points outside the trace surface", async () => {
@@ -148,6 +191,73 @@ describe("PulseChallenge", () => {
     });
 
     expect(surface.querySelectorAll("path")[1]?.getAttribute("d")).toBe("");
+  });
+
+  it("never rewrites a trail segment that was already displayed", async () => {
+    const touchRef = createRef<HTMLDivElement>();
+    await act(async () => {
+      root.render(
+        <PulseChallenge
+          phrase="amber cedar drift maple orbit"
+          touchRef={touchRef}
+          onComplete={vi.fn()}
+          onCaptureWindowOpen={vi.fn()}
+        />,
+      );
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000);
+    });
+    await act(async () => Promise.resolve());
+
+    const surface = touchRef.current!;
+    vi.spyOn(surface, "getBoundingClientRect").mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 200,
+      bottom: 200,
+      width: 200,
+      height: 200,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+
+    await act(async () => {
+      for (let index = 0; index < 250; index += 1) {
+        surface.dispatchEvent(
+          new MouseEvent(index === 0 ? "pointerdown" : "pointermove", {
+            bubbles: true,
+            clientX: (index * 7) % 199,
+            clientY: (index * 11) % 199,
+          }),
+        );
+      }
+      await vi.advanceTimersByTimeAsync(20);
+    });
+
+    const trace = surface.querySelectorAll("path")[1]!;
+    const displayed = trace.getAttribute("d")!;
+    expect(displayed.length).toBeGreaterThan(0);
+
+    await act(async () => {
+      for (let index = 250; index < 270; index += 1) {
+        surface.dispatchEvent(
+          new MouseEvent("pointermove", {
+            bubbles: true,
+            clientX: (index * 7) % 199,
+            clientY: (index * 11) % 199,
+          }),
+        );
+      }
+      await vi.advanceTimersByTimeAsync(20);
+    });
+
+    const extendedPath = trace.getAttribute("d") ?? "";
+    expect(extendedPath.startsWith(displayed)).toBe(true);
+    expect(extendedPath.endsWith(`${(269 * 7) % 199} ${(269 * 11) % 199}`)).toBe(
+      true,
+    );
   });
 });
 

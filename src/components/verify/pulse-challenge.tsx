@@ -11,7 +11,6 @@ import { appendBoundedPoint } from "../../lib/bounded-trace";
 
 const CAPTURE_DURATION_S = 12;
 const OUTLINE_SOURCE_LIMIT = 512;
-const DISPLAY_POINT_LIMIT = 256;
 /**
  * Grace period between the final tick rendering and handing the capture back,
  * so the user sees the counter reach zero rather than the view swapping under
@@ -63,11 +62,15 @@ export function PulseChallenge({
   const [elapsed, setElapsed] = useState(0);
   const [touchLevel, setTouchLevel] = useState(0);
   const touchLevelRef = useRef(0);
-  const displayPointsRef = useRef<CurveTracePoint[]>([]);
   const outlineRef = useRef<CurveTracePoint[]>([]);
   const svgContainerRef = useRef<HTMLDivElement>(null);
+  const captureRectRef = useRef<DOMRect | null>(null);
   const tracePathRef = useRef<SVGPathElement>(null);
   const traceFrameRef = useRef<number | null>(null);
+  const tracePathDataRef = useRef("");
+  const pendingTraceStartRef = useRef<CurveTracePoint | null>(null);
+  const pendingTracePointRef = useRef<CurveTracePoint | null>(null);
+  const displayedTracePointRef = useRef<CurveTracePoint | null>(null);
   const lastTouchPos = useRef<{ x: number; y: number } | null>(null);
   const completedRef = useRef(false);
   const [audioHintVisible, setAudioHintVisible] = useState(false);
@@ -202,7 +205,7 @@ export function PulseChallenge({
       if (!captureStarted) return;
       const container = svgContainerRef.current;
       if (!container) return;
-      const rect = container.getBoundingClientRect();
+      const rect = captureRectRef.current ?? container.getBoundingClientRect();
       if (
         !Number.isFinite(rect.width) ||
         !Number.isFinite(rect.height) ||
@@ -211,6 +214,7 @@ export function PulseChallenge({
       ) {
         return;
       }
+      captureRectRef.current = rect;
       const unitX = (e.clientX - rect.left) / rect.width;
       const unitY = (e.clientY - rect.top) / rect.height;
       if (unitX < 0 || unitX > 1 || unitY < 0 || unitY > 1) return;
@@ -236,24 +240,54 @@ export function PulseChallenge({
 
       const point = { x, y, t: performance.now() };
       appendBoundedPoint(outlineRef.current, point, OUTLINE_SOURCE_LIMIT);
-      appendBoundedPoint(displayPointsRef.current, point, DISPLAY_POINT_LIMIT);
+      if (
+        displayedTracePointRef.current === null &&
+        pendingTraceStartRef.current === null
+      ) {
+        pendingTraceStartRef.current = point;
+      }
+      pendingTracePointRef.current = point;
       if (traceFrameRef.current === null) {
         traceFrameRef.current = requestAnimationFrame(() => {
           traceFrameRef.current = null;
-          const points = displayPointsRef.current;
-          const path = points
-            .map(
-              (entry, index) =>
-                `${index === 0 ? "M" : "L"} ${entry.x} ${entry.y}`,
-            )
-            .join(" ");
-          tracePathRef.current?.setAttribute("d", path);
+          const pointToDisplay = pendingTracePointRef.current;
+          const firstPoint =
+            displayedTracePointRef.current ?? pendingTraceStartRef.current;
+          pendingTraceStartRef.current = null;
+          pendingTracePointRef.current = null;
+          if (firstPoint && pointToDisplay) {
+            if (displayedTracePointRef.current === null) {
+              tracePathDataRef.current = `M ${firstPoint.x} ${firstPoint.y}`;
+            }
+            if (
+              firstPoint.x !== pointToDisplay.x ||
+              firstPoint.y !== pointToDisplay.y
+            ) {
+              tracePathDataRef.current += ` L ${pointToDisplay.x} ${pointToDisplay.y}`;
+            }
+            displayedTracePointRef.current = pointToDisplay;
+            tracePathRef.current?.setAttribute("d", tracePathDataRef.current);
+          }
           setTouchLevel(touchLevelRef.current);
         });
       }
     },
     [captureStarted],
   );
+
+  useEffect(() => {
+    if (!captureStarted) {
+      captureRectRef.current = null;
+      return;
+    }
+    const invalidateCaptureRect = () => {
+      captureRectRef.current = null;
+    };
+    window.addEventListener("resize", invalidateCaptureRect, { passive: true });
+    return () => {
+      window.removeEventListener("resize", invalidateCaptureRect);
+    };
+  }, [captureStarted]);
 
   useEffect(() => {
     return () => {
@@ -402,34 +436,43 @@ export function PulseChallenge({
 
       {/* Curve */}
       <div>
-        <p className="text-center text-xs font-mono uppercase tracking-widest text-solana-green mb-1">
-          Trace the curve
-        </p>
+        {captureStarted && (
+          <p className="text-center text-xs font-mono uppercase tracking-widest text-solana-green mb-1">
+            Trace the curve
+          </p>
+        )}
         <div
           ref={svgContainerRef}
-          className="mx-auto h-[200px] w-[200px] md:h-[240px] md:w-[240px] rounded-2xl border border-solana-green/50 bg-surface/30 flex items-center justify-center touch-none cursor-crosshair"
+          aria-hidden={!captureStarted}
+          className={`mx-auto flex h-[200px] w-[200px] items-center justify-center rounded-2xl border touch-none md:h-[240px] md:w-[240px] ${
+            captureStarted
+              ? "cursor-crosshair border-solana-green/50 bg-surface/30"
+              : "cursor-default border-transparent bg-transparent"
+          }`}
         >
-          <svg viewBox="0 0 200 200" className="h-full w-full">
-            <path
-              d={svgPath}
-              fill="none"
-              stroke="var(--color-solana-green)"
-              strokeWidth="3"
-              strokeOpacity={0.7}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              ref={tracePathRef}
-              d=""
-              fill="none"
-              stroke="var(--color-cyan)"
-              strokeWidth="3"
-              strokeOpacity="0.95"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {captureStarted && (
+            <svg viewBox="0 0 200 200" className="h-full w-full">
+              <path
+                d={svgPath}
+                fill="none"
+                stroke="var(--color-solana-green)"
+                strokeWidth="3"
+                strokeOpacity={0.7}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                ref={tracePathRef}
+                d=""
+                fill="none"
+                stroke="var(--color-cyan)"
+                strokeWidth="3"
+                strokeOpacity="0.95"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </div>
       </div>
 

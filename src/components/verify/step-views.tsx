@@ -20,6 +20,7 @@ import {
   failureSpend,
   requiresBaselineRecoveryChoice,
 } from "./categorize-failure";
+import { primaryVerificationActionClass } from "./verification-styles";
 
 import { buildShareUrl, buildTwitterIntent } from "@/lib/share";
 
@@ -182,7 +183,7 @@ export function VerifiedView({
       </div>
       <div className="mx-auto max-w-sm space-y-3">
         {showShare && typeof trustScore === "number" && (
-          <div className="rounded-lg border border-cyan/30 bg-cyan/[0.04] p-5 text-center">
+          <div className="verification-surface verification-surface--accent p-5 text-center">
             <p className="text-xs font-mono uppercase tracking-widest text-cyan/80 mb-2">
               Your Trust Score
             </p>
@@ -191,7 +192,7 @@ export function VerifiedView({
             </p>
           </div>
         )}
-        <div className="rounded-lg border border-border bg-surface/50 p-4">
+        <div className="verification-surface p-4">
           <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">
             Commitment
           </p>
@@ -200,7 +201,7 @@ export function VerifiedView({
           </p>
         </div>
         {txSignature && (
-          <div className="rounded-lg border border-border bg-surface/50 p-4">
+          <div className="verification-surface p-4">
             <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">
               Transaction
             </p>
@@ -210,7 +211,7 @@ export function VerifiedView({
           </div>
         )}
         {portableBaseline === false && (
-          <div className="rounded-lg border border-border bg-surface/50 p-4 text-left">
+          <div className="verification-surface p-4 text-left">
             <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">
               This device only
             </p>
@@ -225,10 +226,11 @@ export function VerifiedView({
       </div>
       <div className="flex flex-col items-center gap-3">
         <button
+          type="button"
           onClick={onReset}
           disabled={actionPending}
           aria-busy={actionPending}
-          className="text-sm text-muted hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className={primaryVerificationActionClass}
         >
           {tryAgainLabel}
         </button>

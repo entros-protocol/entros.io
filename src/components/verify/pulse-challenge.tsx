@@ -386,21 +386,7 @@ export function PulseChallenge({
 
   return (
     <div className="space-y-5">
-      {!captureStarted ? (
-        <div className="text-center space-y-2">
-          <p className="text-sm text-foreground/70">
-            {countdown > 0 ? "Recording starts in..." : "Preparing capture..."}
-          </p>
-          <p className="font-mono text-6xl font-bold text-cyan tabular-nums">
-            {countdown}
-          </p>
-          <p className="text-xs text-muted">
-            {hasMotion
-              ? "Speak clearly and trace the curve with your finger"
-              : "Speak clearly and trace the curve with your mouse"}
-          </p>
-        </div>
-      ) : (
+      {captureStarted && (
         <>
           <div className="text-center">
             <p className="font-mono text-3xl font-bold text-foreground tabular-nums">
@@ -434,7 +420,7 @@ export function PulseChallenge({
         </>
       )}
 
-      {/* Curve */}
+      {/* Capture stage */}
       <div>
         {captureStarted && (
           <p className="text-center text-xs font-mono uppercase tracking-widest text-solana-green mb-1">
@@ -442,37 +428,79 @@ export function PulseChallenge({
           </p>
         )}
         <div
-          ref={svgContainerRef}
-          aria-hidden={!captureStarted}
-          className={`mx-auto flex h-[200px] w-[200px] items-center justify-center rounded-2xl border touch-none md:h-[240px] md:w-[240px] ${
+          className={
             captureStarted
-              ? "cursor-crosshair border-solana-green/50 bg-surface/30"
-              : "cursor-default border-transparent bg-transparent"
-          }`}
+              ? ""
+              : "relative flex min-h-[340px] w-full items-center justify-center px-4 py-6"
+          }
         >
-          {captureStarted && (
-            <svg viewBox="0 0 200 200" className="h-full w-full">
-              <path
-                d={svgPath}
-                fill="none"
-                stroke="var(--color-solana-green)"
-                strokeWidth="3"
-                strokeOpacity={0.7}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                ref={tracePathRef}
-                d=""
-                fill="none"
-                stroke="var(--color-cyan)"
-                strokeWidth="3"
-                strokeOpacity="0.95"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          {!captureStarted && (
+            <div className="flex max-w-sm flex-col items-center justify-center gap-4 text-center">
+              <span className="sr-only" role="status" aria-live="polite">
+                {countdown > 0
+                  ? `Recording starts in ${countdown}`
+                  : "Preparing capture"}
+              </span>
+              <p
+                className="font-mono text-base uppercase tracking-[0.18em] text-foreground/70 md:text-lg"
+                aria-hidden="true"
+              >
+                {countdown > 0 ? "Recording starts in" : "Preparing capture"}
+              </p>
+              <p
+                className="font-mono text-8xl font-semibold leading-none text-[var(--verification-accent-text)] tabular-nums md:text-9xl"
+                aria-hidden="true"
+              >
+                {countdown > 0 ? countdown : "\u00b7\u00b7\u00b7"}
+              </p>
+              <div className="max-w-[22rem] space-y-2">
+                <p className="text-lg font-medium text-foreground md:text-xl">
+                  Get ready to speak and trace.
+                </p>
+                <p className="text-base leading-relaxed text-foreground/70">
+                  When recording starts, say the phrase and trace the curve with
+                  your {hasMotion ? "finger" : "mouse"}.
+                </p>
+              </div>
+            </div>
           )}
+          <div
+            ref={svgContainerRef}
+            aria-hidden={!captureStarted}
+            className={`mx-auto flex h-[200px] w-[200px] items-center justify-center border touch-none md:h-[240px] md:w-[240px] ${
+              captureStarted
+                ? "cursor-crosshair border-solana-green/30 bg-surface/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_18px_48px_rgba(0,0,0,0.18)]"
+                : "pointer-events-none absolute cursor-default border-transparent opacity-0"
+            }`}
+          >
+            {captureStarted && (
+              <svg
+                viewBox="0 0 200 200"
+                className="h-full w-full"
+                aria-hidden="true"
+              >
+                <path
+                  d={svgPath}
+                  fill="none"
+                  stroke="var(--color-solana-green)"
+                  strokeWidth="3"
+                  strokeOpacity={0.7}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  ref={tracePathRef}
+                  d=""
+                  fill="none"
+                  stroke="var(--color-cyan)"
+                  strokeWidth="3"
+                  strokeOpacity="0.95"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </div>
         </div>
       </div>
 

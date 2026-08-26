@@ -22,6 +22,7 @@ import {
 } from "@/lib/relay-challenge";
 import type { VerifyState, VerifyAction } from "@/components/verify/types";
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
+import { primaryVerificationActionClass } from "@/components/verify/verification-styles";
 import {
   ProvingView,
   SigningView,
@@ -1085,7 +1086,7 @@ export function VerifyWalletConnected({
           )}
         </div>
         {showCadenceHint && (
-          <div className="mx-auto max-w-sm rounded-lg border border-cyan/20 bg-cyan/5 px-4 py-3">
+          <div className="verification-surface verification-surface--accent mx-auto max-w-sm px-5 py-4">
             <p className="text-center text-xs text-foreground/70 leading-relaxed">
               You verified {hoursAgoLabel} ago. Trust Score grows with the
               number of separate weeks you verify in, so this one will not raise
@@ -1111,13 +1112,7 @@ export function VerifyWalletConnected({
               micPermissionState === "denied" ||
               studyCaptureBlocked
             }
-            className="
-              inline-flex items-center justify-center gap-2
-              rounded-full bg-foreground px-6 py-3
-              text-sm font-medium text-background
-              transition-colors hover:bg-foreground/90
-              disabled:cursor-not-allowed disabled:opacity-50
-            "
+            className={primaryVerificationActionClass}
           >
             {studyCaptureBlocked
               ? "Preparing next research trial..."

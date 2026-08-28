@@ -3,20 +3,30 @@ title: Mobile
 description: Native Solana Mobile integration for Seeker.
 ---
 
-The native mobile build runs the full verification pipeline on-device. It draws on richer sensor surfaces than the browser: IMU at higher sampling rates, native microphone access without browser permission flows, and Solana Mobile's Mobile Wallet Adapter for a single-tap verification path.
+The Android mobile client remains in development on the `entros-mobile` `develop` branch.
+It is not a released package or dApp Store application.
+
+The client captures microphone, IMU, and touch input through native APIs. Android requests
+microphone permission before capture. Extraction, hashing, baseline encryption, and Groth16
+proving run locally. The private validator still performs server-side validation.
 
 ## What it includes
 
-- React Native package distributed alongside `@entros/pulse-sdk`
-- Native iOS and Android builds with platform-specific sensor pipelines
-- Solana Mobile (Seeker) deep integration: Mobile Wallet Adapter, Seed Vault for keypair handling
-- Background re-verification reminders tied to score decay
+- An independent React Native client with shared protocol fixtures
+- Android Mobile Wallet Adapter support for Phantom and Solflare
+- Native PCM capture with configured-rate readback and canonical 16 kHz conversion
+- Native Groth16 proving through the `entros-mopro` bridge
+
+Seed Vault is not integrated. iOS has interface compatibility only because Mobile Wallet
+Adapter support is Android-specific in this client. Background reminders remain planned.
 
 ## Why mobile matters for the protocol
 
-The strongest behavioral signal lives on the device a user holds in their hand. Phones have richer motion data than laptops, more authentic touch dynamics, and microphones positioned for natural speech. The score floor for a mobile-captured Anchor will be higher than the desktop equivalent at the same effort level.
+Phones provide microphone, IMU, and touch surfaces that browser-only clients may not expose
+with the same timing control. Native access does not authenticate sensor origin. Device and
+app attestation remain separate future work.
 
 ## Where to look next
 
-- [Roadmap: Near-term](/docs/roadmap/near-term)—the mobile sprint timeline
-- The full integration guide publishes with the mobile release.
+- [Roadmap: Near-term](/docs/roadmap/near-term), the mobile sprint timeline
+- The full integration guide will publish only after real-device acceptance and release.

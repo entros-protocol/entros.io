@@ -5,9 +5,9 @@ export const mobileRoadmapItems: Feature[] = [
     icon: "smartphone",
     title: "Native sensor access",
     description:
-      "Direct accelerometer, gyroscope, touch pressure, and microphone access. No browser permission dialogs.",
+      "Direct accelerometer, gyroscope, touch, and microphone capture through native APIs with an Android microphone permission gate.",
     benefit:
-      "Native APIs provide stronger sensor provenance and more consistent timing than the browser path.",
+      "Native APIs give the client direct timing control. They do not authenticate sensor origin.",
   },
   {
     icon: "activity",

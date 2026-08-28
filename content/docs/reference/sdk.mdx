@@ -34,6 +34,9 @@ The current published version is `4.8.0`. Install with `npm install @entros/puls
 
 The fused vector emitted by the SDK to the validator has dimension `SPEAKER_FEATURE_COUNT + MOTION_FEATURE_COUNT + TOUCH_FEATURE_COUNT = 308`.
 
+The verifier program enforces the Hamming ceiling and floor published in its bundled IDL.
+The SDK values are client defaults and do not replace program enforcement.
+
 ## Capture and feature extraction
 
 | Export | Signature | Purpose |

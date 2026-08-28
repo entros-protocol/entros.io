@@ -178,7 +178,7 @@ The Hamming distance circuit is a Groth16 [4] arithmetic circuit over BN254 with
 
 The Hamming distance is computed via bitwise XOR and popcount, expressed as R1CS constraints: for each bit position `i`, `d_i = F_T_new[i] + F_T_prev[i] - 2 · F_T_new[i] · F_T_prev[i]`, then `d_H = Σ d_i` for `i = 1…256`.
 
-The minimum distance constraint (`δ_min = 3`) prevents exact replay attacks. The maximum distance (`δ_max = 96`) is the configured continuity boundary. Population evaluation must establish its false-match and false-reject behavior.
+Clients default to `δ_min = 3` and `δ_max = 96`. The verifier program enforces `δ_min ≥ 3` and `δ_max ≤ 96` on submitted proofs. The circuit accepts distances in `[δ_min, δ_max)`. Population evaluation must establish the false-match and false-reject behavior of the configured defaults.
 
 **Soundness guarantees.** Groth16 provides computational knowledge soundness under the Generic Group Model and the q-Power Knowledge of Exponent assumption [4]. For Entros's circuit, this means no probabilistic polynomial-time adversary can produce a valid proof for a false statement, except with negligible probability. The current single-contributor Phase 2 setup adds a development trust assumption. A completed multi-party ceremony would reduce that risk to collusion among all ceremony contributors.
 
@@ -325,7 +325,7 @@ The client discards raw motion and touch after feature extraction. The validatio
 The protocol does not claim to make spoofing impossible. The primary defense is detection: every capture is scored against the detection layers described above before it reaches the chain. Economic cost is a secondary layer that bounds the volume of attempts an adversary can mount, not the mechanism that decides whether any single capture passes. The defense is layered:
 
 * **Feature-level:** The private validator scores the 308 derived features and bounded same-window signals against measured policy.
-* **Circuit-level:** Replays (d_H = 0) and imposters (d_H > δ_max) are rejected.
+* **Circuit-level:** Replays (`d_H = 0`) and distances at or above `δ_max` are rejected.
 * **Entropy scoring:** Low-entropy synthetic data is flagged before hashing.
 * **Economic:** Each verification costs SOL and each wallet requires funding, which bounds attempt volume. Trust Score rewards months of consistency over bursts.
 

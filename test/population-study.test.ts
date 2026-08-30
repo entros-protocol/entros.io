@@ -11,6 +11,7 @@ import {
   parseStudyEnrolmentFailure,
   rememberStudyConsentAcknowledgement,
   requestStudyEnrolment,
+  resolveStudyEnrolmentFailure,
   resolveStudyGrant,
   resolveStudyStatusUpdate,
   studyConsentStorageKey,
@@ -142,6 +143,39 @@ describe("population study response parsing", () => {
     ).toBe("study_enrolment_unavailable");
     expect(parseStudyEnrolmentFailure({ error: "internal detail" })).toBeNull();
     expect(parseStudyEnrolmentFailure(null)).toBeNull();
+  });
+
+  it("classifies retryable and terminal study enrolment failures", () => {
+    expect(
+      resolveStudyEnrolmentFailure(
+        new StudyEnrolmentRequestError("study_enrolment_conflict"),
+        "fallback",
+      ),
+    ).toEqual({
+      message: "The saved study trial request cannot be reused. Try again.",
+      clearPendingEnrolmentId: true,
+      retryAllowed: true,
+    });
+    expect(
+      resolveStudyEnrolmentFailure(
+        new StudyEnrolmentRequestError("study_trial_limit_reached"),
+        "fallback",
+      ),
+    ).toEqual({
+      message: "You have completed all available study trials.",
+      clearPendingEnrolmentId: true,
+      retryAllowed: false,
+    });
+    expect(
+      resolveStudyEnrolmentFailure(
+        new Error("wallet provider implementation detail"),
+        "Study trial authorization failed. Try again.",
+      ),
+    ).toEqual({
+      message: "Study trial authorization failed. Try again.",
+      clearPendingEnrolmentId: false,
+      retryAllowed: true,
+    });
   });
 
   it("retains the active grant when the server returns no storage status", () => {
@@ -393,29 +427,48 @@ describe("population study response parsing", () => {
 });
 
 describe("population study request boundaries", () => {
-  it("preserves the bounded server action for failed enrolment", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ error: "study_trial_limit_reached" }), {
-          status: 409,
-          headers: { "Content-Type": "application/json" },
-        }),
-      ),
-    );
+  it.each([
+    [
+      "study_trial_limit_reached",
+      409,
+      "You have completed all available study trials.",
+    ],
+    [
+      "study_enrolment_conflict",
+      409,
+      "The saved study trial request cannot be reused. Try again.",
+    ],
+    [
+      "study_enrolment_expired",
+      410,
+      "The saved study trial request expired. Try again to create a fresh request.",
+    ],
+  ])(
+    "preserves the bounded server action for %s",
+    async (code, status, message) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(
+          new Response(JSON.stringify({ error: code }), {
+            status,
+            headers: { "Content-Type": "application/json" },
+          }),
+        ),
+      );
 
-    await expect(
-      requestStudyEnrolment(
-        activeGrant.authorization,
-        definition,
-        "0123456789abcdef0123456789abcdef",
-      ),
-    ).rejects.toMatchObject<Partial<StudyEnrolmentRequestError>>({
-      name: "StudyEnrolmentRequestError",
-      code: "study_trial_limit_reached",
-      message: "You have completed all available study trials.",
-    });
-  });
+      await expect(
+        requestStudyEnrolment(
+          activeGrant.authorization,
+          definition,
+          "0123456789abcdef0123456789abcdef",
+        ),
+      ).rejects.toMatchObject<Partial<StudyEnrolmentRequestError>>({
+        name: "StudyEnrolmentRequestError",
+        code,
+        message,
+      });
+    },
+  );
 
   it("accepts only the empty public definition request", () => {
     expect(isPublicStudyDefinitionRequest({})).toBe(true);

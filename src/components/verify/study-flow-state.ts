@@ -50,7 +50,7 @@ export type StudyFlowAction =
     }
   | { type: "NEXT_PENDING" }
   | { type: "NEXT_READY"; grant: ActiveStudyGrant }
-  | { type: "NEXT_FAILED"; message: string }
+  | { type: "NEXT_FAILED"; message: string; retryAllowed?: boolean }
   | { type: "LEAVE" };
 
 export function studyFlowReducer(
@@ -126,6 +126,8 @@ export function studyFlowReducer(
     case "NEXT_FAILED":
       return {
         ...state,
+        continuation:
+          action.retryAllowed === false ? null : state.continuation,
         tokenPending: false,
         tokenError: action.message,
       };

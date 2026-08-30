@@ -16,7 +16,7 @@ import {
   pendingStudyEnrolmentId,
   requestStudyEnrolment,
   resolveStudyGrant,
-  StudyEnrolmentRequestError,
+  resolveStudyEnrolmentFailure,
   studyAuthorizationIsFresh,
   studyProgressMessage,
 } from "@/lib/population-study";
@@ -70,6 +70,8 @@ export function VerifyFlow() {
   );
   const studyTokenRequestRef = useRef(false);
   const studyRequestGenerationRef = useRef(0);
+  const studyRequestWalletRef = useRef<string | null>(null);
+  const studyRequestDefinitionRef = useRef<typeof study.definition>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -86,16 +88,26 @@ export function VerifyFlow() {
   }, []);
 
   useEffect(() => {
-    if (
-      study.grant &&
-      walletAddress !== study.grant.authorization.wallet_address
-    ) {
+    const boundWalletAddress =
+      study.grant?.authorization.wallet_address ??
+      study.continuation?.authorization.wallet_address ??
+      (study.tokenPending ? studyRequestWalletRef.current : null);
+    if (boundWalletAddress && walletAddress !== boundWalletAddress) {
+      const boundDefinition =
+        study.grant?.definition ??
+        study.continuation?.definition ??
+        studyRequestDefinitionRef.current;
       studyRequestGenerationRef.current += 1;
       studyTokenRequestRef.current = false;
+      studyRequestWalletRef.current = null;
+      studyRequestDefinitionRef.current = null;
+      if (boundDefinition) {
+        clearPendingStudyEnrolmentId(boundDefinition, boundWalletAddress);
+      }
       studyDispatch({ type: "LEAVE" });
       dispatch({ type: "RESET" });
     }
-  }, [study.grant, walletAddress]);
+  }, [study.continuation, study.grant, study.tokenPending, walletAddress]);
 
   const handleStudyConsentAccepted = useCallback(() => {
     studyDispatch({ type: "CONSENT_ACCEPTED" });
@@ -129,6 +141,8 @@ export function VerifyFlow() {
       walletAddress,
     );
     studyTokenRequestRef.current = true;
+    studyRequestWalletRef.current = walletAddress;
+    studyRequestDefinitionRef.current = study.definition;
     studyDispatch({ type: "PREPARE_PENDING" });
 
     try {
@@ -147,27 +161,23 @@ export function VerifyFlow() {
       studyDispatch({ type: "PREPARE_READY", grant });
     } catch (reason) {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
-      if (
-        reason instanceof StudyEnrolmentRequestError &&
-        (reason.code === "study_enrolment_expired" ||
-          reason.code === "study_enrolment_conflict")
-      ) {
+      const failure = resolveStudyEnrolmentFailure(
+        reason,
+        "Study trial authorization failed. Try again.",
+      );
+      if (failure.clearPendingEnrolmentId) {
         clearPendingStudyEnrolmentId(study.definition, walletAddress);
       }
       studyDispatch({
         type: "PREPARE_FAILED",
-        message:
-          reason instanceof Error
-            ? reason.message
-            : "Study trial authorization failed. Try again.",
-        retryAllowed:
-          !(reason instanceof StudyEnrolmentRequestError) ||
-          (reason.code !== null &&
-            reason.code !== "study_trial_limit_reached"),
+        message: failure.message,
+        retryAllowed: failure.retryAllowed,
       });
     } finally {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
       studyTokenRequestRef.current = false;
+      studyRequestWalletRef.current = null;
+      studyRequestDefinitionRef.current = null;
     }
   }, [signMessage, study.decision, study.definition, walletAddress]);
 
@@ -212,6 +222,8 @@ export function VerifyFlow() {
       walletAddress,
     );
     studyTokenRequestRef.current = true;
+    studyRequestWalletRef.current = walletAddress;
+    studyRequestDefinitionRef.current = study.continuation.definition;
     studyDispatch({ type: "NEXT_PENDING" });
     try {
       const authorization = studyAuthorizationIsFresh(
@@ -236,22 +248,36 @@ export function VerifyFlow() {
       );
       studyDispatch({ type: "NEXT_READY", grant: nextGrant });
       dispatch({ type: "RESET" });
-    } catch {
+    } catch (reason) {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
+      const failure = resolveStudyEnrolmentFailure(
+        reason,
+        "The next study trial could not be prepared. Try again when you are ready.",
+      );
+      if (failure.clearPendingEnrolmentId) {
+        clearPendingStudyEnrolmentId(
+          study.continuation.definition,
+          walletAddress,
+        );
+      }
       studyDispatch({
         type: "NEXT_FAILED",
-        message:
-          "The next study trial could not be prepared. Try again when you are ready.",
+        message: failure.message,
+        retryAllowed: failure.retryAllowed,
       });
     } finally {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
       studyTokenRequestRef.current = false;
+      studyRequestWalletRef.current = null;
+      studyRequestDefinitionRef.current = null;
     }
   }, [signMessage, study.continuation, walletAddress]);
 
   const handleLeaveStudy = useCallback(() => {
     studyRequestGenerationRef.current += 1;
     studyTokenRequestRef.current = false;
+    studyRequestWalletRef.current = null;
+    studyRequestDefinitionRef.current = null;
     if (study.continuation) {
       clearPendingStudyEnrolmentId(
         study.continuation.definition,
@@ -307,16 +333,18 @@ export function VerifyFlow() {
       </div>
       {study.decision === "joined" && study.progress && (
         <div className="space-y-2 text-center" aria-live="polite">
-          <p className="font-mono text-xs uppercase tracking-[0.14em] text-foreground/45">
-            {study.tokenPending
-              ? "Preparing the next research trial"
-              : studyProgressMessage(
-                  study.progress.status,
-                  study.progress.trialIndex,
-                  study.progress.trialLimit,
-                  study.progress.completionReason,
-                )}
-          </p>
+          {!study.tokenError && (
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-foreground/45">
+              {study.tokenPending
+                ? "Preparing the next research trial"
+                : studyProgressMessage(
+                    study.progress.status,
+                    study.progress.trialIndex,
+                    study.progress.trialLimit,
+                    study.progress.completionReason,
+                  )}
+            </p>
+          )}
           {study.tokenError && (
             <p className="text-xs text-danger">{study.tokenError}</p>
           )}

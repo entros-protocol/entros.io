@@ -186,4 +186,37 @@ describe("study flow state", () => {
       decision: "normal",
     });
   });
+
+  it("removes the next-trial retry when the study limit is reached", () => {
+    const firstGrant = grant();
+    const joined = studyFlowReducer(initialStudyFlowState, {
+      type: "READY",
+      grant: firstGrant,
+    });
+    const recorded = studyFlowReducer(joined, {
+      type: "RECORD_STATUS",
+      progress: {
+        status: "recorded",
+        trialIndex: 1,
+        trialLimit: 5,
+        completionReason: null,
+      },
+      continuation: {
+        definition: firstGrant.definition,
+        authorization: firstGrant.authorization,
+      },
+    });
+
+    expect(
+      studyFlowReducer(recorded, {
+        type: "NEXT_FAILED",
+        message: "All trials are complete.",
+        retryAllowed: false,
+      }),
+    ).toEqual({
+      ...recorded,
+      continuation: null,
+      tokenError: "All trials are complete.",
+    });
+  });
 });

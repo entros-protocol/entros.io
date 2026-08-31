@@ -106,6 +106,35 @@ export class StudyEnrolmentRequestError extends Error {
   }
 }
 
+interface StudyEnrolmentFailureResolution {
+  message: string;
+  clearPendingEnrolmentId: boolean;
+  retryAllowed: boolean;
+}
+
+export function resolveStudyEnrolmentFailure(
+  reason: unknown,
+  fallbackMessage: string,
+): StudyEnrolmentFailureResolution {
+  if (!(reason instanceof StudyEnrolmentRequestError)) {
+    return {
+      message: fallbackMessage,
+      clearPendingEnrolmentId: false,
+      retryAllowed: true,
+    };
+  }
+
+  return {
+    message: reason.message,
+    clearPendingEnrolmentId:
+      reason.code === "study_trial_limit_reached" ||
+      reason.code === "study_enrolment_expired" ||
+      reason.code === "study_enrolment_conflict",
+    retryAllowed:
+      reason.code !== null && reason.code !== "study_trial_limit_reached",
+  };
+}
+
 export type StudyStatusUpdate =
   | { confirmed: false }
   | { confirmed: true; status: StudyRecordStatus };
@@ -323,8 +352,9 @@ function studyEnrolmentFailureMessage(code: StudyEnrolmentFailure | null): strin
     case "study_trial_limit_reached":
       return "You have completed all available study trials.";
     case "study_enrolment_expired":
+      return "The saved study trial request expired. Try again to create a fresh request.";
     case "study_enrolment_conflict":
-      return "The study authorization expired. Sign again to continue.";
+      return "The saved study trial request cannot be reused. Try again.";
     case "study_enrolment_unavailable":
       return "Study enrolment is temporarily unavailable. Try again.";
     default:

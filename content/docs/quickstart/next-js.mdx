@@ -17,7 +17,9 @@ For an airdrop claim, a governance vote, or anything else worth the friction, ru
 npm install @entros/pulse-sdk @solana/wallet-adapter-react @solana/wallet-adapter-react-ui @solana/web3.js lucide-react
 ```
 
-The SDK is published as `@entros/pulse-sdk` on npm. It declares `@coral-xyz/anchor`, `@solana/spl-token`, `@solana/wallet-adapter-base` and `@solana/web3.js` as optional peers. `EntrosGate` renders `WalletMultiButton` in its disconnected-state fallback, which is why `@solana/wallet-adapter-react-ui` is on the install list, and it uses icons from `lucide-react`.
+The SDK declares `@coral-xyz/anchor`, `@solana/wallet-adapter-base`, and `@solana/web3.js` as optional peers.
+`EntrosGate` renders `WalletMultiButton` while disconnected, so the install command includes `@solana/wallet-adapter-react-ui`.
+It also uses icons from `lucide-react`.
 
 ## 2. Set up the wallet adapter providers
 

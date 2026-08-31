@@ -9,7 +9,19 @@ The protocol publishes the SDK as `@entros/pulse-sdk` on npm. Programs are deplo
 
 ### 4.x
 
-Current published version: `4.6.0`. The 4.x line canonicalises capture at 16 kHz and reworks the transport and failure taxonomy.
+Current published version: `4.9.2`. The 4.x line canonicalises capture at 16 kHz and reworks the transport and failure taxonomy.
+
+**4.9.2** First-verification minting derives Token-2022 associated token accounts inside the SDK. The package no longer depends on `@solana/spl-token`.
+
+**4.9.1** Upload progress handling now survives native retry resets and host callback errors. SimHash rejects non-finite feature values before projection.
+
+**4.9.0** Adds the inactive projection 2 client contract. Requests bind compatibility evidence and wallet authorization to the issued challenge.
+
+**4.8.0** Adds compact proof and Anchor instructions while keeping the legacy instruction layouts available.
+
+**4.7.1** Baseline reset requests now send explicit reset intent.
+
+**4.7.0** Adds versioned feature projections, purpose-bound validator receipts, and projection-aware baseline migration.
 
 **4.6.0** Adds optional population study context to validation requests. It validates grant fields and generates each record identifier with Web Crypto. Integration tests now derive the verification key from the proving key used for each proof.
 

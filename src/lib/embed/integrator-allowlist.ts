@@ -28,6 +28,7 @@
 
 interface IntegratorEntry {
   origins: string[];
+  diagnostics?: boolean;
 }
 
 interface AllowlistConfig {
@@ -95,4 +96,9 @@ export function isAllowedIntegrator(
   const entry = config[integratorKey];
   if (!entry || !Array.isArray(entry.origins)) return false;
   return entry.origins.includes(parentOrigin);
+}
+
+export function isIntegratorDiagnosticsEnabled(integratorKey: string, parentOrigin: string): boolean {
+  const entry = loadConfig()[integratorKey];
+  return entry?.diagnostics === true && Array.isArray(entry.origins) && entry.origins.includes(parentOrigin);
 }

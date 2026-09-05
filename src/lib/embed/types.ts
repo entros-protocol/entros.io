@@ -6,8 +6,8 @@
  * postMessage. Field names use snake_case on the wire (`wallet_pubkey`)
  * to match the contract the consumer package validates against.
  *
- * Any drift between this file and `@entros/verify`'s `types.ts` will
- * cause silent message rejection on the consumer side. Keep them aligned.
+ * The diagnostic event is an opt-in extension. The verification consumer
+ * ignores it. Keep the verification envelopes aligned with `@entros/verify`.
  */
 
 import type { PolicyReason, PolicyWireResult } from "@entros/verify/policy";
@@ -17,7 +17,8 @@ export type Cluster = "devnet";
 export type EmbedMessageType =
   | "entros/verified"
   | "entros/error"
-  | "entros/heartbeat";
+  | "entros/heartbeat"
+  | "entros/policy-diagnostic";
 
 export interface EmbedMessage<TPayload = unknown> {
   version: 1;

@@ -20,6 +20,7 @@ import {
   emitError,
   emitHeartbeat,
   emitVerified,
+  emitPolicyDiagnostic,
 } from "@/lib/embed/post-message";
 import type { EmbedErrorReason, VerifiedPayload } from "@/lib/embed/types";
 import { evaluatePopupPolicy } from "@/lib/embed/evaluate-popup-policy";
@@ -331,6 +332,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           walletPubkey,
           result.txSignature,
           connection,
+          params.diagnosticsEnabled ? diagnostic => emitPolicyDiagnostic(ctx, diagnostic) : undefined,
         );
         if (policy.decision !== "allow" || !policy.evidence) {
           fail(

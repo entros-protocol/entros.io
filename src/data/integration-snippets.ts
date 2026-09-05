@@ -19,9 +19,9 @@ export const verifyComponentSnippet = {
 
 <EntrosVerify
   integratorKey="my-app"
-  onVerified={(result) => grantAccess(result.walletPubkey)}
+  onVerified={(result) => console.log(result)}
 />`,
-  installCommand: "npm install @entros/verify",
+  installCommand: "npm install @entros/verify@0.2.0",
 };
 
 /**
@@ -58,7 +58,7 @@ export function CustomVerify() {
       wallet?.adapter,
       connection,
     );
-    if (result.success) grantAccess(result.commitment);
+    if (result.success) console.log(result);
   }
 
   return (

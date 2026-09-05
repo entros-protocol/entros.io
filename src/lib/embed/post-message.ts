@@ -22,6 +22,7 @@ import type {
   EmbedProgressStatus,
   VerifiedPayload,
 } from "./types";
+import type { PolicyReason } from "@entros/verify/policy";
 
 export interface EmbedContext {
   /** The parent window's origin, parsed from the popup URL. */
@@ -37,8 +38,15 @@ export function emitVerified(
   postEnvelope(ctx, "entros/verified", payload);
 }
 
-export function emitError(ctx: EmbedContext, reason: EmbedErrorReason): void {
-  postEnvelope(ctx, "entros/error", { reason });
+export function emitError(
+  ctx: EmbedContext,
+  reason: EmbedErrorReason,
+  policyReason?: PolicyReason,
+): void {
+  postEnvelope(ctx, "entros/error", {
+    reason,
+    ...(policyReason ? { policy_reason: policyReason } : {}),
+  });
 }
 
 export function emitHeartbeat(

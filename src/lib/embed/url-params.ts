@@ -12,6 +12,7 @@
  */
 
 import type { Cluster } from "./types";
+import { parsePolicyParameters, type PolicyRequest } from "@entros/verify/policy";
 
 const VALID_INTEGRATOR_KEY = /^[a-z0-9_-]{1,64}$/;
 const ORIGIN_PATTERN = /^https?:\/\/[^/]+$/;
@@ -24,6 +25,7 @@ export interface ParsedEmbedParams {
   cluster: Cluster;
   requestId: string;
   minTrustScore?: number;
+  policy?: PolicyRequest;
 }
 
 export type ParseResult =
@@ -42,6 +44,14 @@ export type ParseResult =
 export function parseEmbedParams(
   searchParams: URLSearchParams,
 ): ParseResult {
+  for (const name of [
+    "integrator", "parent_origin", "cluster", "request_id",
+    "min_trust_score", "policy_version", "policy",
+  ]) {
+    if (searchParams.getAll(name).length > 1) {
+      return { ok: false, reason: "unknown" };
+    }
+  }
   const integratorKey = searchParams.get("integrator");
   const parentOrigin = searchParams.get("parent_origin");
   const cluster = searchParams.get("cluster");
@@ -63,6 +73,9 @@ export function parseEmbedParams(
 
   let minTrustScore: number | undefined;
   if (minTrustScoreRaw !== null) {
+    if (!/^(0|[1-9][0-9]*)$/.test(minTrustScoreRaw)) {
+      return { ok: false, reason: "unknown" };
+    }
     const parsed = Number(minTrustScoreRaw);
     if (
       !Number.isInteger(parsed) ||
@@ -74,6 +87,17 @@ export function parseEmbedParams(
     minTrustScore = parsed;
   }
 
+  let policy: PolicyRequest | undefined;
+  try {
+    const parsedPolicy = parsePolicyParameters(searchParams, minTrustScore);
+    if (parsedPolicy.policy.cluster !== cluster) {
+      return { ok: false, reason: "unknown" };
+    }
+    if (parsedPolicy.negotiated) policy = parsedPolicy.policy;
+  } catch {
+    return { ok: false, reason: "unknown" };
+  }
+
   return {
     ok: true,
     params: {
@@ -82,6 +106,7 @@ export function parseEmbedParams(
       cluster: cluster as Cluster,
       requestId,
       minTrustScore,
+      ...(policy ? { policy } : {}),
     },
   };
 }

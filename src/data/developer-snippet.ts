@@ -9,12 +9,12 @@ import type { DeveloperSnippet } from "./types";
  */
 export const sdkSnippet: DeveloperSnippet = {
   language: "tsx",
-  title: "5 lines to verify a human",
+  title: "5 lines to request verification",
   code: `import { EntrosVerify } from '@entros/verify';
 
 <EntrosVerify
   integratorKey="my-app"
-  onVerified={(result) => grantAccess(result.walletPubkey)}
+  onVerified={(result) => console.log(result)}
 />`,
-  installCommand: "npm install @entros/verify",
+  installCommand: "npm install @entros/verify@0.2.0",
 };

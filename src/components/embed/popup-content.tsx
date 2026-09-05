@@ -2,13 +2,10 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import type { Connection } from "@solana/web3.js";
-import { PublicKey } from "@solana/web3.js";
 import { Wallet } from "lucide-react";
 import {
   type PulseSession,
   type CurveTracePoint,
-  PROGRAM_IDS,
   MAX_VERIFICATION_MS,
   isClientOriginReason,
 } from "@entros/pulse-sdk";
@@ -25,7 +22,8 @@ import {
   emitVerified,
 } from "@/lib/embed/post-message";
 import type { EmbedErrorReason, VerifiedPayload } from "@/lib/embed/types";
-import { deriveAttestationPda } from "@/lib/embed/attestation-pda";
+import { evaluatePopupPolicy } from "@/lib/embed/evaluate-popup-policy";
+import { policyResultToWire, type PolicyReason } from "@entros/verify/policy";
 import { useMotionCapability } from "@/hooks/use-motion-capability";
 
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
@@ -53,7 +51,7 @@ type State =
   | { step: "processing" }
   | { step: "signing" }
   | { step: "verified" }
-  | { step: "failed"; reason: EmbedErrorReason }
+  | { step: "failed"; reason: EmbedErrorReason; policyReason?: PolicyReason }
   // Distinct from `failed`: stale on-chain commitment (entros-anchor
   // `Custom(6011) PrevCommitmentMismatch`) can't be resolved by
   // re-clicking the integrator's button — needs a baseline reset on
@@ -79,70 +77,6 @@ const BACKSTOP_ERROR_NAME = "EntrosBackstopTimeout";
 // The `validation_unavailable` literal used to be redeclared here. It now
 // comes from the SDK's taxonomy via `isClientOriginReason`, which also covers
 // `validation_timeout`, a failure this surface previously could not name.
-
-/**
- * Reads `trust_score` directly from the IdentityState PDA via a byte
- * parse, matching the pattern used in `verify-wallet-connected.tsx`,
- * `dashboard-anchor-view.tsx`, and pulse-sdk's own `agent/anchor.ts`.
- *
- * Account layout (canonical, mirrored across the codebase):
- *   bytes  0..7  Anchor discriminator
- *   bytes  8..39 owner pubkey (32)
- *   bytes 40..47 creation_timestamp (i64 LE)
- *   bytes 48..55 last_verification_timestamp (i64 LE)
- *   bytes 56..59 verification_count (u32 LE)
- *   bytes 60..61 trust_score (u16 LE)
- *
- * Avoids the SDK's `fetchIdentityState` because that helper performs a
- * runtime IDL fetch which (a) is unnecessary now that the on-chain
- * layout is stable and (b) silently fails on transient RPC issues,
- * collapsing the integrator-facing trust_score to 0 even when the
- * wallet's on-chain score is non-zero.
- *
- * Retries on a fresh `getAccountInfo` call to absorb the RPC's
- * read-after-write lag — a tx that just confirmed on the validator is
- * not always immediately readable from the same connection's RPC.
- */
-// Linear backoff for the IdentityState read after a successful chain
-// submit. Total cumulative wait across attempts: 800 + 1600 + 2400 = 4.8s,
-// comfortably exceeding typical devnet RPC propagation lag (~1–2s) without
-// pushing the popup's perceived close timing past the success surface.
-const TRUST_SCORE_RETRY_BACKOFF_MS = 800;
-const TRUST_SCORE_MAX_ATTEMPTS = 4;
-
-async function readTrustScoreFromChain(
-  walletPubkey: string,
-  connection: Connection,
-): Promise<number> {
-  const programId = new PublicKey(PROGRAM_IDS.entrosAnchor);
-  const [identityPda] = PublicKey.findProgramAddressSync(
-    [
-      new TextEncoder().encode("identity"),
-      new PublicKey(walletPubkey).toBuffer(),
-    ],
-    programId,
-  );
-
-  for (let attempt = 0; attempt < TRUST_SCORE_MAX_ATTEMPTS; attempt++) {
-    const account = await connection
-      .getAccountInfo(identityPda)
-      .catch(() => null);
-    if (account && account.data.length >= 62) {
-      const view = new DataView(
-        account.data.buffer,
-        account.data.byteOffset,
-        account.data.byteLength,
-      );
-      return view.getUint16(60, true);
-    }
-    if (attempt < TRUST_SCORE_MAX_ATTEMPTS - 1) {
-      await new Promise((r) =>
-        setTimeout(r, TRUST_SCORE_RETRY_BACKOFF_MS * (attempt + 1)),
-      );
-    }
-  }
-  return 0;
-}
 
 /**
  * Client component that owns the popup's interactive verification surface.
@@ -178,9 +112,9 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     [params.parentOrigin, params.requestId],
   );
 
-  function fail(reason: EmbedErrorReason) {
-    emitError(ctx, reason);
-    setState({ step: "failed", reason });
+  function fail(reason: EmbedErrorReason, policyReason?: PolicyReason) {
+    emitError(ctx, reason, params.policy ? policyReason : undefined);
+    setState({ step: "failed", reason, policyReason });
   }
 
   async function handleStart() {
@@ -322,13 +256,14 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
       outline,
     );
 
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => {
+    let backstopTimer: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      backstopTimer = setTimeout(() => {
         const err = new Error("Verification took too long and was stopped");
         err.name = BACKSTOP_ERROR_NAME;
         reject(err);
-      }, VERIFICATION_BACKSTOP_MS),
-    );
+      }, VERIFICATION_BACKSTOP_MS);
+    });
 
     Promise.race([proofPromise, timeoutPromise])
       .then(async (result) => {
@@ -388,20 +323,37 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
 
         emitHeartbeat(ctx, "attesting");
 
+        setProcessingStage("Checking app requirements...");
+        setState({ step: "processing" });
         const walletPubkey = publicKey.toBase58();
-        const attestationPda = deriveAttestationPda(walletPubkey);
-
-        const trustScore = await readTrustScoreFromChain(
+        const policy = await evaluatePopupPolicy(
+          params,
           walletPubkey,
+          result.txSignature,
           connection,
         );
-
+        if (policy.decision !== "allow" || !policy.evidence) {
+          fail(
+            policy.decision === "unavailable" ? "network_error" : "validation_failed",
+            policy.reason,
+          );
+          return;
+        }
+        const wire = policyResultToWire(policy);
+        const attestationPda = policy.evidence.attestation.status === "present"
+          ? policy.evidence.attestation.address
+          : null;
+        if (!params.policy && !attestationPda) {
+          fail("validation_failed", "attestation_required");
+          return;
+        }
         const payload: VerifiedPayload = {
           wallet_pubkey: walletPubkey,
           attestation_pda: attestationPda,
           tx_sig: result.txSignature,
-          trust_score: trustScore,
+          trust_score: policy.evidence.identity.trustScore,
           cluster: "devnet",
+          policy: wire,
         };
         emitVerified(ctx, payload);
         setState({ step: "verified" });
@@ -412,14 +364,15 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
             ? "timeout"
             : categorizeError(err?.message ?? ""),
         );
-      });
+      })
+      .finally(() => clearTimeout(backstopTimer));
   }
 
   if (state.step === "verified") {
     return <PopupSuccess />;
   }
   if (state.step === "failed") {
-    return <PopupFailure reason={state.reason} />;
+    return <PopupFailure reason={state.reason} policyReason={state.policyReason} />;
   }
   if (state.step === "failed-baseline-stale") {
     return <PopupBaselineStale />;

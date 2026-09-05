@@ -1,11 +1,8 @@
 /**
  * Derives the deterministic SAS attestation PDA for a given wallet.
  *
- * The address is derived solely from constants and the wallet pubkey, so
- * it is well-defined whether or not the attestation has been written by
- * the executor yet. The popup emits this PDA in the verified envelope
- * so the integrator can poll for the attestation account asynchronously.
- *
+ * This candidate address does not establish account existence or issuance.
+ * Policy evaluation uses the SDK's strict evidence reader before returning an address.
  */
 import { PublicKey } from "@solana/web3.js";
 import { SAS_CONFIG } from "@entros/pulse-sdk";

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 
 import type { EmbedErrorReason } from "@/lib/embed/types";
+import type { PolicyReason } from "@entros/verify/policy";
 
 const CLOSE_DELAY_MS = 2500;
 
@@ -52,6 +53,25 @@ const closePopupWindow = () => {
   if (typeof window !== "undefined") window.close();
 };
 
+const POLICY_COPY: Partial<Record<PolicyReason, { title: string; body: string }>> = {
+  score_below_minimum: {
+    title: "App requirements not met",
+    body: "This app requires a higher Trust Score.",
+  },
+  verification_stale: {
+    title: "A recent verification is required",
+    body: "Return to the app to verify again.",
+  },
+  attestation_required: {
+    title: "Attestation not available",
+    body: "This app requires an on-chain attestation. Return to the app to try again.",
+  },
+  state_unavailable: {
+    title: "Could not confirm verification",
+    body: "The on-chain result is unavailable. Return to the app to try again.",
+  },
+};
+
 /**
  * Failure surface for the popup. Renders an opaque category title + body,
  * then closes the window. The error postMessage is emitted by the parent
@@ -63,12 +83,14 @@ const closePopupWindow = () => {
  */
 export function PopupFailure({
   reason,
+  policyReason,
   onClose = closePopupWindow,
 }: {
   reason: EmbedErrorReason;
+  policyReason?: PolicyReason;
   onClose?: () => void;
 }) {
-  const { title, body } = REASON_COPY[reason];
+  const { title, body } = (policyReason && POLICY_COPY[policyReason]) || REASON_COPY[reason];
 
   useEffect(() => {
     const t = setTimeout(onClose, CLOSE_DELAY_MS);

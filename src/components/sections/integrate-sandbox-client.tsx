@@ -77,7 +77,15 @@ export function AirdropClaim() {
     <EntrosVerify
       integratorKey="your-integrator-key"
       cluster="devnet"
-      minTrustScore={${minTrustScore}}
+      policy={{
+        id: "claim-access", version: 1,
+        minTrustScore: ${minTrustScore},
+        maxVerificationAgeSeconds: ${maxVerificationAge},
+        maxEvaluationAgeSeconds: 90,
+        requiredAssurance: "browser_unattested",
+        uniquenessRequirement: "allow_unmeasured",
+        requireAttestation: false, cluster: "devnet",
+      }}
       onVerified={(result) => {
         console.log("Verification transaction:", result.txSig);
         // Submit the claim and re-check score plus recency where it settles.
@@ -90,18 +98,25 @@ export function AirdropClaim() {
 }`;
 
   const getSdkCode = () => `import { Connection } from "@solana/web3.js";
-import { fetchIdentityState } from "@entros/pulse-sdk";
+import { readIntegratorEvidence } from "@entros/pulse-sdk";
+import { evaluatePolicy, normalizePolicyRequest } from "@entros/verify/policy";
 
 const connection = new Connection("https://api.devnet.solana.com");
-const walletAddress = "YOUR_USER_WALLET_PUBKEY";
-const identity = await fetchIdentityState(walletAddress, connection);
-
-if (!identity) throw new Error("No Entros Anchor found");
-
-const age = Math.floor(Date.now() / 1000) - identity.lastVerificationTimestamp;
-const allowed = identity.trustScore >= ${minTrustScore} && age <= ${maxVerificationAge};
-
-console.log({ allowed, trustScore: identity.trustScore, age });`;
+const policy = normalizePolicyRequest({
+  id: "claim-access", version: 1, minTrustScore: ${minTrustScore},
+  maxVerificationAgeSeconds: ${maxVerificationAge},
+  requiredAssurance: "browser_unattested",
+  uniquenessRequirement: "allow_unmeasured", cluster: "devnet",
+});
+const observation = await readIntegratorEvidence({
+  connection,
+  walletPubkey: "AUTHENTICATED_WALLET",
+  transactionSignature: "VERIFICATION_TRANSACTION",
+  nowSeconds: Math.floor(Date.now() / 1000),
+});
+const result = evaluatePolicy(policy, observation, Math.floor(Date.now() / 1000));
+console.log(result.decision);
+// Authorize the signed action and consume its nonce where the action executes.`;
 
   const getActiveCode = () => {
     if (activeTab === "react") return getReactCode();
@@ -233,6 +248,11 @@ console.log({ allowed, trustScore: identity.trustScore, age });`;
           </div>
 
           <div className="flex flex-1 flex-col overflow-hidden rounded-2xl bg-foreground/[0.06]">
+            <p className="border-b border-border px-5 py-3 text-xs leading-relaxed text-foreground/60">
+              {activeTab === "anchor"
+                ? "Basic on-chain score and recency example. This does not implement the full Integrator Policy v1 contract."
+                : "These policy examples use Verify 0.2.0 and Pulse 4.10.0. Recheck the policy where the protected action executes."}
+            </p>
             <div className="flex overflow-x-auto border-b border-border bg-background/50">
               {SANDBOX_TABS.map((tab) => (
                 <button

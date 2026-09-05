@@ -1,99 +1,124 @@
 ---
-title: Verification flow component
-description: Drop in <EntrosVerify /> to run a wallet-connected Entros verification.
+title: Verification flow and application policy
+description: Enforce score, freshness, and attestation requirements before consuming a popup result.
 ---
 
-The verification flow ships as `@entros/verify`. The React component opens an entros.io popup, runs the capture, signs the wallet transaction, and returns a result through `onVerified`.
+Use Verify `0.2.0` with the compatible Entros popup for this policy contract.
+Server-side evidence reads require Pulse `4.10.0`. Verify `0.1.1` does not expose the policy API.
 
-This is the Tier 1 path for applications that want Entros to host the wallet and capture flow. Applications can request it before a high-value action. Tier 2 custom UX is documented in the [SDK reference](/docs/reference/sdk).
+`EntrosVerify` hosts wallet connection and capture in an Entros popup.
+Integrator Policy v1 separates current wallet continuity, accepted verification evidence, assurance, and uniqueness status.
+Applications choose their requirements and enforce them where their protected action executes.
 
-## Install
-
-```bash
-npm install @entros/verify
-```
-
-The package declares `react ^19` and `react-dom ^19` as peer dependencies. No Solana adapter, no SDK, no web3.js install — those live behind the popup boundary on entros.io.
-
-## Five-line usage
+## Policy request
 
 ```tsx
 import { EntrosVerify } from "@entros/verify";
+import { normalizePolicyRequest } from "@entros/verify/policy";
+
+const policy = normalizePolicyRequest({
+  id: "claim-access",
+  version: 1,
+  minTrustScore: 100,
+  maxVerificationAgeSeconds: 300,
+  maxEvaluationAgeSeconds: 90,
+  requiredAssurance: "browser_unattested",
+  uniquenessRequirement: "allow_unmeasured",
+  requireAttestation: false,
+  cluster: "devnet",
+});
 
 <EntrosVerify
   integratorKey="your-integrator-key"
-  onVerified={(result) => grantAccess(result.walletPubkey)}
+  policy={policy}
+  onVerified={(result) => setVerificationResult(result)}
+  onError={(error) => setVerificationError(error.policyReason ?? error.reason)}
+  onProgress={(progress) => setStatus(progress.status)}
 />
 ```
 
-What this does on click:
+Without an explicit policy, the upgraded consumer uses a one-day verification age and a 90-second evaluation lifetime.
+`minTrustScore` remains a shorthand for the score floor. A conflicting policy floor fails before the popup opens.
 
-1. Opens a popup window to `https://entros.io/embed/verify-popup` with your integrator key and origin
-2. The popup hosts wallet connect (Phantom, Solflare, Backpack)
-3. The user completes the 12-second voice + motion + touch capture
-4. The Pulse SDK extracts features, generates a Groth16 proof, submits to Solana
-5. On success, the popup posts back to your page; `onVerified` fires with the verified payload
+Version 1 supports devnet, `browser_unattested` assurance, and `allow_unmeasured` uniqueness only.
+Unsupported requirements and unknown versions fail closed.
+No policy request changes protocol scoring or projection policy.
 
-## The verified payload
+## Policy result
 
-```ts
-interface EntrosVerifyResult {
-  walletPubkey: string;       // Base58 Solana wallet address
-  attestationPda: string;     // Derived SAS address. Check whether the account exists
-  txSig: string;              // Confirmed transaction signature
-  trustScore: number;         // On-chain Trust Score after this verification
-  cluster: "devnet";
-}
-```
+`onVerified` receives a typed `allow` result with its evaluated policy.
+The result preserves `walletPubkey`, `txSig`, `trustScore`, and `cluster`.
+It adds `policy` and makes `attestationPda` nullable for negotiated policy requests.
 
-Use `walletPubkey` to identify the wallet. Use `trustScore` and recency to apply your policy. Use `txSig` to inspect the confirmed verification transaction.
+| Field | Meaning |
+|---|---|
+| `policy.requirements` | Exact application requirements used for evaluation |
+| `policy.evaluatedAt`, `policy.expiresAt` | Integer Unix seconds from the evaluator's clock |
+| `policy.evidenceTimestamp`, `policy.evaluatedAgeSeconds` | Freshness bound from transaction evidence and current IdentityState |
+| `policy.evidence.identity` | Current score, verification count, creation time, and wallet-bound commitment |
+| `policy.evidence.transaction` | Confirmed qualifying transaction, slot, block time, and output commitment |
+| `policy.evidence.attestation` | `present`, `missing`, `invalid`, or `unavailable` account observation |
+| `policy.evidence.assuranceTier` | Explicit `browser_unattested` |
+| `policy.evidence.uniquenessStatus` | Explicit `unmeasured` |
+| `policy.evidence.programIds` | Pinned protocol and SAS identities |
 
-`attestationPda` is a deterministic address. SAS issuance occurs after the verification transaction and can fail without failing verification. Fetch that account before treating the attestation as issued.
+A required missing attestation denies access. An unavailable required attestation returns unavailable state.
+An optional missing or unavailable attestation carries no issued address.
+An invalid attestation denies access even when optional.
 
-## Optional props
+The reader checks account ownership, discriminator, supported layout, wallet binding, and field ranges.
+It binds current commitment and recency to a qualifying confirmed transaction.
+RPC failure never becomes a valid zero score.
 
-```tsx
-<EntrosVerify
-  integratorKey="my-app"
-  cluster="devnet"                            // defaults to "devnet"
-  minTrustScore={100}                          // optional gate enforced inside the popup
-  onVerified={(result) => grantAccess(result)}
-  onError={(err) => console.warn(err.reason)}  // wallet_rejected | validation_failed | network_error | user_canceled | origin_invalid | popup_blocked | timeout | unknown
-  onProgress={(p) => setStatus(p.status)}      // wallet_connecting → capturing → proving → submitting → attesting
-  popupWidth={520}                             // defaults to 480
-  popupHeight={760}                            // defaults to 720
-  timeoutMs={5 * 60 * 1000}                    // defaults to 5 minutes
-  popupBlockedFallback                         // defaults to true — renders a manual retry button when the browser blocks the popup
->
-  Verify with Entros
-</EntrosVerify>
-```
+The result expires when its verification age, evaluation lifetime, or required attestation expiry reaches its limit.
+The browser callback cannot authenticate evidence for a protected server action.
 
-`children` overrides the button label. The component renders a single `<button>` element with whatever children you pass; style it with `className` or `style`.
+## Settlement checks
 
-## Error handling
+Your server owns the policy, RPC connection, and expected program identities.
+It must ignore callback-supplied scores, clocks, assurance claims, and network configuration.
 
-Every failure routes to `onError` with an opaque category. The popup shows a brief failure surface (or, for stale-baseline cases, a recovery surface linking to the reset path) before closing itself.
+1. Authenticate a wallet-signed action with its canonical parameters, audience, nonce, and expiry.
+2. Read current evidence with `readIntegratorEvidence` from Pulse.
+3. Evaluate it with `evaluatePolicy` from `@entros/verify/policy` and the server clock.
+4. Consume the nonce atomically with the protected action only when the decision is `allow`.
 
-| Reason | Meaning | Recovery |
+For an on-chain action, assert the relevant account state and policy within the same transaction.
+A browser callback or earlier server response cannot replace that check.
+
+Read Trust Score from current IdentityState when the protected action executes.
+
+## Compatibility
+
+The message envelope remains version 1. The additive policy object has its own version.
+
+| Consumer | Popup | Result |
 |---|---|---|
-| `wallet_rejected` | User canceled the wallet signature, or the wallet had insufficient SOL | User retries from your button |
-| `validation_failed` | Validator rejected the capture (variance, entropy, phrase mismatch, sybil match, or stale baseline) | User retries — for stale-baseline cases the popup itself surfaces the reset option |
-| `network_error` | Validator unreachable, blockhash expired, RPC error | Transient — user retries |
-| `user_canceled` | User closed the popup window before completing | User retries |
-| `origin_invalid` | Popup loaded from an origin not registered for this `integratorKey` | Register the origin (see *Integrator key registration* below) |
-| `popup_blocked` | Browser blocked `window.open` | Component renders an inline retry button (set `popupBlockedFallback={false}` to disable) |
-| `timeout` | Popup stayed open longer than `timeoutMs` | User retries |
-| `unknown` | Anything else | Log and retry |
+| Existing 0.1.1 | Upgraded | Existing payload types, enforced requested floor, and a required valid attestation account |
+| Upgraded | Existing | Missing policy data triggers `onError` |
+| Upgraded | Upgraded | Policy, freshness, account status, and duplicate-field checks precede `onVerified` |
 
-## Integrator key registration
+Release the upgraded popup before distributing consumers that require its policy object.
+A popup rollback causes upgraded consumers to fail closed.
+Review and pin the matching package versions before deployment.
 
-Each integrator key is registered with the popup-host's allowlist along with the production origins it's allowed to be opened from. To register, open an issue at [github.com/entros-protocol/entros-verify](https://github.com/entros-protocol/entros-verify) or reach out via Discord. Keys are added to a JSON allowlist on the entros.io deployment within a deploy cycle.
+## Errors and presentation
 
-For local development, the popup-host accepts any `localhost` origin without registration so you can iterate before formal registration.
+`onError` retains the existing opaque `reason` categories.
+An additive `policyReason` explains application-policy failures without exposing private detector findings.
+It can report an unmet score floor, stale evidence, required attestation, unsupported policy, invalid evidence, or unavailable state.
 
-## Custom UX
+A higher score requirement does not mean another immediate capture will satisfy it.
+Show the unmet requirement instead of automatically repeating verification.
 
-If you need to own the verification UX — capture inline, branded prompts, mobile-native — install `@entros/pulse-sdk` directly. See [Reference → SDK](/docs/reference/sdk) for the lower-level primitives (`PulseSDK`, `PulseSession`, `extractSpeakerFeatures`, `simhash`, `generateProof`, `submitViaWallet`).
+`children`, `className`, and `style` customize the trigger button.
+Popup dimensions default to 480 by 720 pixels. The default timeout is nine minutes.
+The popup reports capture, proof, submission, and attestation progress through `onProgress`.
 
-The Pulse SDK is what `@entros/verify` uses internally on the popup-host side, so the two paths produce identical on-chain state.
+## Integrator registration
+
+Register the integrator key and production origins with Entros before using the hosted popup.
+Local development accepts registered origins or the popup host's localhost development rule.
+The production route requires its configured origin allowlist.
+
+For a custom capture interface, see the [SDK reference](/docs/reference/sdk).

@@ -10,6 +10,8 @@
  * cause silent message rejection on the consumer side. Keep them aligned.
  */
 
+import type { PolicyReason, PolicyWireResult } from "@entros/verify/policy";
+
 export type Cluster = "devnet";
 
 export type EmbedMessageType =
@@ -28,10 +30,11 @@ export interface EmbedMessage<TPayload = unknown> {
 
 export interface VerifiedPayload {
   wallet_pubkey: string;
-  attestation_pda: string;
+  attestation_pda: string | null;
   tx_sig: string;
   trust_score: number;
   cluster: Cluster;
+  policy?: PolicyWireResult;
 }
 
 export type EmbedErrorReason =
@@ -46,6 +49,7 @@ export type EmbedErrorReason =
 
 export interface ErrorPayload {
   reason: EmbedErrorReason;
+  policy_reason?: PolicyReason;
 }
 
 export type EmbedProgressStatus =

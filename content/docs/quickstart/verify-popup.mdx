@@ -1,49 +1,58 @@
 ---
-title: Verify a wallet in five lines
-description: Drop EntrosVerify into your app for a wallet-connected Entros verification.
+title: Verify with an application policy
+description: Request recent verification and wallet continuity through an Entros popup.
 ---
 
-Render `<EntrosVerify />` as a button in your React tree. The user connects a wallet and completes the capture inside a popup. The `onVerified` callback reports a completed Entros verification.
+This integration uses Verify `0.2.0` and the compatible Entros popup.
+Pin the package version when adding the component:
 
-This is the **Tier 1 drop-in path**, the right choice for around 90% of integrations and the one to reach for whenever the gated action is worth the friction. To read an existing Anchor instead, for display or a lower-stakes gate, see the **Tier 3 path** in [Next.js: gate a route](/docs/quickstart/next-js).
-
-## Install
-
-```bash
-npm install @entros/verify
+```sh
+npm install @entros/verify@0.2.0
 ```
 
-The package declares `react ^19` and `react-dom ^19` as peer dependencies. No Solana adapter, no SDK, no web3.js install on your side—those live behind the popup boundary on entros.io.
+`EntrosVerify` opens the wallet and capture flow in a popup.
+The popup checks your application requirements before sending a result.
+The consumer checks those requirements again before calling `onVerified`.
 
-## Five-line usage
+## Request a recent verification
 
 ```tsx
 import { EntrosVerify } from "@entros/verify";
 
 <EntrosVerify
   integratorKey="your-integrator-key"
-  onVerified={(result) => grantAccess(result.walletPubkey)}
+  policy={{
+    id: "claim-access",
+    version: 1,
+    minTrustScore: 0,
+    maxVerificationAgeSeconds: 300,
+    maxEvaluationAgeSeconds: 90,
+    requiredAssurance: "browser_unattested",
+    uniquenessRequirement: "allow_unmeasured",
+    requireAttestation: false,
+    cluster: "devnet",
+  }}
+  onVerified={(result) => setVerificationResult(result)}
+  onError={(error) => setVerificationError(error.reason)}
 />
 ```
 
-On click: a popup opens to entros.io, the user connects their wallet, completes the 12-second capture, signs the on-chain verification transaction (a first-time `mint_anchor` or a returning-user `update_anchor`), and the popup posts the verified payload back via `onVerified`. The component renders a single `<button>`; style it with `className` or `style`.
+The callback supplies interface feedback. Your server or program must authorize the protected action where it executes.
+Authenticate the wallet's action request, reread current evidence, and evaluate your server-owned policy before granting access.
 
-## The verified payload
+The React consumer requires React 19. The hosted popup owns wallet connection, capture, and Solana submission.
 
-```ts
-interface EntrosVerifyResult {
-  walletPubkey: string;       // Base58 Solana wallet address
-  attestationPda: string;     // Derived SAS address. Check whether the account exists
-  txSig: string;              // Confirmed transaction signature
-  trustScore: number;         // On-chain Trust Score after this verification
-  cluster: "devnet";
-}
-```
+## Read the result
 
-`walletPubkey` identifies the wallet. `trustScore` lets you apply an application policy. `txSig` identifies the confirmed verification transaction. `attestationPda` is the deterministic address where a best-effort SAS issuance can appear. Fetch the account before treating the attestation as issued.
+The result contains the wallet, transaction signature, current Trust Score, and a versioned policy decision.
+`result.policy.evaluatedAgeSeconds` records verification age.
+`result.policy.evidence` records Anchor creation time, count, network identities, and attestation status.
 
-## Where to look next
+`attestationPda` is null when the policy allows an absent or unavailable optional attestation.
+A nonnull address refers to an account that passed the strict reader at evaluation time.
+Read current state again before relying on that account for settlement.
 
-- [Verification flow](/docs/integrate/verification-flow)—full surface, all props, error categories, integrator key registration
-- [Next.js—gate a route](/docs/quickstart/next-js)—the read-only path against existing Anchors
-- [Read a Trust Score with no SDK](/docs/quickstart/read-trust-score)—direct PDA read for server-side checks
+The browser assurance status remains `browser_unattested`.
+Uniqueness remains `unmeasured`. Neither status establishes sensor provenance or population uniqueness.
+
+See [Verification flow](/docs/integrate/verification-flow) for compatibility, error handling, and settlement requirements.

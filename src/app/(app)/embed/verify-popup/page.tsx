@@ -25,6 +25,9 @@ export default async function EmbedVerifyPopupPage({
   const usp = new URLSearchParams();
   for (const [key, value] of Object.entries(raw)) {
     if (typeof value === "string") usp.set(key, value);
+    else if (Array.isArray(value)) {
+      for (const entry of value) usp.append(key, entry);
+    }
   }
 
   const parsed = parseEmbedParams(usp);

@@ -22,12 +22,15 @@ export async function evaluatePopupPolicy(
     ? traceEvidenceConnection(connection, walletPubkey)
     : null;
   const readStartedAtMs = Date.now();
-  const readNowSeconds = Math.floor(readStartedAtMs / 1000);
+  let readNowSeconds = Math.floor(readStartedAtMs / 1000);
   const observation = await readIntegratorEvidence({
     walletPubkey,
     transactionSignature,
     connection: trace?.connection ?? connection,
-    nowSeconds: readNowSeconds,
+    nowSeconds: () => {
+      readNowSeconds = Math.floor(Date.now() / 1000);
+      return readNowSeconds;
+    },
   });
   const readCompletedAtMs = Date.now();
   const evaluatedAtSeconds = Math.floor(readCompletedAtMs / 1000);

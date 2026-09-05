@@ -112,7 +112,7 @@ const observation = await readIntegratorEvidence({
   connection,
   walletPubkey: "AUTHENTICATED_WALLET",
   transactionSignature: "VERIFICATION_TRANSACTION",
-  nowSeconds: Math.floor(Date.now() / 1000),
+  nowSeconds: () => Math.floor(Date.now() / 1000),
 });
 const result = evaluatePolicy(policy, observation, Math.floor(Date.now() / 1000));
 console.log(result.decision);

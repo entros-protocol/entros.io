@@ -8,6 +8,7 @@
     "realms-voter-weight",
     "agent-anchor",
     "mobile",
-    "verification-flow"
+    "verification-flow",
+    "protected-action"
   ]
 }

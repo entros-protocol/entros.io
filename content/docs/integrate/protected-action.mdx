@@ -1,0 +1,51 @@
+---
+title: Protect a server action
+description: Run a signed-action example with current evidence checks and replay protection.
+---
+
+The [runnable protected-action example](https://github.com/entros-protocol/entros-verify/tree/main/examples/protected-action) uses released Pulse `4.10.2` and Verify `0.2.0` APIs.
+It grants access to a synthetic resource after authenticating a wallet-signed action and checking current verification evidence.
+
+## Run locally
+
+Download the repository and enter `examples/protected-action`. Use Node.js `24.19.0` or later.
+
+```sh
+npm ci
+npm test
+npm run demo
+```
+
+The demonstration accepts a valid signed request, rejects its replay, and rejects changed evidence.
+Only one action executes. The tests also cover request substitution, invalid signatures, expiry, unavailable state, and concurrent requests.
+
+The example generates disposable signing keys in memory and supplies synthetic RPC responses.
+It needs no wallet extension, capture, blockchain submission, or deployment.
+
+## What the server checks
+
+1. Issue a challenge bound to the wallet, action parameters, audience, nonce, and expiry.
+2. Verify the wallet signature over the exact canonical challenge bytes.
+3. Read current evidence using the server's RPC connection.
+4. Evaluate the server's policy with the server clock.
+5. Consume the nonce and execute the action together when the decision is `allow`.
+
+The server ignores browser-supplied scores, policy configuration, and claimed evidence.
+The popup callback updates the browser interface. Each protected server action needs its own authentication and authorization checks.
+
+## Adapt the example
+
+The README documents the `readIntegratorEvidence` adapter for a configured RPC connection.
+Application requirements belong in server configuration. A deployed service must bind signed challenges to its configured HTTPS action audience.
+
+The example keeps challenges and grants in one process and restricts HTTP to loopback.
+A durable service must consume the nonce and execute the action within one database transaction.
+Preserve expiry and concurrency checks when replacing the storage adapter.
+
+For on-chain actions, enforce the relevant account state and policy within the action transaction.
+The local example does not establish production deployment, unique personhood, or hardware assurance.
+
+## Next steps
+
+- [Read verification evidence](/docs/integrate/read-on-chain)
+- [Verification flow and application policy](/docs/integrate/verification-flow)

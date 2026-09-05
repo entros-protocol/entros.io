@@ -1,121 +1,84 @@
 ---
-title: Read on-chain (no SDK)
-description: Direct PDA read for server actions, edge functions, Anchor programs, and any non-JS context.
+title: Read verification evidence
+description: Read current wallet evidence and evaluate application requirements on your server.
 ---
 
-The on-chain Anchor PDA is the source of truth for every other read path. Going directly to it removes one layer of dependency and works in any environment that can call a Solana RPC.
+Use Pulse `4.10.2` and Verify `0.2.0` for server-side policy checks.
+The strict reader validates identity accounts, qualifying transactions, and optional SAS attestations.
+It binds the current wallet commitment to confirmed transaction evidence.
 
-## The TypeScript pattern
+A score lookup supports display. Authorizing a protected action also requires an authenticated wallet, action binding, current evidence, and replay protection.
 
-The same code path as the [quickstart](/docs/quickstart/read-trust-score), shown here as a complete server action:
+## Evaluate current evidence
 
-```ts title="app/actions/check-verification.ts"
-"use server";
+Install the released packages:
 
-import { Connection, PublicKey } from "@solana/web3.js";
+```sh
+npm install @entros/pulse-sdk@4.10.2 @entros/verify@0.2.0 @solana/web3.js @coral-xyz/anchor
+```
 
-const ENTROS_ANCHOR_PROGRAM_ID = new PublicKey(
-  "GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2",
-);
+Keep the RPC connection and policy in server configuration.
+Obtain `walletPubkey` from the authenticated, signed action request.
+The transaction signature identifies evidence for the reader to validate.
 
-const RPC_URL = process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com";
+```ts
+import { Connection } from "@solana/web3.js";
+import { readIntegratorEvidence } from "@entros/pulse-sdk";
+import { evaluatePolicy, normalizePolicyRequest } from "@entros/verify/policy";
 
-export async function checkVerification(
-  walletBase58: string,
-  minScore = 100,
-  maxAgeSeconds = 86_400,
-): Promise<{ verified: boolean; score: number | null }> {
-  const wallet = new PublicKey(walletBase58);
-  const [pda] = PublicKey.findProgramAddressSync(
-    [Buffer.from("identity"), wallet.toBuffer()],
-    ENTROS_ANCHOR_PROGRAM_ID,
-  );
+const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+const policy = normalizePolicyRequest({
+  id: "resource-access",
+  version: 1,
+  minTrustScore: 100,
+  maxVerificationAgeSeconds: 300,
+  maxEvaluationAgeSeconds: 90,
+  requiredAssurance: "browser_unattested",
+  uniquenessRequirement: "allow_unmeasured",
+  requireAttestation: false,
+  cluster: "devnet",
+});
 
-  const account = await new Connection(RPC_URL).getAccountInfo(pda);
-  if (!account) return { verified: false, score: null };
-
-  const lastVerifiedAt = Number(account.data.readBigInt64LE(48));
-  const score = account.data.readUInt16LE(60);
-  const age = Math.floor(Date.now() / 1000) - lastVerifiedAt;
-
-  return { verified: score >= minScore && age <= maxAgeSeconds, score };
+export async function evaluateCurrentVerification(
+  walletPubkey: string,
+  transactionSignature: string,
+) {
+  const evidence = await readIntegratorEvidence({
+    walletPubkey,
+    transactionSignature,
+    connection,
+    nowSeconds: () => Math.floor(Date.now() / 1000),
+  });
+  return evaluatePolicy(policy, evidence, Math.floor(Date.now() / 1000));
 }
 ```
 
-## The Rust pattern
+This helper returns a policy decision. It does not authenticate the caller or execute an action.
+The live clock callback lets the reader check timestamps after asynchronous RPC calls complete.
+An unavailable or invalid read cannot authorize access.
 
-For an Anchor program that gates an instruction on Entros verification, declare the `IdentityState` PDA as a read-only account constraint and inspect the score in the instruction body:
+## Bind the decision to an action
 
-```rust
-use anchor_lang::prelude::*;
+1. Issue a challenge for the wallet, exact action parameters, audience, nonce, and expiry.
+2. Verify the wallet signature over the canonical challenge bytes.
+3. Read current evidence with the server's RPC connection.
+4. Evaluate the server's policy with its clock.
+5. If the result allows access, consume the nonce atomically with the action.
 
-declare_id!("YourProgram11111111111111111111111111111111");
+Ignore browser-supplied scores, policy decisions, clocks, and RPC configuration.
+Use the [protected-action example](/docs/integrate/protected-action) for a tested local implementation of this sequence.
 
-const ENTROS_ANCHOR: Pubkey = pubkey!("GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2");
+## On-chain actions and other languages
 
-#[derive(Accounts)]
-pub struct DoSomething<'info> {
-    pub user: Signer<'info>,
+For on-chain actions, validate the relevant accounts and policy inside the action transaction.
+A prior RPC response cannot enforce current account state for that transaction.
 
-    #[account(
-        seeds = [b"identity", user.key().as_ref()],
-        bump,
-        seeds::program = ENTROS_ANCHOR,
-    )]
-    /// CHECK: PDA owned by entros-anchor; we read the trust_score field manually.
-    pub identity_state: AccountInfo<'info>,
-}
+A custom reader must validate account ownership, PDA derivation, discriminator, supported layout, wallet binding, field ranges, and transaction consistency.
+Reading score and timestamp bytes alone does not implement these checks.
+Use the [program reference](/docs/reference/programs) and [PDA reference](/docs/reference/pdas) when implementing another language or program integration.
 
-pub fn do_something(
-    ctx: Context<DoSomething>,
-    min_score: u16,
-    max_age_secs: i64,
-) -> Result<()> {
-    let data = ctx.accounts.identity_state.try_borrow_data()?;
-    let last_verified = i64::from_le_bytes(data[48..56].try_into().unwrap());
-    let trust_score = u16::from_le_bytes(data[60..62].try_into().unwrap());
+## Next steps
 
-    let now = Clock::get()?.unix_timestamp;
-    require!(trust_score >= min_score, ErrorCode::InsufficientTrust);
-    require!(
-        now.saturating_sub(last_verified) <= max_age_secs,
-        ErrorCode::VerificationExpired
-    );
-    Ok(())
-}
-```
-
-The PDA is owned by `entros-anchor`; your program reads its bytes but does not write to it.
-
-## The Python pattern
-
-```python
-from solders.pubkey import Pubkey
-from solana.rpc.api import Client
-
-ENTROS_ANCHOR = Pubkey.from_string("GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2")
-
-def read_anchor(client: Client, wallet: Pubkey) -> tuple[int, int] | None:
-    """Returns (trust_score, last_verified_at) or None if never verified."""
-    pda, _ = Pubkey.find_program_address([b"identity", bytes(wallet)], ENTROS_ANCHOR)
-    info = client.get_account_info(pda).value
-    if info is None:
-        return None
-    last_verified_at = int.from_bytes(info.data[48:56], "little", signed=True)
-    trust_score = int.from_bytes(info.data[60:62], "little")
-    return trust_score, last_verified_at
-```
-
-## What you cannot do without the SDK
-
-- **Verification.** Submitting a new proof requires the Pulse SDK's capture and proof-generation pipeline. There is no direct path to write to the Anchor PDA without going through the verifier program.
-- **Attestation issuance.** SAS attestations are issued by the Entros executor on successful verification. Direct issuance from a client is not a supported path.
-
-The read patterns above cover scoring, display, and gating. Read both fields: `trust_score` for how consistently a wallet has verified, and `last_verification_timestamp` for how long ago it last did.
-
-For a claim, a vote, or anything else worth the friction, have the client run a verification at the point of the action so the Anchor you read was written moments earlier. Writes go through the SDK.
-
-## Where to look next
-
-- [Reference: PDAs](/docs/reference/pdas)—every seed and derivation in one place
-- [Reference: Programs](/docs/reference/programs)—full instruction set for the on-chain programs
+- [Verification flow and application policy](/docs/integrate/verification-flow)
+- [Display wallet verification history](/docs/quickstart/read-trust-score)
+- [SAS attestation](/docs/integrate/sas-attestation)

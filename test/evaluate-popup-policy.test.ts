@@ -79,7 +79,22 @@ describe("popup policy evaluation", () => {
     const result = await evaluatePopupPolicy({ ...params, policy: normalizePolicyRequest(undefined, 7) }, wallet, signature, connection);
     expect(result.decision).toBe("allow");
     expect(result.evidence?.attestation).toEqual({ status: "missing" });
-    expect(readEvidence).toHaveBeenCalledWith({ walletPubkey: wallet, transactionSignature: signature, connection, nowSeconds: now });
+    expect(readEvidence).toHaveBeenCalledWith({ walletPubkey: wallet, transactionSignature: signature, connection, nowSeconds: expect.any(Function) });
+  });
+
+  it("refreshes the reader clock after elapsed RPC time", async () => {
+    let current = now;
+    vi.spyOn(Date, "now").mockImplementation(() => current * 1000);
+    readEvidence.mockImplementation(async ({ nowSeconds }: { nowSeconds: () => number }) => {
+      expect(nowSeconds()).toBe(now);
+      current += 3;
+      expect(nowSeconds()).toBe(now + 3);
+      return { status: "available", evidence: evidence() };
+    });
+    const report = vi.fn();
+    const result = await evaluatePopupPolicy({ ...params, diagnosticsEnabled: true, policy: normalizePolicyRequest(undefined, 7) }, wallet, signature, connection, report);
+    expect(result.decision).toBe("allow");
+    expect(report.mock.calls[0][0]).toMatchObject({ readStartedAtMs: now * 1000, readNowSeconds: now + 3, evaluatedAtSeconds: now + 3 });
   });
 
   it("preserves unavailable RPC as unavailable state", async () => {

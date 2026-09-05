@@ -26,6 +26,7 @@ export interface ParsedEmbedParams {
   requestId: string;
   minTrustScore?: number;
   policy?: PolicyRequest;
+  diagnosticsEnabled?: boolean;
 }
 
 export type ParseResult =

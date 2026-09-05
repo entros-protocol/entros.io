@@ -3,11 +3,13 @@
 /**
  * postMessage emitter for the embed/verify-popup route.
  *
- * Three event types match the wire contract in `@entros/verify`:
+ * Three verification events match the wire contract in `@entros/verify`:
  *
  *   - `entros/verified`  on successful verification
  *   - `entros/error`     on any failure (opaque categories only)
  *   - `entros/heartbeat` mid-pipeline progress signal
+ *
+ * The diagnostic event is an opt-in extension for registered observers.
  *
  * Each call sends a versioned envelope to `window.opener` with an
  * explicit `parent_origin` target. The browser enforces that the
@@ -22,6 +24,7 @@ import type {
   EmbedProgressStatus,
   VerifiedPayload,
 } from "./types";
+import type { PolicyDiagnostic } from "./policy-diagnostics";
 import type { PolicyReason } from "@entros/verify/policy";
 
 export interface EmbedContext {
@@ -83,4 +86,8 @@ function postEnvelope<TPayload>(
   };
 
   opener.postMessage(envelope, ctx.parentOrigin);
+}
+
+export function emitPolicyDiagnostic(ctx: EmbedContext, diagnostic: PolicyDiagnostic): void {
+  postEnvelope(ctx, "entros/policy-diagnostic", diagnostic);
 }

@@ -1,4 +1,4 @@
-import { isAllowedIntegrator } from "@/lib/embed/integrator-allowlist";
+import { isAllowedIntegrator, isIntegratorDiagnosticsEnabled } from "@/lib/embed/integrator-allowlist";
 import { parseEmbedParams } from "@/lib/embed/url-params";
 import { PopupContent } from "@/components/embed/popup-content";
 import { PopupError } from "@/components/embed/popup-error";
@@ -55,7 +55,10 @@ export default async function EmbedVerifyPopupPage({
 
   return (
     <PopupShell>
-      <PopupContent params={parsed.params} />
+      <PopupContent params={{
+        ...parsed.params,
+        diagnosticsEnabled: isIntegratorDiagnosticsEnabled(parsed.params.integratorKey, parsed.params.parentOrigin),
+      }} />
     </PopupShell>
   );
 }

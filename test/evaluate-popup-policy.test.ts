@@ -97,3 +97,36 @@ describe("popup policy evaluation", () => {
     expect(result).toMatchObject({ decision: "deny", reason: "verification_stale" });
   });
 });
+
+describe("opt-in popup diagnostics", () => {
+  it("captures the original invalid read after successful submission", async () => {
+    vi.spyOn(Date, "now").mockReturnValue(now * 1000);
+    readEvidence.mockResolvedValue({ status: "invalid", reason: "identity_invalid" });
+    const report = vi.fn();
+    const result = await evaluatePopupPolicy({ ...params, diagnosticsEnabled: true }, wallet, signature, connection, report);
+    expect(result).toMatchObject({ decision: "deny", reason: "invalid_evidence" });
+    expect(report).toHaveBeenCalledOnce();
+    expect(report.mock.calls[0][0]).toMatchObject({
+      schemaVersion: 1, stage: "post_submission_policy", sdkVerification: "succeeded",
+      walletPubkey: wallet, transactionSignature: signature,
+      readStartedAtMs: now * 1000, readCompletedAtMs: now * 1000,
+      readNowSeconds: now, evaluatedAtSeconds: now,
+      readStatus: "invalid", readReason: "identity_invalid",
+      policyDecision: "deny", policyReason: "invalid_evidence", evidence: null, rpc: [],
+    });
+  });
+
+  it("does not enable diagnostics without the server flag", async () => {
+    readEvidence.mockResolvedValue({ status: "invalid", reason: "transaction_invalid" });
+    const report = vi.fn();
+    await evaluatePopupPolicy(params, wallet, signature, connection, report);
+    expect(report).not.toHaveBeenCalled();
+    expect(readEvidence.mock.calls[0][0].connection).toBe(connection);
+  });
+
+  it("preserves the result when the receiver throws", async () => {
+    readEvidence.mockResolvedValue({ status: "invalid", reason: "identity_invalid" });
+    const result = await evaluatePopupPolicy({ ...params, diagnosticsEnabled: true }, wallet, signature, connection, () => { throw new Error("receiver unavailable"); });
+    expect(result).toMatchObject({ decision: "deny", reason: "invalid_evidence" });
+  });
+});

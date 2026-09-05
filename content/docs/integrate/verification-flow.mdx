@@ -4,7 +4,7 @@ description: Enforce score, freshness, and attestation requirements before consu
 ---
 
 Use Verify `0.2.0` with the compatible Entros popup for this policy contract.
-Server-side evidence reads require Pulse `4.10.0`. Verify `0.1.1` does not expose the policy API.
+Server-side evidence reads require Pulse `4.10.2`. Verify `0.1.1` does not expose the policy API.
 
 `EntrosVerify` hosts wallet connection and capture in an Entros popup.
 Integrator Policy v1 separates current wallet continuity, accepted verification evidence, assurance, and uniqueness status.
@@ -34,7 +34,7 @@ const policy = normalizePolicyRequest({
   onVerified={(result) => setVerificationResult(result)}
   onError={(error) => setVerificationError(error.policyReason ?? error.reason)}
   onProgress={(progress) => setStatus(progress.status)}
-/>
+/>;
 ```
 
 Without an explicit policy, the upgraded consumer uses a one-day verification age and a 90-second evaluation lifetime.
@@ -50,17 +50,17 @@ No policy request changes protocol scoring or projection policy.
 The result preserves `walletPubkey`, `txSig`, `trustScore`, and `cluster`.
 It adds `policy` and makes `attestationPda` nullable for negotiated policy requests.
 
-| Field | Meaning |
-|---|---|
-| `policy.requirements` | Exact application requirements used for evaluation |
-| `policy.evaluatedAt`, `policy.expiresAt` | Integer Unix seconds from the evaluator's clock |
-| `policy.evidenceTimestamp`, `policy.evaluatedAgeSeconds` | Freshness bound from transaction evidence and current IdentityState |
-| `policy.evidence.identity` | Current score, verification count, creation time, and wallet-bound commitment |
-| `policy.evidence.transaction` | Confirmed qualifying transaction, slot, block time, and output commitment |
-| `policy.evidence.attestation` | `present`, `missing`, `invalid`, or `unavailable` account observation |
-| `policy.evidence.assuranceTier` | Explicit `browser_unattested` |
-| `policy.evidence.uniquenessStatus` | Explicit `unmeasured` |
-| `policy.evidence.programIds` | Pinned protocol and SAS identities |
+| Field                                                    | Meaning                                                                       |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `policy.requirements`                                    | Exact application requirements used for evaluation                            |
+| `policy.evaluatedAt`, `policy.expiresAt`                 | Integer Unix seconds from the evaluator's clock                               |
+| `policy.evidenceTimestamp`, `policy.evaluatedAgeSeconds` | Freshness bound from transaction evidence and current IdentityState           |
+| `policy.evidence.identity`                               | Current score, verification count, creation time, and wallet-bound commitment |
+| `policy.evidence.transaction`                            | Confirmed qualifying transaction, slot, block time, and output commitment     |
+| `policy.evidence.attestation`                            | `present`, `missing`, `invalid`, or `unavailable` account observation         |
+| `policy.evidence.assuranceTier`                          | Explicit `browser_unattested`                                                 |
+| `policy.evidence.uniquenessStatus`                       | Explicit `unmeasured`                                                         |
+| `policy.evidence.programIds`                             | Pinned protocol and SAS identities                                            |
 
 A required missing attestation denies access. An unavailable required attestation returns unavailable state.
 An optional missing or unavailable attestation carries no issued address.
@@ -87,16 +87,17 @@ For an on-chain action, assert the relevant account state and policy within the 
 A browser callback or earlier server response cannot replace that check.
 
 Read Trust Score from current IdentityState when the protected action executes.
+Run the [protected-action example](/docs/integrate/protected-action) to test signed requests, current evidence, expiry, and replay protection locally.
 
 ## Compatibility
 
 The message envelope remains version 1. The additive policy object has its own version.
 
-| Consumer | Popup | Result |
-|---|---|---|
+| Consumer       | Popup    | Result                                                                                     |
+| -------------- | -------- | ------------------------------------------------------------------------------------------ |
 | Existing 0.1.1 | Upgraded | Existing payload types, enforced requested floor, and a required valid attestation account |
-| Upgraded | Existing | Missing policy data triggers `onError` |
-| Upgraded | Upgraded | Policy, freshness, account status, and duplicate-field checks precede `onVerified` |
+| Upgraded       | Existing | Missing policy data triggers `onError`                                                     |
+| Upgraded       | Upgraded | Policy, freshness, account status, and duplicate-field checks precede `onVerified`         |
 
 Release the upgraded popup before distributing consumers that require its policy object.
 A popup rollback causes upgraded consumers to fail closed.

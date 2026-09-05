@@ -3,9 +3,11 @@ title: Gate a route
 description: Wrap any React component with EntrosGate to require a Trust Score and a recent verification before children render.
 ---
 
-`EntrosGate` is a route guard. It reads the connected wallet's Anchor PDA and renders children only when the Trust Score clears your floor and the wallet verified inside your recency window.
+`EntrosGate` controls client-side display. It renders children when the connected wallet's stored score and verification timestamp meet your display requirements.
+Protect server data and actions with separate authentication and policy checks where they execute.
 
-Two numbers, two questions. The score is how consistently this wallet has verified. Recency is how long ago it last did. For an action worth real friction, run a verification at the point of the action and let the gate read the result, using [`<EntrosVerify />`](/docs/integrate/verification-flow).
+Use [`EntrosVerify`](/docs/integrate/verification-flow) when the user needs to complete a new verification.
+A new capture can update verification recency. It does not guarantee the wallet will meet a higher score floor.
 
 > **Prerequisite.** `EntrosGate` depends on the Solana wallet adapter providers (`ConnectionProvider`, `WalletProvider`, `WalletModalProvider`). The component throws at render time without them. See [Set up the wallet adapter providers](/docs/quickstart/next-js#2-set-up-the-wallet-adapter-providers) in the Next.js quickstart for the snippet.
 
@@ -23,14 +25,14 @@ Two numbers, two questions. The score is how consistently this wallet has verifi
 </EntrosGate>
 ```
 
-| Prop | Type | Required | Default | Purpose |
-| --- | --- | --- | --- | --- |
-| `minTrustScore` | `number` | yes | none | Minimum on-chain Trust Score to allow children to render |
-| `maxVerificationAge` | `number` | no | `86_400` | Seconds since the last verification, above which the gate does not pass. `Infinity` gates on score alone |
-| `children` | `ReactNode` | yes | none | What to render when the wallet passes the gate |
-| `fallback` | `ReactNode` | no | built-in prompt | What to render when the wallet fails the gate |
-| `loadingFallback` | `ReactNode` | no | minimal spinner | What to render while the PDA is being fetched |
-| `verifyHref` | `string` | no | `https://entros.io/verify` | Where the built-in fallback links unverified users |
+| Prop                 | Type        | Required | Default                    | Purpose                                                                                                  |
+| -------------------- | ----------- | -------- | -------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `minTrustScore`      | `number`    | yes      | none                       | Minimum on-chain Trust Score to allow children to render                                                 |
+| `maxVerificationAge` | `number`    | no       | `86_400`                   | Seconds since the last verification, above which the gate does not pass. `Infinity` gates on score alone |
+| `children`           | `ReactNode` | yes      | none                       | What to render when the wallet passes the gate                                                           |
+| `fallback`           | `ReactNode` | no       | built-in prompt            | What to render when the wallet fails the gate                                                            |
+| `loadingFallback`    | `ReactNode` | no       | minimal spinner            | What to render while the PDA is being fetched                                                            |
+| `verifyHref`         | `string`    | no       | `https://entros.io/verify` | Where the built-in fallback links unverified users                                                       |
 
 ## Three render states
 
@@ -51,7 +53,10 @@ When the default fallback doesn't fit your design, supply your own:
   fallback={
     <div className="rounded-xl border p-6">
       <h2>Verify to claim</h2>
-      <p>Claiming needs a Trust Score of 500 and a verification from the last hour.</p>
+      <p>
+        Claiming needs a Trust Score of 500 and a verification from the last
+        hour.
+      </p>
       <EntrosVerify
         integratorKey="your-integrator-key"
         onVerified={() => location.reload()}
@@ -63,7 +68,8 @@ When the default fallback doesn't fit your design, supply your own:
 </EntrosGate>
 ```
 
-Putting `<EntrosVerify />` in the fallback is the pattern worth copying for a claim: the user verifies in place and the gate passes on the next read, so the score is read against someone who is present.
+The popup lets users verify without leaving the page. The next gate read updates the display if the wallet meets both requirements.
+The claim endpoint must authenticate the signed action and evaluate current evidence independently.
 
 The `fallback` prop replaces every failing state: "wallet disconnected", "below the score floor", "verified too long ago" and "no Anchor on file". The default fallback renders `WalletMultiButton` in the disconnected case, so a custom `fallback` needs its own connect control or users have no way in. To branch on the states yourself, call `verifyEntrosAttestation` from the SDK directly inside your own component.
 
@@ -73,16 +79,18 @@ The `fallback` prop replaces every failing state: "wallet disconnected", "below 
 
 If you're hosting the verification flow yourself (e.g. a self-hosted `/verify` route built on `@entros/pulse-sdk`), set `verifyHref` to your route: `verifyHref="/verify"` for a same-origin route, or an absolute URL for another host.
 
-Redirecting is the fallback of last resort. Prefer [`<EntrosVerify />`](/docs/integrate/verification-flow) from `@entros/verify`, which runs the capture in a popup without leaving your page. On success the gate's next read passes, and the user never loses their place in your flow.
+Redirecting is the fallback of last resort. Prefer [`<EntrosVerify />`](/docs/integrate/verification-flow) from `@entros/verify`, which runs the capture in a popup without leaving your page. After success, the next gate read checks whether the wallet meets the display requirements.
 
 ## Server-side gating
 
-`EntrosGate` is a client component, and a determined user can bypass any client-side check. Anything that moves value should assert the same two fields where it settles: read `trust_score` and `last_verification_timestamp` from the Anchor PDA in your own program or server route. See the [no-SDK quickstart](/docs/quickstart/read-trust-score).
+`EntrosGate` cannot authorize server access or protect data already delivered to the browser.
+Authenticate a wallet-signed action, read current evidence, evaluate your server's policy, and consume the nonce atomically with the action.
 
-The pattern composes cleanly: server-render the public shell, gate sensitive subtrees with `EntrosGate` on the client, and re-assert on the server where it counts.
+Follow [Read verification evidence](/docs/integrate/read-on-chain) and the [protected-action example](/docs/integrate/protected-action).
+For an on-chain action, enforce the relevant account state and policy in the same transaction.
 
 ## Where to look next
 
 - [Show a Trust Score badge](/docs/integrate/show-a-badge) without gating
-- [Read on-chain directly](/docs/integrate/read-on-chain) for non-React contexts
+- [Read verification evidence](/docs/integrate/read-on-chain) for non-React contexts
 - [SAS attestation](/docs/integrate/sas-attestation) for cross-program composability

@@ -1,13 +1,12 @@
 ---
 title: Gate a Next.js route in five lines
-description: Add EntrosGate to a Next.js app and require an Anchor policy before a page renders.
+description: Add EntrosGate to a Next.js app and check stored wallet history before content renders.
 ---
 
-Wrap any component in `<EntrosGate>` and set a `minTrustScore`. The page renders only when the wallet's devnet Anchor satisfies the selected policy.
+Wrap a component in `EntrosGate` to show it when the wallet's stored score and verification timestamp meet your display requirements.
+This client-side component supports progressive disclosure. It does not authorize server data, claims, or other protected actions.
 
-This is the **Tier 3 read-only path**: you read existing on-chain Anchors rather than running verification yourself. It fits display, progressive disclosure, and gates where a live capture would cost more friction than the action is worth.
-
-For an airdrop claim, a governance vote, or anything else worth the friction, run a verification at the point of the action and let the gate read the result. That is the **Tier 1 path**, `<EntrosVerify />`, and it composes with this one: see [Verification flow](/docs/integrate/verification-flow).
+Use [Verification flow](/docs/integrate/verification-flow) for a new capture and the [protected-action example](/docs/integrate/protected-action) for server authorization.
 
 > **Prerequisite.** `EntrosGate` depends on the Solana wallet adapter providers (`ConnectionProvider`, `WalletProvider`, `WalletModalProvider`). The component throws at render time without them. Step 2 below sets them up — do that first if your app doesn't already have a wallet adapter wiring at the root.
 
@@ -27,7 +26,10 @@ It also uses icons from `lucide-react`.
 
 ```tsx title="app/providers.tsx"
 "use client";
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { useMemo } from "react";
 
@@ -51,7 +53,11 @@ Mount `SolanaProviders` once around your app in `app/layout.tsx`:
 ```tsx title="app/layout.tsx"
 import { SolanaProviders } from "./providers";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
@@ -72,7 +78,7 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 
 `EntrosGate` is published as a single-file React component you copy into your project. The canonical source is in the entros.io repo at [`src/components/ui/entros-gate.tsx`](https://github.com/entros-protocol/entros.io/blob/main/src/components/ui/entros-gate.tsx)—copy it into your own `components/` directory. A standalone npm package is on the [near-term roadmap](/docs/roadmap/near-term).
 
-## 4. Wrap your protected component
+## 4. Wrap your display component
 
 ```tsx title="app/protected/page.tsx"
 import { EntrosGate } from "@/components/ui/entros-gate";
@@ -80,7 +86,7 @@ import { EntrosGate } from "@/components/ui/entros-gate";
 export default function ProtectedPage() {
   return (
     <EntrosGate minTrustScore={100}>
-      <h1>You're verified.</h1>
+      <h1>Verification history available.</h1>
       <p>This view only renders for wallets above the threshold.</p>
     </EntrosGate>
   );
@@ -95,22 +101,16 @@ That's the integration. `EntrosGate` does three things:
 
 ## Setting the thresholds
 
-`minTrustScore` is a `number` between 0 and 10000, the ceiling set by `ProtocolConfig.max_trust_score`. Scores today top out near 720, so pick from the range below rather than from the ceiling.
+`minTrustScore` sets the display floor. Choose it for your application and check the current protocol configuration before setting a maximum.
+`maxVerificationAge` is seconds since the stored verification timestamp and defaults to one day.
 
-`maxVerificationAge` is seconds since the wallet last verified, and defaults to one day. The two answer different questions: the score is how consistently this wallet has verified, recency is how long ago it last did.
-
-| Stakes | Score floor | Recency | Pattern |
-| --- | --- | --- | --- |
-| Comment / join | 100 | 7 days | Gate alone |
-| Mint allowlist / referral reward | 300 | 1 day | Gate alone |
-| Airdrop claim / governance | 550+ | 1 hour | Verify at the action, then gate |
-| High-value access | 680+ | 1 hour | Verify at the action, then gate |
-
-Higher thresholds ask for a longer verified history. Lower ones keep the protocol open to first-time humans. Above the mint-allowlist row, pair the gate with a verification at the point of the action so the score is read against someone who is present.
+Higher score requirements ask for more wallet verification history. Another immediate capture does not guarantee a higher score.
+Keep server authorization requirements in the server's versioned policy.
+A rendered button does not grant permission to execute its action.
 
 ```tsx
-<EntrosGate minTrustScore={550} maxVerificationAge={3600}>
-  <ClaimButton />
+<EntrosGate minTrustScore={100} maxVerificationAge={3600}>
+  <VerificationHistory />
 </EntrosGate>
 ```
 
@@ -125,5 +125,5 @@ The component doesn't open wallet adapter modals on its own. Wallet connection i
 ## Next steps
 
 - [Show a Trust Score badge](/docs/integrate/show-a-badge) without gating
-- [Read the Anchor PDA without the SDK](/docs/quickstart/read-trust-score)—useful for server-side checks
+- [Display wallet verification history](/docs/quickstart/read-trust-score)
 - [Configure SAS attestations](/docs/integrate/sas-attestation) for cross-program composability

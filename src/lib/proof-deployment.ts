@@ -1,7 +1,9 @@
+import type { RequestBoundManifest } from "@entros/pulse-sdk";
+
 export function resolveProofDeployment(
   encoded: string | undefined,
   supportsRequestBoundProofs: boolean,
-): { requestBoundManifest?: Record<string, unknown> } {
+): { requestBoundManifest?: RequestBoundManifest } {
   if (!encoded) return {};
   if (!supportsRequestBoundProofs) {
     throw new Error("This SDK version does not support the configured proof generation.");
@@ -16,5 +18,7 @@ export function resolveProofDeployment(
   ) {
     throw new Error("Invalid proof deployment manifest.");
   }
-  return { requestBoundManifest: manifest as Record<string, unknown> };
+  // The generation check above is a fast reject for a stale or foreign manifest.
+  // The SDK validates every remaining field before it loads an artifact.
+  return { requestBoundManifest: manifest as RequestBoundManifest };
 }

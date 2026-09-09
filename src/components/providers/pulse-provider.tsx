@@ -3,6 +3,7 @@
 import { createContext, useContext, useMemo } from "react";
 import { PulseSDK, type PulseConfig } from "@entros/pulse-sdk";
 import { resolveRelayerTransport } from "@/lib/relay-transport";
+import { resolveProofDeployment } from "@/lib/proof-deployment";
 
 const PulseContext = createContext<PulseSDK | null>(null);
 
@@ -33,7 +34,14 @@ export function PulseProvider({ children }: { children: React.ReactNode }) {
       // surface the privacy choice explicitly to those users.
       onPrivacyFallback: async () => true,
     };
-    return new PulseSDK(config);
+    const capability = PulseSDK as typeof PulseSDK & {
+      supportsRequestBoundProofs?: boolean;
+    };
+    const proofDeployment = resolveProofDeployment(
+      process.env.NEXT_PUBLIC_ENTROS_PROOF_MANIFEST,
+      capability.supportsRequestBoundProofs === true,
+    );
+    return new PulseSDK({ ...config, ...proofDeployment });
   }, []);
 
   return (

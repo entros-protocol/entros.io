@@ -34,7 +34,16 @@ describe("evidence diagnostic collector", () => {
     for (const spy of [f.genesis, f.statuses, f.transaction, f.account]) expect(spy).toHaveBeenCalledOnce();
     expect(result).toHaveLength(4);
     expect(JSON.stringify(result)).not.toContain(secret);
-    expect(JSON.stringify(result)).not.toContain("8899");
+    expect(JSON.stringify(result)).not.toContain("127.0.0.1");
+    // The port is four digits, and the timing fields are wall-clock
+    // milliseconds that can contain any digit run, so check it against the
+    // recorded fields rather than the whole record.
+    const recorded = result.map((record) => ({
+      method: record.method,
+      outcome: record.outcome,
+      snapshot: record.snapshot,
+    }));
+    expect(JSON.stringify(recorded)).not.toContain("8899");
     expect(result[2].snapshot).toMatchObject({ blockTime: 1_800_000_001, hasError: false, signatureMatches: true });
     expect(result[3].snapshot).toMatchObject({ contextSlot: 12, dataLength: secret.length, present: true });
   });

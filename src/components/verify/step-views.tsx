@@ -633,8 +633,8 @@ export function FailedView({
       // on-chain one, so every staleness check passes and the divergence
       // surfaces only as distance. Without a way out the user reads copy
       // blaming their recording and retries against a baseline that can never
-      // match again. See master-list #215 for the versioning that would let
-      // the SDK name this case instead of leaving it to be inferred here.
+      // match again. Projection versioning would let the SDK name this case
+      // instead of leaving it to be inferred here.
       if (failure.canReset && onResetBaseline) {
         footnote =
           "If this keeps happening across several clean attempts, your baseline may predate a pipeline update. Resetting re-enrolls you from scratch.";

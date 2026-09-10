@@ -39,6 +39,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # This repository has no dependency graph, so Dependabot raises no alert
+      # against it and nothing else watches the tree that ships to Vercel.
+      # The threshold is critical rather than high because `@coral-xyz/anchor`
+      # carries `toml`, which has no fixed release and which the build drops:
+      # its parser reaches no client chunk and no server bundle. Raise the
+      # threshold once that stops being true.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=critical
+
       - name: Install paper extraction tool
         shell: bash
         run: |

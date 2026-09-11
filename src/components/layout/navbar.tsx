@@ -35,9 +35,9 @@ const solutionsDropdown: DropdownItem[] = [
     description: "Where temporal proof changes the equation.",
   },
   {
-    label: "Agent Anchor",
+    label: "Agent Permits",
     href: "/agents",
-    description: "Pseudonymous accountability for AI agents.",
+    description: "Owner-signed permits for agent actions.",
   },
   {
     label: "Governance",

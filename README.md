@@ -140,7 +140,7 @@ const isVerified = attestation?.isHuman && !attestation.expired;
 | Integration | What it does | Where |
 |---|---|---|
 | **SAS issuer** | The SDK attempts a wallet-bound SAS attestation after successful verification. Issuance is separate and best-effort. | [`executor-node`](https://github.com/entros-protocol/executor-node) `/attest` |
-| **Agent Anchor** | A wallet that completed Entros verification can link registered AI agents through Solana Agent Registry metadata. | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) · [entros.io/agents](https://entros.io/agents) |
+| **Agent Operator Permit** | The wallet that owns a registered agent signs a permit for one agent action. The agent presents it with its registered key, and the application checks current ownership and Entros verification. | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) · [`entros-verify`](https://github.com/entros-protocol/entros-verify) · [entros.io/agents](https://entros.io/agents) |
 | **Realms plugin** | On-chain voter-weight prototype deployed on devnet. The Realms JavaScript client and plugin chaining remain planned. | [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) |
 
 ---

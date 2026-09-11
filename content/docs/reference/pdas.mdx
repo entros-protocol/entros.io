@@ -62,9 +62,12 @@ Program: `8oo4J9tBB3Hna1jRQ3rWvJjojqM5DYTDJo5cejUuJy3C` on devnet. The SDK reser
 
 | PDA | Seeds | Owner | Purpose |
 | --- | --- | --- | --- |
+| Agent account | `["agent", agent_asset]` | Agent registry | Cached owner and the agent wallet that presents permits |
 | Agent metadata entry | `["agent_meta", agent_asset, sha256(key)[0..16]]` | Agent registry | Metadata entry against an agent asset |
 
-For the `entros:human-operator` metadata key, the SDK writes the payload as JSON-encoded UTF-8 wrapped in the Agent Registry's standard Borsh `Vec<u8>` envelope. The decoded JSON shape is `{ anchorPda: string, trustScore: number, verifiedAt: number, wallet: string }`. Read it via `getAgentHumanOperator` from `@entros/pulse-sdk` rather than parsing manually.
+`readAgentState` reads the agent's Metaplex Core asset for the owner and the agent account for the agent wallet. The agent wallet counts only while the account's cached owner matches the Core owner.
+
+The `entros:human-operator` metadata entry holds JSON-encoded UTF-8 inside the registry's Borsh `Vec<u8>` envelope, with the shape `{ anchorPda, trustScore, verifiedAt, wallet }`. Any agent owner can write it, and it grants no permission. Read it with `readAgentOperatorSnapshot` as a [historical snapshot](/docs/integrate/agent-anchor).
 
 ## Where to look next
 

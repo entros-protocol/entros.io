@@ -3,13 +3,19 @@ title: Changelog
 description: SDK and program version history.
 ---
 
-The protocol publishes the SDK as `@entros/pulse-sdk` on npm. Programs are deployed in place—program IDs do not change between versions. Material changes to instructions, PDAs, or scoring functions are documented here.
+The protocol publishes the SDK as `@entros/pulse-sdk` on npm. Programs are deployed in place, so program IDs do not change between versions. Material changes to instructions, PDAs, or scoring functions are documented here.
 
 ## Pulse SDK
 
 ### 4.x
 
-Current published version: `4.9.2`. The 4.x line canonicalises capture at 16 kHz and reworks the transport and failure taxonomy.
+The 4.x line canonicalises capture at 16 kHz and reworks the transport and failure taxonomy.
+
+**4.12.0** Adds Agent Operator Permit support. `readAgentState` reads an agent's Metaplex Core owner and registry agent wallet at one slot. The agent wallet binding builds the registry's Ed25519 check and `set_agent_wallet` instructions. `findLatestVerificationTransaction` finds a wallet's newest qualifying transaction. `readAgentOperatorSnapshot` reads the old `entros:human-operator` entry as a historical snapshot, and the Agent Anchor functions become deprecated aliases. Anchors on older account layouts now decode in browser bundles that define no global `Buffer`.
+
+**4.11.0** Prepares and submits request-bound proofs for configured deployments. Proof inputs are validated before proving, and artifact retention is bounded.
+
+**4.10.0 to 4.10.2** Adds confirmed identity and transaction evidence for application policies, with typed attestation availability. The evidence reader samples a live clock after network responses and allows one bounded catch-up for issuer clock skew.
 
 **4.9.2** First-verification minting derives Token-2022 associated token accounts inside the SDK. The package no longer depends on `@solana/spl-token`.
 

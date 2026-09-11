@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 
 /**
- * Animated agent network for the Agent Anchor page.
+ * Animated agent network for the agents page.
  * A 3D sphere of interconnected nodes with signal propagation.
  * Pure SVG, no external dependencies.
  */

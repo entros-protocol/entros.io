@@ -28,7 +28,7 @@ export const trustSignals: TrustSignal[] = [
     name: "Ecosystem Fit",
     description: "Integration surfaces mapped across Solana.",
     detail:
-      "Best-effort SAS issuance and Agent Anchor run on devnet. The Realms voter-weight program is an on-chain prototype. Client integration work remains open.",
+      "Best-effort SAS issuance and Agent Operator Permits run on devnet. The Realms voter-weight program is an on-chain prototype. Client integration work remains open.",
     href: "/solutions",
   },
   {

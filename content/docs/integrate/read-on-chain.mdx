@@ -3,7 +3,7 @@ title: Read verification evidence
 description: Read current wallet evidence and evaluate application requirements on your server.
 ---
 
-Use Pulse `4.10.2` and Verify `0.2.0` for server-side policy checks.
+Run policy checks on your server with Pulse and Verify.
 The strict reader validates identity accounts, qualifying transactions, and optional SAS attestations.
 It binds the current wallet commitment to confirmed transaction evidence.
 
@@ -14,7 +14,7 @@ A score lookup supports display. Authorizing a protected action also requires an
 Install the released packages:
 
 ```sh
-npm install @entros/pulse-sdk@4.10.2 @entros/verify@0.2.0 @solana/web3.js @coral-xyz/anchor
+npm install @entros/pulse-sdk @entros/verify @solana/web3.js @coral-xyz/anchor
 ```
 
 Keep the RPC connection and policy in server configuration.

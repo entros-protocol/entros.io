@@ -1,0 +1,157 @@
+---
+title: Agent Operator Permit
+description: Let an agent through for one action after the wallet that owns it signs a permit.
+---
+
+An Agent Operator Permit lets your service say yes to an agent for one action.
+The wallet that owns the agent signs it, and only the agent's registered agent wallet can present it.
+Your service checks current ownership and the owner's Entros verification when the action runs.
+
+Permits run on devnet. The [runnable reference consumer](https://github.com/entros-protocol/entros-verify/tree/main/examples/agent-permit) exercises every step with synthetic data.
+
+## Why permits
+
+Without a permit, your service can block all automation or let every agent in.
+Blocking shuts out the agents people want to use. Letting every agent in leaves no record that anyone approved an action.
+A permit adds a third option. Your service lets an agent through for one action when its owner signs off and the owner's wallet holds a recent Entros verification.
+
+## What your service checks
+
+A permit names one agent, one action, your service, your policy, and an expiry at most 15 minutes away.
+When the action runs, your service checks three things:
+
+1. The signer still owns the agent.
+2. The signer's Entros verification meets your policy.
+3. The agent's own key presented the permit.
+
+A transfer stops every unused permit for the agent. A copied permit fails without the agent's key.
+
+Everything the check reads is on Solana. The registry holds each agent's owner and agent wallet, and the owner's Entros Anchor is a public account.
+No Entros service takes part in the check.
+
+## Roles
+
+| Role | Holds | Does |
+| --- | --- | --- |
+| Owner | The wallet in the agent's Metaplex Core asset | Binds the agent wallet once, then signs each permit on [entros.io/agents](/agents) |
+| Agent | The agent wallet key stored in the 8004 registry | Requests a permit, then presents the signed permit |
+| Your service | Pending requests and the protected action | Issues requests, verifies permits against chain state, and runs the action once |
+
+## Flow
+
+1. The owner binds the agent wallet with one devnet transaction on entros.io/agents.
+2. The agent asks your service for a permit request for one action.
+3. Your service reads the agent with `readAgentState` and stores the rendered request under its nonce.
+4. The agent sends the owner a link. The owner opens it on entros.io/agents, reviews the request, and signs with the owning wallet.
+5. The agent signs the presentation with its agent wallet and sends the settlement bundle.
+6. Your service checks expiry and both signatures, then reads agent state and owner evidence.
+7. On `allow`, your service deletes the nonce and runs the stored action in one atomic step.
+
+## Issue a request
+
+```ts
+import { readAgentState } from "@entros/pulse-sdk";
+import {
+  createAgentPermitRequest,
+  encodeAgentPermitFragment,
+  renderAgentPermitMessage,
+} from "@entros/verify/agent-permit";
+
+const state = await readAgentState({ agent, connection });
+if (state.status !== "available" || state.evidence.agentWalletStatus !== "bound") {
+  return refuse("agent_not_ready");
+}
+const request = createAgentPermitRequest({
+  agent,
+  agentWallet: state.evidence.agentWallet!,
+  operator: state.evidence.owner,
+  audience: "https://your-app.example/agent-actions",
+  action: { label: "Publish listing 42", sha256: actionDigest },
+  policy,
+  issuedAt: nowSeconds(),
+  lifetimeSeconds: 600,
+});
+pending.set(request.nonce, request);
+const signingAddress = `https://entros.io/agents#${encodeAgentPermitFragment(request)}`;
+```
+
+The owner signs the text `renderAgentPermitMessage(request)` returns. It names the agent, the agent wallet, the owner, your audience, the action label and digest, your policy, devnet, the program addresses, the expiry, and the nonce.
+Define `actionDigest` as the SHA-256 of your own action record, and include the agent in that record.
+
+## Settle a permit
+
+```ts
+import { readIntegratorEvidence } from "@entros/pulse-sdk";
+import {
+  evaluateAgentPermit,
+  parseAgentPermitSettlement,
+  precheckAgentPermit,
+} from "@entros/verify/agent-permit";
+
+const bundle = parseAgentPermitSettlement(body);
+const request = bundle && pending.get(bundle.nonce);
+if (!bundle || !request) return refuse("nonce_unavailable");
+const signatures = {
+  operatorSignature: bundle.operatorSignature,
+  presentationSignature: bundle.presentationSignature,
+};
+
+const precheck = precheckAgentPermit({ request, ...signatures, nowSeconds: nowSeconds() });
+if (!precheck.ok) return refuse(precheck.reason);
+
+const [agentState, operatorEvidence] = await Promise.all([
+  readAgentState({ agent: request.agent, connection }),
+  readIntegratorEvidence({
+    walletPubkey: request.operator,
+    transactionSignature: bundle.verifiedTransaction,
+    connection,
+    nowSeconds,
+  }),
+]);
+const result = evaluateAgentPermit({
+  request,
+  ...signatures,
+  agentState,
+  operatorEvidence,
+  nowSeconds: nowSeconds(),
+});
+```
+
+`precheckAgentPermit` covers expiry and both signatures, so an expired or forged permit costs your service no chain read.
+Sample the clock again after the reads, because a permit can expire while they run.
+
+## Results
+
+| Reason | Meaning |
+| --- | --- |
+| `accepted` | Run the stored action once |
+| `permit_expired` | The permit passed its expiry |
+| `invalid_signature` | The owner's signature does not match the stored request |
+| `invalid_presentation` | Another key presented the permit |
+| `owner_changed` | The agent now has another owner |
+| `agent_wallet_stale` | The registry still holds a wallet set before a transfer |
+| `agent_wallet_unbound` | The agent has no agent wallet |
+| `agent_wallet_changed` | The owner bound another agent wallet after the request |
+| `score_below_minimum`, `verification_stale`, `attestation_required`, `invalid_evidence` | The owner's Entros evidence fails your policy |
+| `agent_unavailable`, `state_unavailable` | A chain read failed. Try again |
+
+## Ownership source
+
+The owner is the wallet in the agent's Metaplex Core asset. The registry keeps a cached owner that lags a direct Core transfer, so `readAgentState` reads the Core asset.
+The agent wallet counts only while the registry's cached owner matches the Core owner. A transfer through the registry clears it. A direct Core transfer leaves it stale until the new owner binds again.
+
+## Boundaries
+
+- Settle only requests your service stored. Never take request text, policy, or RPC settings from the agent.
+- Run the stored action at settlement. Do not return a reusable credential to the presenter.
+- A transfer can land between your settlement read and your action. An on-chain action must check ownership inside its own transaction.
+- Wallets that wrap signed messages, including some hardware wallets, cannot sign permits in version 1.
+
+A permit states current wallet control of a registered agent and the owner's Entros policy result.
+It does not establish legal ownership, population uniqueness, or hardware assurance.
+
+## Next steps
+
+- [Protect a server action](/docs/integrate/protected-action)
+- [Verification flow and application policy](/docs/integrate/verification-flow)
+- [Legacy operator snapshot](/docs/integrate/agent-anchor)

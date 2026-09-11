@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
-    "@entros/pulse-sdk": "4.11.0",
-    "@entros/verify": "0.2.0",
+    "@entros/pulse-sdk": "4.12.0",
+    "@entros/verify": "0.3.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@solana-mobile/wallet-adapter-mobile": "^2.2.8",
     "@solana/wallet-adapter-react": "^0.15.39",

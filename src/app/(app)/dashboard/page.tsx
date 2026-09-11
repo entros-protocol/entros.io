@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Dashboard",
   description:
-    "Your Entros Anchor details, Trust Score, verification history, and registered AI agents.",
+    "Your Entros Anchor details, Trust Score, verification history, and the agents registered to your wallet.",
   path: "/dashboard",
 });
 
@@ -24,8 +24,8 @@ export default function Dashboard() {
           </h1>
 
           <p className="mt-7 max-w-2xl text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
-            Trust Score, verification history, and the AI agents linked
-            to your verified humanity.
+            Trust Score, verification history, and the agents registered to
+            your wallet.
           </p>
         </div>
       </section>

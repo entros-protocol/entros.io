@@ -251,7 +251,7 @@ console.log(result.decision);
             <p className="border-b border-border px-5 py-3 text-xs leading-relaxed text-foreground/60">
               {activeTab === "anchor"
                 ? "Basic on-chain score and recency example. This does not implement the full Integrator Policy v1 contract."
-                : "These policy examples use Verify 0.2.0 and Pulse 4.10.0. Recheck the policy where the protected action executes."}
+                : "Recheck the policy where the protected action executes."}
             </p>
             <div className="flex overflow-x-auto border-b border-border bg-background/50">
               {SANDBOX_TABS.map((tab) => (

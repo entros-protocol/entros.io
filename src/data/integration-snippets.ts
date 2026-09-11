@@ -21,7 +21,7 @@ export const verifyComponentSnippet = {
   integratorKey="my-app"
   onVerified={(result) => console.log(result)}
 />`,
-  installCommand: "npm install @entros/verify@0.2.0",
+  installCommand: "npm install @entros/verify",
 };
 
 /**

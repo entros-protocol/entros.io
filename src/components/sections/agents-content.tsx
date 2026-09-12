@@ -1,6 +1,8 @@
 import { AgentPermitDiagram } from "@/components/ui/agent-permit-diagram";
 import { AgentPermitSnippet } from "@/components/ui/agent-permit-snippet";
-import { agentPermitChecks, agentPermitSteps } from "@/data/agent-permit";
+import { ExternalLink } from "lucide-react";
+import { agentPermitChecks, agentPermitRun, agentPermitSteps } from "@/data/agent-permit";
+import { explorerUrl } from "@/lib/explorer";
 
 export function AgentsContent() {
   return (
@@ -88,6 +90,49 @@ export function AgentsContent() {
                 </h3>
                 <p className="mt-4 text-sm leading-relaxed text-foreground/65">{step.description}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+            // ON DEVNET
+          </span>
+          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            One run, on the record<span className="text-cyan">.</span>
+          </h2>
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+            An owner bound a test agent, signed one permit for one action, and then tried four ways to
+            reuse it. Every transaction is on devnet.
+          </p>
+          <ol className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
+            {agentPermitRun.steps.map((step) => (
+              <li key={step.outcome} className="flex flex-col bg-background p-6">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/80">
+                  {step.outcome}
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-foreground/65">{step.detail}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-8">
+            {[
+              { label: "The agent", href: explorerUrl(agentPermitRun.agent) },
+              { label: "Binding transaction", href: explorerUrl(agentPermitRun.bindTransaction, "tx") },
+              { label: "Sale transaction", href: explorerUrl(agentPermitRun.transferTransaction, "tx") },
+            ].map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 font-mono text-xs tracking-[0.1em] text-cyan transition-colors hover:text-foreground"
+              >
+                {link.label}
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+              </a>
             ))}
           </div>
         </div>

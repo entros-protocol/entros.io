@@ -1,223 +1,143 @@
-import { ShieldCheck, Bot } from "lucide-react";
-
-const steps = [
-  {
-    number: "01",
-    title: "Complete verification",
-    description:
-      "Complete the devnet verification flow. A successful first result can mint an Entros Anchor with an initial Trust Score.",
-  },
-  {
-    number: "02",
-    title: "Register your agent",
-    description:
-      "Register your AI agent on the Solana Agent Registry. Your agent gets a Metaplex Core NFT identity on-chain.",
-  },
-  {
-    number: "03",
-    title: "Attest with Agent Anchor",
-    description:
-      "Link the registered agent to the operator wallet's Entros Anchor. Any client can read the devnet link from chain state.",
-  },
-];
+import { AgentPermitDiagram } from "@/components/ui/agent-permit-diagram";
+import { AgentPermitSnippet } from "@/components/ui/agent-permit-snippet";
+import { ExternalLink } from "lucide-react";
+import { agentPermitChecks, agentPermitRun, agentPermitSteps } from "@/data/agent-permit";
+import { explorerUrl } from "@/lib/explorer";
 
 export function AgentsContent() {
   return (
     <>
-      {/* Problem */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // THE PROBLEM
+            // WHY PERMITS
           </span>
-
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            AI agents have no human accountability<span className="text-cyan">.</span>
+            A third option for agents<span className="text-cyan">.</span>
           </h2>
-
           <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
             <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
-              Thousands of AI agents are registered on Solana. They trade,
-              vote, execute transactions, and interact with protocols
-              autonomously. The registry does not provide a shared signal
-              for the human operator behind an agent.
+              Today an app has two options with agents. It can block all automation, which shuts out
+              the agents people want to use. Or it can let every agent in, and then nothing shows
+              whether anyone approved what an agent does.
             </p>
             <p className="text-base leading-relaxed text-foreground/65 md:text-lg">
-              Anyone can register unlimited anonymous agents with no link
-              between the agent's on-chain identity and a verified person.
-              Platforms gating access by agent count have nothing to count
-              against.
+              A permit adds a third option. The app lets an agent through for one action when the
+              wallet that owns it signs off, and that wallet holds a recent Entros verification.
+              Entros verification is the gate. The permit carries it to each agent action.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Solution */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // THE SOLUTION
+            // THE PERMIT
           </span>
-
           <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            One operator record<span className="text-cyan">.</span>
-            <br />
-            Every linked agent<span className="text-cyan">.</span>
+            One permit covers one action<span className="text-cyan">.</span>
           </h2>
-
           <div className="mt-16 grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-6">
               <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
-                Agent Anchor records a link from a registered agent to an
-                operator wallet's Entros Anchor. Multiple agents can
-                reference one wallet and its current Trust Score.
+                When an agent wants to do something that matters at an app, such as casting a vote or
+                claiming a reward, it brings a permit. The agent's current owner signed it. It covers
+                that one action and expires within 15 minutes.
               </p>
+              <p className="mt-6 text-base leading-relaxed text-foreground/70 md:text-lg">
+                When the action runs, the app checks three things:
+              </p>
+              <ol className="mt-5 space-y-3">
+                {agentPermitChecks.map((check, index) => (
+                  <li key={check} className="flex gap-4 text-base leading-relaxed text-foreground/70 md:text-lg">
+                    <span className="mt-[0.4em] shrink-0 font-mono text-xs tracking-[0.2em] text-cyan">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span>{check}</span>
+                  </li>
+                ))}
+              </ol>
               <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-                Platforms set their own policies. They can require Trust
-                Score, recency, Anchor age, or an agent limit per operator
-                wallet. Population-level uniqueness remains open research.
+                If the agent changes hands, its unused permits stop working. A copied permit is useless
+                without the agent's key.
               </p>
             </div>
-
-            {/* Attestation diagram—hairline frame, concentric-ringed
-                nodes connected by a signal-dot channel, on the same matte
-                panel the ASCII scenes use elsewhere on the site. */}
             <div className="lg:col-span-6">
-              <div className="relative rounded-2xl bg-foreground/[0.06] p-8 md:p-12">
-
-                {/* Header row—eyebrow + status pill */}
-                <div className="flex items-center justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                    // ON-CHAIN ATTESTATION
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-solana-green/60" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-solana-green" />
-                    </span>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                      Devnet
-                    </span>
-                  </div>
-                </div>
-
-                {/* Attestation label—sits above the whole diagram rather than
-                    inside the connector. The connector is only as wide as the
-                    gap between the two nodes, so on a narrow card an absolutely
-                    positioned label overflows across both circles. */}
-                <p className="mt-10 text-center font-mono text-[11px] tracking-[0.15em] text-cyan">
-                  entros:human-operator
-                </p>
-
-                {/* Diagram */}
-                <div className="mt-6 flex items-center px-2">
-                  {/* Human—animated ripple rings */}
-                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
-                    <span className="absolute inset-0 rounded-full border border-cyan/35 animate-ripple" aria-hidden />
-                    <span className="absolute inset-0 rounded-full border border-cyan/35 animate-ripple [animation-delay:1.8s]" aria-hidden />
-                    <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-cyan/50 bg-cyan/[0.04]">
-                      <ShieldCheck className="h-5 w-5 text-cyan" strokeWidth={1.5} />
-                    </div>
-                  </div>
-
-                  {/* Connection channel */}
-                  <div className="relative mx-3 flex-1">
-                    {/* Channel—gradient hairline + 3 signal dots */}
-                    <div className="relative h-px bg-gradient-to-r from-cyan/15 via-cyan/55 to-cyan/15">
-                      <span className="absolute left-[20%] top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan/60" aria-hidden />
-                      <span className="absolute left-1/2 top-1/2 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan shadow-[0_0_8px_rgba(34,211,230,0.6)]" aria-hidden />
-                      <span className="absolute left-[80%] top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan/60" aria-hidden />
-                    </div>
-
-                    {/* Below the line—direction arrow */}
-                    <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[1px] text-cyan">
-                      <svg width="6" height="6" viewBox="0 0 6 6" fill="none" aria-hidden>
-                        <path d="M0 0L6 3L0 6V0Z" fill="currentColor" />
-                      </svg>
-                    </span>
-                  </div>
-
-                  {/* Agent—animated ripple rings */}
-                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center">
-                    <span className="absolute inset-0 rounded-full border border-foreground/25 animate-ripple [animation-delay:0.9s]" aria-hidden />
-                    <span className="absolute inset-0 rounded-full border border-foreground/25 animate-ripple [animation-delay:2.7s]" aria-hidden />
-                    <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-foreground/30 bg-foreground/[0.03]">
-                      <Bot className="h-5 w-5 text-foreground/60" strokeWidth={1.5} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node labels */}
-                <div className="mt-4 flex items-center justify-between px-2">
-                  <span className="w-20 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/80">
-                    Human
-                  </span>
-                  <span className="w-20 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
-                    Agent
-                  </span>
-                </div>
-
-                {/* Property strip—3 cells, hairline dividers */}
-                <div className="mt-12 grid grid-cols-3 border-t border-border">
-                  {[
-                    { label: "Immutable" },
-                    { label: "Verifiable" },
-                    { label: "On-chain" },
-                  ].map((p, i) => (
-                    <div
-                      key={p.label}
-                      className={`flex items-center justify-center gap-1.5 px-1 py-5 md:gap-2 md:px-2 ${
-                        i > 0 ? "border-l border-border" : ""
-                      }`}
-                    >
-                      <span className="h-1 w-1 shrink-0 rounded-full bg-cyan" aria-hidden />
-                      <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-foreground/55 md:text-[10px] md:tracking-[0.2em]">
-                        {p.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <AgentPermitDiagram />
             </div>
           </div>
         </div>
       </section>
 
-      {/* How it works—3-step hairline grid */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
             // HOW IT WORKS
           </span>
-
           <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Three steps to human accountability<span className="text-cyan">.</span>
+            From request to action<span className="text-cyan">.</span>
           </h2>
-
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
-            {steps.map((step) => (
+            {agentPermitSteps.map((step) => (
               <div key={step.number} className="flex flex-col bg-background p-8 md:p-10">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                    {step.number}
-                  </span>
+                  <span className="font-mono text-xs tracking-[0.2em] text-cyan">{step.number}</span>
                   <span className="h-px flex-1 bg-border" />
                 </div>
-
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
                   {step.title}
                 </h3>
-
-                <p className="mt-4 text-sm leading-relaxed text-foreground/65">
-                  {step.description}
-                </p>
+                <p className="mt-4 text-sm leading-relaxed text-foreground/65">{step.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* For integrators—split with code block */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
+            // ON DEVNET
+          </span>
+          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            One run, on the record<span className="text-cyan">.</span>
+          </h2>
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+            An owner bound a test agent, signed one permit for one action, and then tried four ways to
+            reuse it. Every transaction is on devnet.
+          </p>
+          <ol className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
+            {agentPermitRun.steps.map((step) => (
+              <li key={step.outcome} className="flex flex-col bg-background p-6">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/80">
+                  {step.outcome}
+                </p>
+                <p className="mt-4 text-sm leading-relaxed text-foreground/65">{step.detail}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-8">
+            {[
+              { label: "The agent", href: explorerUrl(agentPermitRun.agent) },
+              { label: "Binding transaction", href: explorerUrl(agentPermitRun.bindTransaction, "tx") },
+              { label: "Sale transaction", href: explorerUrl(agentPermitRun.transferTransaction, "tx") },
+            ].map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 font-mono text-xs tracking-[0.1em] text-cyan transition-colors hover:text-foreground"
+              >
+                {link.label}
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
@@ -225,51 +145,26 @@ export function AgentsContent() {
               <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
                 // FOR INTEGRATORS
               </span>
-
               <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-                One function call<span className="text-cyan">.</span>
+                Everything the check needs is on Solana<span className="text-cyan">.</span>
               </h2>
-
               <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                Read whether an agent has an Entros operator link. The
-                response includes the operator wallet, Trust Score, and
-                verification timestamp. Current support is devnet-only.
+                The Solana Agent Registry records each agent's owner and its own key. It does not say
+                whether anyone approved what the agent does. The owner's Entros Anchor sits on Solana
+                too, and any app can read it.
+              </p>
+              <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
+                Your service checks the permit against the chain with Pulse and @entros/verify. No
+                Entros service takes part. Expired and forged permits fail before any chain read.
+                Devnet only.
               </p>
             </div>
-
             <div className="lg:col-span-7">
-              {/* Same treatment as the home snippet: the block is sized to
-                  its longest line, and the width it gives back becomes a
-                  hairline off its vertical centre running out to the site's
-                  right-hand skeleton line. `-mr-6` cancels the container
-                  padding so it lands on the rail exactly. */}
+              {/* The block is sized to its longest line. The width it gives back becomes a hairline
+                  running out to the right-hand rail, and `-mr-6` cancels the container padding. */}
               <div className="flex items-center">
-                <div className="min-w-0 w-full lg:w-auto lg:shrink lg:grow-0 lg:basis-[36rem]">
-                  <div className="overflow-x-auto rounded-2xl bg-foreground/[0.06] p-6 font-mono text-sm md:p-8">
-                <pre className="leading-relaxed text-foreground">
-                  <span className="text-cyan">{"import"}</span>
-                  {" { getAgentHumanOperator } "}
-                  <span className="text-cyan">{"from"}</span>
-                  {" "}
-                  <span className="text-solana-green">{"'@entros/pulse-sdk'"}</span>
-                  {";\n\n"}
-                  <span className="text-cyan">{"const"}</span>
-                  {" operator = "}
-                  <span className="text-cyan">{"await"}</span>
-                  {" "}
-                  <span className="text-[#C084FC]">{"getAgentHumanOperator"}</span>
-                  {"(agentAsset);\n\n"}
-                  <span className="text-cyan">{"if"}</span>
-                  {" (operator) {\n"}
-                  {"  "}
-                  <span className="text-foreground/40">
-                    {"// { anchorPda, trustScore, verifiedAt, wallet }"}
-                  </span>
-                  {"\n  console."}
-                  <span className="text-[#C084FC]">{"log"}</span>
-                  {"('Trust Score:', operator.trustScore);\n}"}
-                </pre>
-                  </div>
+                <div className="min-w-0 w-full lg:w-auto lg:shrink lg:grow-0 lg:basis-[39rem]">
+                  <AgentPermitSnippet />
                 </div>
                 <div aria-hidden className="-mr-6 hidden h-px flex-1 bg-border lg:block" />
               </div>

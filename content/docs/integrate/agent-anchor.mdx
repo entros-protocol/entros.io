@@ -1,104 +1,53 @@
 ---
-title: Agent Anchor
-description: Link a registered AI agent to an operator wallet's Entros Anchor on devnet.
+title: Legacy operator snapshot
+description: Read the old entros:human-operator registry entry as a historical claim. Use Agent Operator Permits for current decisions.
 ---
 
-The Solana Agent Registry gives autonomous agents an on-chain record. Agent Anchor adds immutable metadata that points to the operator wallet's Entros Anchor.
+Earlier SDK releases wrote an `entros:human-operator` entry into the Solana Agent Registry.
+The entry records a wallet, a Trust Score, an Anchor address, and a time, frozen at the moment of writing.
 
-## What it does
+Treat it as a historical claim. Any owner of an agent can write the entry with any content, because the registry checks only who owned the agent at write time.
+It does not follow a transfer, and it grants no permission. For a current decision, use an [Agent Operator Permit](/docs/integrate/agent-permit).
 
-A registered agent on the registry has an `agentAsset` PDA. Agent Anchor writes a metadata entry against that PDA with four fields:
-
-| Field | Type | Meaning |
-| --- | --- | --- |
-| `anchorPda` | `string` | Operator's Entros Anchor PDA (base58) |
-| `trustScore` | `number` | Operator's Trust Score at the time of attestation |
-| `verifiedAt` | `number` | Unix timestamp when the operator was last verified |
-| `wallet` | `string` | Operator's wallet pubkey (base58) |
-
-The metadata is JSON-serialized inside the registry's Borsh `Vec<u8>` envelope. It uses the `entros:human-operator` key and remains permanent once written.
-
-## Record an operator link
+## Read the entry
 
 ```ts
-import { attestAgentOperator } from "@entros/pulse-sdk";
+import { readAgentOperatorSnapshot } from "@entros/pulse-sdk";
 
-const agentAsset = "YourAgentAssetPubkey..."; // base58 string
-const result = await attestAgentOperator(agentAsset, { wallet, connection });
-
-if (!result.success) {
-  console.error(result.error);
+const result = await readAgentOperatorSnapshot(agentAsset, { connection });
+if (result.status === "present") {
+  const { wallet, trustScore, verifiedAt, immutable } = result.snapshot;
 }
 ```
 
-`attestAgentOperator` does four things in sequence:
-
-1. Reads the operator's Entros Anchor PDA from `entros-anchor`.
-2. Extracts `trustScore` and the last-verification timestamp from the on-chain account.
-3. JSON-serializes the four fields (`anchorPda`, `trustScore`, `verifiedAt`, `wallet`) and wraps them in the registry's Borsh `Vec<u8>` envelope.
-4. Calls the registry's `set_metadata_pda` instruction to write the payload, marked immutable.
-
-The calling wallet must own the registered agent and the referenced Entros Anchor.
-
-## Read the operator metadata
-
-Any program or client can read the operator link:
-
-```ts
-import { getAgentHumanOperator } from "@entros/pulse-sdk";
-
-const operator = await getAgentHumanOperator(agentAsset, connection);
-if (operator) {
-  console.log(`Trust Score: ${operator.trustScore}`);
-  console.log(`Verified at: ${new Date(operator.verifiedAt * 1000)}`);
-}
-```
-
-Returns `null` if no operator metadata is set, or `{ anchorPda, trustScore, verifiedAt, wallet }` otherwise.
-
-## Gate a platform on operator score
-
-Platforms accepting agent registrations can require a minimum operator Trust Score:
-
-```ts
-const operator = await getAgentHumanOperator(agentAsset, connection);
-if (!operator || operator.trustScore < 500) {
-  return rejectAgent("operator wallet must have Trust Score 500+");
-}
-```
-
-`trustScore` and `verifiedAt` on this object are the values written when the operator linkage was attested, and that linkage is immutable. They describe the operator at that moment, which is the right signal for provenance and for auditing who registered what.
-
-For a current decision, fetch the linked Anchor and check its latest score and verification timestamp. Ask for a fresh verification when the action needs stronger recency.
-
-This pattern adds an operator-wallet policy to agent registration. It does not establish population uniqueness. Applications can combine it with per-wallet limits and their existing agent policies.
-
-## Program IDs
-
-| Network | Registry program ID |
+| Status | Meaning |
 | --- | --- |
-| Devnet | `8oo4J9tBB3Hna1jRQ3rWvJjojqM5DYTDJo5cejUuJy3C` |
-| Mainnet | Registry address reserved by the SDK. Entros Anchor support is not deployed on mainnet |
+| `present` | The entry exists and decodes. `kind` is `historical_snapshot` |
+| `absent` | The agent has no entry |
+| `invalid` | The account exists but does not decode as the expected entry |
+| `unavailable` | The RPC read failed |
 
-The metadata PDA uses the agent asset and the first 16 bytes of the SHA256 metadata-key hash. The SDK derives it internally.
+The reader checks the account owner, the discriminator, the asset, the key, and the exact JSON fields.
+A `present` result still reports only what someone wrote.
+
+## Compare with the current owner
 
 ```ts
-const META_KEY = "entros:human-operator";
-const keyBytes = new TextEncoder().encode(META_KEY);
-const keyHashBuffer = await crypto.subtle.digest("SHA-256", keyBytes);
-const keyHash = new Uint8Array(keyHashBuffer).slice(0, 16);
+import { readAgentState } from "@entros/pulse-sdk";
 
-const [metaPda] = PublicKey.findProgramAddressSync(
-  [
-    new TextEncoder().encode("agent_meta"),
-    new PublicKey(agentAsset).toBuffer(),
-    keyHash,
-  ],
-  REGISTRY_PROGRAM_ID,
-);
+const state = await readAgentState({ agent: agentAsset, connection });
+const current = state.status === "available" ? state.evidence.owner : null;
+const describesCurrentOwner = result.status === "present" && result.snapshot.wallet === current;
 ```
+
+A match tells you the named wallet owns the agent now. Read that wallet's Anchor for its current Trust Score and verification time.
+
+## Deprecated functions
+
+`getAgentHumanOperator`, the `AgentHumanOperator` type, and `attestAgentOperator` remain in Pulse as deprecated aliases.
+They will leave the SDK in the next major release. `attestAgentOperator` writes a permanent entry that grants nothing, so new integrations should not call it.
 
 ## Where to look next
 
-- [Concepts: Anchor PDA](/docs/concepts/anchor-pda) - the operator wallet's Entros Anchor
-- [Reference: SDK](/docs/reference/sdk) - signatures for `attestAgentOperator` and `getAgentHumanOperator`
+- [Agent Operator Permit](/docs/integrate/agent-permit)
+- [Reference: SDK](/docs/reference/sdk)

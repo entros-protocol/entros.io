@@ -11,7 +11,7 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "8004 Agent Registry",
     category: "AI Agent Infrastructure",
-    description: "Agent Anchor live on devnet under entros:human-operator key.",
+    description: "Agent Operator Permits read each agent's owner and agent wallet on devnet.",
     icon: "bot",
     logoUrl: "https://github.com/ChaosChain.png",
   },
@@ -46,7 +46,7 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "Metaplex",
     category: "NFT Infrastructure",
-    description: "Agent Anchor metadata pattern on Metaplex Core (live).",
+    description: "Agent Operator Permits read agent ownership from Metaplex Core on devnet.",
     icon: "palette",
     logoUrl: "https://github.com/metaplex-foundation.png",
   },

@@ -6,6 +6,7 @@
     "read-on-chain",
     "sas-attestation",
     "realms-voter-weight",
+    "agent-permit",
     "agent-anchor",
     "mobile",
     "verification-flow",

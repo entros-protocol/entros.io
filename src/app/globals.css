@@ -516,10 +516,11 @@ section[class*="max-w-"]::after { right: 0; }
 
 /* Card grids sit inside the container's px-6, so their own border-y stops
    short of the rail. Bleed them out by exactly that padding so the
-   horizontals meet the verticals. */
+   horizontals meet the verticals. A grid inside a bordered box stays inside
+   the box's padding. */
 section > .mx-auto.max-w-7xl > .border-y,
 section > .mx-auto.max-w-7xl > .border-b,
-section > .mx-auto.max-w-7xl > div > .border-y {
+section > .mx-auto.max-w-7xl > div:not(.border) > .border-y {
   margin-left: -1.5rem;
   margin-right: -1.5rem;
 }

@@ -24,7 +24,7 @@ const sections = [
     heading: "Solutions",
     items: [
       { label: "Use Cases", href: "/solutions" },
-      { label: "Agent Anchor", href: "/agents" },
+      { label: "Agent Permits", href: "/agents" },
       { label: "Governance", href: "/governance" },
       { label: "Realms Case Study", href: "/case-studies/realms" },
       { label: "Integrate", href: "/integrate" },

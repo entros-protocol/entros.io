@@ -5,7 +5,7 @@ description: Public API surface of @entros/pulse-sdk.
 
 `@entros/pulse-sdk` is the client SDK. It captures behavioral signals on-device, extracts statistical features, hashes the result, generates a zero-knowledge proof, and submits to Solana. This page covers the exports most integrations use, grouped by purpose. The package's type declarations are the full surface.
 
-The current published version is `4.8.0`. Install with `npm install @entros/pulse-sdk`. See the [changelog](/docs/reference/changelog) for the upgrade path from earlier versions.
+Install with `npm install @entros/pulse-sdk`. See the [changelog](/docs/reference/changelog) for the upgrade path from earlier versions.
 
 ## Top-level
 
@@ -101,11 +101,26 @@ The SDK values are client defaults and do not replace program enforcement.
 | Export | Signature | Purpose |
 | --- | --- | --- |
 | `verifyEntrosAttestation` | `(walletAddress, connection) => Promise<EntrosAttestation \| null>` | Read a wallet's SAS attestation |
-| `attestAgentOperator` | `(agentAsset: string, options: { wallet, connection, cluster? }) => Promise<{ success: boolean; signature?: string; error?: string }>` | Write operator identity metadata for a registered agent |
-| `getAgentHumanOperator` | `(agentAsset: string, connection?, cluster?) => Promise<AgentHumanOperator \| null>` | Read operator identity metadata. `AgentHumanOperator` fields: `{ anchorPda, trustScore, verifiedAt, wallet }` |
 | `fetchIdentityState` | `(wallet, connection) => Promise<IdentityState \| null>` | Read the full Anchor PDA |
 | `storeVerificationData` | `(data, walletAddress?) => Promise<void>` | Persist verification state to local storage. Pass the wallet address to keep multi-wallet state separate. |
 | `loadVerificationData` | `(walletAddress?) => Promise<StoredVerificationData \| null>` | Load persisted state for a wallet |
+
+## Agent Operator Permit
+
+Evaluate permits with the React-free `@entros/verify/agent-permit` subpath. See [Agent Operator Permit](/docs/integrate/agent-permit).
+
+| Export | Signature | Purpose |
+| --- | --- | --- |
+| `readAgentState` | `({ agent, connection, minContextSlot? }) => Promise<AgentStateReadResult>` | Read an agent's Core owner, cached owner and agent wallet at one slot |
+| `agentWalletBindingMessage` | `({ agent, agentWallet, owner, deadline }) => Uint8Array` | The registry's 120-byte wallet-set message that the agent wallet signs |
+| `buildSetAgentWalletInstructions` | `(request) => Promise<TransactionInstruction[]>` | The Ed25519 check and `set_agent_wallet`, in the order the registry requires |
+| `parseAgentWalletBindingRequest` | `(input) => AgentWalletBindingRequest \| null` | Strict parse of a binding request object or JSON text |
+| `encodeAgentWalletBindingFragment` | `(request) => string` | The `bind=` fragment for entros.io/agents |
+| `verifyAgentWalletBindingRequest` | `(request) => boolean` | Strict check of the agent wallet signature |
+| `findLatestVerificationTransaction` | `({ walletPubkey, connection, limit? }) => Promise<VerificationTransactionSearchResult>` | Find a wallet's newest qualifying Entros transaction |
+| `readAgentOperatorSnapshot` | `(agent, { connection?, cluster? }) => Promise<AgentOperatorSnapshotReadResult>` | Read the old `entros:human-operator` entry as a historical snapshot |
+| `getAgentHumanOperator` | Deprecated | Returns the snapshot or `null`. Use `readAgentOperatorSnapshot` |
+| `attestAgentOperator` | Deprecated | Writes a permanent entry that grants nothing. Use Agent Operator Permits |
 
 ## Configuration
 

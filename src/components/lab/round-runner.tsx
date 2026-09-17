@@ -69,8 +69,28 @@ function describeError(code: string): string {
     case "prototype_unavailable":
     case "storage_unavailable":
       return "The prototype is not reachable. Nothing was recorded.";
+    case "evidence_bounds_invalid":
+    case "audio_bounds_exceeded":
+      return "That round recorded more audio than one round accepts. Start again and the page will trim it.";
+    case "request_digest_mismatch":
+    case "challenge_mismatch":
+    case "previous_commitment_mismatch":
+    case "round_nonce_mismatch":
+    case "evidence_digest_mismatch":
+    case "evidence_length_mismatch":
+      return "The page and the server disagreed about what this round contained, so it stopped. Tell whoever gave you the code.";
+    case "round_not_outstanding":
+    case "idempotency_conflict":
+      return "The server had already moved past that round. Start a new session.";
+    case "subject_mismatch":
+    case "session_unknown":
+      return "The server no longer recognises this session. Start a new one.";
+    case "tier_violation":
+      return "The route changed partway through, which the session does not allow. Start again.";
+    case "technical_failure":
+      return "The transcription failed, so the session was recorded as a technical failure.";
     default:
-      return "Something went wrong and the session stopped. Nothing was recorded.";
+      return `Something went wrong and the session stopped (${code}). Nothing was recorded.`;
   }
 }
 
@@ -103,6 +123,9 @@ export function RoundRunner() {
   const rawPointsRef = useRef<RawPoint[]>([]);
   const segmentsRef = useRef<PendingSegment[]>([]);
   const surfaceRef = useRef<SVGSVGElement | null>(null);
+  // The drawn stroke is updated through the element, not through state. Re-rendering on
+  // every pointer move would drop points on a slow frame.
+  const strokeRef = useRef<SVGPolylineElement | null>(null);
   // A ref, not state. Pointer tracking changes nothing on screen, and a state write here
   // would leave the move handler reading a stale value until the next render.
   const tracingRef = useRef(false);
@@ -134,6 +157,7 @@ export function RoundRunner() {
 
   const beginRound = useCallback((next: RevealDto) => {
     rawPointsRef.current = [];
+    strokeRef.current?.setAttribute("points", "");
     startSampleRef.current = captureRef.current?.mark() ?? 0;
     setReveal(next);
     setStage("round");
@@ -254,6 +278,18 @@ export function RoundRunner() {
       },
       RAW_POINT_LIMIT,
     );
+    // Draw what the pointer did, in the same grid the encoder uses.
+    const stroke = strokeRef.current;
+    if (!stroke) return;
+    stroke.setAttribute(
+      "points",
+      rawPointsRef.current
+        .map(
+          (point) =>
+            `${(point.x / surface.width) * COORDINATE_MAX},${(point.y / surface.height) * COORDINATE_MAX}`,
+        )
+        .join(" "),
+    );
   }, []);
 
   if (stage === "consent" || stage === "opening") {
@@ -359,6 +395,16 @@ export function RoundRunner() {
               className="fill-cyan/30"
             />
           ))}
+          <polyline
+            ref={strokeRef}
+            points=""
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={12}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="pointer-events-none text-cyan"
+          />
         </svg>
       )}
 

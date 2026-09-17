@@ -32,9 +32,34 @@ const CAPTURE_CONSTRAINTS: MediaTrackConstraints = {
   autoGainControl: false,
 };
 
+/** Twenty seconds at 16 kHz, matching the per-round bound the service accepts. */
+export const MAX_ROUND_SAMPLES = 320_000;
+
+/**
+ * Sample range for one round, trimmed to the bound. Pure, so the trim is testable without a
+ * microphone: a round longer than the cap keeps its most recent samples, because a person
+ * says the word shortly before moving on.
+ */
+export function trimmedRange(
+  from: number,
+  to: number,
+  total: number,
+  cap: number = MAX_ROUND_SAMPLES,
+): { start: number; end: number } {
+  const requested = Math.max(0, Math.min(from, total));
+  const end = Math.max(requested, Math.min(to, total));
+  return { start: Math.max(requested, end - cap), end };
+}
+
 export interface ContinuousCapture {
   /** Sample index at this moment. Marks the boundary between rounds. */
   mark(): number;
+  /**
+   * Samples for one round. A round longer than the bound keeps its most recent
+   * {@link MAX_ROUND_SAMPLES}, because a person says the word shortly before moving on. The
+   * bound exists for resources, so trimming here is what keeps it from deciding how long
+   * someone may take.
+   */
   slice(from: number, to: number): Float32Array;
   /** Latest input level in [0, 1], for the level meter. */
   level(): number;
@@ -90,8 +115,7 @@ export async function startContinuousCapture(): Promise<ContinuousCapture> {
     mark: () => total,
     level: () => latestLevel,
     slice(from: number, to: number): Float32Array {
-      const start = Math.max(0, Math.min(from, total));
-      const end = Math.max(start, Math.min(to, total));
+      const { start, end } = trimmedRange(from, to, total);
       const out = new Float32Array(end - start);
       let offset = 0;
       let position = 0;

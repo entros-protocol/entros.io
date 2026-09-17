@@ -10,6 +10,7 @@ import {
   revealMatchesItsDigest,
   type SessionDto,
 } from "@/lib/paired-round/client";
+import { MAX_ROUND_SAMPLES, trimmedRange } from "@/lib/paired-round/capture";
 import {
   COARSE_PATH_POINTS,
   decodePathTarget,
@@ -225,5 +226,33 @@ describe("coarse path", () => {
     expect(decodePathTarget(encodePathTarget("trace", waypoints))).toEqual(waypoints);
     expect(decodePathTarget(encodePathTarget("speech_only", []))).toEqual([]);
     expect(decodePathTarget(new Uint8Array([1, 2, 0]))).toEqual([]);
+  });
+});
+
+describe("round audio trimming", () => {
+  it("keeps a short round whole", () => {
+    expect(trimmedRange(0, 16_000, 16_000)).toEqual({ start: 0, end: 16_000 });
+  });
+
+  it("keeps the most recent samples when a round runs past the bound", () => {
+    // The owner's first run recorded over two minutes in one round, and the service refused
+    // it with evidence_bounds_invalid. The client trims instead of failing.
+    const total = 16_000 * 133;
+    const { start, end } = trimmedRange(0, total, total);
+    expect(end - start).toBe(MAX_ROUND_SAMPLES);
+    expect(end).toBe(total);
+  });
+
+  it("never returns more than the bound, whatever the round length", () => {
+    for (const seconds of [1, 19, 20, 21, 60, 600]) {
+      const total = 16_000 * seconds;
+      const { start, end } = trimmedRange(0, total, total);
+      expect(end - start).toBeLessThanOrEqual(MAX_ROUND_SAMPLES);
+    }
+  });
+
+  it("clamps a range that runs past what was recorded", () => {
+    expect(trimmedRange(500, 9_999, 1_000)).toEqual({ start: 500, end: 1_000 });
+    expect(trimmedRange(9_999, 9_999, 1_000)).toEqual({ start: 1_000, end: 1_000 });
   });
 });

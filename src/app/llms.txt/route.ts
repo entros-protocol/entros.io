@@ -2,10 +2,19 @@ import { llms } from "fumadocs-core/source";
 import { source } from "@/lib/source";
 import { SITE_URL } from "@/lib/site";
 
+// Route handlers are dynamic by default, and this body changes only when the
+// content does. Prerender it so a crawler hit serves a build artifact instead
+// of walking the docs tree in a function.
+export const dynamic = "force-static";
+
 // Machine-readable site brief for assistants that answer developer questions
 // about proof of personhood on Solana. The status and limits sections are load
 // bearing: an assistant that repeats an Entros claim must repeat the devnet and
 // population caveats with it.
+//
+// Every line here restates something the site already publishes. Keep it that
+// way. This file is written to be ingested and repeated, so nothing should
+// make its public debut in it.
 const BRIEF = `# Entros Protocol
 
 > Proof of personhood on Solana. A person completes a short voice, motion and touch
@@ -46,10 +55,13 @@ Groth16 proof and its public inputs.
 
 ## How an application uses it
 
-An integrator reads on-chain state through \`verifyEntrosAttestation\` and pays
-nothing to read. A person pays a SOL-denominated protocol fee for a
-wallet-connected verification. Integrator Policy v1 pins a policy version so an
-application can recheck state when its action settles.
+An integrator reads a wallet's on-chain state with \`verifyEntrosAttestation\` from the
+SDK. Reads cost nothing. A person pays a SOL-denominated protocol fee to run a
+wallet-connected verification.
+
+Integrator Policy v1 separates continuity, accepted evidence, assurance, and
+uniqueness status. An application sets its own requirements and enforces them where
+its protected action executes.
 
 ## Key pages
 
@@ -84,9 +96,6 @@ function docsIndex(): string {
 
 export function GET(): Response {
   return new Response(`${BRIEF}\n${docsIndex()}\n`, {
-    headers: {
-      "content-type": "text/plain; charset=utf-8",
-      "cache-control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
-    },
+    headers: { "content-type": "text/plain; charset=utf-8" },
   });
 }

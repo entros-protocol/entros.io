@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import sitemap from "@/app/sitemap";
-import { GET as llmsTxt } from "@/app/llms.txt/route";
+import { GET as llmsTxt, dynamic } from "@/app/llms.txt/route";
 
 /**
  * The sitemap and `/llms.txt` are the two files a crawler or an assistant reads
  * before anything else on the site. Both restate protocol status, so both can
  * carry a claim past review. These tests pin the structural half: every docs
- * page reaches the sitemap, and the brief keeps its status and limits.
+ * page reaches the sitemap, and the brief keeps its status and its limits.
  *
  * Docs content comes from the stub in `test/stubs/`, so page counts here track
  * the stub rather than `content/docs`.
@@ -39,7 +39,11 @@ describe("sitemap", () => {
 });
 
 describe("llms.txt", () => {
-  it("serves plain text", async () => {
+  it("prerenders, so a crawler hit costs no function call", () => {
+    expect(dynamic).toBe("force-static");
+  });
+
+  it("serves plain text", () => {
     const response = llmsTxt();
 
     expect(response.status).toBe(200);
@@ -85,6 +89,29 @@ describe("llms.txt", () => {
       "expensive to fake",
     ]) {
       expect(body).not.toContain(banned);
+    }
+  });
+
+  /**
+   * The brief restates limits the site already publishes. Anything that reads
+   * as the enforcement status of a named check does not belong, because this
+   * file is written to be ingested and repeated. The vocabulary below is how
+   * that sentence gets written, so it never ships here.
+   */
+  it("describes no check by its enforcement status", async () => {
+    const body = (await brief()).toLowerCase();
+
+    for (const tell of [
+      "excludes",
+      "not enforced",
+      "observe-only",
+      "observe only",
+      "disabled",
+      "telemetry",
+      "does not run",
+      "skipped",
+    ]) {
+      expect(body).not.toContain(tell);
     }
   });
 });

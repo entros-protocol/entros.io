@@ -15,6 +15,12 @@ function source(path: string): string {
   return readFileSync(fileURLToPath(new URL(`../src/${path}`, import.meta.url)), "utf8");
 }
 
+/**
+ * The list is explicit rather than a glob over `lab/`, because not every lab route carries the
+ * same constraint. The capture-drift harness under `lab/drift` exists to run the identity
+ * extractor over two capture styles, so it imports the SDK on purpose. Adding it here would
+ * read as tightening the boundary and would instead delete the measurement.
+ */
 const PROTOTYPE_SOURCES = [
   "app/lab/rounds/page.tsx",
   "components/lab/round-runner.tsx",
@@ -58,6 +64,15 @@ describe("paired-round isolation", () => {
     const disallow = Array.isArray(rules) ? rules[0]?.disallow : rules.disallow;
     expect(disallow).toContain("/lab/");
     expect(sitemap().some((entry) => entry.url.includes("/lab"))).toBe(false);
+  });
+
+  it("keeps the capture-drift harness out of the prototype boundary", () => {
+    // It reaches identity extraction by design. The assertion pins that difference so the two
+    // routes are never merged under one rule.
+    expect(PROTOTYPE_SOURCES).not.toContain("components/lab/drift-runner.tsx");
+    expect(source("components/lab/drift-runner.tsx")).toContain("@entros/pulse-sdk");
+    expect(source("app/lab/drift/page.tsx")).toContain("prototypeEnabled()");
+    expect(source("app/lab/drift/page.tsx")).toContain("notFound()");
   });
 
   it("holds the service key on the server only", () => {

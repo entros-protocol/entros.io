@@ -15,6 +15,14 @@ Without a permit, your service can block all automation or let every agent in.
 Blocking shuts out the agents people want to use. Letting every agent in leaves no record that anyone approved an action.
 A permit adds a third option. Your service lets an agent through for one action when its owner signs off and the owner's wallet holds a recent Entros verification.
 
+## What a registry entry does not carry
+
+A registry records that an agent exists. It records nothing about the person who runs that agent, and nothing about whether that person approved this action.
+
+One 2026 study measured the first half of that gap across three EVM chains, covering ERC-8004 from deployment through 13 May 2026. Only 3 percent of registrations on Ethereum, 4 percent on BSC and 15 percent on Base exposed a valid registration file with at least one live service endpoint. The authors also found coordinated Sybil behaviour among 73.5 percent, 59.2 percent and 90.6 percent of reviewers on those same chains, and reported that feedback records are rarely grounded in verifiable interactions.
+
+Those rates describe EVM registries on that date. They measure no Solana registry, no Entros deployment and no Entros result. Read them as one reason a service reads a signed permit against current chain state instead of trusting a registry entry. Source: [Can Trustless Agents Be Trusted?](https://arxiv.org/abs/2606.26028), Xiong et al., preprint revised 2026-07-08.
+
 ## What your service checks
 
 A permit names one agent, one action, your service, your policy, and an expiry at most 15 minutes away.

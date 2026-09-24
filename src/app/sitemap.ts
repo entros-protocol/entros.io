@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
+import { source } from "@/lib/source";
 
 // Update when content meaningfully changes site-wide. Per-request `new Date()`
 // makes Google ignore lastModified entirely.
-const LAST_MODIFIED = "2026-04-26";
+const LAST_MODIFIED = "2026-09-19";
 
 type Entry = {
   path: string;
@@ -29,8 +30,17 @@ const entries: Entry[] = [
   { path: "/case-studies/realms", changeFrequency: "monthly", priority: 0.7 },
 ];
 
+// Docs paths come from the tree, never from a list here. A hand-kept list drops
+// a page the moment someone adds one, which is how all 31 of them stayed out of
+// this file. Keep `entries` free of `/docs` paths: a test enforces one url each.
 export default function sitemap(): MetadataRoute.Sitemap {
-  return entries.map(({ path, changeFrequency, priority }) => ({
+  const docs: Entry[] = source.getPages().map((page) => ({
+    path: page.url,
+    changeFrequency: "monthly",
+    priority: page.url === "/docs" ? 0.8 : 0.6,
+  }));
+
+  return [...entries, ...docs].map(({ path, changeFrequency, priority }) => ({
     url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
     lastModified: LAST_MODIFIED,
     changeFrequency,

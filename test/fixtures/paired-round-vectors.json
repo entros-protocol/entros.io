@@ -1,0 +1,796 @@
+{
+  "schema": "entros-paired-round-vectors-v1",
+  "generator": "scripts/paired-round/generate-vectors.py",
+  "specification": "docs/master/BLUEPRINT-mid-capture-stimulus.md",
+  "domains": {
+    "session": "entros/paired-round/v1/session\u0000",
+    "attempt": "entros/paired-round/v1/attempt\u0000",
+    "challenge": "entros/paired-round/v1/challenge\u0000",
+    "audio": "entros/paired-round/v1/audio\u0000",
+    "path": "entros/paired-round/v1/path\u0000",
+    "round": "entros/paired-round/v1/round\u0000",
+    "commitRequest": "entros/paired-round/v1/commit-request\u0000",
+    "final": "entros/paired-round/v1/final\u0000"
+  },
+  "constants": {
+    "rounds": 3,
+    "schemaVersion": 1,
+    "audioFormat": "pcm_s16le_16000_mono",
+    "sessionExpirySeconds": 600,
+    "roundExpirySeconds": 120,
+    "maxRoundSamples": 320000,
+    "maxSessionSamples": 960000,
+    "separatorSamples": 1600,
+    "minPathPoints": 8,
+    "maxPathPoints": 64,
+    "minWaypoints": 3,
+    "maxWaypoints": 5,
+    "coordinateMax": 1000
+  },
+  "sessions": [
+    {
+      "name": "trace tier, three rounds",
+      "tier": "trace",
+      "sessionNonceHex": "030e19242f3a45505b66717c87929da8b3bec9d4dfeaf5000b16212c37424d58",
+      "serverAttemptIdHex": "28333e49545f6a75808b96a1acb7c2cd",
+      "originalChallengeNonceHex": "4d58636e79848f9aa5b0bbc6d1dce7f2fd08131e29343f4a55606b76818c97a2",
+      "sessionExpiryUnixMs": 1789000007000,
+      "rounds": 3,
+      "attemptBindingDigestHex": "d4f7c0d1636b36fa21beb749e2ce18297300fe79e2c00a213ef4b9dd97928f8a",
+      "sessionCommitmentHex": "3825a98228f5dd7d974d50c5284fd8b4cc2f56c6a26cf023340613c29fac3433",
+      "roundEntries": [
+        {
+          "index": 1,
+          "roundNonceHex": "9aa5b0bbc6d1dce7f2fd08131e29343f4a55606b76818c97a2adb8c3ced9e4ef",
+          "word": "balance",
+          "pathTargetHex": "0104007800c8012c028001e000f0021c0320",
+          "pathTargetWaypoints": [
+            [
+              120,
+              200
+            ],
+            [
+              300,
+              640
+            ],
+            [
+              480,
+              240
+            ],
+            [
+              540,
+              800
+            ]
+          ],
+          "coarsePathHex": "01000c0025003d0032005a003f0077004c0094005900b1006600ce007300eb00800108008d0125009a014200a7015f00b4017c",
+          "coarsePathPoints": [
+            [
+              37,
+              61
+            ],
+            [
+              50,
+              90
+            ],
+            [
+              63,
+              119
+            ],
+            [
+              76,
+              148
+            ],
+            [
+              89,
+              177
+            ],
+            [
+              102,
+              206
+            ],
+            [
+              115,
+              235
+            ],
+            [
+              128,
+              264
+            ],
+            [
+              141,
+              293
+            ],
+            [
+              154,
+              322
+            ],
+            [
+              167,
+              351
+            ],
+            [
+              180,
+              380
+            ]
+          ],
+          "pathPointCount": 12,
+          "audioFormat": "pcm_s16le_16000_mono",
+          "audioSegmentHex": "f0fb06111c27323d48535e69747f8a95a0abb6c1ccd7e2edf8030e19242f3a45505b66717c87929da8b3bec9d4dfeaf5000b16212c37424d58636e79848f9aa5b0bbc6d1dce7f2fd08131e29343f4a55606b76818c97a2adb8c3ced9e4effa05",
+          "audioByteLength": 96,
+          "challengeDigestHex": "f4ef2d1e8e2f962cc29fc54919a11eb02b2d59f543a1b7305ceab4f3a10aa8b1",
+          "audioDigestHex": "785f3aa0d0871368e962e37d165f222f785067c2e39ff5ec05898b6ea1c4f875",
+          "pathDigestHex": "7acdddc9d145dceca28813c5cf171b6246a2c3ae53c4f20ca8c2f437f1ba4e86",
+          "previousCommitmentHex": "3825a98228f5dd7d974d50c5284fd8b4cc2f56c6a26cf023340613c29fac3433",
+          "commitmentHex": "f8ae5e6fce3966d05a54aeab652877560766f90286cc59239fe450a7778a00c3",
+          "requestDigestHex": "a9b358b2bbb1c8b6cc52c9f76dcb73d1745ade367613671e92da0baa03a15de2"
+        },
+        {
+          "index": 2,
+          "roundNonceHex": "bfcad5e0ebf6010c17222d38434e59646f7a85909ba6b1bcc7d2dde8f3fe0914",
+          "word": "garden",
+          "pathTargetHex": "010400f000c801a40280025800f002940320",
+          "pathTargetWaypoints": [
+            [
+              240,
+              200
+            ],
+            [
+              420,
+              640
+            ],
+            [
+              600,
+              240
+            ],
+            [
+              660,
+              800
+            ]
+          ],
+          "coarsePathHex": "01000c004a007a00570097006400b4007100d1007e00ee008b010b0098012800a5014500b2016200bf017f00cc019c00d901b9",
+          "coarsePathPoints": [
+            [
+              74,
+              122
+            ],
+            [
+              87,
+              151
+            ],
+            [
+              100,
+              180
+            ],
+            [
+              113,
+              209
+            ],
+            [
+              126,
+              238
+            ],
+            [
+              139,
+              267
+            ],
+            [
+              152,
+              296
+            ],
+            [
+              165,
+              325
+            ],
+            [
+              178,
+              354
+            ],
+            [
+              191,
+              383
+            ],
+            [
+              204,
+              412
+            ],
+            [
+              217,
+              441
+            ]
+          ],
+          "pathPointCount": 12,
+          "audioFormat": "pcm_s16le_16000_mono",
+          "audioSegmentHex": "15202b36414c57626d78838e99a4afbac5d0dbe6f1fc07121d28333e49545f6a75808b96a1acb7c2cdd8e3eef9040f1a25303b46515c67727d88939ea9b4bfcad5e0ebf6010c17222d38434e59646f7a85909ba6b1bcc7d2dde8f3fe09141f2a",
+          "audioByteLength": 96,
+          "challengeDigestHex": "e12187395f964ea380953d457b1711489dd45f86b99491e3d799306ab61e1fcd",
+          "audioDigestHex": "7f3e258a40cbd77ecec8c56d60ed553240ff9e8063a010f2190436e9a2ad1dcd",
+          "pathDigestHex": "a8ec7bf97a0292541ac85432239eb1fe847c03cbf73e1a488647c02e81e74969",
+          "previousCommitmentHex": "f8ae5e6fce3966d05a54aeab652877560766f90286cc59239fe450a7778a00c3",
+          "commitmentHex": "830a756e6a5adac5b9ecc871c8d221540822480be4480dc0fd88eb580976a064",
+          "requestDigestHex": "fd5a5a4c6b4ca6db6d3179dd2897486d13b8d53478016f9552d79ff4552e54fd"
+        },
+        {
+          "index": 3,
+          "roundNonceHex": "e4effa05101b26313c47525d68737e89949faab5c0cbd6e1ecf7020d18232e39",
+          "word": "silver",
+          "pathTargetHex": "0104016800c8021c028002d000f0030c0320",
+          "pathTargetWaypoints": [
+            [
+              360,
+              200
+            ],
+            [
+              540,
+              640
+            ],
+            [
+              720,
+              240
+            ],
+            [
+              780,
+              800
+            ]
+          ],
+          "coarsePathHex": "01000c006f00b7007c00d4008900f10096010e00a3012b00b0014800bd016500ca018200d7019f00e401bc00f101d900fe01f6",
+          "coarsePathPoints": [
+            [
+              111,
+              183
+            ],
+            [
+              124,
+              212
+            ],
+            [
+              137,
+              241
+            ],
+            [
+              150,
+              270
+            ],
+            [
+              163,
+              299
+            ],
+            [
+              176,
+              328
+            ],
+            [
+              189,
+              357
+            ],
+            [
+              202,
+              386
+            ],
+            [
+              215,
+              415
+            ],
+            [
+              228,
+              444
+            ],
+            [
+              241,
+              473
+            ],
+            [
+              254,
+              502
+            ]
+          ],
+          "pathPointCount": 12,
+          "audioFormat": "pcm_s16le_16000_mono",
+          "audioSegmentHex": "3a45505b66717c87929da8b3bec9d4dfeaf5000b16212c37424d58636e79848f9aa5b0bbc6d1dce7f2fd08131e29343f4a55606b76818c97a2adb8c3ced9e4effa05101b26313c47525d68737e89949faab5c0cbd6e1ecf7020d18232e39444f",
+          "audioByteLength": 96,
+          "challengeDigestHex": "14681fbee5d6c8706c84188fd51c220896b5343b95190b78cc33561dbfe5a906",
+          "audioDigestHex": "bc0c4c5277a385008e99823deb4a5a85555bfc599589e2a8607b50d5023f4971",
+          "pathDigestHex": "59eab39d46ea4d4ac50618d31d1e41097122ab2134feb26e8c97f7dddb56b419",
+          "previousCommitmentHex": "830a756e6a5adac5b9ecc871c8d221540822480be4480dc0fd88eb580976a064",
+          "commitmentHex": "c28e7e55314163fa48676b5087ea3aadc8a676a3f6c84393634e8b39e41e9fcb",
+          "requestDigestHex": "4817f1dcf438f1e5eca756171392bb12bd6eca96ce09c3cb7f08c8eaabe7ba61"
+        }
+      ],
+      "evidenceManifestHex": "785f3aa0d0871368e962e37d165f222f785067c2e39ff5ec05898b6ea1c4f8757acdddc9d145dceca28813c5cf171b6246a2c3ae53c4f20ca8c2f437f1ba4e867f3e258a40cbd77ecec8c56d60ed553240ff9e8063a010f2190436e9a2ad1dcda8ec7bf97a0292541ac85432239eb1fe847c03cbf73e1a488647c02e81e74969bc0c4c5277a385008e99823deb4a5a85555bfc599589e2a8607b50d5023f497159eab39d46ea4d4ac50618d31d1e41097122ab2134feb26e8c97f7dddb56b419",
+      "finalDigestHex": "2215276b1536890b9896b3634b825c3e00058b76bbace7ce948dd5eadd0b1540"
+    },
+    {
+      "name": "speech-only tier, three rounds",
+      "tier": "speech_only",
+      "sessionNonceHex": "535e69747f8a95a0abb6c1ccd7e2edf8030e19242f3a45505b66717c87929da8",
+      "serverAttemptIdHex": "78838e99a4afbac5d0dbe6f1fc07121d",
+      "originalChallengeNonceHex": "9da8b3bec9d4dfeaf5000b16212c37424d58636e79848f9aa5b0bbc6d1dce7f2",
+      "sessionExpiryUnixMs": 1789000023000,
+      "rounds": 3,
+      "attemptBindingDigestHex": "b185d1cb1c7aba41be4936e770411efd214fb54c9929cc5529a14343713eab51",
+      "sessionCommitmentHex": "b48e39ed2ded7849b34a49a5ad4a137cbd817e44b8eba0bdd488fd11e022890e",
+      "roundEntries": [
+        {
+          "index": 1,
+          "roundNonceHex": "eaf5000b16212c37424d58636e79848f9aa5b0bbc6d1dce7f2fd08131e29343f",
+          "word": "travel",
+          "pathTargetHex": "",
+          "pathTargetWaypoints": [],
+          "coarsePathHex": "",
+          "coarsePathPoints": [],
+          "pathPointCount": 0,
+          "audioFormat": "pcm_s16le_16000_mono",
+          "audioSegmentHex": "404b56616c77828d98a3aeb9c4cfdae5f0fb06111c27323d48535e69747f8a95a0abb6c1ccd7e2edf8030e19242f3a45505b66717c87929da8b3bec9d4dfeaf5000b16212c37424d58636e79848f9aa5b0bbc6d1dce7f2fd08131e29343f4a55",
+          "audioByteLength": 96,
+          "challengeDigestHex": "74f3b96511a6a1afdeffbc684971e3646110b7134f11a83b0c1a436d9afc0ee3",
+          "audioDigestHex": "7a07b576cbeead866e31dbad5ea4650e0b73d82d386b534185d75da60172baf1",
+          "pathDigestHex": "bffc195db6bfe6e6413a1981b676f1d0502ad8288f2d18b98b9778a074d59df1",
+          "previousCommitmentHex": "b48e39ed2ded7849b34a49a5ad4a137cbd817e44b8eba0bdd488fd11e022890e",
+          "commitmentHex": "f2b21e5a251e566a2f6d8f66eaac74715e22bb4df8c18a4a48025bee435babe7",
+          "requestDigestHex": "4a0ac5d2891e3498a394e1e0b67ac0aca7653dbf9172df00bc37cbcd244924b1"
+        },
+        {
+          "index": 2,
+          "roundNonceHex": "0f1a25303b46515c67727d88939ea9b4bfcad5e0ebf6010c17222d38434e5964",
+          "word": "signal",
+          "pathTargetHex": "",
+          "pathTargetWaypoints": [],
+          "coarsePathHex": "",
+          "coarsePathPoints": [],
+          "pathPointCount": 0,
+          "audioFormat": "pcm_s16le_16000_mono",
+          "audioSegmentHex": "65707b86919ca7b2bdc8d3dee9f4ff0a15202b36414c57626d78838e99a4afbac5d0dbe6f1fc07121d28333e49545f6a75808b96a1acb7c2cdd8e3eef9040f1a25303b46515c67727d88939ea9b4bfcad5e0ebf6010c17222d38434e59646f7a",
+          "audioByteLength": 96,
+          "challengeDigestHex": "b4438d3e0a96c8d6fc364df10f6dd54caa0ce88c3cb53adaa185c3de0d41bb07",
+          "audioDigestHex": "793baeac57250c965ad506015b1eeff53a127d11c560643158e5f15d622422be",
+          "pathDigestHex": "ecb0bf327aa2048733ac410591a12c91a8daf5b7dca6212958903264a0ea2b04",
+          "previousCommitmentHex": "f2b21e5a251e566a2f6d8f66eaac74715e22bb4df8c18a4a48025bee435babe7",
+          "commitmentHex": "a3934ee5e4146fb900193e8023a00162fb2b5e273857ee08247c8ab71030eb4a",
+          "requestDigestHex": "fd111b9da6cf01b7b8e0bc528f9901fb4afa7112c7fb3cc128651eabcdfb9b83"
+        },
+        {
+          "index": 3,
+          "roundNonceHex": "343f4a55606b76818c97a2adb8c3ced9e4effa05101b26313c47525d68737e89",
+          "word": "action",
+          "pathTargetHex": "",
+          "pathTargetWaypoints": [],
+          "coarsePathHex": "",
+          "coarsePathPoints": [],
+          "pathPointCount": 0,
+          "audioFormat": "pcm_s16le_16000_mono",
+          "audioSegmentHex": "8a95a0abb6c1ccd7e2edf8030e19242f3a45505b66717c87929da8b3bec9d4dfeaf5000b16212c37424d58636e79848f9aa5b0bbc6d1dce7f2fd08131e29343f4a55606b76818c97a2adb8c3ced9e4effa05101b26313c47525d68737e89949f",
+          "audioByteLength": 96,
+          "challengeDigestHex": "ba894e2ad57891151719edd8143f5aa410cf13280a15379b396bb8c8fc928817",
+          "audioDigestHex": "f0ff999827a2a0f4c701a544a511f819e91761211a7b0eceaed1025236ea17f8",
+          "pathDigestHex": "f6783db741258020f0f8364263500bed9a873e016b3f810d16c7058cd65eea90",
+          "previousCommitmentHex": "a3934ee5e4146fb900193e8023a00162fb2b5e273857ee08247c8ab71030eb4a",
+          "commitmentHex": "848a2d6e4e70a392476f576f7a33ecbe6bc6210122f855bce12183965a9bd9a4",
+          "requestDigestHex": "c2e96b7493d7c159066f2241dcf43f3012c86244d406e5fd899a5b2bed6556a5"
+        }
+      ],
+      "evidenceManifestHex": "7a07b576cbeead866e31dbad5ea4650e0b73d82d386b534185d75da60172baf1bffc195db6bfe6e6413a1981b676f1d0502ad8288f2d18b98b9778a074d59df1793baeac57250c965ad506015b1eeff53a127d11c560643158e5f15d622422beecb0bf327aa2048733ac410591a12c91a8daf5b7dca6212958903264a0ea2b04f0ff999827a2a0f4c701a544a511f819e91761211a7b0eceaed1025236ea17f8f6783db741258020f0f8364263500bed9a873e016b3f810d16c7058cd65eea90",
+      "finalDigestHex": "dc5911577fe3de554e106f7f31b8a3848a92e3e13ca51da5820d3297dbf4494f"
+    }
+  ],
+  "invalidEncodings": [
+    {
+      "name": "path target below the waypoint floor",
+      "encoding": "pathTarget",
+      "waypoints": [
+        [
+          100,
+          100
+        ],
+        [
+          200,
+          200
+        ]
+      ],
+      "reason": "waypoint_count_out_of_range"
+    },
+    {
+      "name": "path target above the waypoint ceiling",
+      "encoding": "pathTarget",
+      "waypoints": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          50
+        ],
+        [
+          200,
+          100
+        ],
+        [
+          300,
+          150
+        ],
+        [
+          400,
+          200
+        ],
+        [
+          500,
+          250
+        ]
+      ],
+      "reason": "waypoint_count_out_of_range"
+    },
+    {
+      "name": "coarse path below the point floor",
+      "encoding": "coarsePath",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "reason": "point_count_out_of_range"
+    },
+    {
+      "name": "coarse path above the point ceiling",
+      "encoding": "coarsePath",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          9,
+          9
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          11,
+          11
+        ],
+        [
+          12,
+          12
+        ],
+        [
+          13,
+          13
+        ],
+        [
+          14,
+          14
+        ],
+        [
+          15,
+          15
+        ],
+        [
+          16,
+          16
+        ],
+        [
+          17,
+          17
+        ],
+        [
+          18,
+          18
+        ],
+        [
+          19,
+          19
+        ],
+        [
+          20,
+          20
+        ],
+        [
+          21,
+          21
+        ],
+        [
+          22,
+          22
+        ],
+        [
+          23,
+          23
+        ],
+        [
+          24,
+          24
+        ],
+        [
+          25,
+          25
+        ],
+        [
+          26,
+          26
+        ],
+        [
+          27,
+          27
+        ],
+        [
+          28,
+          28
+        ],
+        [
+          29,
+          29
+        ],
+        [
+          30,
+          30
+        ],
+        [
+          31,
+          31
+        ],
+        [
+          32,
+          32
+        ],
+        [
+          33,
+          33
+        ],
+        [
+          34,
+          34
+        ],
+        [
+          35,
+          35
+        ],
+        [
+          36,
+          36
+        ],
+        [
+          37,
+          37
+        ],
+        [
+          38,
+          38
+        ],
+        [
+          39,
+          39
+        ],
+        [
+          40,
+          40
+        ],
+        [
+          41,
+          41
+        ],
+        [
+          42,
+          42
+        ],
+        [
+          43,
+          43
+        ],
+        [
+          44,
+          44
+        ],
+        [
+          45,
+          45
+        ],
+        [
+          46,
+          46
+        ],
+        [
+          47,
+          47
+        ],
+        [
+          48,
+          48
+        ],
+        [
+          49,
+          49
+        ],
+        [
+          50,
+          50
+        ],
+        [
+          51,
+          51
+        ],
+        [
+          52,
+          52
+        ],
+        [
+          53,
+          53
+        ],
+        [
+          54,
+          54
+        ],
+        [
+          55,
+          55
+        ],
+        [
+          56,
+          56
+        ],
+        [
+          57,
+          57
+        ],
+        [
+          58,
+          58
+        ],
+        [
+          59,
+          59
+        ],
+        [
+          60,
+          60
+        ],
+        [
+          61,
+          61
+        ],
+        [
+          62,
+          62
+        ],
+        [
+          63,
+          63
+        ],
+        [
+          64,
+          64
+        ]
+      ],
+      "reason": "point_count_out_of_range"
+    },
+    {
+      "name": "coordinate above the grid",
+      "encoding": "coarsePath",
+      "points": [
+        [
+          1001,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ],
+      "reason": "coordinate_out_of_range"
+    },
+    {
+      "name": "path under the speech-only tier",
+      "encoding": "tier",
+      "tier": "speech_only",
+      "pointCount": 8,
+      "reason": "tier_violation"
+    },
+    {
+      "name": "no path under the trace tier",
+      "encoding": "tier",
+      "tier": "trace",
+      "pointCount": 0,
+      "reason": "tier_violation"
+    }
+  ],
+  "separation": {
+    "name": "length prefixes separate fields that naive concatenation merges",
+    "leftFields": [
+      "entros",
+      "paired"
+    ],
+    "rightFields": [
+      "entrospaired",
+      ""
+    ],
+    "naiveConcatenationMatches": true,
+    "encodedLeftHex": "00000006656e74726f7300000006706169726564",
+    "encodedRightHex": "0000000c656e74726f7370616972656400000000",
+    "encodedDigestsDiffer": true
+  }
+}

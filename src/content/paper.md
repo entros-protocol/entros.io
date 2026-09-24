@@ -1,7 +1,7 @@
 # Entros Protocol: A Framework for Temporally-Consistent, Decentralized Proof-of-Personhood
 
 **Original Date:** June 27, 2025
-**Updated:** August 7, 2026
+**Updated:** September 19, 2026
 **Word Count:** Approx. 7600
 
 ---
@@ -320,7 +320,7 @@ The client discards raw motion and touch after feature extraction. The validatio
 
 **SimHash reversibility.** Recent work has demonstrated pre-image attacks on locality-sensitive hashes [21]. This shows that SimHash fingerprints can contain recoverable information about their inputs. Entros does not publish the plaintext fingerprint. The protocol publishes its Poseidon commitment and a proof that reveals only the Hamming distance range. The fingerprint stored locally for re-verification uses AES-256-GCM with a non-extractable `CryptoKey` in IndexedDB. In wallet-connected mode, a per-wallet PDA stores another encrypted copy. Its key derives from a domain-separated Ed25519 `signMessage` signature. The blob contains a 32-byte fingerprint and a 32-byte commitment salt. It contains neither raw sensor data nor the 308 statistical features. Wallet compromise can expose the fingerprint and salt, so Entros does not treat SimHash as a privacy-preserving representation. The Poseidon commitment provides that boundary. AES-256 remains quantum-resistant under standard assumptions about Grover's algorithm. The Ed25519-derived key path shares Solana's post-quantum migration concern.
 
-#### **6.6. Attack Cost Under the Detection Stack**
+#### **6.6. Detection Layers and the Attempt-Volume Bound**
 
 The protocol does not claim to make spoofing impossible. The primary defense is detection: every capture is scored against the detection layers described above before it reaches the chain. Economic cost is a secondary layer that bounds the volume of attempts an adversary can mount, not the mechanism that decides whether any single capture passes. The defense is layered:
 
@@ -399,6 +399,10 @@ T4 extends the program to modern neural voice synthesis, which the tiers above d
 ### **7. Related Work**
 
 **Worldcoin** [5] uses iris scanning to create a unique biometric identifier per person. The approach provides strong uniqueness guarantees through a dedicated hardware device (the Orb), which enforces a controlled capture environment. The tradeoff is a permanent anatomical template: because an iris scan cannot be changed, it cannot be revoked if the template is ever exposed. Entros's behavioral signature drifts naturally over time, making re-verification both the consistency check and the revocation mechanism.
+
+**World ID 4.0 session proofs.** World ID 4.0 introduces session proofs alongside uniqueness proofs [29, 30]. A uniqueness proof carries a one-time nullifier and cannot be associated with any other proof. A session proof instead carries a `sessionId` that the relying party stores, which lets that party confirm the same World ID across its own interactions while the proofs stay unlinkable across parties and across sessions [31]. World names this returning-user continuity. World's own status table lists two related properties as upcoming protocol updates: authentication, defined there as proving the person who enrolled is the person making a proof, and revocation of an issued credential by its issuer [29]. Session proofs therefore establish continuity of an account and the credentials it holds. Entros derives fresh behavioral evidence at each verification and proves a bounded distance between two commitments, so its continuity claim rests on the quality of that evidence and its capture path rather than on key custody. Both designs leave population uniqueness open, and Entros claims no exclusive use of the term continuity.
+
+**Client-side proving toolkits.** ProveKit [32] proves circuits written in Noir on consumer phones, using the WHIR hash-based commitment scheme with a Spartan protocol. On passport, WebAuthn, and OPRF circuits, World reports each proof completing in a couple of seconds on a typical phone and under half a minute on the slowest phone it tested, against a stated memory goal below 1 GB. It states that the WHIR construction requires no trusted setup and carries no elliptic curve or lattice assumptions. Entros uses Groth16, whose Phase 2 ceremony currently has a single contributor as Section 3.3 records. Those published figures cover none of Entros's relation, and the repository documents an on-chain wrapper that returns to Groth16, so neither the performance nor the assumption comparison is settled. Measuring the Hamming relation against this toolkit remains open work.
 
 **BrightID** [6] verifies uniqueness through social graph analysis, where users vouch for each other in verification parties. The approach trades dedicated hardware for coordination overhead. Entros targets verification on a consumer device without a coordinated social event.
 
@@ -504,3 +508,7 @@ The client SDK, circuit definitions, and on-chain programs are open source and p
 26. Verma, K., et al. "Pitch Imperfect: Detecting Audio Deepfakes Through Acoustic Prosody Analysis." *arXiv:2502.14726*, 2025.
 27. Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., and Sutskever, I. "Robust speech recognition via large-scale weak supervision." *arXiv:2212.04356*, 2022.
 28. Baevski, A., Zhou, H., Mohamed, A., and Auli, M. "wav2vec 2.0: A framework for self-supervised learning of speech representations." *Proc. NeurIPS*, 2020.
+29. World Foundation. "Introducing World ID 4.0," 2025. https://world.org/blog/engineering/introducing-world-id-4.0
+30. World Foundation. "World ID 4.0 Migration Guide," accessed September 2026. https://docs.world.org/world-id/4-0-migration
+31. World Foundation. "World ID 4.0 Specifications," accessed September 2026. https://github.com/worldcoin/world-id-protocol/blob/main/docs/world-id-4-specs/README.md
+32. World Foundation. "ProveKit: Privacy for the Real World," 2026. https://world.org/blog/engineering/provekit-privacy-for-the-real-world

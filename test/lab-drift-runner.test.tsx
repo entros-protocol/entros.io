@@ -20,6 +20,8 @@ vi.mock("@solana/web3.js", () => ({
 }));
 
 vi.mock("@entros/pulse-sdk", () => ({
+  CANONICAL_SAMPLE_RATE: 16_000,
+  MAX_TRANSMITTED_CAPTURE_MS: 20_000,
   PulseSDK: class {
     createSession() {
       return {
@@ -78,6 +80,18 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+/** Points in the drawn stroke, which is the second polyline on the surface. */
+function drawnPoints(surface: Element): number {
+  const stroke = surface.querySelectorAll("polyline")[1];
+  return (stroke?.getAttribute("points") ?? "").split(" ").filter(Boolean).length;
+}
+
+function pointer(target: Element, type: string, x: number, y: number, buttons: number) {
+  target.dispatchEvent(
+    new MouseEvent(type, { bubbles: true, clientX: x, clientY: y, buttons }),
+  );
+}
+
 function startFirstCapture() {
   const button = [...container.querySelectorAll("button")].find((element) =>
     element.textContent?.includes("Start"),
@@ -116,6 +130,39 @@ describe("DriftRunner", () => {
     });
 
     expect(container.querySelector('[aria-label="Trace surface"]')).not.toBeNull();
+  });
+
+  /**
+   * A capture that ends under a held button unmounts the surface before the release arrives.
+   * A press flag then stayed set, and every later capture drew the pointer's path on hover.
+   */
+  it("draws only while a button is held, even when the release never reaches the surface", async () => {
+    Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
+      configurable: true,
+      value: () => undefined,
+    });
+    try {
+      await act(async () => {
+        root.render(<DriftRunner />);
+      });
+      await act(async () => {
+        startFirstCapture();
+      });
+
+      const surface = container.querySelector('[aria-label="Trace surface"]');
+      if (!(surface instanceof HTMLElement)) throw new Error("No trace surface rendered");
+      surface.getBoundingClientRect = () => new DOMRect(0, 0, 100, 100);
+
+      pointer(surface, "pointerdown", 10, 10, 1);
+      pointer(surface, "pointermove", 20, 20, 1);
+      expect(drawnPoints(surface)).toBe(2);
+
+      pointer(surface, "pointermove", 30, 30, 0);
+      pointer(surface, "pointermove", 40, 40, 0);
+      expect(drawnPoints(surface)).toBe(2);
+    } finally {
+      Reflect.deleteProperty(HTMLElement.prototype, "setPointerCapture");
+    }
   });
 
   it("lists the three captures before any of them run", async () => {

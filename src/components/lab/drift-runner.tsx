@@ -17,6 +17,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Connection, clusterApiUrl } from "@solana/web3.js";
 import {
+  CANONICAL_SAMPLE_RATE,
+  MAX_TRANSMITTED_CAPTURE_MS,
   PulseSDK,
   extractFeatures,
   fetchProjectionPolicy,
@@ -75,7 +77,7 @@ const RUNS: RunPlan[] = [
 ];
 
 /** Transmitted-audio ceiling in samples. The SDK trims to this and the validator truncates past it. */
-const MAX_TRANSMITTED_SAMPLES = 320_000;
+const MAX_TRANSMITTED_SAMPLES = (MAX_TRANSMITTED_CAPTURE_MS / 1000) * CANONICAL_SAMPLE_RATE;
 
 interface RunResult {
   id: RunId;
@@ -117,7 +119,7 @@ export function DriftRunner() {
   const sessionRef = useRef<PulseSession | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const strokeRef = useRef<SVGPolylineElement | null>(null);
-  const tracingRef = useRef(false);
+  const tickRef = useRef<number | null>(null);
   const startedAtRef = useRef(0);
   const projectionRef = useRef<number | null>(null);
   const pointsRef = useRef<string[]>([]);
@@ -145,10 +147,18 @@ export function DriftRunner() {
     stroke.setAttribute("points", pointsRef.current.join(" "));
   }, []);
 
+  const stopTicking = useCallback(() => {
+    if (tickRef.current !== null) window.clearInterval(tickRef.current);
+    tickRef.current = null;
+  }, []);
+
   const finish = useCallback(
     async (run: RunPlan) => {
+      stopTicking();
       const session = sessionRef.current;
       if (!session) return;
+      // Read before the sensors stop and extraction runs, which take seconds on their own.
+      const durationMs = Math.round(performance.now() - startedAtRef.current);
       setStage({ name: "extracting", run });
 
       const version = projectionRef.current;
@@ -200,7 +210,7 @@ export function DriftRunner() {
             normalized: extracted.normalized,
             raw: extracted.raw,
             fingerprint: simhash(extracted.normalized, version),
-            durationMs: Math.round(performance.now() - startedAtRef.current),
+            durationMs,
             audioSamples: audio.samples.length,
             motionSamples: motion.length,
             touchSamples: touch.length,
@@ -214,7 +224,7 @@ export function DriftRunner() {
         });
       }
     },
-    [],
+    [stopTicking],
   );
 
   const start = useCallback(
@@ -287,19 +297,16 @@ export function DriftRunner() {
       }
 
       session.markCaptureStart();
-      startedAtRef.current = performance.now();
+      const startedAt = performance.now();
+      startedAtRef.current = startedAt;
       setStage({ name: "capturing", run, round: 0 });
 
       if (run.style === "current") {
         setRemainingMs(CURRENT_STYLE_MS);
-        const deadline = performance.now() + CURRENT_STYLE_MS;
-        const tick = window.setInterval(() => {
-          const left = deadline - performance.now();
-          setRemainingMs(Math.max(0, left));
-          if (left <= 0) {
-            window.clearInterval(tick);
-            void finish(run);
-          }
+        tickRef.current = window.setInterval(() => {
+          const elapsed = performance.now() - startedAt;
+          setRemainingMs(Math.max(0, CURRENT_STYLE_MS - elapsed));
+          if (elapsed >= CURRENT_STYLE_MS) void finish(run);
         }, 100);
       }
     },
@@ -340,7 +347,9 @@ export function DriftRunner() {
               <span className="font-mono text-xs text-muted">
                 {result
                   ? `${(result.durationMs / 1000).toFixed(1)} s, ${result.audioSamples} samples${
-                      result.audioSamples >= MAX_TRANSMITTED_SAMPLES ? ", TRUNCATED" : ""
+                      result.audioSamples >= MAX_TRANSMITTED_SAMPLES
+                        ? `, first ${MAX_TRANSMITTED_CAPTURE_MS / 1000} s measured`
+                        : ""
                     }`
                   : "not recorded"}
               </span>
@@ -384,7 +393,6 @@ export function DriftRunner() {
           level={level}
           surfaceRef={surfaceRef}
           strokeRef={strokeRef}
-          tracingRef={tracingRef}
           trackPoint={trackPoint}
           onAdvance={advanceRound}
         />
@@ -407,7 +415,6 @@ interface CapturePanelProps {
   level: number;
   surfaceRef: React.RefObject<HTMLDivElement | null>;
   strokeRef: React.RefObject<SVGPolylineElement | null>;
-  tracingRef: React.MutableRefObject<boolean>;
   trackPoint: (event: React.PointerEvent<HTMLDivElement>) => void;
   onAdvance: (run: RunPlan, round: number) => void;
 }
@@ -429,7 +436,6 @@ function CapturePanel({
   level,
   surfaceRef,
   strokeRef,
-  tracingRef,
   trackPoint,
   onAdvance,
 }: CapturePanelProps) {
@@ -464,17 +470,13 @@ function CapturePanel({
         onPointerDown={(event) => {
           if (arming) return;
           event.currentTarget.setPointerCapture(event.pointerId);
-          tracingRef.current = true;
           trackPoint(event);
         }}
         onPointerMove={(event) => {
-          if (tracingRef.current) trackPoint(event);
-        }}
-        onPointerUp={() => {
-          tracingRef.current = false;
-        }}
-        onPointerCancel={() => {
-          tracingRef.current = false;
+          // Read the button from the event itself. A flag set on press and cleared on release
+          // stays set when the surface unmounts under a held button, and the next capture
+          // then draws on hover.
+          if (!arming && (event.buttons & 1) === 1) trackPoint(event);
         }}
       >
         <svg
@@ -642,10 +644,11 @@ function Report({ report, results }: { report: DriftReport; results: RunResult[]
         row, not against zero.
       </p>
       {results.some((result) => result.audioSamples >= MAX_TRANSMITTED_SAMPLES) && (
-        <p className="mt-4 max-w-prose rounded-lg border border-danger/40 px-4 py-3 text-sm text-danger">
-          A capture hit the transmitted-audio ceiling of 20 seconds, so its tail was trimmed
-          before extraction. The vector describes the first 20 seconds, not the whole session.
-          Record that run again inside 20 seconds for a clean comparison.
+        <p className="mt-4 max-w-prose text-sm text-muted">
+          The SDK sends at most {MAX_TRANSMITTED_CAPTURE_MS / 1000} seconds of audio. The paired
+          session ran longer, so its vector covers the first {MAX_TRANSMITTED_CAPTURE_MS / 1000}{" "}
+          seconds and the rest was not measured. A paired pipeline has to carry the whole session,
+          so this is a limit of the current pipeline, not of the capture.
         </p>
       )}
       <button

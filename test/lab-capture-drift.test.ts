@@ -26,13 +26,18 @@ function gaussian(random: () => number): number {
   return Math.sqrt(-2 * Math.log(first)) * Math.cos(2 * Math.PI * random());
 }
 
-/** Signs of `bits` random projections of `vector`. This is the fingerprint construction. */
-function fingerprint(vector: number[], bits: number, random: () => number): boolean[] {
+/** `bits` Gaussian hyperplanes over `dimension` features, one row per bit. */
+function projectionPlanes(bits: number, dimension: number, random: () => number): Float64Array {
+  return Float64Array.from({ length: bits * dimension }, () => gaussian(random));
+}
+
+/** Signs of the projections of `vector` onto each plane. This is the fingerprint construction. */
+function fingerprint(vector: number[], planes: Float64Array): boolean[] {
   const out: boolean[] = [];
-  for (let bit = 0; bit < bits; bit += 1) {
+  for (let offset = 0; offset < planes.length; offset += vector.length) {
     let dot = 0;
-    for (const value of vector) {
-      dot += value * gaussian(random);
+    for (let index = 0; index < vector.length; index += 1) {
+      dot += (vector[index] ?? 0) * (planes[offset + index] ?? 0);
     }
     out.push(dot >= 0);
   }
@@ -114,6 +119,10 @@ describe("compareVectors", () => {
   it("predicts the distance a real random projection produces", () => {
     const random = mulberry32(20260918);
     const dimension = 308;
+    const bits = 4096;
+    // One projection for every separation. Drawing it once keeps the test fast under a loaded
+    // parallel run, where redrawing it for every fingerprint ran past the default timeout.
+    const planes = projectionPlanes(bits, dimension, mulberry32(7));
 
     for (const targetCosine of [0.99, 0.9, 0.7, 0.5, 0.383, 0.2, 0.0]) {
       const left = Array.from({ length: dimension }, () => gaussian(random));
@@ -126,12 +135,7 @@ describe("compareVectors", () => {
       const predicted = compareVectors(left, right);
       expect(predicted.cosine).toBeCloseTo(targetCosine, 6);
 
-      const bits = 4096;
-      const projection = mulberry32(7);
-      const measured = hamming(
-        fingerprint(left, bits, mulberry32(7)),
-        fingerprint(right, bits, projection),
-      );
+      const measured = hamming(fingerprint(left, planes), fingerprint(right, planes));
       const measuredPerBit = measured / bits;
       const predictedPerBit = predicted.expectedDistance / FINGERPRINT_BITS;
       // Four standard errors over 4096 bits. Wide enough not to flake, tight enough that a

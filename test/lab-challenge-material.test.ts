@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath, URL } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
@@ -18,8 +18,18 @@ function repoFile(path: string): string {
   return readFileSync(fileURLToPath(new URL(`../../${path}`, import.meta.url)), "utf8");
 }
 
+/**
+ * The upstream sources live in sibling checkouts of the workspace. Hosted CI checks out this
+ * repository alone, and one upstream is private, so each comparison runs only where its sibling
+ * checkout exists. A checkout that exists without the file still fails, so a moved source cannot
+ * pass silently.
+ */
+function hasCheckout(name: string): boolean {
+  return existsSync(fileURLToPath(new URL(`../../${name}/`, import.meta.url)));
+}
+
 describe("challenge material", () => {
-  it("carries the same words the executor issues", () => {
+  it.skipIf(!hasCheckout("executor-node"))("carries the same words the executor issues", () => {
     const source = repoFile("executor-node/src/challenge/word_dict.rs");
     const body = source.split("pub const WORDS: &[&str] = &[")[1]?.split("];")[0] ?? "";
     const upstream = [...body.matchAll(/"([a-z]+)"/g)].map((match) => match[1]);
@@ -43,31 +53,34 @@ describe("challenge material", () => {
     for (const word of words) expect(word).toMatch(/^[a-z]{3,}$/);
   });
 
-  it("carries the same shapes and reflections the prototype issues", () => {
-    const source = repoFile("entros-validation/src/paired_round/challenge.rs");
-    const shapeBody = source.split("const SHAPES: &[Shape] = &[")[1]?.split("\n];")[0] ?? "";
-    const upstreamShapes = [...shapeBody.matchAll(/waypoints: &\[([^\]]+)\]/g)].map((match) =>
-      [...match[1]!.matchAll(/\((\d+), (\d+)\)/g)].map(([, x, y]) => `${x},${y}`).join(" "),
-    );
+  it.skipIf(!hasCheckout("entros-validation"))(
+    "carries the same shapes and reflections the prototype issues",
+    () => {
+      const source = repoFile("entros-validation/src/paired_round/challenge.rs");
+      const shapeBody = source.split("const SHAPES: &[Shape] = &[")[1]?.split("\n];")[0] ?? "";
+      const upstreamShapes = [...shapeBody.matchAll(/waypoints: &\[([^\]]+)\]/g)].map((match) =>
+        [...match[1]!.matchAll(/\((\d+), (\d+)\)/g)].map(([, x, y]) => `${x},${y}`).join(" "),
+      );
 
-    expect(upstreamShapes.length).toBe(5);
-    expect(source).toContain("const ORIENTATIONS: usize = 4;");
-    expect(PATH_COUNT).toBe(upstreamShapes.length * 4);
+      expect(upstreamShapes.length).toBe(5);
+      expect(source).toContain("const ORIENTATIONS: usize = 4;");
+      expect(PATH_COUNT).toBe(upstreamShapes.length * 4);
 
-    // Fold each generated path back to its unreflected form and require it upstream.
-    for (let attempt = 0; attempt < 400; attempt += 1) {
-      const path = randomPath();
-      const candidates = [
-        path.map((point) => `${point.x},${point.y}`).join(" "),
-        path.map((point) => `${COORDINATE_MAX - point.x},${point.y}`).join(" "),
-        path.map((point) => `${point.x},${COORDINATE_MAX - point.y}`).join(" "),
-        path
-          .map((point) => `${COORDINATE_MAX - point.x},${COORDINATE_MAX - point.y}`)
-          .join(" "),
-      ];
-      expect(candidates.some((candidate) => upstreamShapes.includes(candidate))).toBe(true);
-    }
-  });
+      // Fold each generated path back to its unreflected form and require it upstream.
+      for (let attempt = 0; attempt < 400; attempt += 1) {
+        const path = randomPath();
+        const candidates = [
+          path.map((point) => `${point.x},${point.y}`).join(" "),
+          path.map((point) => `${COORDINATE_MAX - point.x},${point.y}`).join(" "),
+          path.map((point) => `${point.x},${COORDINATE_MAX - point.y}`).join(" "),
+          path
+            .map((point) => `${COORDINATE_MAX - point.x},${COORDINATE_MAX - point.y}`)
+            .join(" "),
+        ];
+        expect(candidates.some((candidate) => upstreamShapes.includes(candidate))).toBe(true);
+      }
+    },
+  );
 
   it("keeps every waypoint inside the grid", () => {
     for (let attempt = 0; attempt < 200; attempt += 1) {

@@ -26,7 +26,7 @@ const WAYPOINTS: Point[] = [
 ];
 
 // The factory is hoisted above module scope, so its state has to be hoisted with it.
-const capture = vi.hoisted(() => ({ stopped: false }));
+const capture = vi.hoisted(() => ({ stopped: false, level: 0.02 }));
 
 vi.mock("../src/lib/paired-round/capture", () => ({
   deviceClass: () => "desktop",
@@ -38,7 +38,7 @@ vi.mock("../src/lib/paired-round/capture", () => ({
         cursor += 1_600;
         return cursor;
       },
-      level: () => 0.4,
+      level: () => capture.level,
       slice: (from: number, to: number) => new Float32Array(Math.max(0, to - from)).fill(0.2),
       stop: () => {
         capture.stopped = true;
@@ -140,6 +140,7 @@ function clickText(text: string) {
   button.click();
 }
 
+/** Traces the waypoints on a 400 pixel surface, which maps 2.5 grid units to each pixel. */
 function trace() {
   const surface = container.querySelector("svg");
   if (!surface) throw new Error("no trace surface");
@@ -147,22 +148,48 @@ function trace() {
     ({ left: 0, top: 0, width: 400, height: 400 }) as DOMRect;
   (surface as unknown as { setPointerCapture: (id: number) => void }).setPointerCapture =
     () => undefined;
-  const down = new Event("pointerdown", { bubbles: true }) as PointerEvent;
-  Object.assign(down, { clientX: 10, clientY: 10, pointerId: 1 });
-  surface.dispatchEvent(down);
-  for (let step = 1; step <= 40; step += 1) {
-    const move = new Event("pointermove", { bubbles: true }) as PointerEvent;
-    Object.assign(move, { clientX: step * 8, clientY: step * 6, pointerId: 1 });
-    surface.dispatchEvent(move);
+  const pixels = WAYPOINTS.map((point) => ({ x: point.x / 2.5, y: point.y / 2.5 }));
+  const send = (type: string, x: number, y: number, buttons: number) => {
+    const event = new Event(type, { bubbles: true }) as PointerEvent;
+    Object.assign(event, { clientX: x, clientY: y, pointerId: 1, buttons });
+    surface.dispatchEvent(event);
+  };
+  send("pointerdown", pixels[0]!.x, pixels[0]!.y, 1);
+  for (let leg = 1; leg < pixels.length; leg += 1) {
+    const from = pixels[leg - 1]!;
+    const to = pixels[leg]!;
+    for (let step = 1; step <= 20; step += 1) {
+      // A frame per move, so the stroke spans time the way a real one does.
+      vi.advanceTimersByTime(16);
+      send("pointermove", from.x + ((to.x - from.x) * step) / 20, from.y + ((to.y - from.y) * step) / 20, 1);
+    }
   }
-  const up = new Event("pointerup", { bubbles: true }) as PointerEvent;
-  Object.assign(up, { pointerId: 1 });
-  surface.dispatchEvent(up);
+  send("pointerup", pixels.at(-1)!.x, pixels.at(-1)!.y, 0);
+}
+
+/** Holds one level on the capture while the fake clock runs the level poll. */
+async function hold(level: number, durationMs: number) {
+  capture.level = level;
+  for (let elapsed = 0; elapsed < durationMs; elapsed += 100) {
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+    });
+  }
+}
+
+/** Says the word the way the level poll hears it: quiet, a word, then quiet. */
+async function speak() {
+  await hold(0.02, 400);
+  await hold(0.4, 400);
+  await hold(0.02, 800);
+  await settle();
 }
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "performance"] });
   capture.stopped = false;
+  capture.level = 0.02;
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
@@ -171,11 +198,12 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
 describe("RoundRunner", () => {
-  it("runs three rounds and finalizes once", async () => {
+  it("runs three rounds without a button and finalizes once", async () => {
     const { handler, calls } = fetchStub();
     vi.stubGlobal("fetch", handler);
     await startSession(calls);
@@ -183,9 +211,9 @@ describe("RoundRunner", () => {
     for (let round = 1; round <= 3; round += 1) {
       expect(container.textContent).toContain(WORDS[round - 1]);
       expect(container.textContent).toContain(`Round ${round} of 3`);
+      expect(container.textContent).not.toContain("Next round");
       await act(async () => trace());
-      await act(async () => clickText(round === 3 ? "Finish" : "Next round"));
-      await settle();
+      await speak();
     }
 
     expect(container.textContent).toContain("Session complete");
@@ -202,11 +230,11 @@ describe("RoundRunner", () => {
 
     for (let round = 1; round <= 3; round += 1) {
       await act(async () => trace());
-      await act(async () => clickText(round === 3 ? "Finish" : "Next round"));
-      await settle();
+      await speak();
     }
 
     const commits = calls.filter((call) => call.path.endsWith("/commit"));
+    expect(commits).toHaveLength(3);
     expect(commits[1]?.body.previous_commitment).toBe(commits[0]?.body.commitment);
     expect(commits[2]?.body.previous_commitment).toBe(commits[1]?.body.commitment);
     for (const commit of commits) {
@@ -222,8 +250,7 @@ describe("RoundRunner", () => {
 
     for (let round = 1; round <= 3; round += 1) {
       await act(async () => trace());
-      await act(async () => clickText(round === 3 ? "Finish" : "Next round"));
-      await settle();
+      await speak();
     }
 
     for (const commit of calls.filter((call) => call.path.endsWith("/commit"))) {
@@ -236,14 +263,45 @@ describe("RoundRunner", () => {
     expect(segments.every((segment) => segment.audio_base64.length > 0)).toBe(true);
   });
 
-  it("asks for a trace before it will move on", async () => {
+  it("does not move on before the shape is traced", async () => {
     const { handler, calls } = fetchStub();
     vi.stubGlobal("fetch", handler);
     await startSession(calls);
 
-    await act(async () => clickText("Next round"));
+    await speak();
+    expect(calls.filter((call) => call.path.endsWith("/commit"))).toHaveLength(0);
+    expect(container.textContent).toContain("Round 1 of 3");
+  });
+
+  it("offers to continue after a long wait, and still asks for a trace", async () => {
+    const { handler, calls } = fetchStub();
+    vi.stubGlobal("fetch", handler);
+    await startSession(calls);
+
+    await hold(0.02, 16_000);
+    expect(container.textContent).toContain("If you already did");
+    await act(async () => clickText("continue"));
     await settle();
     expect(container.textContent).toContain("Trace the shape before moving on");
+    expect(calls.filter((call) => call.path.endsWith("/commit"))).toHaveLength(0);
+  });
+
+  it("ignores pointer movement with no button held", async () => {
+    const { handler, calls } = fetchStub();
+    vi.stubGlobal("fetch", handler);
+    await startSession(calls);
+
+    const surface = container.querySelector("svg");
+    if (!surface) throw new Error("no trace surface");
+    surface.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 400, height: 400 }) as DOMRect;
+    for (const point of WAYPOINTS) {
+      const move = new Event("pointermove", { bubbles: true }) as PointerEvent;
+      Object.assign(move, { clientX: point.x / 2.5, clientY: point.y / 2.5, pointerId: 1, buttons: 0 });
+      surface.dispatchEvent(move);
+    }
+    await speak();
+    expect(container.querySelectorAll("polyline")[1]?.getAttribute("points")).toBe("");
     expect(calls.filter((call) => call.path.endsWith("/commit"))).toHaveLength(0);
   });
 
@@ -300,8 +358,7 @@ describe("RoundRunner", () => {
     await settle();
 
     expect(container.querySelector("svg")).toBeNull();
-    await act(async () => clickText("Next round"));
-    await settle();
+    await speak();
     const commit = calls.find((call) => call.path.endsWith("/commit"));
     expect(commit?.body.path_point_count).toBe(0);
     expect(commit?.body.path_digest).toBe(

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { appendBoundedPoint } from "@/lib/bounded-trace";
+import { PEAK_SCALE, createRoundTracker } from "@/lib/paired-round/completion";
 import {
   deviceClass,
   startContinuousCapture,
@@ -116,6 +117,8 @@ export function RoundRunner() {
   const [session, setSession] = useState<SessionDto | null>(null);
   const [reveal, setReveal] = useState<RevealDto | null>(null);
   const [level, setLevel] = useState(0);
+  const [stalled, setStalled] = useState(false);
+  const [tracker] = useState(() => createRoundTracker(PEAK_SCALE));
 
   const captureRef = useRef<ContinuousCapture | null>(null);
   const previousRef = useRef<Uint8Array | null>(null);
@@ -126,9 +129,10 @@ export function RoundRunner() {
   // The drawn stroke is updated through the element, not through state. Re-rendering on
   // every pointer move would drop points on a slow frame.
   const strokeRef = useRef<SVGPolylineElement | null>(null);
-  // A ref, not state. Pointer tracking changes nothing on screen, and a state write here
-  // would leave the move handler reading a stale value until the next render.
-  const tracingRef = useRef(false);
+  // A round can end while the button is still down. The next round draws only from a new press.
+  const pressedRoundRef = useRef<number | null>(null);
+  // The level poll submits through this, so it always calls the current round's submission.
+  const submitRef = useRef<(() => Promise<void>) | null>(null);
 
   const releaseCapture = useCallback(() => {
     captureRef.current?.stop();
@@ -140,10 +144,14 @@ export function RoundRunner() {
   useEffect(() => {
     if (stage !== "round") return;
     const timer = window.setInterval(() => {
-      setLevel(captureRef.current?.level() ?? 0);
+      const current = captureRef.current?.level() ?? 0;
+      setLevel(current);
+      const progress = tracker.hear(current, performance.now());
+      if (progress === "complete") void submitRef.current?.();
+      else if (progress === "stalled") setStalled(true);
     }, LEVEL_POLL_MS);
     return () => window.clearInterval(timer);
-  }, [stage]);
+  }, [stage, tracker]);
 
   const stopWith = useCallback(
     (code: string) => {
@@ -155,13 +163,18 @@ export function RoundRunner() {
     [releaseCapture],
   );
 
-  const beginRound = useCallback((next: RevealDto) => {
-    rawPointsRef.current = [];
-    strokeRef.current?.setAttribute("points", "");
-    startSampleRef.current = captureRef.current?.mark() ?? 0;
-    setReveal(next);
-    setStage("round");
-  }, []);
+  const beginRound = useCallback(
+    (next: RevealDto, tier: Tier) => {
+      rawPointsRef.current = [];
+      strokeRef.current?.setAttribute("points", "");
+      startSampleRef.current = captureRef.current?.mark() ?? 0;
+      tracker.begin(decodePathTarget(fromHex(next.path_target)), tier === "trace");
+      setStalled(false);
+      setReveal(next);
+      setStage("round");
+    },
+    [tracker],
+  );
 
   const start = useCallback(async () => {
     setMessage(null);
@@ -191,7 +204,7 @@ export function RoundRunner() {
       previousRef.current = await initialCommitment(created);
       segmentsRef.current = [];
       setSession(created);
-      beginRound(created.reveal);
+      beginRound(created.reveal, created.tier);
     } catch (error) {
       stopWith(error instanceof Error ? error.message : "unavailable");
     }
@@ -250,7 +263,7 @@ export function RoundRunner() {
           stopWith("challenge_mismatch");
           return;
         }
-        beginRound(response.reveal);
+        beginRound(response.reveal, current.tier);
         return;
       }
 
@@ -266,6 +279,10 @@ export function RoundRunner() {
     }
   }, [beginRound, code, releaseCapture, reveal, session, stopWith]);
 
+  useEffect(() => {
+    submitRef.current = submitRound;
+  }, [submitRound]);
+
   const trackPoint = useCallback((event: React.PointerEvent<SVGSVGElement>) => {
     const surface = surfaceRef.current?.getBoundingClientRect();
     if (!surface) return;
@@ -278,6 +295,10 @@ export function RoundRunner() {
       },
       RAW_POINT_LIMIT,
     );
+    tracker.reach({
+      x: ((event.clientX - surface.left) / surface.width) * COORDINATE_MAX,
+      y: ((event.clientY - surface.top) / surface.height) * COORDINATE_MAX,
+    });
     // Draw what the pointer did, in the same grid the encoder uses.
     const stroke = strokeRef.current;
     if (!stroke) return;
@@ -290,7 +311,7 @@ export function RoundRunner() {
         )
         .join(" "),
     );
-  }, []);
+  }, [tracker]);
 
   if (stage === "consent" || stage === "opening") {
     return (
@@ -351,8 +372,8 @@ export function RoundRunner() {
       </h2>
       <p className="mt-3 max-w-prose text-sm text-muted">
         {session?.tier === "trace"
-          ? "Say the word out loud while you trace the shape. Take as long as you like."
-          : "Say the word out loud. Take as long as you like."}
+          ? "Say the word out loud and trace the shape. The next round starts on its own. Take as long as you like."
+          : "Say the word out loud. The next round starts on its own. Take as long as you like."}
       </p>
 
       {session?.tier === "trace" && (
@@ -364,18 +385,15 @@ export function RoundRunner() {
           className="mt-6 aspect-square w-full max-w-sm touch-none rounded-lg border border-border bg-surface"
           onPointerDown={(event) => {
             event.currentTarget.setPointerCapture(event.pointerId);
-            tracingRef.current = true;
+            pressedRoundRef.current = reveal?.round_index ?? null;
             trackPoint(event);
           }}
           onPointerMove={(event) => {
-            if (!tracingRef.current) return;
+            // Read the button from the event. A flag cleared on release stays set when the
+            // release never reaches this element.
+            if ((event.buttons & 1) !== 1) return;
+            if (pressedRoundRef.current !== (reveal?.round_index ?? null)) return;
             trackPoint(event);
-          }}
-          onPointerUp={() => {
-            tracingRef.current = false;
-          }}
-          onPointerCancel={() => {
-            tracingRef.current = false;
           }}
         >
           <polyline
@@ -423,9 +441,27 @@ export function RoundRunner() {
 
       {message && <p className="mt-4 text-sm text-foreground">{message}</p>}
 
-      <Button className="mt-6" disabled={stage === "sending"} onClick={submitRound}>
-        {stage === "sending" ? "Sending" : isLast ? "Finish" : "Next round"}
-      </Button>
+      {stage === "sending" ? (
+        <p className="mt-6 font-mono text-xs uppercase tracking-widest text-muted">
+          {isLast ? "Finishing" : "Next round"}
+        </p>
+      ) : (
+        stalled && (
+          <p className="mt-6 text-sm text-muted">
+            {session?.tier === "trace"
+              ? "Say the word and trace the whole shape. If you already did, "
+              : "Say the word out loud. If you already did, "}
+            <button
+              type="button"
+              onClick={() => void submitRound()}
+              className="font-mono text-cyan underline underline-offset-4 hover:text-foreground"
+            >
+              continue
+            </button>
+            .
+          </p>
+        )
+      )}
     </Panel>
   );
 }

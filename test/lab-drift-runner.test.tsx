@@ -12,6 +12,8 @@ const sdk = vi.hoisted(() => ({
   /** Element the SDK was handed for touch capture. Null until `startTouch` runs. */
   touchTarget: null as HTMLElement | null | undefined,
   markedCaptureStart: false,
+  /** The level callback the harness handed the SDK, so a test can play a voice into it. */
+  onLevel: null as ((rms: number) => void) | null,
 }));
 
 vi.mock("@solana/web3.js", () => ({
@@ -27,7 +29,10 @@ vi.mock("@entros/pulse-sdk", () => ({
       return {
         startMotion: async () => undefined,
         skipMotion: () => undefined,
-        startAudio: async (onLevel?: (rms: number) => void) => onLevel?.(0.3),
+        startAudio: async (onLevel?: (rms: number) => void) => {
+          sdk.onLevel = onLevel ?? null;
+          onLevel?.(0.3);
+        },
         startTouch: async (options: { eventTarget?: HTMLElement }) => {
           sdk.touchTarget = options.eventTarget;
         },
@@ -63,6 +68,7 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   sdk.touchTarget = null;
   sdk.markedCaptureStart = false;
+  sdk.onLevel = null;
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -90,6 +96,57 @@ function pointer(target: Element, type: string, x: number, y: number, buttons: n
   target.dispatchEvent(
     new MouseEvent(type, { bubbles: true, clientX: x, clientY: y, buttons }),
   );
+}
+
+/** Resolves the chain of awaits between the end of a capture and its extracted result. */
+async function flush() {
+  await act(async () => {
+    for (let tick = 0; tick < 20; tick += 1) await Promise.resolve();
+  });
+}
+
+/** Records both current-style captures, so the paired capture is next. */
+async function recordCurrentCaptures() {
+  for (let capture = 0; capture < 2; capture += 1) {
+    await act(async () => {
+      startFirstCapture();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(12_100);
+    });
+    await flush();
+  }
+}
+
+/** Plays level readings at the SDK buffer cadence while the fake clock advances. */
+async function play(level: number, durationMs: number) {
+  for (let elapsed = 0; elapsed < durationMs; elapsed += 85) {
+    await act(async () => {
+      vi.advanceTimersByTime(85);
+      sdk.onLevel?.(level);
+    });
+  }
+}
+
+function surfaceForTracing(): HTMLElement {
+  const surface = container.querySelector('[aria-label="Trace surface"]');
+  if (!(surface instanceof HTMLElement)) throw new Error("No trace surface rendered");
+  // One pixel per grid unit, so client coordinates are path coordinates.
+  surface.getBoundingClientRect = () => new DOMRect(0, 0, 1000, 1000);
+  return surface;
+}
+
+function traceTarget(surface: HTMLElement) {
+  const target = surface.querySelectorAll("polyline")[0]?.getAttribute("points") ?? "";
+  const points = target
+    .split(" ")
+    .filter(Boolean)
+    .map((pair) => pair.split(",").map(Number) as [number, number]);
+  const [first, ...rest] = points;
+  if (!first) throw new Error("No path to trace");
+  pointer(surface, "pointerdown", first[0], first[1], 1);
+  for (const [x, y] of rest) pointer(surface, "pointermove", x, y, 1);
+  pointer(surface, "pointerup", rest.at(-1)?.[0] ?? first[0], rest.at(-1)?.[1] ?? first[1], 0);
 }
 
 function startFirstCapture() {
@@ -163,6 +220,69 @@ describe("DriftRunner", () => {
     } finally {
       Reflect.deleteProperty(HTMLElement.prototype, "setPointerCapture");
     }
+  });
+
+  describe("paired rounds", () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "performance"] });
+      Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
+        configurable: true,
+        value: () => undefined,
+      });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+      Reflect.deleteProperty(HTMLElement.prototype, "setPointerCapture");
+    });
+
+    it("move on by themselves once the path is traced and the word is spoken", async () => {
+      await act(async () => {
+        root.render(<DriftRunner />);
+      });
+      await recordCurrentCaptures();
+      await act(async () => {
+        startFirstCapture();
+      });
+      expect(container.querySelector("button")?.textContent ?? "").not.toMatch(/Next round/);
+
+      for (let round = 1; round <= 3; round += 1) {
+        expect(container.textContent).toContain(`Round ${round} of 3`);
+        await play(0.003, 400);
+        await act(async () => traceTarget(surfaceForTracing()));
+        await play(0.08, 400);
+        expect(container.textContent).toContain(`Round ${round} of 3`);
+        await play(0.003, 700);
+        await flush();
+      }
+
+      expect(container.textContent).toContain("Result");
+      expect(container.textContent).not.toContain("Round 3 of 3");
+    });
+
+    it("offers to continue when no speech is heard after the trace", async () => {
+      await act(async () => {
+        root.render(<DriftRunner />);
+      });
+      await recordCurrentCaptures();
+      await act(async () => {
+        startFirstCapture();
+      });
+
+      await play(0.003, 400);
+      await act(async () => traceTarget(surfaceForTracing()));
+      await play(0.003, 3_000);
+      expect(container.textContent).not.toContain("If you already did");
+      await play(0.003, 1_200);
+      expect(container.textContent).toContain("If you already did");
+
+      const proceed = [...container.querySelectorAll("button")].find(
+        (button) => button.textContent === "continue",
+      );
+      await act(async () => proceed?.click());
+      expect(container.textContent).toContain("Round 2 of 3");
+      expect(container.textContent).not.toContain("If you already did");
+    });
   });
 
   it("lists the three captures before any of them run", async () => {

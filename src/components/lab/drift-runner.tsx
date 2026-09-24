@@ -37,6 +37,7 @@ import {
   type VectorComparison,
 } from "@/lib/lab/capture-drift";
 import { COORDINATE_MAX, randomPath, realWords } from "@/lib/lab/challenge-material";
+import { RMS_SCALE, createRoundTracker } from "@/lib/paired-round/completion";
 
 /** Current-style capture length. Mirrors the SDK default so the comparison is fair. */
 const CURRENT_STYLE_MS = 12_000;
@@ -72,7 +73,7 @@ const RUNS: RunPlan[] = [
     style: "paired",
     title: "Paired rounds",
     instruction:
-      "Three rounds. Say the word, trace the short path, then move to the next round. No timer.",
+      "Three rounds. Say each word and trace its path. The next round starts on its own. No timer.",
   },
 ];
 
@@ -109,6 +110,8 @@ export function DriftRunner() {
   const [waypoints, setWaypoints] = useState<{ x: number; y: number }[]>([]);
   const [level, setLevel] = useState(0);
   const [remainingMs, setRemainingMs] = useState(0);
+  const [stalled, setStalled] = useState(false);
+  const [tracker] = useState(() => createRoundTracker(RMS_SCALE));
   /**
    * Projection version read from the chain, not the highest the client supports. The two
    * differ, and extracting under the wrong one measures a pipeline no verification runs.
@@ -123,6 +126,8 @@ export function DriftRunner() {
   const startedAtRef = useRef(0);
   const projectionRef = useRef<number | null>(null);
   const pointsRef = useRef<string[]>([]);
+  /** The paired round in progress, read by the audio level callback. Null otherwise. */
+  const roundRef = useRef<{ run: RunPlan; round: number } | null>(null);
 
   const done = results.length === RUNS.length;
   const nextRun = RUNS[results.length];
@@ -145,7 +150,8 @@ export function DriftRunner() {
     const y = ((event.clientY - surface.top) / surface.height) * COORDINATE_MAX;
     pointsRef.current.push(`${x.toFixed(1)},${y.toFixed(1)}`);
     stroke.setAttribute("points", pointsRef.current.join(" "));
-  }, []);
+    tracker.reach({ x, y });
+  }, [tracker]);
 
   const stopTicking = useCallback(() => {
     if (tickRef.current !== null) window.clearInterval(tickRef.current);
@@ -155,6 +161,7 @@ export function DriftRunner() {
   const finish = useCallback(
     async (run: RunPlan) => {
       stopTicking();
+      roundRef.current = null;
       const session = sessionRef.current;
       if (!session) return;
       // Read before the sensors stop and extraction runs, which take seconds on their own.
@@ -227,10 +234,40 @@ export function DriftRunner() {
     [stopTicking],
   );
 
+  const advanceRound = useCallback(
+    (run: RunPlan, round: number) => {
+      clearStroke();
+      setStalled(false);
+      if (round + 1 >= PAIRED_ROUNDS) {
+        void finish(run);
+        return;
+      }
+      const path = randomPath();
+      tracker.begin(path, true);
+      roundRef.current = { run, round: round + 1 };
+      setWaypoints(path);
+      setStage({ name: "capturing", run, round: round + 1 });
+    },
+    [clearStroke, finish, tracker],
+  );
+
+  const hearLevel = useCallback(
+    (rms: number) => {
+      setLevel(rms);
+      const current = roundRef.current;
+      if (!current) return;
+      const progress = tracker.hear(rms, performance.now());
+      if (progress === "complete") advanceRound(current.run, current.round);
+      else if (progress === "stalled") setStalled(true);
+    },
+    [advanceRound, tracker],
+  );
+
   const start = useCallback(
     async (run: RunPlan) => {
       setStage({ name: "arming", run });
       clearStroke();
+      setStalled(false);
 
       if (projectionRef.current === null) {
         try {
@@ -256,7 +293,9 @@ export function DriftRunner() {
         );
       } else {
         setWords(realWords(PAIRED_ROUNDS));
-        setWaypoints(randomPath());
+        const path = randomPath();
+        tracker.begin(path, true);
+        setWaypoints(path);
       }
 
       // The surface renders for the arming stage, but the state change above has not painted
@@ -283,7 +322,7 @@ export function DriftRunner() {
       }
 
       try {
-        await session.startAudio((rms) => setLevel(rms));
+        await session.startAudio(hearLevel);
       } catch {
         sessionRef.current = null;
         setStage({ name: "failed", message: "Microphone access was denied" });
@@ -299,6 +338,7 @@ export function DriftRunner() {
       session.markCaptureStart();
       const startedAt = performance.now();
       startedAtRef.current = startedAt;
+      roundRef.current = run.style === "paired" ? { run, round: 0 } : null;
       setStage({ name: "capturing", run, round: 0 });
 
       if (run.style === "current") {
@@ -310,20 +350,7 @@ export function DriftRunner() {
         }, 100);
       }
     },
-    [clearStroke, finish, sdk],
-  );
-
-  const advanceRound = useCallback(
-    (run: RunPlan, round: number) => {
-      clearStroke();
-      if (round + 1 >= PAIRED_ROUNDS) {
-        void finish(run);
-        return;
-      }
-      setWaypoints(randomPath());
-      setStage({ name: "capturing", run, round: round + 1 });
-    },
-    [clearStroke, finish],
+    [clearStroke, finish, hearLevel, sdk, tracker],
   );
 
   const report = useMemo(
@@ -390,6 +417,7 @@ export function DriftRunner() {
           curve={curve}
           waypoints={waypoints}
           remainingMs={remainingMs}
+          stalled={stalled}
           level={level}
           surfaceRef={surfaceRef}
           strokeRef={strokeRef}
@@ -412,6 +440,8 @@ interface CapturePanelProps {
   curve: { x: number; y: number }[];
   waypoints: { x: number; y: number }[];
   remainingMs: number;
+  /** True once a paired round has waited long enough to offer a manual continue. */
+  stalled: boolean;
   level: number;
   surfaceRef: React.RefObject<HTMLDivElement | null>;
   strokeRef: React.RefObject<SVGPolylineElement | null>;
@@ -433,6 +463,7 @@ function CapturePanel({
   curve,
   waypoints,
   remainingMs,
+  stalled,
   level,
   surfaceRef,
   strokeRef,
@@ -441,6 +472,8 @@ function CapturePanel({
 }: CapturePanelProps) {
   const arming = round === null;
   const target = run.style === "current" ? curve : waypoints;
+  // A round can end while the button is still down. The next round draws only from a new press.
+  const pressedRound = useRef<number | null>(null);
 
   return (
     <div className="mt-8">
@@ -470,13 +503,16 @@ function CapturePanel({
         onPointerDown={(event) => {
           if (arming) return;
           event.currentTarget.setPointerCapture(event.pointerId);
+          pressedRound.current = round;
           trackPoint(event);
         }}
         onPointerMove={(event) => {
           // Read the button from the event itself. A flag set on press and cleared on release
           // stays set when the surface unmounts under a held button, and the next capture
           // then draws on hover.
-          if (!arming && (event.buttons & 1) === 1) trackPoint(event);
+          if (!arming && (event.buttons & 1) === 1 && pressedRound.current === round) {
+            trackPoint(event);
+          }
         }}
       >
         <svg
@@ -514,14 +550,18 @@ function CapturePanel({
         </span>
       </div>
 
-      {run.style === "paired" && round !== null && (
-        <button
-          type="button"
-          onClick={() => onAdvance(run, round)}
-          className="mt-6 rounded-lg border border-cyan px-5 py-2.5 font-mono text-sm text-cyan hover:bg-cyan/10"
-        >
-          {round + 1 >= PAIRED_ROUNDS ? "Finish capture" : "Next round"}
-        </button>
+      {run.style === "paired" && round !== null && stalled && (
+        <p className="mt-6 text-sm text-muted">
+          Say the word and trace the whole path. If you already did,{" "}
+          <button
+            type="button"
+            onClick={() => onAdvance(run, round)}
+            className="font-mono text-cyan underline underline-offset-4 hover:text-foreground"
+          >
+            continue
+          </button>
+          .
+        </p>
       )}
     </div>
   );

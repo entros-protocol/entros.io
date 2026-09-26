@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { VerifyFlow } from "@/components/sections/verify-flow";
 import { pageMetadata } from "@/lib/page-metadata";
+import { pairedVerifyEnabled } from "@/lib/server/paired-verify";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
@@ -71,7 +73,11 @@ export async function generateMetadata({
   };
 }
 
-export default function Verify() {
+export default async function Verify() {
+  // The flag is read per request, so an operator can change it without a rebuild.
+  await connection();
+  const pairedVerify = pairedVerifyEnabled();
+
   return (
     <>
       <section>
@@ -92,7 +98,7 @@ export default function Verify() {
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-32">
-        <VerifyFlow />
+        <VerifyFlow pairedVerify={pairedVerify} />
       </section>
     </>
   );

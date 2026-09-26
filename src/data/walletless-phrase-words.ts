@@ -8,13 +8,13 @@
  * which shows real curated words ("trading duty assembly wins command"),
  * so nonsense syllables in walletless would be jarring by comparison.
  *
- * Source: each word is verified to exist in
- * `executor-node/src/challenge/word_dict.rs` (which is a verbatim copy of
- * `entros-validation/src/word_dict.rs`). The full dict has 1,357 entries;
- * this 80-word subset gives 80^5 ≈ 3.3 billion phrase combinations —
- * astronomically more than enough for cosmetic non-repetition. Keeping the
- * subset small avoids bloating the client bundle and avoids the drift-
- * detection cost that would come with shipping the full dict client-side.
+ * Source: every word must appear in the validator's dictionary, which the
+ * executor mirrors at `executor-node/src/challenge/word_dict.rs`. When that
+ * dictionary drops a word, drop it here too. This 81-word subset gives
+ * 81^5 ≈ 3.5 billion phrase combinations, far more than cosmetic
+ * non-repetition needs. Keeping the subset small avoids bloating the client
+ * bundle and avoids the drift-detection cost that would come with shipping
+ * the full dictionary client-side.
  *
  * Words selected for: short (4-6 letters), unambiguous, neutral or
  * positive valence, alphabetically distributed across the dict for
@@ -23,18 +23,18 @@
 export const WALLETLESS_PHRASE_WORDS: readonly string[] = Object.freeze([
   "able", "active", "added", "advance", "agree", "alive",
   "amount", "answer", "appear", "arrived", "aware",
-  "balance", "battle", "begin", "better", "blue", "brief",
-  "bright", "bring", "broad", "build", "calm", "career",
-  "center", "choose", "clean", "clear", "coast", "common",
-  "create", "data", "decide", "depth", "design", "details",
+  "balance", "begin", "better", "blue", "bridge", "brief",
+  "bright", "bring", "broad", "build", "center", "choose",
+  "circle", "clean", "clear", "coast", "color", "common",
+  "create", "daily", "data", "decide", "design", "detail",
   "earned", "eight", "energy", "engine", "enough", "exact",
   "famous", "field", "final", "first", "forward", "future",
-  "garden", "gather", "global", "grand", "grant", "growth",
-  "honest", "human", "ideas", "image", "include", "issue",
-  "joined", "kind", "labor", "learn", "level", "light",
-  "local", "logic", "lucky", "magic", "major", "model",
-  "moment", "music", "nature", "neutral", "ocean", "offer",
-  "open", "order", "peace", "perfect",
+  "garden", "gift", "global", "grant", "great", "green",
+  "honest", "human", "idea", "image", "include", "issue",
+  "join", "kind", "labor", "lake", "learn", "letter",
+  "level", "local", "luck", "magic", "major", "moment",
+  "moon", "music", "nature", "novel", "ocean", "offer",
+  "open", "order", "paper", "perfect",
 ]);
 
 /**

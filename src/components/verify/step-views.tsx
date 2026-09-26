@@ -296,16 +296,44 @@ const SOFT_HINT: Record<RetryableReason, string> = {
     "Speak and move at the same time—they were a bit out of sync.",
   phrase_content_mismatch:
     "Read the phrase clearly at a normal pace, exactly as shown.",
+  trace_incomplete: "Trace through every dot, in order from 1.",
   validation_unavailable:
     "We couldn't reach the verification service. Check your connection and try again.",
   validation_timeout:
     "Your connection stalled while sending the verification. Somewhere with a stronger signal should work.",
   captcha_required:
     "Liveness pattern anomaly detected. Please complete this dynamic voice/motion challenge to verify your identity.",
+  technical_failure:
+    "The verification service could not finish this session. Start a new verification.",
+  session_expired: "This session expired. Start a new verification.",
+  round_expired:
+    "A round expired before the service received it. Start a new verification.",
+  session_superseded:
+    "A newer verification for this wallet replaced this one. Start a new verification to continue here.",
+  session_consumed:
+    "The service already checked this session. Start a new verification.",
+  session_unknown:
+    "The service no longer holds this session. Start a new verification.",
+  session_not_ready:
+    "The service did not receive every round of this session. Start a new verification.",
+  round_not_outstanding:
+    "The service expected a different round. Start a new verification.",
+  session_busy:
+    "The verification service was busy. Start a new verification.",
 };
 
 const SOFT_HINT_FALLBACK =
   "Something didn't come through cleanly. Give it another shot with natural movement and clear speech.";
+
+/** Retry copy for a reason, or the generic line for one the table does not know. */
+export function softHint(reason: string): string {
+  // Typed on the result rather than nullish-coalesced. Every object inherits
+  // `toString`, `constructor` and friends, so a `reason` of "toString" reads
+  // back a function, and a function is not nullish, so it would have sailed
+  // past `??` and into a text node.
+  const rawHint: unknown = (SOFT_HINT as Record<string, unknown>)[reason];
+  return typeof rawHint === "string" ? rawHint : SOFT_HINT_FALLBACK;
+}
 
 /**
  * Soft-rejected verification—the validator returned a user-recoverable
@@ -332,13 +360,7 @@ export function SoftFailedView({
   // plain string. The exhaustiveness that matters is on the table's
   // declaration, where a missing hint for a retryable reason fails the build;
   // here an unrecognised reason should simply take the fallback.
-  //
-  // Typed on the result rather than nullish-coalesced. Every object inherits
-  // `toString`, `constructor` and friends, so a `reason` of "toString" reads
-  // back a function, and a function is not nullish, so it would have sailed
-  // past `??` and into a text node.
-  const rawHint: unknown = (SOFT_HINT as Record<string, unknown>)[reason];
-  const hint = typeof rawHint === "string" ? rawHint : SOFT_HINT_FALLBACK;
+  const hint = softHint(reason);
   const attemptsLabel =
     attemptsRemaining === 1 ? "1 attempt left" : `${attemptsRemaining} attempts left`;
 
@@ -435,6 +457,7 @@ export function FailedView({
   retryAfterSec,
   retryLabel = "Try again",
   actionPending = false,
+  pairedCapture = false,
 }: {
   error: string;
   /** SDK reason code, when one survived. Routes the cooldown screen. */
@@ -456,6 +479,8 @@ export function FailedView({
    * their wallet for a fee would point at a wallet they never connected.
    */
   userPaysFees?: boolean;
+  /** True when the capture ran as paired rounds rather than one 12-second window. */
+  pairedCapture?: boolean;
 } & FailureContext) {
   const failure = categorizeFailure(
     error,
@@ -471,8 +496,41 @@ export function FailedView({
   let secondaryAction: { label: string; onClick: () => void; tone: "danger" } | null = null;
   let dismissLabel = retryLabel;
   let dismissAction = onReset;
+  const waitLine = retryAfterSec
+    ? `Try again in ${formatWait(retryAfterSec)}.`
+    : "Try again shortly.";
 
   switch (failure.kind) {
+    case "session-restart":
+      title = "This session ended";
+      body = softHint(failure.reason);
+      break;
+    case "session-wait":
+      switch (failure.reason) {
+        case "finalize_in_progress":
+          title = "An earlier session is still finishing";
+          body = `The service is still checking an earlier verification for this wallet. ${waitLine}`;
+          break;
+        case "session_active":
+          title = "A session is already open";
+          body = `This wallet has a verification open on another device or network. ${waitLine}`;
+          break;
+        case "session_budget_exhausted":
+          title = "Too many sessions";
+          body = `You started several verifications in a short time. ${waitLine}`;
+          break;
+        default:
+          title = "Verification is busy";
+          body = `The verification service is at capacity. ${waitLine}`;
+      }
+      break;
+    case "session-broken":
+      title = "This session could not continue";
+      body =
+        "This browser session could not continue. Reload the page and try again.";
+      dismissLabel = "Reload page";
+      dismissAction = () => window.location.reload();
+      break;
     case "relayer-down":
       title = "Relayer not connected";
       body =
@@ -590,6 +648,14 @@ export function FailedView({
       if (error.toLowerCase().includes("recently verified") || error.toLowerCase().includes("different wallet")) {
         title = "Device cooldown active";
         body = error;
+      } else if (failure.reason === "cross_wallet_cooldown") {
+        // A paired session refused at open carries the code without the
+        // server's prose.
+        title = "Device cooldown active";
+        body = `A different wallet verified from this device recently. ${waitLine}`;
+      } else if (failure.reason === "ip_rate_limited") {
+        title = "Too many attempts";
+        body = `Too many attempts came from your network. ${waitLine}`;
       } else {
         title = "Too many attempts";
         // The executor sends `retry_after` with every 429 and knows the real
@@ -604,16 +670,22 @@ export function FailedView({
     case "permission-denied":
       if (failure.device === "microphone") {
         title = "Microphone access needed";
-        body =
-          "Your browser blocked microphone access. Verification needs to hear your voice for the 12-second capture.";
+        body = pairedCapture
+          ? "Your browser blocked microphone access. Verification needs to hear your voice in each round."
+          : "Your browser blocked microphone access. Verification needs to hear your voice for the 12-second capture.";
         footnote = micRecoveryFootnote();
       } else {
         title = "Motion sensor access needed";
-        body =
-          "Your browser blocked motion sensor access. Verification needs your device's motion data during the 12-second capture.";
+        body = pairedCapture
+          ? "Your browser blocked motion sensor access. Verification needs your device's motion data during the rounds."
+          : "Your browser blocked motion sensor access. Verification needs your device's motion data during the 12-second capture.";
         footnote =
           "On iOS, allow motion access when prompted (or in Safari Settings → Privacy → Motion & Orientation Access). Then refresh this page and try again.";
       }
+      break;
+    case "automated-browser":
+      title = "Verification unavailable";
+      body = "This browser reports that automation software controls it.";
       break;
     case "microphone-too-quiet":
       title = "We couldn't hear you";

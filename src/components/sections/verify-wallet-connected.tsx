@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import {
   type PulseSession,
   type CurveTracePoint,
+  type VerificationResult,
   PROGRAM_IDS,
   fetchIdentityState,
   reasonDisposition,
@@ -20,7 +22,13 @@ import {
   fetchChallengeViaProxy,
   type ChallengeResponse,
 } from "@/lib/relay-challenge";
-import type { VerifyState, VerifyAction } from "@/components/verify/types";
+import type {
+  CaptureIntent,
+  PairedCaptureHandle,
+  PairedFinish,
+  VerifyState,
+  VerifyAction,
+} from "@/components/verify/types";
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
 import { primaryVerificationActionClass } from "@/components/verify/verification-styles";
 import {
@@ -223,6 +231,16 @@ function SigningDiagnosticNotice() {
   );
 }
 
+// Loaded only when the server turns paired rounds on, so the single capture
+// never downloads it.
+const PairedCapture = dynamic(
+  () =>
+    import("@/components/verify/paired-capture").then(
+      (mod) => mod.PairedCapture,
+    ),
+  { ssr: false },
+);
+
 // The retryable-reason list used to live here as a literal, alongside five
 // other copies across this repo and entros-mobile. They had drifted: the same
 // rejection offered a retry here and dead-ended on mobile. `reasonDisposition`
@@ -244,6 +262,7 @@ export function VerifyWalletConnected({
   studyPreparationError,
   studyPreparationRetryAllowed = true,
   onStudyPrepare,
+  pairedVerify = false,
 }: {
   state: VerifyState;
   dispatch: React.ActionDispatch<[action: VerifyAction]>;
@@ -261,6 +280,11 @@ export function VerifyWalletConnected({
   studyPreparationError?: string | null;
   studyPreparationRetryAllowed?: boolean;
   onStudyPrepare?: () => void | Promise<void>;
+  /**
+   * Runs the capture as paired rounds. The server decides it. A study trial
+   * keeps the single capture, because its grant binds that capture.
+   */
+  pairedVerify?: boolean;
 }) {
   const { connected, wallet, publicKey } = useWallet();
   const { connection } = useConnection();
@@ -294,11 +318,16 @@ export function VerifyWalletConnected({
   const [verificationTimestamp, setVerificationTimestamp] = useState<{
     wallet: string;
     value: number | null;
+    /**
+     * Unix seconds when the value was read. The hint measures against this
+     * instead of reading the clock while rendering, which is impure.
+     */
+    readAtSec: number;
   } | null>(null);
   const connectedWallet = connected && publicKey ? publicKey.toBase58() : null;
-  const lastVerificationTimestamp =
+  const lastVerification =
     verificationTimestamp?.wallet === connectedWallet
-      ? verificationTimestamp.value
+      ? verificationTimestamp
       : null;
   // Trust score read from IdentityState offset 60 immediately after a
   // successful verification, used to populate the post-verify share card's
@@ -334,6 +363,12 @@ export function VerifyWalletConnected({
   // and `validation_timeout` are both client-origin AND retryable, so the cap
   // test could never fail and the screen offered "3 attempts left" forever.
   const transportFailuresRef = useRef(0);
+
+  // A study grant binds the single capture, so a study trial never runs paired.
+  const pairedActive = pairedVerify && !studyGrant;
+  // Null until the paired capture's code has loaded.
+  const [pairedCapture, setPairedCapture] =
+    useState<PairedCaptureHandle | null>(null);
 
   // Microphone permission pre-flight. Browsers that previously denied
   // microphone access never re-prompt — the user has to manually re-enable
@@ -410,7 +445,11 @@ export function VerifyWalletConnected({
       .then((account: { data: Uint8Array } | null) => {
         if (cancelled) return;
         if (!account || account.data.length < 56) {
-          setVerificationTimestamp({ wallet: walletAddress, value: null });
+          setVerificationTimestamp({
+            wallet: walletAddress,
+            value: null,
+            readAtSec: Math.floor(Date.now() / 1000),
+          });
           return;
         }
         const view = new DataView(
@@ -422,6 +461,7 @@ export function VerifyWalletConnected({
         setVerificationTimestamp({
           wallet: walletAddress,
           value: ts > 0 ? ts : null,
+          readAtSec: Math.floor(Date.now() / 1000),
         });
       })
       .catch(() => {
@@ -464,6 +504,7 @@ export function VerifyWalletConnected({
       : null;
 
   async function handleStart(intent: "verify" | "reset" = "verify") {
+    if (pairedActive) return handleStartPaired(intent);
     if (studyCaptureBlocked) return;
     if (startingRef.current) return;
     startingRef.current = true;
@@ -629,6 +670,36 @@ export function VerifyWalletConnected({
     }
   }
 
+  /**
+   * Starts a paired session from the user's tap. The session asks for motion
+   * permission, which needs that gesture, so nothing awaits before it starts.
+   */
+  function handleStartPaired(intent: CaptureIntent) {
+    if (studyCaptureBlocked || !pairedCapture || !publicKey) return;
+    // Verify and reset keep separate retry budgets, as in the single capture.
+    if (intentRef.current !== intent) {
+      attemptsUsedRef.current = 0;
+      transportFailuresRef.current = 0;
+    }
+    intentRef.current = intent;
+    if (intent === "verify") setSigningDiagnosticReport(null);
+    voicedFramesRef.current = 0;
+    if (!pairedCapture.start(intent)) return;
+    // An active reset cooldown reports its own failure, and leaving the
+    // capture view ends the session.
+    if (intent === "reset") void checkResetCooldown(publicKey);
+  }
+
+  /** Every round is committed. Finalize runs through the shared result path. */
+  function completePairedSession(finish: PairedFinish, voicedFrames: number) {
+    voicedFramesRef.current = voicedFrames;
+    setProcessingStage("Extracting features...");
+    dispatch({ type: "CAPTURE_DONE" });
+    settleVerification(
+      finish(resolveCompletionWallet(), connection, setProcessingStage),
+    );
+  }
+
   async function checkResetCooldown(pubKey: PublicKey): Promise<boolean> {
     try {
       const identity = await fetchIdentityState(pubKey.toBase58(), connection);
@@ -725,33 +796,7 @@ export function VerifyWalletConnected({
 
     dispatch({ type: "CAPTURE_DONE" });
 
-    // The SDK bounds each step and reports its own phase. A host backstop
-    // below `MAX_VERIFICATION_MS` pre-empts those clocks and reports the
-    // failure against whatever step its own message names, which is how a
-    // pending wallet prompt came to be reported as a proving timeout. Read
-    // from the SDK rather than written down, so raising a clock there raises
-    // this in step. It should never fire.
-    const backstopMs = MAX_VERIFICATION_MS + 30_000;
-    const diagnosticRpc = process.env.NEXT_PUBLIC_SIGNING_DIAGNOSTIC_RPC;
-    const completionWallet =
-      signingDiagnosticActive &&
-      diagnosticRpc &&
-      intentRef.current === "verify" &&
-      wallet?.adapter
-        ? createSigningDiagnosticWallet(wallet.adapter, {
-            publicEndpoint: new Connection(clusterApiUrl("devnet"), {
-              commitment: "confirmed",
-              disableRetryOnRateLimit: true,
-            }),
-            configuredEndpoint: new Connection(diagnosticRpc, {
-              commitment: "confirmed",
-              disableRetryOnRateLimit: true,
-            }),
-            onReport: setSigningDiagnosticReport,
-            onStatus: setProcessingStage,
-            rpcMinimumIntervalMs: 1_100,
-          })
-        : wallet?.adapter;
+    const completionWallet = resolveCompletionWallet();
     const proofPromise =
       intentRef.current === "reset"
         ? session.completeReset(completionWallet, connection, (stage) => {
@@ -765,6 +810,44 @@ export function VerifyWalletConnected({
             },
             outline,
           );
+    settleVerification(proofPromise);
+  }
+
+  /**
+   * The wallet the SDK signs with. The local transaction diagnostic wraps it
+   * for a verification when that diagnostic is enabled.
+   */
+  function resolveCompletionWallet() {
+    const diagnosticRpc = process.env.NEXT_PUBLIC_SIGNING_DIAGNOSTIC_RPC;
+    return signingDiagnosticActive &&
+      diagnosticRpc &&
+      intentRef.current === "verify" &&
+      wallet?.adapter
+      ? createSigningDiagnosticWallet(wallet.adapter, {
+          publicEndpoint: new Connection(clusterApiUrl("devnet"), {
+            commitment: "confirmed",
+            disableRetryOnRateLimit: true,
+          }),
+          configuredEndpoint: new Connection(diagnosticRpc, {
+            commitment: "confirmed",
+            disableRetryOnRateLimit: true,
+          }),
+          onReport: setSigningDiagnosticReport,
+          onStatus: setProcessingStage,
+          rpcMinimumIntervalMs: 1_100,
+        })
+      : wallet?.adapter;
+  }
+
+  /** Routes a finished verification to its result screen. Both capture styles end here. */
+  function settleVerification(proofPromise: Promise<VerificationResult>) {
+    // The SDK bounds each step and reports its own phase. A host backstop
+    // below `MAX_VERIFICATION_MS` pre-empts those clocks and reports the
+    // failure against whatever step its own message names, which is how a
+    // pending wallet prompt came to be reported as a proving timeout. Read
+    // from the SDK rather than written down, so raising a clock there raises
+    // this in step. It should never fire.
+    const backstopMs = MAX_VERIFICATION_MS + 30_000;
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(
         () =>
@@ -924,8 +1007,28 @@ export function VerifyWalletConnected({
       />
     ) : null;
 
+  // Mounted ahead of the capture step at one place in the tree, so the session
+  // a start tap opens survives the move into the rounds.
+  const pairedHost = pairedActive ? (
+    <PairedCapture
+      capturing={state.step === "capturing"}
+      wallet={connectedWallet}
+      connection={connection}
+      hasMotion={hasMotion}
+      dispatch={dispatch}
+      onHandle={setPairedCapture}
+      onCommitted={completePairedSession}
+    />
+  ) : null;
+  const frame = (view: React.ReactNode) => (
+    <>
+      {pairedHost}
+      {view}
+    </>
+  );
+
   if (!connected) {
-    return (
+    return frame(
       <div className="text-center space-y-6">
         <Wallet className="mx-auto h-10 w-10 text-muted" strokeWidth={1.5} />
         <p className="text-foreground/70 max-w-md mx-auto">
@@ -961,7 +1064,7 @@ export function VerifyWalletConnected({
 
   if (state.step === "idle") {
     if (studyPreparationRequired) {
-      return (
+      return frame(
         <div className="space-y-6 text-center">
           <div>
             <div className="mb-4 inline-flex">
@@ -1025,10 +1128,9 @@ export function VerifyWalletConnected({
     // verifying through several integrator gates in a day leaves a wallet's
     // span intact. Say both, so nobody reads a flat score as a penalty.
     const DAY_SEC = 86400;
-    const nowSec = Math.floor(Date.now() / 1000);
     const secondsSinceLastVerif =
-      lastVerificationTimestamp !== null
-        ? nowSec - lastVerificationTimestamp
+      lastVerification && lastVerification.value !== null
+        ? lastVerification.readAtSec - lastVerification.value
         : null;
     const showCadenceHint =
       secondsSinceLastVerif !== null &&
@@ -1043,7 +1145,7 @@ export function VerifyWalletConnected({
         ? "less than an hour"
         : `${hoursAgo} hour${hoursAgo === 1 ? "" : "s"}`;
 
-    return (
+    return frame(
       <div className="space-y-6">
         <div className="text-center">
           <div className="mb-4 inline-flex">
@@ -1053,8 +1155,18 @@ export function VerifyWalletConnected({
             Behavioral Verification
           </p>
           <p className="mt-2 text-sm text-foreground/70 max-w-sm mx-auto">
-            Speak a phrase while tracing a shape. All sensors record
-            simultaneously for 12 seconds. Then sign with your wallet.
+            {pairedActive ? (
+              <>
+                Say one word and trace one short path in each of three rounds.
+                Each round opens when the one before it ends. Then sign with
+                your wallet.
+              </>
+            ) : (
+              <>
+                Speak a phrase while tracing a shape. All sensors record
+                simultaneously for 12 seconds. Then sign with your wallet.
+              </>
+            )}
           </p>
         </div>
         <div
@@ -1063,7 +1175,7 @@ export function VerifyWalletConnected({
           <div className="flex flex-col items-center gap-2 text-center">
             <span className="text-cyan font-mono text-xl font-bold">1</span>
             <span className="text-sm text-foreground/70">
-              Speak the displayed phrase
+              {pairedActive ? "Say each word" : "Speak the displayed phrase"}
             </span>
           </div>
           <div className="flex flex-col items-center gap-2 text-center">
@@ -1071,7 +1183,7 @@ export function VerifyWalletConnected({
               2
             </span>
             <span className="text-sm text-foreground/70">
-              Trace the curve on screen
+              {pairedActive ? "Trace each path" : "Trace the curve on screen"}
             </span>
           </div>
           {hasMotion && (
@@ -1110,7 +1222,8 @@ export function VerifyWalletConnected({
             disabled={
               requesting ||
               micPermissionState === "denied" ||
-              studyCaptureBlocked
+              studyCaptureBlocked ||
+              (pairedActive && !pairedCapture)
             }
             className={primaryVerificationActionClass}
           >
@@ -1133,14 +1246,19 @@ export function VerifyWalletConnected({
     );
   }
 
+  // The paired capture draws its rounds from its own place in the frame.
+  if (state.step === "capturing" && pairedActive) {
+    return frame(null);
+  }
+
   if (state.step === "capturing") {
     // Invariant: handleStart only dispatches START_CAPTURE after the
     // server-issued phrase is in state, so challengePhrase is non-null
     // here. Guard kept for type safety.
     if (!validationChallenge) {
-      return null;
+      return frame(null);
     }
-    return (
+    return frame(
       <PulseChallenge
         onComplete={handleCaptureComplete}
         onCaptureWindowOpen={handleCaptureWindowOpen}
@@ -1154,7 +1272,7 @@ export function VerifyWalletConnected({
   }
 
   if (state.step === "processing") {
-    return (
+    return frame(
       <div className="space-y-6">
         <ProvingView stage={processingStage} />
         {diagnosticPanel}
@@ -1162,7 +1280,7 @@ export function VerifyWalletConnected({
     );
   }
   if (state.step === "signing") {
-    return (
+    return frame(
       <div className="space-y-6">
         <SigningView />
         {diagnosticPanel}
@@ -1181,7 +1299,7 @@ export function VerifyWalletConnected({
         : null;
 
   if (state.step === "soft_failed") {
-    return (
+    return frame(
       <SoftFailedView
         reason={state.reason}
         attemptsRemaining={state.attemptsRemaining}
@@ -1199,7 +1317,7 @@ export function VerifyWalletConnected({
 
   if (state.step === "verified") {
     const wasReset = state.intent === "reset";
-    return (
+    return frame(
       <div className="space-y-6">
         <VerifiedView
           commitment={state.commitment}
@@ -1236,7 +1354,7 @@ export function VerifyWalletConnected({
   }
 
   if (state.step === "failed") {
-    return (
+    return frame(
       <>
         <FailedView
           error={state.error}
@@ -1250,6 +1368,7 @@ export function VerifyWalletConnected({
           retryLabel={studyResultActionLabel ?? "Try again"}
           actionPending={studyNextTrialPending}
           onResetBaseline={handleResetBaselineClick}
+          pairedCapture={pairedActive}
         />
         <ResetBaselineDialog
           open={resetDialogOpen}
@@ -1261,5 +1380,5 @@ export function VerifyWalletConnected({
     );
   }
 
-  return null;
+  return frame(null);
 }

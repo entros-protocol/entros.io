@@ -1,4 +1,8 @@
-import type { BaselineRecoveryReason, VerificationPhase } from "@entros/pulse-sdk";
+import type {
+  BaselineRecoveryReason,
+  VerificationPhase,
+  VerificationResult,
+} from "@entros/pulse-sdk";
 
 /**
  * Intent that a capture is running for. `verify` is the normal path;
@@ -58,11 +62,11 @@ export type VerifyState =
       portableBaseline?: boolean;
     }
   | {
-      // Soft-reject: a server-validation rejection in a
-      // user-recoverable category (variance_floor, entropy_bounds,
-      // temporal_coupling_low, phrase_content_mismatch). The user is invited
-      // to retry without a hard failure UI. After `attemptsRemaining` hits
-      // zero the next failure routes to `failed` instead.
+      // Soft-reject: a verification result whose SDK disposition is `retry`,
+      // either a validator's user-recoverable category or a paired-session
+      // state a new session can recover from. The user is invited to retry
+      // without a hard failure UI. After `attemptsRemaining` hits zero the
+      // next failure routes to `failed` instead.
       step: "soft_failed";
       intent: CaptureIntent;
       reason: string;
@@ -76,6 +80,11 @@ export type VerifyState =
        * used to run entirely off substring matches against the server's
        * English prose, so a copy edit on the server silently regressed the
        * rate-limit screen to a generic "Verification failed".
+       *
+       * A paired session that cannot start or continue lands here directly
+       * with its reason: a session state to restart from, a cooldown or
+       * session limit with its wait, or a protocol violation that needs a
+       * reload. `categorizeFailure` routes each one by code.
        */
       reason?: string;
       /** Cooldown in seconds, when the server sent one with a 429. */
@@ -106,3 +115,23 @@ export type VerifyAction =
   | { type: "RESET" };
 
 export type VerifyMode = "walletless" | "wallet-connected";
+
+/**
+ * Validates a paired session whose rounds are all committed, then runs the
+ * transaction that follows.
+ */
+export type PairedFinish = (
+  wallet: unknown,
+  connection: unknown,
+  onProgress: (stage: string) => void,
+) => Promise<VerificationResult>;
+
+/** What the verify card asks of the paired capture once its code has loaded. */
+export interface PairedCaptureHandle {
+  /**
+   * Opens the capture view and starts a session. Call it from the user's tap,
+   * because motion permission needs that gesture. Returns false when no
+   * session started.
+   */
+  start(intent: CaptureIntent): boolean;
+}

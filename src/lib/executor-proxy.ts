@@ -5,7 +5,13 @@ const MAX_RESPONSE_BYTES = 64 * 1_024;
 const NO_STORE_HEADERS = { "Cache-Control": "no-store" } as const;
 
 export interface ExecutorProxyRoute {
-  path: "/challenge" | "/validate-features" | "/attest";
+  path:
+    | "/challenge"
+    | "/validate-features"
+    | "/attest"
+    | "/challenge/paired"
+    | "/paired/commit"
+    | "/validate-session";
   method: "GET" | "POST";
   timeoutMs: number;
   maxRequestBytes?: number;

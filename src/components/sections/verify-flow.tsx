@@ -60,7 +60,12 @@ class VerifyErrorBoundary extends Component<
   }
 }
 
-export function VerifyFlow() {
+export function VerifyFlow({
+  pairedVerify = false,
+}: {
+  /** Runs the capture as paired rounds. The page reads it from server env. */
+  pairedVerify?: boolean;
+}) {
   const { connected, publicKey, signMessage } = useWallet();
   const walletAddress = connected && publicKey ? publicKey.toBase58() : null;
   const [state, dispatch] = useReducer(verifyReducer, initialState);
@@ -327,6 +332,7 @@ export function VerifyFlow() {
               }
               studyPreparationRetryAllowed={study.tokenRetryAllowed}
               onStudyPrepare={handlePrepareStudyTrial}
+              pairedVerify={pairedVerify}
             />
           )}
         </VerifyErrorBoundary>

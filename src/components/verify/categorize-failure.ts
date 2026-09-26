@@ -11,8 +11,8 @@
  */
 
 import {
-  COOLDOWN_REASONS,
   isUserRejection,
+  isVerificationReason,
   phaseSpend,
   type PhaseSpend,
   type VerificationReason,
@@ -72,18 +72,17 @@ function isStaleBlockhashError(error: string): boolean {
   );
 }
 
-// A cooldown, by reason code where one arrived and by prose only as a
-// fallback.
+// A cooldown that arrived without a reason code.
 //
 // The server sends 429 with `rate_limited` (per-wallet cap),
-// `ip_rate_limited` (per-IP cap) or `cross_wallet_cooldown`, and the SDK now
-// carries the code through. It used to be dropped, leaving this function to
-// recover the same fact by matching "too many" in an English error string,
-// so rewording the server's copy quietly regressed this screen to the generic
-// "Verification failed" page. The substring branch stays only for a response
+// `ip_rate_limited` (per-IP cap) or `cross_wallet_cooldown`, and the SDK
+// carries the code through, so `surfaceOf` routes those before any matcher
+// runs. The code used to be dropped, leaving this function to recover the
+// same fact by matching "too many" in an English error string, so rewording
+// the server's copy quietly regressed this screen to the generic
+// "Verification failed" page. The substring match stays only for a response
 // that reaches us without a code.
-function isRateLimitedError(error: string, reason?: string): boolean {
-  if (COOLDOWN_REASONS.has(reason as VerificationReason)) return true;
+function isRateLimitedError(error: string): boolean {
   const e = error.toLowerCase();
   return e.includes("too many") || e.includes("recently verified") || e.includes("different wallet");
 }
@@ -242,7 +241,88 @@ function isMotionPermissionError(error: string): boolean {
   );
 }
 
+/**
+ * The surface a reason decides by itself.
+ *
+ * - `matched`: the phase-gated matchers in `categorizeFailure` decide.
+ * - `cooldown`: this wallet, device or network has to wait before the next
+ *   attempt.
+ * - `session-wait`: the service refuses another session until a cooldown ends.
+ * - `session-restart`: the session cannot continue and a new one can succeed.
+ * - `session-broken`: this client and the server disagree about the protocol,
+ *   so the page has to reload before anything else can work.
+ * - `automated-browser`: every attempt from this browser meets the same
+ *   refusal.
+ *
+ * Every surface except `matched` routes by code in every phase, because a
+ * paired session can end while it opens, while a round commits or at
+ * finalize, and a cooldown can refuse any of those requests.
+ */
+export type ReasonSurface =
+  | "matched"
+  | "cooldown"
+  | "session-wait"
+  | "session-restart"
+  | "session-broken"
+  | "automated-browser";
+
+// Keyed on the SDK's full reason union, so a reason added upstream fails the
+// build here until it has a surface. An uncovered code would otherwise reach
+// the user as a dead end.
+const REASON_SURFACE = {
+  variance_floor: "matched",
+  entropy_bounds: "matched",
+  temporal_coupling_low: "matched",
+  phrase_content_mismatch: "matched",
+  trace_incomplete: "matched",
+  captcha_required: "matched",
+  rate_limited: "cooldown",
+  ip_rate_limited: "cooldown",
+  cross_wallet_cooldown: "cooldown",
+  payload_too_large: "matched",
+  automated_browser_detected: "automated-browser",
+  validation_unavailable: "matched",
+  validation_timeout: "matched",
+  technical_failure: "session-restart",
+  session_expired: "session-restart",
+  round_expired: "session-restart",
+  session_superseded: "session-restart",
+  session_consumed: "session-restart",
+  session_unknown: "session-restart",
+  session_not_ready: "session-restart",
+  round_not_outstanding: "session-restart",
+  session_busy: "session-restart",
+  finalize_in_progress: "session-wait",
+  session_active: "session-wait",
+  session_budget_exhausted: "session-wait",
+  capacity_reached: "session-wait",
+  commitment_mismatch: "session-broken",
+  challenge_mismatch: "session-broken",
+  previous_commitment_mismatch: "session-broken",
+  round_nonce_mismatch: "session-broken",
+  idempotency_conflict: "session-broken",
+  evidence_digest_mismatch: "session-broken",
+  evidence_length_mismatch: "session-broken",
+  evidence_bounds_invalid: "session-broken",
+  final_digest_mismatch: "session-broken",
+  audio_format_invalid: "session-broken",
+  tier_violation: "session-broken",
+  subject_mismatch: "session-broken",
+  projection_not_supported: "session-broken",
+  invalid_request: "session-broken",
+  unsupported_session: "session-broken",
+  malformed_response: "session-broken",
+} as const satisfies Record<VerificationReason, ReasonSurface>;
+
+/** The surface for a reason. Unknown and absent reasons are left to the matchers. */
+export function surfaceOf(reason: string | undefined): ReasonSurface {
+  return isVerificationReason(reason) ? REASON_SURFACE[reason] : "matched";
+}
+
 export type FailureKind =
+  | { kind: "session-restart"; reason: VerificationReason }
+  | { kind: "session-wait"; reason: VerificationReason }
+  | { kind: "session-broken" }
   | { kind: "relayer-down" }
   | { kind: "wallet-mismatch" }
   | { kind: "missing-baseline"; canReset: boolean }
@@ -254,9 +334,10 @@ export type FailureKind =
   | { kind: "insufficient-sol" }
   | { kind: "user-rejection" }
   | { kind: "stale-blockhash" }
-  | { kind: "rate-limited" }
+  | { kind: "rate-limited"; reason?: VerificationReason }
   | { kind: "permission-denied"; device: "microphone" | "motion" }
   | { kind: "microphone-too-quiet" }
+  | { kind: "automated-browser" }
   | { kind: "drift-too-high"; canReset: boolean }
   | { kind: "generic"; message: string };
 
@@ -296,6 +377,26 @@ export function categorizeFailure(
   const { failedAt, opaque, baselineRecovery } = context;
   const inPhase = (...phases: VerificationPhase[]) =>
     failedAt === undefined || phases.includes(failedAt);
+
+  // A reason that decides its own surface routes ahead of every matcher. The
+  // session limits are cooldowns too, and the rate-limit surface would tell
+  // the user their wallet ran out of retries when the service was at capacity.
+  if (isVerificationReason(reason)) {
+    switch (surfaceOf(reason)) {
+      case "cooldown":
+        return { kind: "rate-limited", reason };
+      case "session-wait":
+        return { kind: "session-wait", reason };
+      case "session-restart":
+        return { kind: "session-restart", reason };
+      case "session-broken":
+        return { kind: "session-broken" };
+      case "automated-browser":
+        return { kind: "automated-browser" };
+      case "matched":
+        break;
+    }
+  }
 
   // The SDK knows exactly why the on-chain baseline could not be restored, so
   // prefer that over reading it back out of the message. Five of the six
@@ -379,7 +480,7 @@ export function categorizeFailure(
   if (inPhase("submission", "confirmation") && isStaleBlockhashError(error)) {
     return { kind: "stale-blockhash" };
   }
-  if (inPhase("validation") && isRateLimitedError(error, reason)) {
+  if (inPhase("validation") && isRateLimitedError(error)) {
     return { kind: "rate-limited" };
   }
   // Specific Custom codes route before the opaque bucket so each gets its own

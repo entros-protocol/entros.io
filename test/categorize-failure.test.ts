@@ -138,6 +138,19 @@ describe("opacity", () => {
   });
 });
 
+describe("automation", () => {
+  it("explains an automated browser instead of echoing the generic body", () => {
+    // The executor names this refusal on purpose. Echoing its body gave the
+    // screen the same line twice and no way forward.
+    expect(
+      categorizeFailure("Verification failed", CAN_RESET, "automated_browser_detected", {
+        failedAt: "validation",
+        opaque: false,
+      }),
+    ).toEqual({ kind: "automated-browser" });
+  });
+});
+
 describe("baseline recovery", () => {
   it("gives an anchor that predates on-chain baselines its own surface", () => {
     // The largest group by far: 13 of 107 devnet anchors carry an on-chain

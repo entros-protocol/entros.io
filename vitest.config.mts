@@ -14,6 +14,10 @@ export default defineConfig({
         ),
       },
       { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },
+      {
+        find: /^server-only$/,
+        replacement: fileURLToPath(new URL("./test/stubs/server-only", import.meta.url)),
+      },
     ],
   },
 });

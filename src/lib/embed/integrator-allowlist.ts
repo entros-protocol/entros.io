@@ -13,10 +13,10 @@
  * Format:
  *
  *   ENTROS_INTEGRATORS_JSON='{
- *     "jupiter":   { "origins": ["https://jup.ag", "https://www.jup.ag"] },
- *     "drift":     { "origins": ["https://app.drift.trade"] },
- *     "tensor":    { "origins": ["https://www.tensor.trade"] },
- *     "magiceden": { "origins": ["https://magiceden.io", "https://magiceden.us"] }
+ *     "example-integrator": {
+ *       "origins": ["https://example.com", "https://www.example.com"]
+ *     },
+ *     "another-integrator": { "origins": ["https://app.example.org"] }
  *   }'
  *
  * Development mode shortcut: any integrator key is allowed when the

@@ -354,11 +354,11 @@ export function requiresBaselineRecoveryChoice(failure: FailureKind): boolean {
  * Pick the surface for a failure.
  *
  * Every matcher below is a substring test, which is what this used to be built
- * entirely out of. The `context` argument narrows where each one may run, and
- * that narrowing is the fix for the 2026-07-31 defect: an on-chain revert was
- * rendered as "Validation rejected this attempt" because the matcher for a
- * validator rejection also matched `custom program error`, a string that can
- * only appear after the validator already returned 200.
+ * entirely out of. The `context` argument narrows where each one may run.
+ * Without that narrowing, an on-chain revert renders as "Validation rejected
+ * this attempt", because the matcher for a validator rejection also matches
+ * `custom program error`, a string that can only appear after the validator
+ * already returned 200.
  *
  * Substring matching stays, because phase alone does not separate `Custom 6011`
  * from `Custom 6012`, or a declined prompt from an empty wallet. The matchers

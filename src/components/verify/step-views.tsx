@@ -625,10 +625,10 @@ export function FailedView({
         "Validation rejected this attempt. Please try again, or contact support if this persists.";
       break;
     case "insufficient-sol":
-      // TODO(mainnet): rewrite devnet-specific copy + CTA. Mainnet users
-      // need SOL from a CEX/DEX, not the faucet—body should
-      // drop the "devnet" qualifier and the "Get devnet SOL" button should
-      // either disappear or repoint to a "How to get SOL" docs page.
+      // TODO: This copy and CTA are devnet-specific. On mainnet, users get
+      // SOL from an exchange, not the faucet, so the body should drop the
+      // "devnet" qualifier and the "Get devnet SOL" button should either
+      // disappear or point to a "How to get SOL" docs page.
       title = "This wallet needs SOL";
       body =
         "Verifying on devnet requires a small amount of SOL to write the on-chain anchor. Your wallet currently has none.";

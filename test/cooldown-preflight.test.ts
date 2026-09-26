@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { evaluateResetCooldown, RESET_COOLDOWN_SECS } from "../src/lib/cooldown";
 
-describe("Reset Cooldown Preflight Evaluation (Item #186)", () => {
+describe("Reset Cooldown Preflight Evaluation", () => {
   it("returns isCooldownActive = false for a fresh identity with lastResetTimestamp = 0", () => {
     const now = 1700000000;
     const result = evaluateResetCooldown(0, now);

@@ -6,9 +6,10 @@ import { passesEntrosGate } from "../src/components/ui/entros-gate";
  *
  * The gate reads two fields because one is not enough to answer the question
  * an integrator is asking. The Trust Score says how consistently a wallet has
- * verified. `last_verification_timestamp` says how long ago it last did. The
- * component read only the score until 2026-08-01, while the timestamp sat at
- * offset 48 of the account it had already fetched.
+ * verified. `last_verification_timestamp` says how long ago it last did. A gate
+ * that reads only the score passes a wallet whose last verification is
+ * arbitrarily old, although the timestamp sits at offset 48 of the account it
+ * already fetched.
  */
 
 const NOW = 1_800_000_000;

@@ -13,7 +13,8 @@ import { GET as llmsTxt, dynamic } from "@/app/llms.txt/route";
  */
 
 async function brief(): Promise<string> {
-  return await llmsTxt().text();
+  const response = await llmsTxt();
+  return await response.text();
 }
 
 describe("sitemap", () => {
@@ -43,8 +44,8 @@ describe("llms.txt", () => {
     expect(dynamic).toBe("force-static");
   });
 
-  it("serves plain text", () => {
-    const response = llmsTxt();
+  it("serves plain text", async () => {
+    const response = await llmsTxt();
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/plain");

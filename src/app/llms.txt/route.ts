@@ -77,7 +77,7 @@ its protected action executes.
 ## Documentation
 `;
 
-function docsIndex(): string {
+async function docsIndex(): Promise<string> {
   const generator = llms(source);
 
   // Walk the tree rather than getPages(), so the order matches the meta.json
@@ -86,16 +86,17 @@ function docsIndex(): string {
   //
   // Separators are dropped: each one repeats the title of the folder that
   // follows it, which reads as a duplicated heading in a flat text file.
-  return source
+  // fumadocs 16's indexNode is async, so every node is awaited before the
+  // replace, which otherwise stringifies a promise.
+  const nodes = source
     .getPageTree()
-    .children.filter((node) => node.type !== "separator")
-    .map((node) => generator.indexNode(node))
-    .join("\n")
-    .replaceAll("](/docs", `](${SITE_URL}/docs`);
+    .children.filter((node) => node.type !== "separator");
+  const rendered = await Promise.all(nodes.map((node) => generator.indexNode(node)));
+  return rendered.join("\n").replaceAll("](/docs", `](${SITE_URL}/docs`);
 }
 
-export function GET(): Response {
-  return new Response(`${BRIEF}\n${docsIndex()}\n`, {
+export async function GET(): Promise<Response> {
+  return new Response(`${BRIEF}\n${await docsIndex()}\n`, {
     headers: { "content-type": "text/plain; charset=utf-8" },
   });
 }

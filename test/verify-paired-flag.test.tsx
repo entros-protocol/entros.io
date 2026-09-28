@@ -150,6 +150,7 @@ function Harness({
 const ROUND: PairedRoundView = {
   roundIndex: 1,
   rounds: 3,
+  expiresAtMs: 12_000,
   word: "garden",
   waypoints: [
     { x: 200, y: 800 },
@@ -436,6 +437,28 @@ describe("paired verify flag", () => {
     expect(container.textContent).toContain("2 attempts left");
   });
 
+  it.each(["wallet", "disconnect", "unmount"])("cancels pending finalization on %s and ignores its late success", async change => {
+    let resolve!: (value:unknown) => void;
+    harness.completeResults=[new Promise(done => {resolve=done;})];
+    await renderPaired();
+    await clickStart();
+    await act(async () => {harness.setPhase("ready");latestOptions().onPhase?.("ready");await Promise.resolve();});
+    await flush();
+    expect(harness.aborts).toBe(0);
+    if (change === "unmount") {
+      await act(async () => root.unmount());
+      root=createRoot(container);
+    } else {
+      harness.publicKey=change === "wallet" ? OTHER_WALLET : null;
+      await renderPaired();
+    }
+    expect(harness.aborts).toBe(1);
+    await act(async () => {resolve({success:true,commitment:new Uint8Array(32),isFirstVerification:true,txSignature:"stale"});});
+    await flush();
+    expect(step()).not.toBe("success");
+    expect(container.textContent).not.toContain("stale");
+  });
+
   it("ends the session when the capture view goes away", async () => {
     await renderPaired();
     await clickStart();
@@ -522,19 +545,26 @@ describe("paired verify flag", () => {
     expect(firstBar()).toBe("2px");
 
     // Five frames of audio in a burst ask for one redraw.
-    for (let frame = 0; frame < 5; frame++) options.onLevel?.(0.01 * frame);
+    for (let frame = 0; frame < 5; frame++) options.onLevel?.(0.01 * frame, false);
     expect(frames).toHaveLength(1);
 
     await act(async () => frames.shift()!(1_000));
     // The latest level, 0.04, fills the bar: 2 + 1 * 32 * 0.6.
     expect(firstBar()).toBe("21.2px");
+    const word = () => [...container.querySelectorAll("p")].find((node) => node.textContent === ROUND.word)!;
+    expect(word().style.textShadow).toBe("none");
 
     // A level inside the interval waits for a later frame.
-    options.onLevel?.(0);
+    options.onLevel?.(0, false);
     await act(async () => frames.shift()!(1_050));
     expect(firstBar()).toBe("21.2px");
     expect(frames).toHaveLength(1);
     await act(async () => frames.shift()!(1_100));
     expect(firstBar()).toBe("2px");
+    options.onLevel?.(0.004, true);
+    await act(async () => frames.shift()!(1_200));
+    expect(word().style.textShadow).not.toBe("none");
+    await act(async () => options.onReveal?.(ROUND));
+    expect(word().style.textShadow).toBe("none");
   });
 });

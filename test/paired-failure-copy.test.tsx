@@ -119,6 +119,10 @@ describe("paired failure copy", () => {
     expect(surfaceOf("session_active")).toBe("session-wait");
     expect(surfaceOf("invalid_request")).toBe("session-broken");
     expect(surfaceOf("trace_incomplete")).toBe("matched");
+    expect(softHint("audio_evidence_insufficient")).toBe(
+      "The service could not assess the recorded speech. Start a new verification and speak at your normal volume.",
+    );
+    expect(surfaceOf("audio_evidence_insufficient")).toBe("matched");
   });
 
   it("keeps the existing phrase copy", () => {

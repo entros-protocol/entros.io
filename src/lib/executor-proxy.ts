@@ -11,6 +11,7 @@ export interface ExecutorProxyRoute {
     | "/attest"
     | "/challenge/paired"
     | "/paired/commit"
+    | "/paired/cue"
     | "/validate-session";
   method: "GET" | "POST";
   timeoutMs: number;

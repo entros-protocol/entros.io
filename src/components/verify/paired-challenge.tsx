@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   PAIRED_GRID_MAX as GRID,
   PAIRED_WAYPOINT_REACH as WAYPOINT_REACH,
@@ -32,17 +32,17 @@ interface Stroke {
  *
  * The SDK records pressed points from the surface element this component
  * mounts, and the stroke drawn here shows the same points. Nothing appears on
- * the surface until the server reveals a round. The page never counts down and
- * never offers a way to skip ahead. A round ends on its own once the word is
- * heard and the trace has reached every dot in order, and the Continue link
- * appears only after the session reports a stall.
+ * the surface until the server reveals a round. Continue availability and cue
+ * phases come from the session controller. The meter shows microphone amplitude;
+ * the word highlight follows the controller's speech activity classification.
  */
 export function PairedChallenge({
   surfaceRef,
   round,
   phase,
-  stalled,
+  canContinue,
   level,
+  speechActive,
   hasMotion = true,
   onContinue,
 }: {
@@ -51,11 +51,13 @@ export function PairedChallenge({
   /** The revealed round. Null until the server reveals round 1. */
   round: PairedRoundView | null;
   phase: PairedPhase;
-  stalled: boolean;
+  canContinue: boolean;
   /** RMS of the latest audio frame. */
   level: number;
+  /** Classification of this frame by the session tracker. */
+  speechActive: boolean;
   hasMotion?: boolean;
-  /** Ends a stalled round. Returns false until the trace has reached every dot in order. */
+  /** Requests the final cue after speech. Returns false until the visible outline passes. */
   onContinue: () => boolean;
 }) {
   const roundIndex = round?.roundIndex ?? 0;
@@ -72,7 +74,14 @@ export function PairedChallenge({
   const [refusedRound, setRefusedRound] = useState<number | null>(null);
 
   const reachedNow = reached.roundIndex === roundIndex ? reached.count : 0;
-  const recording = round !== null && phase === "round";
+  const recording = round !== null && (phase === "round" || phase === "cue");
+  const [now,setNow]=useState(() => performance.now());
+  useEffect(() => {
+    if (phase !== "round" && phase !== "cue_loading" && phase !== "cue") return;
+    const timer=setInterval(() => setNow(performance.now()),100);
+    return () => clearInterval(timer);
+  },[phase]);
+  const remaining=Math.max(0,Math.ceil(((round?.expiresAtMs ?? now)-now)/1000));
 
   function handlePointer(event: React.PointerEvent<HTMLDivElement>) {
     if (strokeRef.current.roundIndex !== roundIndex) {
@@ -125,12 +134,14 @@ export function PairedChallenge({
   }
 
   const normalizedAudio = Math.min(level * 25, 1);
-  const isVoiceActive = level > 0.005;
+  const isVoiceActive = phase === "round" && speechActive;
   const waypoints = round?.waypoints ?? [];
   const announcement = !round
     ? ""
     : refusedRound === roundIndex
       ? "Trace the dots in order, then continue."
+      : phase === "cue" ? "Trace to the new final point."
+      : phase === "cue_loading" ? "Loading the final point."
       : `Round ${round.roundIndex} of ${round.rounds}. Say the word ${round.word}. Trace the ${waypoints.length} dots in order.`;
 
   // Sized to fit the verify card's pinned height, so the card keeps one size
@@ -186,7 +197,7 @@ export function PairedChallenge({
       <div>
         {round && (
           <p className="mb-1 text-center font-mono text-xs uppercase tracking-widest text-solana-green">
-            Trace from 1 to {waypoints.length}
+            {phase === "cue" ? `Trace to the new point ${waypoints.length}` : `Trace from 1 to ${waypoints.length}`}
           </p>
         )}
         <div
@@ -318,7 +329,7 @@ export function PairedChallenge({
                 />
               ))}
             </div>
-            <p className="mt-1 font-mono text-[10px] text-muted">Voice</p>
+            <p className="mt-1 font-mono text-[10px] text-muted">Microphone level</p>
           </div>
 
           <div className="space-y-2">
@@ -327,8 +338,12 @@ export function PairedChallenge({
                 <p className="font-mono text-xs uppercase tracking-widest text-muted">
                   Sending round {round.roundIndex}
                 </p>
+              ) : phase === "cue_loading" ? (
+                <p className="text-xs text-muted" role="status">Loading the final point…</p>
+              ) : phase === "cue" ? (
+                <p className="text-xs text-muted">Finish the trace at the new point.</p>
               ) : (
-                stalled &&
+                canContinue &&
                 phase === "round" && (
                   <>
                     <button
@@ -336,7 +351,7 @@ export function PairedChallenge({
                       onClick={handleContinue}
                       className="font-mono text-xs text-cyan underline underline-offset-4 transition-colors hover:text-foreground"
                     >
-                      Continue
+                      I spoke · Continue
                     </button>
                     {refusedRound === roundIndex && (
                       <p className="text-xs text-foreground/70">
@@ -347,6 +362,7 @@ export function PairedChallenge({
                 )
               )}
             </div>
+            {(phase === "round" || phase === "cue_loading" || phase === "cue") && <p className="text-center font-mono text-xs tabular-nums text-muted">{remaining}s remaining</p>}
             <p className="text-center text-xs text-muted">
               All sensors recording simultaneously. Raw recordings are not
               retained.

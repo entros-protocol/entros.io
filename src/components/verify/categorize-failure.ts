@@ -275,6 +275,7 @@ const REASON_SURFACE = {
   temporal_coupling_low: "matched",
   phrase_content_mismatch: "matched",
   trace_incomplete: "matched",
+  audio_evidence_insufficient: "matched",
   captcha_required: "matched",
   rate_limited: "cooldown",
   ip_rate_limited: "cooldown",

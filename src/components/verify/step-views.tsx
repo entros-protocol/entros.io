@@ -297,6 +297,8 @@ const SOFT_HINT: Record<RetryableReason, string> = {
   phrase_content_mismatch:
     "Read the phrase clearly at a normal pace, exactly as shown.",
   trace_incomplete: "Trace through every dot, in order from 1.",
+  audio_evidence_insufficient:
+    "The service could not assess the recorded speech. Start a new verification and speak at your normal volume.",
   validation_unavailable:
     "We couldn't reach the verification service. Check your connection and try again.",
   validation_timeout:

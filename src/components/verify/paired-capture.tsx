@@ -25,8 +25,6 @@ import type {
   VerifyAction,
 } from "./types";
 
-/** A frame above this level counts as heard for the quiet-microphone message. */
-const VOICED_RMS = 0.008;
 /** The SDK reports a level every 50 ms. The meter redraws at most this often. */
 const METER_INTERVAL_MS = 100;
 
@@ -40,6 +38,7 @@ interface LiveSession {
 
 interface Meter {
   latest: number;
+  speechActive: boolean;
   /** The pending animation frame, or 0. */
   frame: number;
   paintedAt: number;
@@ -65,7 +64,11 @@ function failureAction(error: unknown): VerifyAction {
     error:
       failure.reason === "validation_unavailable"
         ? "Verification service unavailable. Please refresh and try again."
-        : "This verification could not continue. Start a new verification.",
+        : failure.reason === "round_expired" || failure.reason === "session_expired"
+          ? "Time ran out. Start again, say the word and trace the points in either order, then trace to the new final point."
+          : failure.reason === "evidence_bounds_invalid"
+            ? "This round took too long to capture. Start a new verification."
+            : "This verification could not continue. Start a new verification.",
     reason: failure.reason,
     retryAfterSec: failure.retryAfterSecs,
     failedAt: "capture",
@@ -105,13 +108,20 @@ export function PairedCapture({
   const pulse = usePulse();
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const liveRef = useRef<LiveSession | null>(null);
-  const meterRef = useRef<Meter>({ latest: 0, frame: 0, paintedAt: 0 });
+  const meterRef = useRef<Meter>({
+    latest: 0,
+    speechActive: false,
+    frame: 0,
+    paintedAt: 0,
+  });
   const [round, setRound] = useState<PairedRoundView | null>(null);
   const [phase, setPhase] = useState<PairedPhase>("idle");
-  const [stalled, setStalled] = useState(false);
+  const [canContinue, setCanContinue] = useState(false);
   const [level, setLevel] = useState(0);
+  const [speechActive, setSpeechActive] = useState(false);
 
   // The handle outlives each render, so it reads the latest props from here.
+  const finishingRef = useRef<LiveSession | null>(null);
   const propsRef = useRef({ pulse, wallet, connection, dispatch, onCommitted });
   useLayoutEffect(() => {
     propsRef.current = { pulse, wallet, connection, dispatch, onCommitted };
@@ -149,17 +159,23 @@ export function PairedCapture({
       meter.frame = 0;
       meter.paintedAt = now;
       setLevel(meter.latest);
+      setSpeechActive(meter.speechActive);
     };
 
     const commit = (session: PairedSession) => {
       if (!isLive(session) || session.currentPhase !== "ready") return;
       const live = detach();
       if (!live) return;
-      // Finalize cannot be abandoned part way, so nothing aborts it from here on.
-      const finish: PairedFinish = (signer, chain, onProgress) =>
-        live.intent === "reset"
-          ? session.completeReset(signer, chain, onProgress)
-          : session.complete(signer, chain, onProgress);
+      finishingRef.current = live;
+      const finish: PairedFinish = async (signer, chain, onProgress) => {
+        try {
+          return live.intent === "reset"
+            ? await session.completeReset(signer, chain, onProgress)
+            : await session.complete(signer, chain, onProgress);
+        } finally {
+          if (finishingRef.current === live) finishingRef.current = null;
+        }
+      };
       propsRef.current.onCommitted(finish, live.voicedFrames);
     };
 
@@ -170,7 +186,11 @@ export function PairedCapture({
         const session = pulse.createPairedSession({
           onReveal: (next) => {
             if (!isLive(session)) return;
-            setStalled(false);
+            setCanContinue(false);
+            meterRef.current.latest = 0;
+            meterRef.current.speechActive = false;
+            setLevel(0);
+            setSpeechActive(false);
             setRound(next);
           },
           onPhase: (next) => {
@@ -179,17 +199,22 @@ export function PairedCapture({
             // Finalizing sets the phase again, so it starts outside this callback.
             if (next === "ready") queueMicrotask(() => commit(session));
           },
-          onStall: () => {
-            if (isLive(session)) setStalled(true);
+          onContinueAvailable: (available) => {
+            if (isLive(session)) setCanContinue(available);
           },
-          onLevel: (rms) => {
+          onCue: (cue) => {
+            if (!isLive(session)) return;
+            setRound(previous => previous?.roundIndex === cue.roundIndex ? {...previous,waypoints:[...previous.waypoints,cue.point],expiresAtMs:cue.expiresAtMs} : previous);
+          },
+          onLevel: (rms, active = false) => {
             const live = liveRef.current;
             if (live?.session !== session) return;
-            if (session.currentPhase === "round" && rms > VOICED_RMS) {
+            if (session.currentPhase === "round" && active) {
               live.voicedFrames += 1;
             }
             const meter = meterRef.current;
             meter.latest = rms;
+            meter.speechActive = active;
             if (meter.frame === 0) meter.frame = requestAnimationFrame(paint);
           },
           onFailure: (error) => fail(session, error),
@@ -200,8 +225,9 @@ export function PairedCapture({
         flushSync(() => {
           setRound(null);
           setPhase("idle");
-          setStalled(false);
+          setCanContinue(false);
           setLevel(0);
+          setSpeechActive(false);
           dispatch({ type: "START_CAPTURE", intent });
         });
         const surface = surfaceRef.current;
@@ -233,24 +259,28 @@ export function PairedCapture({
     if (!capturing) detach()?.session.abort();
   }, [capturing, detach]);
 
-  // A session belongs to the wallet it opened for.
+  // A session belongs to the wallet it opened for, through finalization.
   useEffect(() => {
-    const live = liveRef.current;
-    if (!live || live.wallet === wallet) return;
-    detach();
-    live.session.abort();
-    dispatch({ type: "RESET" });
+    let changed = false;
+    for (const ref of [liveRef,finishingRef]) {
+      const live=ref.current;
+      if (!live || live.wallet === wallet) continue;
+      if (ref === liveRef) detach();
+      else ref.current=null;
+      live.session.abort();
+      changed=true;
+    }
+    if (changed) dispatch({type:"RESET"});
   }, [wallet, dispatch, detach]);
 
-  useEffect(
-    () => () => {
-      const live = detach();
-      if (!live) return;
-      live.session.abort();
-      propsRef.current.dispatch({ type: "RESET" });
-    },
-    [detach],
-  );
+  useEffect(() => () => {
+    const live=detach();
+    const finishing=finishingRef.current;
+    finishingRef.current=null;
+    live?.session.abort();
+    finishing?.session.abort();
+    if (live || finishing) propsRef.current.dispatch({type:"RESET"});
+  }, [detach]);
 
   if (!capturing) return null;
   return (
@@ -258,8 +288,9 @@ export function PairedCapture({
       surfaceRef={surfaceRef}
       round={round}
       phase={phase}
-      stalled={stalled}
+      canContinue={canContinue}
       level={level}
+      speechActive={speechActive}
       hasMotion={hasMotion}
       onContinue={() => liveRef.current?.session.continueRound() ?? false}
     />

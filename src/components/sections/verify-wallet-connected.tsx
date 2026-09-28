@@ -336,7 +336,7 @@ export function VerifyWalletConnected({
   }, [connectedWallet]);
   useEffect(() => {
     mountedRef.current=true;
-    return () => {mountedRef.current=false;attemptRef.current++;};
+    return () => {mountedRef.current=false;};
   }, []);
   const lastVerification =
     verificationTimestamp?.wallet === connectedWallet

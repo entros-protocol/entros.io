@@ -13,6 +13,12 @@ const BAR_OFFSETS = Array.from(
   { length: AUDIO_BAR_COUNT },
   (_, i) => 0.6 + 0.4 * Math.sin(i * 1.3),
 );
+/**
+ * Once the outline passes and Continue is offered, the round is waiting on
+ * heard speech. If nothing registers within this window, ask for the word
+ * again rather than leaving the round silent.
+ */
+const VOICE_PROMPT_DELAY_MS = 2500;
 /** Same rounding and clamping as the SDK, so reached waypoints agree with its tracker. */
 function toGrid(offset: number, extent: number): number {
   return Math.min(GRID, Math.max(0, Math.round((offset / extent) * GRID)));
@@ -72,6 +78,14 @@ export function PairedChallenge({
   // without an effect resetting state.
   const [reached, setReached] = useState({ roundIndex: 0, count: 0 });
   const [refusedRound, setRefusedRound] = useState<number | null>(null);
+  /** The round whose speech never registered after its outline passed. */
+  const [voicePrompt, setVoicePrompt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (phase !== "round" || !canContinue) return;
+    const timer = setTimeout(() => setVoicePrompt(roundIndex), VOICE_PROMPT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [phase, canContinue, roundIndex]);
 
   const reachedNow = reached.roundIndex === roundIndex ? reached.count : 0;
   const recording = round !== null && (phase === "round" || phase === "cue");
@@ -142,7 +156,9 @@ export function PairedChallenge({
       ? "Trace the dots in order, then continue."
       : phase === "cue" ? "Trace to the new final point."
       : phase === "cue_loading" ? "Loading the final point."
-      : `Round ${round.roundIndex} of ${round.rounds}. Say the word ${round.word}. Trace the ${waypoints.length} dots in order.`;
+      : voicePrompt === roundIndex && !speechActive
+        ? "We couldn't hear that. Say the word once more, a little louder."
+        : `Round ${round.roundIndex} of ${round.rounds}. Say the word ${round.word}. Trace the ${waypoints.length} dots in order.`;
 
   // Sized to fit the verify card's pinned height, so the card keeps one size
   // from the idle screen through every round.
@@ -356,6 +372,12 @@ export function PairedChallenge({
                     {refusedRound === roundIndex && (
                       <p className="text-xs text-foreground/70">
                         Trace the dots in order, then continue.
+                      </p>
+                    )}
+                    {voicePrompt === roundIndex && !speechActive && (
+                      <p className="text-xs text-foreground/70">
+                        We couldn't hear that. Say the word once more, a little
+                        louder.
                       </p>
                     )}
                   </>

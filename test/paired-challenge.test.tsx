@@ -45,6 +45,7 @@ afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 interface RenderOptions {
@@ -266,6 +267,47 @@ describe("PairedChallenge", () => {
 
     expect(onContinue).toHaveBeenCalledOnce();
     expect(container.textContent).not.toContain("then continue");
+  });
+
+  it("asks for the word again when the outline passed but nothing registers", async () => {
+    vi.useFakeTimers();
+    await render({ canContinue: true });
+
+    expect(container.textContent).not.toContain("couldn't hear");
+
+    await act(async () => {
+      vi.advanceTimersByTime(2600);
+    });
+
+    expect(container.textContent).toContain(
+      "We couldn't hear that. Say the word once more, a little louder.",
+    );
+    expect(container.querySelector('[aria-live="polite"]')!.textContent).toBe(
+      "We couldn't hear that. Say the word once more, a little louder.",
+    );
+
+    // Heard speech answers the prompt.
+    await render({ canContinue: true, speechActive: true });
+    expect(container.textContent).not.toContain("couldn't hear");
+  });
+
+  it("stays quiet while speech registers and once the cue arrives", async () => {
+    vi.useFakeTimers();
+    await render({ canContinue: true, speechActive: true });
+
+    await act(async () => {
+      vi.advanceTimersByTime(6000);
+    });
+    expect(container.textContent).not.toContain("couldn't hear");
+
+    await render({ canContinue: true, speechActive: false });
+    await act(async () => {
+      vi.advanceTimersByTime(2600);
+    });
+    expect(container.textContent).toContain("couldn't hear");
+
+    await render({ phase: "cue", canContinue: false });
+    expect(container.textContent).not.toContain("couldn't hear");
   });
 });
 

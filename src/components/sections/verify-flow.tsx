@@ -17,6 +17,7 @@ import {
   requestStudyEnrolment,
   resolveStudyGrant,
   resolveStudyEnrolmentFailure,
+  StudyEnrolmentRequestError,
   studyAuthorizationIsFresh,
   studyProgressMessage,
 } from "@/lib/population-study";
@@ -166,6 +167,18 @@ export function VerifyFlow({
       studyDispatch({ type: "PREPARE_READY", grant });
     } catch (reason) {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
+      // The trial cap is enforced server-side. A wallet that has used its
+      // study trials goes straight to normal verification instead of meeting
+      // a dead-end message.
+      if (
+        reason instanceof StudyEnrolmentRequestError &&
+        reason.code === "study_trial_limit_reached"
+      ) {
+        clearPendingStudyEnrolmentId(study.definition, walletAddress);
+        studyDispatch({ type: "LEAVE" });
+        dispatch({ type: "RESET" });
+        return;
+      }
       const failure = resolveStudyEnrolmentFailure(
         reason,
         "Study trial authorization failed. Try again.",
@@ -255,6 +268,20 @@ export function VerifyFlow({
       dispatch({ type: "RESET" });
     } catch (reason) {
       if (requestGeneration !== studyRequestGenerationRef.current) return;
+      // Same as the first enrolment: an exhausted study falls through to
+      // normal verification without a dead-end message.
+      if (
+        reason instanceof StudyEnrolmentRequestError &&
+        reason.code === "study_trial_limit_reached"
+      ) {
+        clearPendingStudyEnrolmentId(
+          study.continuation.definition,
+          walletAddress,
+        );
+        studyDispatch({ type: "LEAVE" });
+        dispatch({ type: "RESET" });
+        return;
+      }
       const failure = resolveStudyEnrolmentFailure(
         reason,
         "The next study trial could not be prepared. Try again when you are ready.",

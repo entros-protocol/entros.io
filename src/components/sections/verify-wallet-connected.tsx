@@ -100,32 +100,26 @@ function DevnetWalletRequirements({
           className="mt-0.5 size-5 shrink-0 text-amber-500"
           aria-hidden="true"
         />
-        <div className="space-y-3">
+        <div className="space-y-2">
           <p className="text-sm font-semibold text-foreground">
             Prepare a Solana Devnet wallet
           </p>
-          <ol className="space-y-2 text-sm leading-relaxed text-foreground/75">
-            <li>1. Set your wallet network to Solana Devnet.</li>
-            <li>
-              2. Add free devnet SOL from the{" "}
-              <a
-                href="https://faucet.solana.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cyan underline transition-colors hover:text-foreground"
-              >
-                Solana faucet
-              </a>
-              .
-            </li>
-            <li>
-              3.{" "}
-              {connected
-                ? "Confirm this is the wallet you want to verify."
-                : "Connect the wallet you want to verify."}
-            </li>
-          </ol>
-          <p className="text-xs leading-relaxed text-foreground/55">
+          <p className="text-sm leading-relaxed text-foreground/75">
+            Switch your wallet to Devnet and add free SOL from the{" "}
+            <a
+              href="https://faucet.solana.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan underline transition-colors hover:text-foreground"
+            >
+              Solana faucet
+            </a>
+            .{" "}
+            {connected
+              ? "Then confirm this wallet."
+              : "Then connect the wallet to verify."}
+          </p>
+          <p className="text-xs text-foreground/55">
             Devnet SOL has no monetary value.
           </p>
         </div>
@@ -1094,8 +1088,7 @@ export function VerifyWalletConnected({
               Confirm your study wallet
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-foreground/70">
-              Review the connected wallet, then sign the study authorization.
-              This does not send a transaction or spend devnet SOL.
+              Sign to confirm this wallet. Nothing is sent or spent.
             </p>
           </div>
 

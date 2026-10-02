@@ -160,90 +160,92 @@ export function PairedChallenge({
         ? "We couldn't hear that. Say the word once more, a little louder."
         : `Round ${round.roundIndex} of ${round.rounds}. Say the word ${round.word}. Trace the ${waypoints.length} dots in order.`;
 
-  // Sized to fit the verify card's pinned height, so the card keeps one size
-  // from the idle screen through every round.
+  // One fixed height from preparation through the final round. Every row
+  // keeps its size in every phase, and controls or prompts appear inside
+  // reserved lines, so nothing that renders can ever shift or resize the
+  // capture view or the card around it.
   return (
-    <div className="space-y-4">
+    <div className="flex h-[540px] flex-col md:h-[580px]">
       {/* The only live region, mounted before the first reveal so a screen
           reader announces each round when it arrives. */}
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {announcement}
       </p>
-      {round && (
-        <>
-          <div className="text-center">
-            <p className="font-mono text-sm text-foreground tabular-nums">
-              Round {round.roundIndex} of {round.rounds}
-            </p>
-            <div
-              className="mx-auto mt-2 flex max-w-xs gap-1.5"
-              aria-hidden="true"
-            >
-              {Array.from({ length: round.rounds }, (_, index) => (
-                <span
-                  key={index}
-                  className={`h-1.5 flex-1 rounded-full ${
-                    index < round.roundIndex ? "bg-cyan" : "bg-surface"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="text-center">
-            <p className="mb-1 font-mono text-xs uppercase tracking-widest text-cyan">
-              Say this word
-            </p>
-            <p
-              className="font-mono text-2xl font-bold transition-[color,text-shadow] duration-150 md:text-3xl"
-              style={{
-                color: isVoiceActive
-                  ? "var(--color-foreground)"
-                  : "var(--color-muted)",
-                textShadow: isVoiceActive
-                  ? `0 0 ${10 + normalizedAudio * 20}px rgba(0, 240, 255, ${0.15 + normalizedAudio * 0.3})`
-                  : "none",
-              }}
-            >
-              {round.word}
-            </p>
-          </div>
-        </>
-      )}
 
-      <div>
-        {round && (
-          <p className="mb-1 text-center font-mono text-xs uppercase tracking-widest text-solana-green">
-            {phase === "cue" ? `Trace to the new point ${waypoints.length}` : `Trace from 1 to ${waypoints.length}`}
-          </p>
-        )}
+      {/* Round header. The slot is reserved before the first reveal. */}
+      <div className="h-[104px] shrink-0 overflow-hidden text-center">
+        <p className="font-mono text-sm text-foreground tabular-nums">
+          {round ? `Round ${round.roundIndex} of ${round.rounds}` : " "}
+        </p>
         <div
-          className={
-            round
-              ? ""
-              : "relative flex min-h-[340px] w-full items-center justify-center px-4 py-6"
-          }
+          className="mx-auto mt-2 flex max-w-xs gap-1.5"
+          aria-hidden="true"
         >
-          {!round && (
-            <div className="flex max-w-sm flex-col items-center justify-center gap-4 text-center">
-              <p className="font-mono text-base uppercase tracking-[0.18em] text-foreground/70 md:text-lg">
-                Preparing round 1
-              </p>
-              <div className="max-w-[22rem] space-y-2">
-                <p className="text-lg font-medium text-foreground md:text-xl">
-                  Get ready to speak and trace.
-                </p>
-                <p className="text-balance text-base leading-relaxed text-foreground/70">
-                  Each round shows one word and a short path. Say the word and
-                  trace the path with your {hasMotion ? "finger" : "mouse"}.
-                </p>
-              </div>
-            </div>
-          )}
+          {Array.from({ length: round?.rounds ?? 3 }, (_, index) => (
+            <span
+              key={index}
+              className={`h-1.5 flex-1 rounded-full ${
+                round && index < round.roundIndex ? "bg-cyan" : "bg-surface"
+              }`}
+            />
+          ))}
+        </div>
+        <p className="mt-3 font-mono text-xs uppercase tracking-widest text-cyan">
+          {round ? "Say this word" : " "}
+        </p>
+        <p
+          className="mt-1 font-mono text-2xl font-bold transition-[color,text-shadow] duration-150 md:text-3xl"
+          style={{
+            color: isVoiceActive
+              ? "var(--color-foreground)"
+              : "var(--color-muted)",
+            textShadow: isVoiceActive
+              ? `0 0 ${10 + normalizedAudio * 20}px rgba(0, 240, 255, ${0.15 + normalizedAudio * 0.3})`
+              : "none",
+          }}
+        >
+          {round ? round.word : " "}
+        </p>
+      </div>
+
+      {/* Trace label. One fixed line under the header. */}
+      <p className="h-[20px] shrink-0 overflow-hidden text-center font-mono text-xs uppercase tracking-widest text-solana-green">
+        {round
+          ? phase === "cue"
+            ? `Trace to the new point ${waypoints.length}`
+            : `Trace from 1 to ${waypoints.length}`
+          : " "}
+      </p>
+
+      {/* Trace surface. The square keeps one geometry from mount through the
+          final round; only its visibility changes. The pre-reveal guidance is
+          an overlay inside the same slot, never a resize. */}
+      <div className="relative min-h-0 flex-1">
+        <div
+          className={`absolute inset-0 flex flex-col items-center justify-center gap-4 px-4 text-center transition-opacity duration-150 ${
+            round ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
+          aria-hidden={round !== null}
+        >
+          <p className="font-mono text-base uppercase tracking-[0.18em] text-foreground/70 md:text-lg">
+            Preparing round 1
+          </p>
+          <div className="max-w-[22rem] space-y-2">
+            <p className="text-lg font-medium text-foreground md:text-xl">
+              Get ready to speak and trace.
+            </p>
+            <p className="text-balance text-base leading-relaxed text-foreground/70">
+              Each round shows one word and a short path. Say the word and trace
+              the path with your {hasMotion ? "finger" : "mouse"}.
+            </p>
+          </div>
+        </div>
+        <div className="flex h-full items-center justify-center">
           <div
-            className={`mx-auto aspect-square w-full max-w-[260px] border md:max-w-[280px] ${
+            className={`aspect-square h-[260px] border transition-opacity duration-150 md:h-[280px] ${
               round
                 ? "border-solana-green/30 bg-surface/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_18px_48px_rgba(0,0,0,0.18)]"
-                : "pointer-events-none absolute border-transparent opacity-0"
+                : "pointer-events-none border-transparent opacity-0"
             }`}
           >
             <div
@@ -330,68 +332,83 @@ export function PairedChallenge({
         </div>
       </div>
 
-      {round && (
-        <>
-          <div className="flex flex-col items-center">
-            <div className="flex h-7 items-end justify-center gap-[2px]">
-              {BAR_OFFSETS.map((offset, i) => (
-                <div
-                  key={i}
-                  className="w-1 rounded-full bg-cyan/60"
-                  style={{
-                    height: `${2 + normalizedAudio * 32 * offset}px`,
-                    transition: "height 100ms ease",
-                  }}
-                />
-              ))}
-            </div>
-            <p className="mt-1 font-mono text-[10px] text-muted">Microphone level</p>
-          </div>
+      {/* Microphone meter. Always mounted; the bars rest flat before reveal. */}
+      <div className="flex h-[48px] shrink-0 flex-col items-center justify-center overflow-hidden">
+        <div className="flex h-7 items-end justify-center gap-[2px]">
+          {BAR_OFFSETS.map((offset, i) => (
+            <div
+              key={i}
+              className="w-1 rounded-full bg-cyan/60"
+              style={{
+                height: `${2 + normalizedAudio * 32 * offset}px`,
+                transition: "height 100ms ease",
+              }}
+            />
+          ))}
+        </div>
+        <p className="mt-1 font-mono text-[10px] text-muted">Microphone level</p>
+      </div>
 
-          <div className="space-y-2">
-            <div className="min-h-[2.25rem] space-y-1 text-center">
-              {phase === "committing" ? (
-                <p className="font-mono text-xs uppercase tracking-widest text-muted">
-                  Sending round {round.roundIndex}
-                </p>
-              ) : phase === "cue_loading" ? (
-                <p className="text-xs text-muted" role="status">Loading the final point…</p>
-              ) : phase === "cue" ? (
-                <p className="text-xs text-muted">Finish the trace at the new point.</p>
-              ) : (
-                canContinue &&
-                phase === "round" && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleContinue}
-                      className="font-mono text-xs text-cyan underline underline-offset-4 transition-colors hover:text-foreground"
-                    >
-                      I spoke · Continue
-                    </button>
-                    {refusedRound === roundIndex && (
-                      <p className="text-xs text-foreground/70">
-                        Trace the dots in order, then continue.
-                      </p>
-                    )}
-                    {voicePrompt === roundIndex && !speechActive && (
-                      <p className="text-xs text-foreground/70">
-                        We couldn't hear that. Say the word once more, a little
-                        louder.
-                      </p>
-                    )}
-                  </>
-                )
-              )}
-            </div>
-            {(phase === "round" || phase === "cue_loading" || phase === "cue") && <p className="text-center font-mono text-xs tabular-nums text-muted">{remaining}s remaining</p>}
-            <p className="text-center text-xs text-muted">
-              All sensors recording simultaneously. Raw recordings are not
-              retained.
+      {/* Status and prompts: three fixed lines. The Continue control and the
+          messages appear inside them without moving anything else. */}
+      <div className="h-[60px] shrink-0 overflow-hidden text-center">
+        <div className="h-5">
+          {phase === "committing" ? (
+            <p className="font-mono text-xs uppercase tracking-widest text-muted">
+              Sending round {round?.roundIndex}
             </p>
-          </div>
-        </>
-      )}
+          ) : phase === "cue_loading" ? (
+            <p className="text-xs text-muted">Loading the final point…</p>
+          ) : phase === "cue" ? (
+            <p className="text-xs text-muted">Finish the trace at the new point.</p>
+          ) : (
+            phase === "round" &&
+            canContinue && (
+              <button
+                type="button"
+                onClick={handleContinue}
+                className="font-mono text-xs text-cyan underline underline-offset-4 transition-colors hover:text-foreground"
+              >
+                I spoke · Continue
+              </button>
+            )
+          )}
+        </div>
+        <div className="h-5">
+          {round &&
+            phase === "round" &&
+            canContinue &&
+            refusedRound === roundIndex && (
+              <p className="text-xs text-foreground/70">
+                Trace the dots in order, then continue.
+              </p>
+            )}
+        </div>
+        <div className="h-5">
+          {round &&
+            phase === "round" &&
+            canContinue &&
+            voicePrompt === roundIndex &&
+            !speechActive && (
+              <p className="text-xs text-foreground/70">
+                We couldn't hear that. Say the word once more, a little louder.
+              </p>
+            )}
+        </div>
+      </div>
+
+      {/* Timer and privacy line. Both lines are reserved in every phase. */}
+      <div className="h-[40px] shrink-0 overflow-hidden text-center">
+        <p className="h-5 font-mono text-xs tabular-nums text-muted">
+          {round &&
+          (phase === "round" || phase === "cue_loading" || phase === "cue")
+            ? `${remaining}s remaining`
+            : " "}
+        </p>
+        <p className="mt-1 text-xs text-muted">
+          All sensors recording simultaneously. Raw recordings are not retained.
+        </p>
+      </div>
     </div>
   );
 }

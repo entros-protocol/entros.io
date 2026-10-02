@@ -1,16 +1,16 @@
 # Entros Protocol: A Framework for Temporally-Consistent, Decentralized Proof-of-Personhood
 
 **Original Date:** June 27, 2025
-**Updated:** September 19, 2026
-**Word Count:** Approx. 7600
+**Updated:** October 2, 2026
+**Word Count:** Approx. 8,500
 
 ---
 
 ## Abstract
 
-The proliferation of sophisticated AI and bot networks necessitates methods for verifying human uniqueness and liveness in digital ecosystems. Existing Proof-of-Personhood (PoP) solutions rely on centralized authorities, static biometrics, or socially correlatable data. These approaches create different privacy, security, and access tradeoffs. We introduce the Entros Protocol, a decentralized framework for PoP and Self-Sovereign Identity built on Solana. The core innovation is *temporal consistency*: the assertion that human identity is best proven by biological and behavioral change over time, not by one static secret. The framework captures multi-modal behavioral data during a configurable challenge, extracts a 308-dimensional feature vector, and produces a 256-bit locality-sensitive hash via SimHash. A Groth16 zero-knowledge proof verifies that consecutive fingerprints fall within a bounded Hamming distance without revealing either value. Attestations are anchored to non-transferable identity tokens (SPL Token-2022) with progressive Trust Scores. We provide formal security definitions, analyze replay, synthesis, and Sybil attacks, distinguish first-capture validation from returning-user continuity, and present benchmarks from a working Solana devnet implementation.
+The proliferation of sophisticated AI and bot networks necessitates methods for verifying human uniqueness and liveness in digital ecosystems. Existing Proof-of-Personhood (PoP) solutions rely on centralized authorities, static biometrics, or socially correlatable data. These approaches create different privacy, security, and access tradeoffs. We introduce the Entros Protocol, a decentralized framework for PoP and Self-Sovereign Identity built on Solana. The core innovation is *temporal consistency*: the assertion that human identity is best proven by biological and behavioral change over time, not by one static secret. The framework captures multi-modal behavioral data in paired rounds: a short sequence of challenges, each revealed only after the client has hash-committed the previous round's evidence into a running chain. The committed segments are joined, a 308-dimensional feature vector is extracted, and a 256-bit locality-sensitive hash is produced via SimHash. A Groth16 zero-knowledge proof verifies that consecutive fingerprints fall within a bounded Hamming distance without revealing either value. Attestations are anchored to non-transferable identity tokens (SPL Token-2022) with progressive Trust Scores. We provide formal security definitions, analyze replay, synthesis, and Sybil attacks, distinguish first-capture validation from returning-user continuity, and present benchmarks from a working Solana devnet implementation.
 
-**Keywords:** *Proof-of-Personhood (PoP), Decentralized Identity (DID), Behavioral Biometrics, Zero-Knowledge Proofs, Groth16, SimHash, Liveness Detection, Temporal Consistency, Solana.*
+**Keywords:** *Proof-of-Personhood (PoP), Decentralized Identity (DID), Behavioral Biometrics, Zero-Knowledge Proofs, Groth16, SimHash, Liveness Detection, Challenge-Response, Temporal Consistency, Solana.*
 
 ---
 
@@ -24,9 +24,11 @@ The Entros Protocol operates on a different principle. A human is a continuous, 
 
 Instead of asking *"What is your secret?"*, the protocol asks *"Are you still you?"*.
 
+A second question shapes the capture itself: *"Could this evidence have been prepared in advance?"* A challenge delivered as a single block is fully known to the client before capture begins, so the response can be composed as one artifact and every check on it runs after the fact. Entros therefore interleaves challenge and evidence: the session runs in rounds, each round's challenge is revealed only after the previous round's evidence is committed, and liveness becomes a property of the exchange's timing rather than of a static object alone.
+
 #### **1.1. Contributions**
 
-1. A multi-modal behavioral capture protocol (the *Liveness Interlock*) that extracts a 308-dimensional feature vector from voice, motion, and touch data captured simultaneously over a configurable window.
+1. A multi-modal behavioral capture protocol (the *Liveness Interlock*) in which challenge and evidence interleave across sequential rounds: each round's challenge is revealed only after the previous round's evidence has been hash-committed, and a 308-dimensional feature vector is extracted from the committed voice, motion, and touch streams.
 2. A locality-sensitive hashing pipeline (*SimHash*) that produces a 256-bit behavioral fingerprint. The research program measures whether same-person and cross-person distances form a usable operating region. Operational thresholds remain private.
 3. A Groth16 zero-knowledge circuit that proves two Poseidon-committed fingerprints fall within a bounded Hamming distance, without revealing either fingerprint.
 4. A non-transferable on-chain identity token (the *Entros Anchor*) with a progressive Trust Score based on successful verification history and account age.
@@ -45,7 +47,7 @@ Section 2 defines the Temporal-Biometric Hash pipeline. Section 3 presents the Z
 
 The Temporal-Biometric Hash (TBH) pipeline targets five properties. The first three require population and adversarial evidence before they become protocol guarantees.
 
-**Definition 1 (TBH Requirements).** *A TBH scheme is a tuple of algorithms (Challenge, Capture, Extract, Hash, Commit) satisfying:*
+**Definition 1 (TBH Requirements).** *A TBH scheme is a tuple of algorithms (Challenge, Capture, Extract, Hash, Commit) satisfying the properties below. In the deployed protocol, Challenge and Capture iterate: the session runs a short sequence of rounds in which Challenge reveals round k's stimulus only after Commit has accepted round k−1's evidence hash.*
 
 1. **Uniqueness.** *Fingerprints from distinct individuals have high expected Hamming distance:* `E[d_H(F_A, F_B)] ≈ n/2` *for n-bit fingerprints, A ≠ B.*
 2. **Temporal Consistency.** *Fingerprints from the same individual across sessions have bounded distance:* `d_H(F_t, F_{t+Δ}) ∈ [δ_min, δ_max]` *with high probability.*
@@ -55,27 +57,29 @@ The Temporal-Biometric Hash (TBH) pipeline targets five properties. The first th
 
 #### **2.2. Challenge Generation**
 
-The protocol issues a nonce-seeded challenge consisting of two components:
+The protocol issues a nonce-seeded session structured as a short sequence of rounds (three in the current deployment). Recording runs continuously across the session. Each round presents two components:
 
-**Phonetic phrase.** A 5-word phrase drawn uniformly at random from a curated 1,357-word neutral-vocabulary English dictionary (e.g., *"elephant mountain coffee yellow bicycle"*). The vocabulary, combinatorial structure (1357⁵ ≈ 4.6 × 10¹⁵ phrases), and rationale for choosing real words over nonsense syllables are discussed in §2.2.1.
+**Per-round word.** One word drawn uniformly at random, without repeats within a session, from a curated 1,240-word neutral-vocabulary English dictionary. The server reveals round k+1's word only after accepting round k's commitment, so the phrase is spoken one word at a time under per-round deadlines. The vocabulary and the rationale for choosing real words over nonsense syllables are discussed in §2.2.1.
 
-**Lissajous curve.** A parametric curve `γ(t) = (A sin(at + δ), B sin(bt))` with random parameters `a, b, δ`. The user traces this curve on-screen, producing kinematic data shaped by involuntary motor control patterns.
+**Per-round trace.** A short path through three to four waypoints on a grid, traced on-screen and producing kinematic data shaped by involuntary motor control patterns. The path's final point is withheld: the reveal carries a commitment to it, the server discloses it mid-round once the visible path is traced and speech is under way, and the client verifies the disclosure against that commitment.
+
+When a round's evidence is complete, the client cuts that round's segment from the continuous recording (bounded at 12 seconds of 16 kHz audio) and posts a commitment binding the segment digest, the trace digest, the round's challenge digest, and the previous round's commitment, forming a hash chain rooted in the session parameters. A session therefore yields an ordered sequence of sealed evidence, not a single artifact.
 
 #### **2.2.1. Phrase Vocabulary Selection**
 
 The original protocol design (June 2025 – April 2026) specified a 70-syllable nonsense vocabulary on the theory that non-semantic phrases would (a) prevent dictionary-based audio deepfake attacks by enlarging the synthesis target space and (b) elicit distinctive prosodic variation that text-to-speech systems would struggle to reproduce. Empirical deployment in early 2026 forced a revision of both claims.
 
-**Threat-model evolution.** The "dictionary-based deepfake" model assumes adversaries pre-synthesize libraries of TTS audio for known phrases. Real-time streaming TTS has made that pattern obsolete. As of 2026, Cartesia Sonic Turbo and ElevenLabs Flash v2.5 generate arbitrary text at ≤100 ms time-to-first-audio for sub-cent unit cost, and self-hosted XTTS-v2 runs at RTF 0.3× on commodity GPUs. The ASVspoof 5 benchmark [25] abandoned the pre-synthesis library attack class entirely, focusing on real-time synthesis as the empirically dominant threat. Combinatorial vocabulary size (70⁵ vs. 1357⁵) does not affect an attacker who never needs to pre-compute.
+**Threat-model evolution.** The "dictionary-based deepfake" model assumes adversaries pre-synthesize libraries of TTS audio for known phrases. Real-time streaming TTS has made that pattern obsolete. As of 2026, Cartesia Sonic Turbo and ElevenLabs Flash v2.5 generate arbitrary text at ≤100 ms time-to-first-audio for sub-cent unit cost, and self-hosted XTTS-v2 runs at RTF 0.3× on commodity GPUs. The ASVspoof 5 benchmark [25] abandoned the pre-synthesis library attack class entirely, focusing on real-time synthesis as the empirically dominant threat. Combinatorial vocabulary size does not affect an attacker who never needs to pre-compute.
 
 **Prosodic discrimination is vocabulary-independent.** Modern deepfake-detection literature [26] extracts the human-vs-synth signal from cycle-level perturbation statistics. These include jitter, shimmer, harmonic-to-noise ratio, and microtremor F0 measured over voiced segments. These features are physical correlates of vocal-fold biomechanics and laryngeal control, independent of the lexical identity of the spoken content. The same prosodic asymmetry that distinguishes a human from a synthesizer on "elephant mountain coffee" also distinguishes them on "ba le fa ki te". Choosing nonsense provides no incremental discrimination on the prosodic axis the literature treats as load-bearing.
 
-**ASR accuracy is vocabulary-dependent and asymmetric in the defender's favor.** The protocol's content-binding check requires the validation server to verify that the audio matches the issued phrase. Both Whisper [27] and Wav2Vec2-Phoneme [28] exhibit substantially higher error rates on out-of-distribution input than on natural language. Whisper's autoregressive decoder hallucinates training-corpus filler such as "Thanks for watching" on nonsense input. Tests observed an approximate 30 percent false-reject rate on clean human speech of nonsense syllables. Wav2Vec2-Phoneme operates in the right primitive through CTC forced alignment, but its baseline phoneme error rate compounds against the per-phoneme matching metric. This yields a discrimination gap of only 10–15 percentage points between right and wrong content, which is too narrow to threshold reliably. On real English words, Whisper-tiny.en operates in its training distribution with WER ≈ 5–6 % on LibriSpeech test-clean, and word-level Levenshtein on a curated dictionary gives a discrete signal whose collision probability between two random 5-word phrases is < 0.1 %.
+**ASR accuracy is vocabulary-dependent and asymmetric in the defender's favor.** The protocol's content-binding check requires the validation server to verify that the audio matches the issued phrase. Both Whisper [27] and Wav2Vec2-Phoneme [28] exhibit substantially higher error rates on out-of-distribution input than on natural language. Whisper's autoregressive decoder hallucinates training-corpus filler such as "Thanks for watching" on nonsense input. Tests observed an approximate 30 percent false-reject rate on clean human speech of nonsense syllables. Wav2Vec2-Phoneme operates in the right primitive through CTC forced alignment, but its baseline phoneme error rate compounds against the per-phoneme matching metric. This yields a discrimination gap of only 10–15 percentage points between right and wrong content, which is too narrow to threshold reliably. On real English words, Whisper-tiny.en operates in its training distribution with WER ≈ 5–6 % on LibriSpeech test-clean, and word-level Levenshtein on a curated dictionary gives a discrete signal whose collision probability between two random three-word sessions is far below 0.1 percent.
 
-**Curated real-word vocabulary.** The shipped implementation uses a 1,357-word neutral-vocabulary English dictionary curated by length (4–8 letters), syllable count (1–3), VADER-positive sentiment, hand-blocklist content safety filters, and homophone/substring-collision pruning. The 1,357⁵ challenge space preserves per-session unpredictability and content binding. It does not stop real-time synthesis. The shipped Whisper-tiny.en and word-level Levenshtein pipeline produced a 95 percentage-point separation between right-phrase and wrong-content calibration samples. This measurement covers phrase matching, not human-versus-synthetic classification.
+**Curated real-word vocabulary.** The shipped implementation uses a 1,240-word neutral-vocabulary English dictionary curated by length (4–8 letters), syllable count (1–3), VADER-positive sentiment, hand-blocklist content safety filters, and homophone/substring-collision pruning. Words the decoder cannot hear reliably on their own were removed when the challenge moved to per-round single words. Under paired rounds the dictionary is drawn per round without repeats, so a three-round session realizes one of 1240 × 1239 × 1238 ≈ 1.9 × 10⁹ word sequences. The raw space size is no longer the load-bearing property: each word is revealed only after the previous round's evidence is committed, so a synthesis pipeline, if one is used, must run inside a live round window against a word it has not seen. Content binding by transcription is unchanged. It does not stop real-time synthesis. The shipped Whisper-tiny.en and word-level Levenshtein pipeline produced a 95 percentage-point separation between right-phrase and wrong-content calibration samples. This measurement covers phrase matching, not human-versus-synthetic classification.
 
 #### **2.3. Multi-Modal Data Acquisition**
 
-Three sensor streams are captured simultaneously over a configurable window (default: 12 seconds):
+Three sensor streams are captured continuously across the session and segmented by round. Within each round the streams are simultaneous: the word is spoken and the path is traced during the same bounded interval (at most 12 seconds of audio per round):
 
 * `S_audio`: Microphone input, band-limited and decimated to a canonical 16 kHz on the device, capturing voice prosody.
 * `S_motion`: IMU accelerometer/gyroscope at 60–100 Hz on mobile; mouse pointer dynamics on desktop.
@@ -83,7 +87,7 @@ Three sensor streams are captured simultaneously over a configurable window (def
 
 #### **2.4. Feature Extraction**
 
-Raw time-series data is distilled into a 308-dimensional feature vector `v ∈ ℝ^308` through three parallel pipelines.
+After the final round commits, recording stops and the committed per-round segments are joined and levelled once. The joined time series is distilled into a 308-dimensional feature vector `v ∈ ℝ^308` through three parallel pipelines. Every segment entering the join was committed before the next round's challenge was revealed, so the session's feature summary describes evidence whose order the schedule fixed in advance.
 
 **Speaker Features (`v_audio ∈ ℝ^170`)**
 
@@ -248,7 +252,7 @@ The score is capped at a configurable maximum (currently 10,000) and computed on
 
 #### **5.3. Verification Modes**
 
-Wallet-connected mode is the primary flow. A first verification requires a validator-signed receipt before the program mints an Entros Anchor. A returning verification supplies a Groth16 continuity proof before the program updates the Anchor and Trust Score. SAS issuance is a separate best-effort step when the executor and credential authority are configured.
+Wallet-connected mode is the primary flow. A first verification requires a validator-signed receipt before the program mints an Entros Anchor. The receipt attests to a completed paired-round session: the validator verifies the round commitment chain and the timing and order of the rounds, and evaluates the statistical evidence, before signing. A returning verification supplies a Groth16 continuity proof before the program updates the Anchor and Trust Score. SAS issuance is a separate best-effort step when the executor and credential authority are configured.
 
 Walletless mode is a secondary SDK and relayer design for applications that do not onboard a user wallet. The behavioral fingerprint remains in a device-local encrypted baseline. Clearing storage resets that continuity. This mode does not create a portable user-owned Anchor or Trust Score. The reference application does not currently offer it. Its first-capture decision remains an open measurement question.
 
@@ -272,17 +276,23 @@ Walletless mode is a secondary SDK and relayer design for applications that do n
 
 *Proof.* A replayed fingerprint produces `d_H(F_T, F_T) = 0 < δ_min = 3`. The circuit outputs `false` for the range check `δ_min ≤ d_H < δ_max`. By the knowledge soundness of Groth16, no valid proof exists for a false statement. The on-chain verifier rejects the transaction. The program consumes a challenge nonce after a successful verification and rejects later reuse. A failed transaction preserves the nonce for a legitimate retry until its 5-minute expiry. ∎
 
+The paired-round schedule closes a second replay channel. A recorded or pre-composed session must answer challenges that have not been issued yet: round k+1's word and path are revealed only after round k's commitment lands, and each commitment binds the round's evidence digests to the round's challenge and to the previous commitment. Replayed audio fails the transcription check against fresh words. Replayed commitments fail the chain, which is rooted in fresh session parameters. Evidence composed ahead of the session cannot anticipate the unrevealed rounds.
+
 #### **6.3. Synthetic Data Attacks**
 
 **Research question 1 (Coordinated synthesis).** *Can the complete validation stack distinguish coordinated synthetic evidence from genuine captures across supported devices and users?*
 
 The defense is layered:
 
+**Schedule-level.** Challenge and evidence interleave across rounds. Synthesis, if attempted, runs inside per-round deadlines against challenges revealed one round at a time; an artifact composed in advance can answer at most the rounds already revealed.
+
 **Feature-level.** The 308-dimensional feature vector summarizes voice, motion, and touch behavior. The private validator evaluates its distributions and relationships against the active policy. No feature count or individual statistic establishes synthesis resistance by itself.
 
 **Joint projection.** SimHash projects the concatenated vector onto shared hyperplanes, so each output bit depends on features from all modalities at once and no single modality determines the fingerprint alone. The projection mixes the modalities. It does not test a relationship between them, and it is not the layer that establishes one.
 
 **Entropy scoring.** The extraction pipeline measures Shannon entropy and jitter variance per sensor stream. Synthetic data with low or uniform entropy is flagged before reaching the hashing stage.
+
+The paired schedule changes what a synthesis attack must do, not what the stack must measure. The tier results in §6.10 were measured against the single-capture configuration; re-measurement against the paired schedule is part of the open red-team program, and no tier result here should be read as a paired-round measurement until that campaign completes.
 
 Entros treats synthesis resistance as an empirical property of the complete validation stack. The red-team program measures each attack class against the deployed configuration. It does not derive a joint success rate from assumed per-modality probabilities.
 
@@ -351,7 +361,7 @@ Clearing local storage removes walletless continuity. Applications that require 
 
 #### **6.8. Browser Trust Model and Server-Side Validation**
 
-The browser performs sensor capture, feature extraction, SimHash computation, Poseidon commitment, and Groth16 proof generation. It keeps an encrypted baseline locally. The validation service processes phrase audio and the statistical summary. The protocol persists commitments, proofs, encrypted baseline material, and account state. The browser remains an untrusted execution environment. An adversary controlling it can override sensor APIs, manipulate feature extraction, or submit pre-computed proofs from synthetic data. The deployed browser tier combines automation-framework signals, challenge-response phrase checks, private statistical validation, and cross-wallet registry analysis. Planned progressive server challenges, WebAuthn request binding, and native attestation will strengthen client integrity and limit pre-composed evidence.
+The browser performs sensor capture, feature extraction, SimHash computation, Poseidon commitment, and Groth16 proof generation. It keeps an encrypted baseline locally. The validation service processes phrase audio and the statistical summary. The protocol persists commitments, proofs, encrypted baseline material, and account state. The browser remains an untrusted execution environment. An adversary controlling it can override sensor APIs, manipulate feature extraction, or submit pre-computed proofs from synthetic data. The deployed browser tier combines automation-framework signals, sequential challenge-response checks (the paired rounds of §2.2), private statistical validation, and cross-wallet registry analysis. WebAuthn request binding and native attestation remain planned and will further strengthen client integrity.
 
 The ZK proof provides a deterministic guarantee: the Hamming distance either falls within [δ_min, δ_max) or the proof is invalid. This is necessary but not sufficient. A valid proof confirms the *mathematical relationship* between two fingerprints but cannot confirm the *provenance* of the underlying sensor data.
 
@@ -359,7 +369,7 @@ The protocol implements a two-level validation architecture:
 
 **Level 1 (client-side, deterministic).** The Groth16 proof, as currently implemented. Provides mathematical certainty that the Hamming distance constraint is satisfied.
 
-**Level 2 (server-side, statistical).** Before proof generation, the client transmits the 308-dimensional feature vector, phrase audio, bounded contours, curve outline, and request metadata. The server applies private statistical models and challenge-response checks. Its same-window analysis runs over client-supplied signals. It provides statistical evidence rather than sensor provenance.
+**Level 2 (server-side, statistical).** Before proof generation, the client transmits the 308-dimensional feature vector, phrase audio, bounded contours, per-round trace outlines, the round commitment chain, capture timing, and request metadata. The server applies private statistical models and challenge-response checks. Its same-window analysis runs over client-supplied signals. It provides statistical evidence rather than sensor provenance.
 
 The feature vector contains fixed-size statistics rather than raw motion or full-resolution touch streams. The request also carries bounded F0 and acceleration contours for same-window analysis. The ZK proof hides the client fingerprint. These inputs support statistical validation but do not authenticate sensor origin.
 
@@ -371,7 +381,7 @@ Browser-based sensor APIs do not authenticate the physical source of submitted d
 
 App Attest and Play Integrity can return vendor-signed evidence about a recognized app instance and device environment. The planned native tier will bind that evidence to a server nonce and the final request digest, then verify freshness and replay state server-side. This strengthens confidence that an approved app instance authorized the request. It does not by itself prove sensor origin, human presence, or uniqueness.
 
-WebAuthn can add registered-credential authorization and continuity evidence to browser submissions. Progressive server challenges can also limit evidence prepared before a session. Entros evaluates these controls as separate layers because each establishes a different property.
+WebAuthn can add registered-credential authorization and continuity evidence to browser submissions. Progressive server challenges are deployed as the paired-round schedule and limit evidence prepared before a session (§6.2). Entros evaluates these controls as separate layers because each establishes a different property.
 
 The native application also provides direct access to IMU and touch capabilities that browsers restrict. Those signals support behavioral validation without turning device attestation into a personhood claim.
 
@@ -380,6 +390,8 @@ The native application also provides direct access to IMU and touch capabilities
 The protocol evaluates defined attack classes through a continuous internal red-team program. The harness submits synthesized evidence to the deployed validation service and records denominators, observed pass rates, and enforcement state. A validator rejection stops the reference flow before on-chain submission. Results apply only to the tested attack class and configuration.
 
 The attack taxonomy spans eight tiers ordered by sophistication. Results for the first three tiers (the highest-priority attacks implementable without external TTS models) are summarized below.
+
+All tier results below were measured against the single-capture configuration. The paired-round schedule changes the attack surface for the synthesis tiers in particular: offline composition of a complete session no longer satisfies the commit-reveal schedule, so real-time synthesis must operate inside per-round deadlines. The tiers will be re-run against the paired configuration before any result on this page is updated or extended to it.
 
 | Tier | Attack class | Attempts | Tier 1 pass rate |
 |------|-------------|----------|-----------|
@@ -422,7 +434,7 @@ T4 extends the program to modern neural voice synthesis, which the tiers above d
 
 ### **8. Implementation and Benchmarks**
 
-The devnet implementation has three Anchor programs, a Groth16 circuit, a published TypeScript SDK, a private Rust validation service, a Rust gateway and relayer, and a hosted wallet-connected application. A separate voter-weight addin is deployed on devnet as an on-chain prototype. The walletless API exists in the SDK and relayer, but the reference application does not offer that mode. Repository test suites and CI gates cover each component. Exact counts remain in the versioned test output instead of this paper.
+The devnet implementation has three Anchor programs, a Groth16 circuit, a published TypeScript SDK, a private Rust validation service, a Rust gateway and relayer, and a hosted wallet-connected application. The SDK, validation service, gateway, and on-chain programs run the paired-round protocol end to end. The hosted application offers paired rounds in preview while external testing completes; the single-capture flow remains the public default until it does. A separate voter-weight addin is deployed on devnet as an on-chain prototype. The walletless API exists in the SDK and relayer, but the reference application does not offer that mode. Repository test suites and CI gates cover each component. Exact counts remain in the versioned test output instead of this paper.
 
 The protocol fee treasury is live on devnet. Program initialization uses a 0.005 SOL default, and the authority can update the value. The transaction transfers the configured fee atomically with a successful mint or update. Treasury state is publicly auditable on Solana Explorer.
 
@@ -432,13 +444,15 @@ The devnet programs remain upgradeable under the current development authority. 
 
 Benchmarks measured on Chrome 132 (M1 MacBook Pro) and Safari (iPhone 15 Pro Max):
 
-* Behavioral capture: 7,000–12,000 ms (configurable)
+* Behavioral capture: three sequential rounds, each bounded at 12 s of committed audio, plus the commit-reveal round trips; wall-clock capture time depends on user pacing and network latency
 * Feature extraction (308 dimensions): ~45 ms
 * SimHash (256-bit): <1 ms
 * Poseidon commitment: ~3 ms
 * Groth16 proof generation (WASM): ~850 ms
 * On-chain verification: ~123K compute units
 * **Total (excluding capture): ~900 ms**
+
+The figures above were measured on the single-window pipeline. Extraction still runs once per session over the joined rounds, so its cost scales with total committed audio; proof generation and on-chain verification are unchanged because the circuit is identical. Paired-flow wall-clock benchmarks accompany the next revision.
 
 The total pipeline from button click to on-chain proof depends on the configured capture window and on network confirmation, plus ~900 ms of computation. On mobile (iPhone 15 Pro Max, Safari), all three sensor streams (audio, IMU motion, touch) capture simultaneously. Safari returns the hardware's native 48 kHz whatever rate the page requests. The SDK band-limits and decimates any capture at or above that rate to a canonical 16 kHz before feature extraction, so the browser's own resampler stops influencing the fingerprint. Hardware that delivers below 16 kHz, such as a narrowband Bluetooth headset, is passed through at its native rate rather than upsampled, since upsampling would invent detail the microphone never captured. Proof generation completes within the same time budget via snarkjs WASM.
 
@@ -458,7 +472,7 @@ The native mobile application is the planned higher-assurance client and targets
 
 ### **9. Conclusion and Future Work**
 
-The Entros Protocol presents a framework for Proof-of-Personhood through temporal behavioral continuity. It combines private validation, committed behavioral fingerprints, zero-knowledge continuity proofs, and portable wallet history. Population separation and first-capture liveness remain measured protocol requirements.
+The Entros Protocol presents a framework for Proof-of-Personhood through temporal behavioral continuity. It combines private validation, a challenge-evidence schedule that interleaves the two within each session, committed behavioral fingerprints, zero-knowledge continuity proofs, and portable wallet history. Population separation and first-capture liveness remain measured protocol requirements.
 
 The cryptographic proof establishes a bounded relationship between two committed fingerprints. The private validator decides whether a submitted capture satisfies the active statistical policy. First verification relies on that policy and a signed receipt. Returning verification adds the continuity proof. Fees bound request volume after detection.
 
@@ -473,6 +487,8 @@ The cryptographic proof establishes a bounded relationship between two committed
 * Server-side feature validation is implemented as described in Section 6.8. The client and on-chain protocol are public. Validation models, thresholds, and active detection policy remain private.
 * Adversarial testing continues against defined attack classes. Entros publishes aggregate denominators and observed outcomes after each safe, completed campaign. T5 remains open, and T6 remains blocked on its closure criteria.
 * Request-bound native attestation. Research App Attest and Play Integrity as stronger app and device integrity evidence for the native tier.
+* Re-run the red-team attack tiers against the paired-round schedule and publish updated aggregate results.
+* External paired-round testing, then migration of the hosted default flow to paired rounds.
 
 The client SDK, circuit definitions, and on-chain programs are open source and published as a defensive disclosure. The private validation and red-team repositories remain closed as defense-in-depth.
 

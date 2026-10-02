@@ -434,7 +434,7 @@ T4 extends the program to modern neural voice synthesis, which the tiers above d
 
 ### **8. Implementation and Benchmarks**
 
-The devnet implementation has three Anchor programs, a Groth16 circuit, a published TypeScript SDK, a private Rust validation service, a Rust gateway and relayer, and a hosted wallet-connected application. The SDK, validation service, gateway, and on-chain programs run the paired-round protocol end to end. The hosted application offers paired rounds in preview while external testing completes; the single-capture flow remains the public default until it does. A separate voter-weight addin is deployed on devnet as an on-chain prototype. The walletless API exists in the SDK and relayer, but the reference application does not offer that mode. Repository test suites and CI gates cover each component. Exact counts remain in the versioned test output instead of this paper.
+The devnet implementation has three Anchor programs, a Groth16 circuit, a published TypeScript SDK, a private Rust validation service, a Rust gateway and relayer, and a hosted wallet-connected application. The SDK, validation service, gateway, and on-chain programs run the paired-round protocol end to end. The hosted application runs paired rounds as its public default flow. A separate voter-weight addin is deployed on devnet as an on-chain prototype. The walletless API exists in the SDK and relayer, but the reference application does not offer that mode. Repository test suites and CI gates cover each component. Exact counts remain in the versioned test output instead of this paper.
 
 The protocol fee treasury is live on devnet. Program initialization uses a 0.005 SOL default, and the authority can update the value. The transaction transfers the configured fee atomically with a successful mint or update. Treasury state is publicly auditable on Solana Explorer.
 
@@ -488,7 +488,7 @@ The cryptographic proof establishes a bounded relationship between two committed
 * Adversarial testing continues against defined attack classes. Entros publishes aggregate denominators and observed outcomes after each safe, completed campaign. T5 remains open, and T6 remains blocked on its closure criteria.
 * Request-bound native attestation. Research App Attest and Play Integrity as stronger app and device integrity evidence for the native tier.
 * Re-run the red-team attack tiers against the paired-round schedule and publish updated aggregate results.
-* External paired-round testing, then migration of the hosted default flow to paired rounds.
+* Gather calibration captures from the open paired flow and tune round parameters against real usage.
 
 The client SDK, circuit definitions, and on-chain programs are open source and published as a defensive disclosure. The private validation and red-team repositories remain closed as defense-in-depth.
 

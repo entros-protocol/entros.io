@@ -9,6 +9,7 @@ import { PairedChallenge } from "../src/components/verify/paired-challenge";
 const ROUND_ONE: PairedRoundView = {
   roundIndex: 1,
   rounds: 3,
+  expiresAtMs: 12_000,
   word: "garden",
   waypoints: [
     { x: 200, y: 800 },
@@ -21,6 +22,7 @@ const ROUND_ONE: PairedRoundView = {
 const ROUND_TWO: PairedRoundView = {
   roundIndex: 2,
   rounds: 3,
+  expiresAtMs: 12_000,
   word: "harbor",
   waypoints: [
     { x: 150, y: 150 },
@@ -43,13 +45,15 @@ afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 interface RenderOptions {
   round?: PairedRoundView | null;
   phase?: PairedPhase;
-  stalled?: boolean;
+  canContinue?: boolean;
   onContinue?: () => boolean;
+  speechActive?: boolean;
 }
 
 const surfaceRef = createRef<HTMLDivElement>();
@@ -57,8 +61,9 @@ const surfaceRef = createRef<HTMLDivElement>();
 async function render({
   round = ROUND_ONE,
   phase = "round",
-  stalled = false,
+  canContinue = false,
   onContinue = () => true,
+  speechActive = false,
 }: RenderOptions = {}) {
   await act(async () => {
     root.render(
@@ -66,8 +71,9 @@ async function render({
         surfaceRef={surfaceRef}
         round={round}
         phase={phase}
-        stalled={stalled}
+        canContinue={canContinue}
         level={0.02}
+        speechActive={speechActive}
         onContinue={onContinue}
       />,
     );
@@ -231,19 +237,20 @@ describe("PairedChallenge", () => {
     ).toBe(true);
   });
 
-  it("offers no Next button and no clock", async () => {
+  it("shows a quiet countdown without an unrequested advance button", async () => {
     await render();
 
     expect(container.querySelectorAll("button")).toHaveLength(0);
-    expect(container.textContent).not.toMatch(/next|\d+\s*s\b|seconds?|hurry|quick/i);
+    expect(container.textContent).toMatch(/\d+s remaining/);
+    expect(container.textContent).not.toMatch(/hurry|quick/i);
   });
 
-  it("offers Continue after a stall and explains a refusal", async () => {
+  it("offers Continue when the controller permits it and explains a refusal", async () => {
     const onContinue = vi.fn(() => false);
-    await render({ stalled: true, onContinue });
+    await render({ canContinue: true, onContinue });
 
     const buttons = [...container.querySelectorAll("button")];
-    expect(buttons.map((button) => button.textContent)).toEqual(["Continue"]);
+    expect(buttons.map((button) => button.textContent)).toEqual(["I spoke · Continue"]);
     expect(container.textContent).not.toContain("then continue");
 
     await act(async () => buttons[0]!.click());
@@ -254,11 +261,61 @@ describe("PairedChallenge", () => {
 
   it("drops the hint once Continue ends the round", async () => {
     const onContinue = vi.fn(() => true);
-    await render({ stalled: true, onContinue });
+    await render({ canContinue: true, onContinue });
 
     await act(async () => container.querySelector("button")!.click());
 
     expect(onContinue).toHaveBeenCalledOnce();
     expect(container.textContent).not.toContain("then continue");
   });
+
+  it("asks for the word again when the outline passed but nothing registers", async () => {
+    vi.useFakeTimers();
+    await render({ canContinue: true });
+
+    expect(container.textContent).not.toContain("couldn't hear");
+
+    await act(async () => {
+      vi.advanceTimersByTime(2600);
+    });
+
+    expect(container.textContent).toContain(
+      "We couldn't hear that. Say the word once more, a little louder.",
+    );
+    expect(container.querySelector('[aria-live="polite"]')!.textContent).toBe(
+      "We couldn't hear that. Say the word once more, a little louder.",
+    );
+
+    // Heard speech answers the prompt.
+    await render({ canContinue: true, speechActive: true });
+    expect(container.textContent).not.toContain("couldn't hear");
+  });
+
+  it("stays quiet while speech registers and once the cue arrives", async () => {
+    vi.useFakeTimers();
+    await render({ canContinue: true, speechActive: true });
+
+    await act(async () => {
+      vi.advanceTimersByTime(6000);
+    });
+    expect(container.textContent).not.toContain("couldn't hear");
+
+    await render({ canContinue: true, speechActive: false });
+    await act(async () => {
+      vi.advanceTimersByTime(2600);
+    });
+    expect(container.textContent).toContain("couldn't hear");
+
+    await render({ phase: "cue", canContinue: false });
+    expect(container.textContent).not.toContain("couldn't hear");
+  });
+});
+
+
+it("uses tracker activity for the speech highlight regardless of amplitude", async () => {
+  await render({ speechActive: false });
+  const word = () => [...container.querySelectorAll("p")].find((node) => node.textContent === "garden")!;
+  expect(word().style.textShadow).toBe("none");
+  await render({ speechActive: true });
+  expect(word().style.textShadow).not.toBe("none");
 });

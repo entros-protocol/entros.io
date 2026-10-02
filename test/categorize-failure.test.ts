@@ -5,13 +5,14 @@ import {
 } from "../src/components/verify/categorize-failure";
 
 /**
- * Failure routing, pinned against the two production defects of 2026-07-31.
+ * Failure routing, pinned against two misroutes that a flat list of substring
+ * tests over the error message produces.
  *
- * The routing table used to be a flat list of substring tests over the error
- * message. That is how an on-chain revert came to be rendered as "Validation
- * rejected this attempt": the matcher for a validator rejection also matched
- * `custom program error`, which can only appear after the validator already
- * returned 200.
+ * The matcher for a validator rejection also matches `custom program error`,
+ * which can only appear after the validator already returned 200, so an
+ * on-chain revert renders as "Validation rejected this attempt". The same
+ * matcher swallows a safe-reveal validator hint, because the hint contains the
+ * word "validation".
  */
 
 const CAN_RESET = true;

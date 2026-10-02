@@ -70,12 +70,12 @@ This repo (`entros.io`) is the website, the verification dApp, and the documenta
 | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) | Client SDK: capture → fingerprint → prove → submit. npm [`@entros/pulse-sdk`](https://www.npmjs.com/package/@entros/pulse-sdk) |
 | [`entros-verify`](https://github.com/entros-protocol/entros-verify) | Drop-in popup component. npm [`@entros/verify`](https://www.npmjs.com/package/@entros/verify) |
 | [`executor-node`](https://github.com/entros-protocol/executor-node) | Public gateway: challenges, integrator auth, quotas, validator forwarding, SAS requests, and on-chain relay |
-| `entros-validation` | Behavioral validator, running as the relayer's validation backend (proprietary) |
-| `entros-redteam` | Private adversarial harness for completed campaigns, research prototypes, telemetry, and regression coverage. T5 remains open. Later tiers remain planned. |
 | [`entros-mobile`](https://github.com/entros-protocol/entros-mobile) | Mobile app, in development: capture, native ZK proving via mopro, on-chain submit via Mobile Wallet Adapter |
 | [`entros-mopro`](https://github.com/entros-protocol/entros-mopro) | Native Groth16 prover bindings consumed by `entros-mobile`. Native proof smoke coverage remains planned. |
 | [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) | Devnet voter-weight program. Realms client integration remains planned. |
 | [`token-contracts`](https://github.com/entros-protocol/token-contracts) | No code. Maps where $ENTROS utility lives; the mint itself comes from a public launchpad. Staking and incentive wiring are roadmap. |
+
+The behavioral validation service and the adversarial test harness are private.
 
 ### On-chain
 

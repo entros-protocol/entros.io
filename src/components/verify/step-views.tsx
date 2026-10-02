@@ -297,6 +297,8 @@ const SOFT_HINT: Record<RetryableReason, string> = {
   phrase_content_mismatch:
     "Read the phrase clearly at a normal pace, exactly as shown.",
   trace_incomplete: "Trace through every dot, in order from 1.",
+  audio_evidence_insufficient:
+    "The service could not assess the recorded speech. Start a new verification and speak at your normal volume.",
   validation_unavailable:
     "We couldn't reach the verification service. Check your connection and try again.",
   validation_timeout:
@@ -625,10 +627,10 @@ export function FailedView({
         "Validation rejected this attempt. Please try again, or contact support if this persists.";
       break;
     case "insufficient-sol":
-      // TODO(mainnet): rewrite devnet-specific copy + CTA. Mainnet users
-      // need SOL from a CEX/DEX, not the faucet—body should
-      // drop the "devnet" qualifier and the "Get devnet SOL" button should
-      // either disappear or repoint to a "How to get SOL" docs page.
+      // TODO: This copy and CTA are devnet-specific. On mainnet, users get
+      // SOL from an exchange, not the faucet, so the body should drop the
+      // "devnet" qualifier and the "Get devnet SOL" button should either
+      // disappear or point to a "How to get SOL" docs page.
       title = "This wallet needs SOL";
       body =
         "Verifying on devnet requires a small amount of SOL to write the on-chain anchor. Your wallet currently has none.";

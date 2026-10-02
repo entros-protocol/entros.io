@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
@@ -325,6 +325,19 @@ export function VerifyWalletConnected({
     readAtSec: number;
   } | null>(null);
   const connectedWallet = connected && publicKey ? publicKey.toBase58() : null;
+  const attemptRef = useRef(0);
+  const mountedRef = useRef(true);
+  const walletIdentityRef = useRef(connectedWallet);
+  useLayoutEffect(() => {
+    if (walletIdentityRef.current !== connectedWallet) {
+      walletIdentityRef.current = connectedWallet;
+      attemptRef.current++;
+    }
+  }, [connectedWallet]);
+  useEffect(() => {
+    mountedRef.current=true;
+    return () => {mountedRef.current=false;};
+  }, []);
   const lastVerification =
     verificationTimestamp?.wallet === connectedWallet
       ? verificationTimestamp
@@ -684,6 +697,7 @@ export function VerifyWalletConnected({
     intentRef.current = intent;
     if (intent === "verify") setSigningDiagnosticReport(null);
     voicedFramesRef.current = 0;
+    attemptRef.current++;
     if (!pairedCapture.start(intent)) return;
     // An active reset cooldown reports its own failure, and leaving the
     // capture view ends the session.
@@ -695,8 +709,11 @@ export function VerifyWalletConnected({
     voicedFramesRef.current = voicedFrames;
     setProcessingStage("Extracting features...");
     dispatch({ type: "CAPTURE_DONE" });
+    const attempt=attemptRef.current;
+    const active=() => mountedRef.current && attemptRef.current === attempt;
     settleVerification(
-      finish(resolveCompletionWallet(), connection, setProcessingStage),
+      finish(resolveCompletionWallet(), connection, stage => {if (active()) setProcessingStage(stage);}),
+      active,
     );
   }
 
@@ -840,7 +857,7 @@ export function VerifyWalletConnected({
   }
 
   /** Routes a finished verification to its result screen. Both capture styles end here. */
-  function settleVerification(proofPromise: Promise<VerificationResult>) {
+  function settleVerification(proofPromise: Promise<VerificationResult>, active: () => boolean = () => true) {
     // The SDK bounds each step and reports its own phase. A host backstop
     // below `MAX_VERIFICATION_MS` pre-empts those clocks and reports the
     // failure against whatever step its own message names, which is how a
@@ -862,6 +879,7 @@ export function VerifyWalletConnected({
 
     Promise.race([proofPromise, timeoutPromise])
       .then(async (result) => {
+        if (!active()) return;
         if (studyGrant) {
           void Promise.resolve(
             onStudyRecordStatus?.(result.studyRecordStatus),
@@ -947,6 +965,7 @@ export function VerifyWalletConnected({
         });
       })
       .catch((err: Error) => {
+        if (!active()) return;
         dispatch({
           type: "VERIFICATION_FAILED",
           error: sanitizeErrorMessage(err.message ?? "Unexpected error"),
@@ -955,6 +974,7 @@ export function VerifyWalletConnected({
   }
 
   function handleReset() {
+    attemptRef.current++;
     sessionRef.current = null;
     setValidationChallenge(null);
     setAudioLevel(0);

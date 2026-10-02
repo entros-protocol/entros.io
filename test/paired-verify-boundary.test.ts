@@ -3,6 +3,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath, URL } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { POST as openProxy } from "@/app/challenge/paired/route";
+import { POST as cueProxy } from "@/app/paired/cue/route";
 import { POST as commitProxy } from "@/app/paired/commit/route";
 import { POST as finalizeProxy } from "@/app/validate-session/route";
 import { pairedVerifyEnabled } from "@/lib/server/paired-verify";
@@ -104,6 +105,7 @@ describe("paired verify boundary", () => {
     for (const path of [
       "app/challenge/paired/route.ts",
       "app/paired/commit/route.ts",
+      "app/paired/cue/route.ts",
       "app/validate-session/route.ts",
     ]) {
       const route = source(path);
@@ -169,6 +171,8 @@ describe("paired verify boundary", () => {
     const open = await openProxy(
       post("/challenge/paired", { wallet: "11111111111111111111111111111111" }),
     );
+    const cue = await cueProxy(post("/paired/cue", {}));
+    expect(cue.status).toBe(404);
     const commit = await commitProxy(post("/paired/commit", {}));
     const finalize = await finalizeProxy(post("/validate-session", {}));
 

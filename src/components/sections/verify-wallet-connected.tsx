@@ -256,7 +256,6 @@ export function VerifyWalletConnected({
   studyPreparationError,
   studyPreparationRetryAllowed = true,
   onStudyPrepare,
-  pairedVerify = false,
 }: {
   state: VerifyState;
   dispatch: React.ActionDispatch<[action: VerifyAction]>;
@@ -274,11 +273,6 @@ export function VerifyWalletConnected({
   studyPreparationError?: string | null;
   studyPreparationRetryAllowed?: boolean;
   onStudyPrepare?: () => void | Promise<void>;
-  /**
-   * Runs the capture as paired rounds. The server decides it. A study trial
-   * keeps the single capture, because its grant binds that capture.
-   */
-  pairedVerify?: boolean;
 }) {
   const { connected, wallet, publicKey } = useWallet();
   const { connection } = useConnection();
@@ -371,8 +365,13 @@ export function VerifyWalletConnected({
   // test could never fail and the screen offered "3 attempts left" forever.
   const transportFailuresRef = useRef(0);
 
-  // A study grant binds the single capture, so a study trial never runs paired.
-  const pairedActive = pairedVerify && !studyGrant;
+  // Paired rounds are the only capture this page runs. The study-trial
+  // binding to the single capture ended when web study intake closed
+  // (2026-10-06), so the flow no longer depends on the server flag or a
+  // grant. The single-capture code path below stays in the bundle but is
+  // unreachable; the `boolean` annotation keeps the constant un-narrowed so
+  // the retained path still type-checks.
+  const pairedActive: boolean = true;
   // Null until the paired capture's code has loaded.
   const [pairedCapture, setPairedCapture] =
     useState<PairedCaptureHandle | null>(null);

@@ -61,12 +61,13 @@ class VerifyErrorBoundary extends Component<
   }
 }
 
-export function VerifyFlow({
-  pairedVerify = false,
-}: {
-  /** Runs the capture as paired rounds. The page reads it from server env. */
-  pairedVerify?: boolean;
-}) {
+// Web study intake is closed (owner decision, 2026-10-06): the consent card
+// and the trial-progress strip can no longer render, and the verification
+// flow receives neutral study props so no study UI or routing engages. The
+// study machinery stays in place, inert, behind this single switch.
+const STUDY_INTAKE_OPEN: boolean = false;
+
+export function VerifyFlow() {
   const { connected, publicKey, signMessage } = useWallet();
   const walletAddress = connected && publicKey ? publicKey.toBase58() : null;
   const [state, dispatch] = useReducer(verifyReducer, initialState);
@@ -333,7 +334,8 @@ export function VerifyFlow({
           the deliberate trade-off for layout stability across the flow. */}
       <div className="mx-auto flex min-h-[620px] md:min-h-[660px] max-w-xl flex-col justify-center border border-border px-8 py-10">
         <VerifyErrorBoundary onError={handleBoundaryError}>
-          {study.definition &&
+          {STUDY_INTAKE_OPEN &&
+          study.definition &&
           study.decision === "pending" ? (
             <StudyConsent
               key={study.definition.study_id}
@@ -345,26 +347,39 @@ export function VerifyFlow({
             <VerifyWalletConnected
               state={state}
               dispatch={dispatch}
-              studyGrant={study.grant}
-              studyCaptureBlocked={study.tokenPending}
+              studyGrant={STUDY_INTAKE_OPEN ? study.grant : null}
+              studyCaptureBlocked={
+                STUDY_INTAKE_OPEN ? study.tokenPending : false
+              }
               onStudyRecordStatus={handleStudyRecordStatus}
               onStudyNextTrial={handleNextStudyTrial}
               onStudyLeave={handleLeaveStudy}
-              studyNextTrialPending={study.tokenPending}
-              studyNextTrialAvailable={study.continuation !== null}
-              studySessionActive={study.decision === "joined"}
-              studyPreparationRequired={study.decision === "consented"}
-              studyPreparationError={
-                study.decision === "consented" ? study.tokenError : null
+              studyNextTrialPending={
+                STUDY_INTAKE_OPEN ? study.tokenPending : false
               }
-              studyPreparationRetryAllowed={study.tokenRetryAllowed}
+              studyNextTrialAvailable={
+                STUDY_INTAKE_OPEN ? study.continuation !== null : false
+              }
+              studySessionActive={
+                STUDY_INTAKE_OPEN ? study.decision === "joined" : false
+              }
+              studyPreparationRequired={
+                STUDY_INTAKE_OPEN ? study.decision === "consented" : false
+              }
+              studyPreparationError={
+                STUDY_INTAKE_OPEN && study.decision === "consented"
+                  ? study.tokenError
+                  : null
+              }
+              studyPreparationRetryAllowed={
+                STUDY_INTAKE_OPEN ? study.tokenRetryAllowed : false
+              }
               onStudyPrepare={handlePrepareStudyTrial}
-              pairedVerify={pairedVerify}
             />
           )}
         </VerifyErrorBoundary>
       </div>
-      {study.decision === "joined" && study.progress && (
+      {STUDY_INTAKE_OPEN && study.decision === "joined" && study.progress && (
         <div className="space-y-2 text-center" aria-live="polite">
           {!study.tokenError && (
             <p className="font-mono text-xs uppercase tracking-[0.14em] text-foreground/45">

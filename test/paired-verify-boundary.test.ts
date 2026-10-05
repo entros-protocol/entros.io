@@ -146,13 +146,20 @@ describe("paired verify boundary", () => {
     }
     expect(pairedVerifyEnabled("1")).toBe(true);
 
-    // The server reads it, and both client layers default to the single capture.
-    expect(source("app/(app)/verify/page.tsx")).toContain("pairedVerifyEnabled()");
-    expect(source("components/sections/verify-flow.tsx")).toContain(
-      "pairedVerify = false",
+    // The flag now gates only the paired API routes. The /verify page runs
+    // paired rounds unconditionally, so the page no longer reads the flag and
+    // the flow component holds no flag default.
+    expect(source("app/(app)/verify/page.tsx")).not.toContain(
+      "pairedVerifyEnabled()",
+    );
+    expect(source("components/sections/verify-flow.tsx")).not.toContain(
+      "pairedVerify",
     );
     expect(source("components/sections/verify-wallet-connected.tsx")).toContain(
-      "pairedVerify = false",
+      "const pairedActive: boolean = true",
+    );
+    expect(source("app/paired/commit/route.ts")).toContain(
+      "pairedVerifyEnabled()",
     );
     const example = readFileSync(new URL("../.env.example", import.meta.url), "utf8");
     expect(example).toMatch(/^ENTROS_PAIRED_VERIFY=0$/m);

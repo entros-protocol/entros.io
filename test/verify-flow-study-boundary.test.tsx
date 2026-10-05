@@ -1,10 +1,17 @@
 // @vitest-environment jsdom
 
+// Web study intake closed on 2026-10-06 (owner decision): /verify runs paired
+// rounds only, so the consent card and every study control must stay
+// unrendered even when a study definition loads. The earlier wallet-boundary
+// cases (continuation removal, pending-enrolment cancellation, conflict /
+// expiry / trial-limit cleanup) exercised study state that only the consent
+// card could create; they return with it if intake ever reopens. The study
+// machinery itself stays in the component, inert behind STUDY_INTAKE_OPEN.
+
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { StudyRecordStatus } from "@entros/pulse-sdk";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { studyEnrolmentStorageKey } from "../src/lib/population-study";
 
 const walletHarness = vi.hoisted(() => ({
   address: "wallet-one",
@@ -93,12 +100,6 @@ const studyDefinition = {
 
 let container: HTMLDivElement;
 let root: Root;
-let enrolmentRequestCount: number;
-let laterEnrolmentFailure:
-  | { code: string; status: number }
-  | null;
-let holdFirstEnrolment: boolean;
-let releaseFirstEnrolment: ((response: Response) => void) | null;
 
 async function settle(): Promise<void> {
   await act(async () => {
@@ -107,29 +108,10 @@ async function settle(): Promise<void> {
   });
 }
 
-async function click(selector: string): Promise<void> {
-  const element = container.querySelector<HTMLButtonElement>(selector);
-  expect(element).not.toBeNull();
-  await act(async () => element?.click());
-  await settle();
-}
-
-async function joinAndRecordTrial(): Promise<void> {
-  await act(async () => root.render(<VerifyFlow />));
-  await settle();
-  await click('[data-action="accept-study"]');
-  await click('[data-action="prepare-study"]');
-  await click('[data-action="record-study"]');
-}
-
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   walletHarness.address = "wallet-one";
   walletHarness.connected = true;
-  enrolmentRequestCount = 0;
-  laterEnrolmentFailure = null;
-  holdFirstEnrolment = false;
-  releaseFirstEnrolment = null;
   window.sessionStorage.clear();
   container = document.createElement("div");
   document.body.append(container);
@@ -145,36 +127,6 @@ beforeEach(() => {
           headers: { "Content-Type": "application/json" },
         });
       }
-      if (url.endsWith("/api/study/enrol")) {
-        enrolmentRequestCount += 1;
-        if (enrolmentRequestCount === 1 && holdFirstEnrolment) {
-          return new Promise<Response>((resolve) => {
-            releaseFirstEnrolment = resolve;
-          });
-        }
-        if (enrolmentRequestCount > 1 && laterEnrolmentFailure) {
-          return new Response(
-            JSON.stringify({ error: laterEnrolmentFailure.code }),
-            {
-              status: laterEnrolmentFailure.status,
-              headers: { "Content-Type": "application/json" },
-            },
-          );
-        }
-        return new Response(
-          JSON.stringify({
-            token: "A".repeat(43),
-            session_id: "01".repeat(16),
-            trial_index: 1,
-            trial_limit: 5,
-            expires_in: 3_600,
-          }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
-      }
       return new Response(null, { status: 404 });
     }),
   );
@@ -187,90 +139,44 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-describe("VerifyFlow study wallet boundary", () => {
-  it("removes a completed trial continuation when the wallet changes", async () => {
-    await joinAndRecordTrial();
+describe("VerifyFlow with study intake closed", () => {
+  it("never renders the consent card when a study definition loads", async () => {
+    await act(async () => root.render(<VerifyFlow />));
+    await settle();
 
-    const activeFlow = container.querySelector<HTMLElement>(
+    expect(container.querySelector('[data-action="accept-study"]')).toBeNull();
+    expect(
+      container.querySelector('[data-testid="verify-wallet-flow"]'),
+    ).not.toBeNull();
+  });
+
+  it("hands the verification flow neutral study props", async () => {
+    await act(async () => root.render(<VerifyFlow />));
+    await settle();
+
+    const flow = container.querySelector<HTMLElement>(
       '[data-testid="verify-wallet-flow"]',
     );
-    expect(activeFlow?.dataset.sessionActive).toBe("true");
-    expect(activeFlow?.dataset.nextTrial).toBe("true");
+    expect(flow?.dataset.sessionActive).toBe("false");
+    expect(flow?.dataset.nextTrial).toBe("false");
+    expect(container.querySelector('[data-action="prepare-study"]')).toBeNull();
+    expect(container.querySelector('[data-action="record-study"]')).toBeNull();
+    expect(container.querySelector('[data-action="next-study"]')).toBeNull();
+  });
+
+  it("keeps the study surface closed when the wallet changes", async () => {
+    await act(async () => root.render(<VerifyFlow />));
+    await settle();
 
     walletHarness.address = "wallet-two";
     await act(async () => root.render(<VerifyFlow />));
     await settle();
 
-    const resetFlow = container.querySelector<HTMLElement>(
+    expect(container.querySelector('[data-action="accept-study"]')).toBeNull();
+    const flow = container.querySelector<HTMLElement>(
       '[data-testid="verify-wallet-flow"]',
     );
-    expect(resetFlow?.dataset.sessionActive).toBe("false");
-    expect(resetFlow?.dataset.nextTrial).toBe("false");
+    expect(flow?.dataset.sessionActive).toBe("false");
+    expect(flow?.dataset.nextTrial).toBe("false");
   });
-
-  it("cancels a pending first enrolment when the wallet changes", async () => {
-    holdFirstEnrolment = true;
-    await act(async () => root.render(<VerifyFlow />));
-    await settle();
-    await click('[data-action="accept-study"]');
-    await click('[data-action="prepare-study"]');
-
-    const storageKey = studyEnrolmentStorageKey(
-      studyDefinition,
-      walletHarness.address,
-    );
-    expect(window.sessionStorage.getItem(storageKey)).toMatch(/^[0-9a-f]{32}$/);
-
-    walletHarness.address = "wallet-two";
-    await act(async () => root.render(<VerifyFlow />));
-    await settle();
-
-    expect(window.sessionStorage.getItem(storageKey)).toBeNull();
-    const resetFlow = container.querySelector<HTMLElement>(
-      '[data-testid="verify-wallet-flow"]',
-    );
-    expect(resetFlow?.dataset.sessionActive).toBe("false");
-
-    await act(async () => {
-      releaseFirstEnrolment?.(
-        new Response(
-          JSON.stringify({
-            token: "A".repeat(43),
-            session_id: "01".repeat(16),
-            trial_index: 1,
-            trial_limit: 5,
-            expires_in: 3_600,
-          }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          },
-        ),
-      );
-      await Promise.resolve();
-    });
-  });
-
-  it.each([
-    ["study_enrolment_conflict", 409, "true"],
-    ["study_enrolment_expired", 410, "true"],
-    ["study_trial_limit_reached", 409, "false"],
-  ])(
-    "clears a pending identifier after %s",
-    async (code, status, retryAvailable) => {
-      await joinAndRecordTrial();
-      laterEnrolmentFailure = { code, status };
-      await click('[data-action="next-study"]');
-
-      expect(
-        window.sessionStorage.getItem(
-          studyEnrolmentStorageKey(studyDefinition, walletHarness.address),
-        ),
-      ).toBeNull();
-      const flow = container.querySelector<HTMLElement>(
-        '[data-testid="verify-wallet-flow"]',
-      );
-      expect(flow?.dataset.nextTrial).toBe(retryAvailable);
-    },
-  );
 });

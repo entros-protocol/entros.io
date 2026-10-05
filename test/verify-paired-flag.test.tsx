@@ -128,10 +128,8 @@ import {
 } from "../src/components/verify/verify-state-machine";
 
 function Harness({
-  pairedVerify,
   studyGrant = null,
 }: {
-  pairedVerify?: boolean;
   studyGrant?: ActiveStudyGrant | null;
 }) {
   const [state, dispatch] = useReducer(verifyReducer, initialState);
@@ -140,7 +138,6 @@ function Harness({
       <VerifyWalletConnected
         state={state}
         dispatch={dispatch}
-        pairedVerify={pairedVerify}
         studyGrant={studyGrant}
       />
     </div>
@@ -186,7 +183,7 @@ async function flush() {
 
 /** Renders the paired flow and waits until its code has loaded. */
 async function renderPaired() {
-  await render(<Harness pairedVerify />);
+  await render(<Harness />);
   await flush();
 }
 
@@ -249,41 +246,42 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-describe("paired verify flag", () => {
-  it("renders and runs the single capture while the flag is off", async () => {
-    await render(<Harness />);
+describe("paired-only verify flow", () => {
+  it("runs the paired rounds by default and never offers the single capture", async () => {
+    await renderPaired();
 
     expect(container.textContent).toContain(
-      "All sensors record simultaneously for 12 seconds.",
+      "Say one word and trace one short path in each of three rounds.",
     );
-    expect(container.textContent).toContain("Speak the displayed phrase");
-    expect(container.textContent).not.toContain("three rounds");
+    expect(container.textContent).not.toContain(
+      "All sensors record simultaneously",
+    );
 
     await clickStart();
 
-    expect(harness.singleSessions).toBe(1);
-    expect(harness.pairedOptions).toHaveLength(0);
-    expect(fetchMock).toHaveBeenCalledWith(
-      `/api/relay-challenge?wallet=${WALLET.toBase58()}`,
-      expect.anything(),
-    );
+    expect(harness.singleSessions).toBe(0);
+    expect(harness.pairedOptions).toHaveLength(1);
     expect(step()).toBe("capturing");
-    expect(container.textContent).toContain("Recording starts in");
-    expect(container.querySelector('[data-testid="paired-trace-surface"]')).toBeNull();
+    expect(
+      container.querySelector('[data-testid="paired-trace-surface"]'),
+    ).not.toBeNull();
   });
 
-  it("keeps a study trial on the single capture with the flag on", async () => {
-    await render(<Harness pairedVerify studyGrant={STUDY_GRANT} />);
+  it("runs the paired rounds for a wallet with an active study grant", async () => {
+    await render(<Harness studyGrant={STUDY_GRANT} />);
+    await flush();
 
-    expect(container.textContent).toContain("Speak the displayed phrase");
+    expect(container.textContent).toContain(
+      "Say one word and trace one short path in each of three rounds.",
+    );
 
     await clickStart();
 
-    expect(harness.singleSessions).toBe(1);
-    expect(harness.pairedOptions).toHaveLength(0);
+    expect(harness.singleSessions).toBe(0);
+    expect(harness.pairedOptions).toHaveLength(1);
   });
 
-  it("runs the paired rounds from the tap while the flag is on", async () => {
+  it("runs the paired rounds from the tap", async () => {
     await renderPaired();
 
     expect(container.textContent).toContain(
@@ -480,7 +478,7 @@ describe("paired verify flag", () => {
     expect(container.textContent).toContain("garden");
 
     harness.publicKey = OTHER_WALLET;
-    await render(<Harness pairedVerify />);
+    await render(<Harness />);
 
     expect(harness.aborts).toBe(1);
     expect(step()).toBe("idle");
@@ -499,14 +497,14 @@ describe("paired verify flag", () => {
     await clickStart();
 
     harness.publicKey = null;
-    await render(<Harness pairedVerify />);
+    await render(<Harness />);
 
     expect(harness.aborts).toBe(1);
     expect(step()).toBe("idle");
     expect(container.textContent).toContain("Connect your Solana wallet");
 
     harness.publicKey = WALLET;
-    await render(<Harness pairedVerify />);
+    await render(<Harness />);
     await flush();
     expect(startButton()?.disabled).toBe(false);
   });
@@ -520,7 +518,7 @@ describe("paired verify flag", () => {
     expect(container.textContent).toContain("Preparing round 1");
 
     harness.publicKey = OTHER_WALLET;
-    await render(<Harness pairedVerify />);
+    await render(<Harness />);
 
     expect(harness.aborts).toBe(1);
     expect(step()).toBe("idle");

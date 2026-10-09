@@ -12,8 +12,6 @@ import {
   PROGRAM_IDS,
   fetchIdentityState,
   reasonDisposition,
-  isClientOriginReason,
-  phaseChargesAttempt,
   MAX_VERIFICATION_MS,
   createStudyContext,
   type StudyRecordStatus,
@@ -75,7 +73,11 @@ import {
 // bound bot retry benefit per wallet — the server-side per-wallet cap
 // enforces this across wallet refreshes; this client
 // counter just drives the UX inside a session.
-const MAX_ATTEMPTS = 3;
+import {
+  chargeRetryBudget,
+  EMPTY_RETRY_BUDGET,
+  MAX_CAPTURE_ATTEMPTS as MAX_ATTEMPTS,
+} from "@/components/verify/retry-budget";
 
 const subscribeToStaticCapability = () => () => undefined;
 const readSigningDiagnosticCapability = () =>
@@ -351,19 +353,17 @@ export function VerifyWalletConnected({
   // capture-completion handler can choose between verify vs reset paths
   // without reading the reducer state (which may race the handler).
   const intentRef = useRef<"verify" | "reset">("verify");
-  // Per-session retry counter. Incremented once a server has actually
-  // rendered a verdict on a capture, and reset to 0 on RESET and on
-  // VERIFICATION_SUCCESS. Never charged for a failure the SDK raised on its
-  // own, and never for a failure outside the `validation` phase. See
-  // `phaseChargesAttempt` and `isClientOriginReason` at the increment site.
-  const attemptsUsedRef = useRef(0);
-  // Failures that never reached a verdict get their own budget rather than no
-  // budget. Charging them to the verification cap punishes a user for a
-  // dropped connection; exempting them entirely, which is what the first cut
-  // of this did, leaves the soft-retry loop unbounded. `validation_unavailable`
-  // and `validation_timeout` are both client-origin AND retryable, so the cap
-  // test could never fail and the screen offered "3 attempts left" forever.
-  const transportFailuresRef = useRef(0);
+  const retryBudgetRef = useRef({ ...EMPTY_RETRY_BUDGET });
+  const budgetWalletRef = useRef(connectedWallet);
+  useEffect(() => {
+    if (budgetWalletRef.current !== connectedWallet) {
+      attemptRef.current++;
+      intentRef.current = "verify";
+      dispatch({ type: "RESET" });
+    }
+    retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
+    budgetWalletRef.current = connectedWallet;
+  }, [connectedWallet, dispatch]);
 
   // Paired rounds are the only capture this page runs. The study-trial
   // binding to the single capture ended when web study intake closed
@@ -520,8 +520,7 @@ export function VerifyWalletConnected({
     // budget—otherwise any borderline failure during reset would
     // immediately route to hard-fail (because attemptsUsedRef >= MAX).
     if (intentRef.current !== intent) {
-      attemptsUsedRef.current = 0;
-      transportFailuresRef.current = 0;
+      retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
     }
     intentRef.current = intent;
     if (intent === "verify") setSigningDiagnosticReport(null);
@@ -683,10 +682,10 @@ export function VerifyWalletConnected({
   function handleStartPaired(intent: CaptureIntent) {
     if (studyCaptureBlocked || !pairedCapture || !publicKey) return;
     // Verify and reset keep separate retry budgets, as in the single capture.
-    if (intentRef.current !== intent) {
-      attemptsUsedRef.current = 0;
-      transportFailuresRef.current = 0;
+    if (intentRef.current !== intent || budgetWalletRef.current !== connectedWallet) {
+      retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
     }
+    budgetWalletRef.current = connectedWallet;
     intentRef.current = intent;
     if (intent === "verify") setSigningDiagnosticReport(null);
     voicedFramesRef.current = 0;
@@ -885,8 +884,7 @@ export function VerifyWalletConnected({
           );
         }
         if (result.success) {
-          attemptsUsedRef.current = 0;
-          transportFailuresRef.current = 0;
+          retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
           dispatch({
             type: "VERIFICATION_SUCCESS",
             commitment: commitmentToHex(result.commitment),
@@ -903,23 +901,18 @@ export function VerifyWalletConnected({
         // dropped connection each burned one of three attempts for a
         // rejection no server ever made. Three network blips and the user was
         // hard-failed without a single capture having been judged.
-        const clientOrigin = isClientOriginReason(reason);
         // Only `validation` evaluated whether a person was there, so only
         // `validation` may charge for it. The budget used to move on every
         // failure that carried no client-origin reason, which meant three
         // declined wallet prompts, three empty-wallet reverts or three
         // baseline problems hard-failed someone whose capture had passed
         // validation every time.
-        const judged = phaseChargesAttempt(result.failedAt);
-        if (judged && !clientOrigin) {
-          attemptsUsedRef.current += 1;
-        } else if (clientOrigin) {
-          transportFailuresRef.current += 1;
-        }
-
-        const used = clientOrigin
-          ? transportFailuresRef.current
-          : attemptsUsedRef.current;
+        const { budget, used } = chargeRetryBudget(
+          retryBudgetRef.current,
+          reason,
+          result.failedAt,
+        );
+        retryBudgetRef.current = budget;
         const disposition = reasonDisposition(reason);
         if (disposition === "retry" && used < MAX_ATTEMPTS) {
           dispatch({
@@ -973,8 +966,7 @@ export function VerifyWalletConnected({
     setAudioLevel(0);
     // Wipe the retry budget when the user explicitly resets—a fresh
     // session starts at 0 attempts used.
-    attemptsUsedRef.current = 0;
-    transportFailuresRef.current = 0;
+    retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
     dispatch({ type: "RESET" });
   }
 

@@ -10,6 +10,7 @@ import {
 import { PublicKey } from "@solana/web3.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ActiveStudyGrant } from "../src/lib/population-study";
+import type { VerifyState } from "../src/components/verify/types";
 
 const WALLET = new PublicKey("11111111111111111111111111111112");
 const OTHER_WALLET = new PublicKey("11111111111111111111111111111113");
@@ -23,6 +24,8 @@ const harness = vi.hoisted(() => ({
   aborts: 0,
   /** What each paired `complete` resolves to, in order. */
   completeResults: [] as unknown[],
+  completes: 0,
+  resets: 0,
   /** How the next `start` settles once the session opens. */
   startOutcome: (): Promise<void> => Promise.resolve(),
   /** Moves the latest paired session to a phase, as the SDK does before `onPhase`. */
@@ -110,8 +113,14 @@ vi.mock("@/components/providers/pulse-provider", () => ({
           });
         },
         continueRound: () => false,
-        complete: async () => harness.completeResults.shift(),
-        completeReset: async () => harness.completeResults.shift(),
+        complete: async () => {
+          harness.completes += 1;
+          return harness.completeResults.shift();
+        },
+        completeReset: async () => {
+          harness.resets += 1;
+          return harness.completeResults.shift();
+        },
         abort: () => {
           harness.aborts += 1;
           phase = "failed";
@@ -129,10 +138,12 @@ import {
 
 function Harness({
   studyGrant = null,
+  startState = initialState,
 }: {
   studyGrant?: ActiveStudyGrant | null;
+  startState?: VerifyState;
 }) {
-  const [state, dispatch] = useReducer(verifyReducer, initialState);
+  const [state, dispatch] = useReducer(verifyReducer, startState);
   return (
     <div data-step={state.step}>
       <VerifyWalletConnected
@@ -212,6 +223,36 @@ function latestOptions(): PairedSessionOptions {
   return harness.pairedOptions.at(-1) as PairedSessionOptions;
 }
 
+function qualityFailure() {
+  return {
+    success: false,
+    commitment: new Uint8Array(32),
+    isFirstVerification: false,
+    error: "capture needs a retry",
+    reason: "anchor_retry",
+    failedAt: "validation",
+  };
+}
+
+async function finishLatestRounds() {
+  await act(async () => {
+    harness.setPhase("ready");
+    latestOptions().onPhase?.("ready");
+    await Promise.resolve();
+  });
+  await flush();
+}
+
+async function clickAction(label: string, scope: ParentNode = container) {
+  const button = [...scope.querySelectorAll("button")].find(node => node.textContent === label);
+  expect(button).toBeDefined();
+  await act(async () => {
+    button!.click();
+    await Promise.resolve();
+  });
+  await flush();
+}
+
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   harness.publicKey = WALLET;
@@ -220,6 +261,8 @@ beforeEach(() => {
   harness.startCalls = [];
   harness.aborts = 0;
   harness.completeResults = [];
+  harness.completes = 0;
+  harness.resets = 0;
   harness.startOutcome = () => Promise.resolve();
   container = document.createElement("div");
   document.body.append(container);
@@ -432,6 +475,60 @@ describe("paired-only verify flow", () => {
     expect(container.textContent).toContain(
       "The service already checked this session. Start a new verification.",
     );
+    expect(container.textContent).toContain("2 attempts left");
+  });
+
+  it("bounds quality retries at three and uses paired reset completion throughout", async () => {
+    harness.completeResults = [qualityFailure(), qualityFailure(), qualityFailure()];
+    await render(<Harness startState={{ step: "failed", error: "Your baseline is missing.", failedAt: "baseline" }} />);
+    await flush();
+    await clickAction("Reset baseline");
+    const dialog = container.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    await clickAction("Reset baseline", dialog!);
+    await finishLatestRounds();
+    expect(step()).toBe("soft_failed");
+    expect(container.textContent).toContain("Say each word once.");
+    expect(container.textContent).toContain("2 attempts left");
+    await clickAction("Try again");
+    await finishLatestRounds();
+    expect(container.textContent).toContain("1 attempt left");
+    await clickAction("Try again");
+    await finishLatestRounds();
+    expect(step()).toBe("failed");
+    expect(container.textContent).toContain("Check your microphone");
+    expect(harness.pairedOptions).toHaveLength(3);
+    expect(harness.resets).toBe(3);
+    expect(harness.completes).toBe(0);
+    expect(harness.singleSessions).toBe(0);
+  });
+
+  it("clears the quality budget on Cancel", async () => {
+    harness.completeResults = [qualityFailure(), qualityFailure()];
+    await renderPaired();
+    await clickStart();
+    await finishLatestRounds();
+    expect(container.textContent).toContain("2 attempts left");
+    await clickAction("Cancel");
+    await clickStart();
+    await finishLatestRounds();
+    expect(container.textContent).toContain("2 attempts left");
+  });
+
+  it("clears quality retries across a wallet switch even without a capture in between", async () => {
+    harness.completeResults = [qualityFailure(), qualityFailure(), qualityFailure()];
+    await renderPaired();
+    await clickStart();
+    await finishLatestRounds();
+    await clickAction("Try again");
+    await finishLatestRounds();
+    expect(container.textContent).toContain("1 attempt left");
+    harness.publicKey = OTHER_WALLET;
+    await renderPaired();
+    harness.publicKey = WALLET;
+    await renderPaired();
+    await clickStart();
+    await finishLatestRounds();
     expect(container.textContent).toContain("2 attempts left");
   });
 

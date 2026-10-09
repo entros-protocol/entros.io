@@ -45,6 +45,7 @@ const DISPOSITION_OF: Record<Exclude<ReasonSurface, "matched">, string> = {
   "session-restart": "retry",
   "session-broken": "fatal",
   "automated-browser": "fatal",
+  "baseline-quality": "retry",
 };
 
 /** The failure kind each coded surface renders as. */
@@ -54,6 +55,7 @@ const KIND_OF: Record<Exclude<ReasonSurface, "matched">, string> = {
   "session-restart": "session-restart",
   "session-broken": "session-broken",
   "automated-browser": "automated-browser",
+  "baseline-quality": "generic",
 };
 
 const coded = (reason: string) => surfaceOf(reason) as Exclude<ReasonSurface, "matched">;
@@ -105,7 +107,7 @@ describe("paired failure copy", () => {
       expect(softHint(reason), reason).not.toBe(generic);
     }
     for (const reason of CODED_REASONS) {
-      if (reasonDisposition(reason) === "retry") {
+      if (reasonDisposition(reason) === "retry" && reason !== "anchor_retry") {
         expect(softHint(reason), reason).toMatch(/Start a new verification/);
       }
     }
@@ -123,6 +125,11 @@ describe("paired failure copy", () => {
       "The service could not assess the recorded speech. Start a new verification and speak at your normal volume.",
     );
     expect(surfaceOf("audio_evidence_insufficient")).toBe("matched");
+    expect(softHint("anchor_retry")).toBe(
+      "We couldn’t read that capture. Try again to set your baseline. Say each word once.",
+    );
+    expect(surfaceOf("anchor_retry")).toBe("baseline-quality");
+    expect(surfaceOf("paired_required")).toBe("session-broken");
   });
 
   it("keeps the existing phrase copy", () => {
@@ -178,12 +185,17 @@ describe("paired failure copy", () => {
         break;
       case "session-broken":
         expect(text).toContain(
-          "This browser session could not continue. Reload the page and try again.",
+          reason === "paired_required"
+            ? "Update this page to set or replace your baseline with paired capture."
+            : "This browser session could not continue. Reload the page and try again.",
         );
         expect(buttons.map((button) => button.textContent)).toContain("Reload page");
         break;
       case "automated-browser":
         expect(text).toContain("This browser reports that automation software controls it.");
+        break;
+      case "baseline-quality":
+        expect(text).toContain("Check your microphone");
         break;
     }
   });

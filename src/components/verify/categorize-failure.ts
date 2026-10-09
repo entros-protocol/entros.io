@@ -264,6 +264,7 @@ export type ReasonSurface =
   | "session-wait"
   | "session-restart"
   | "session-broken"
+  | "baseline-quality"
   | "automated-browser";
 
 // Keyed on the SDK's full reason union, so a reason added upstream fails the
@@ -276,6 +277,8 @@ const REASON_SURFACE = {
   phrase_content_mismatch: "matched",
   trace_incomplete: "matched",
   audio_evidence_insufficient: "matched",
+  anchor_retry: "baseline-quality",
+  paired_required: "session-broken",
   captcha_required: "matched",
   rate_limited: "cooldown",
   ip_rate_limited: "cooldown",
@@ -394,6 +397,8 @@ export function categorizeFailure(
         return { kind: "session-broken" };
       case "automated-browser":
         return { kind: "automated-browser" };
+      case "baseline-quality":
+        return { kind: "generic", message: "We couldn’t read those captures. Check your microphone, then start again to set your baseline. Say each word once." };
       case "matched":
         break;
     }

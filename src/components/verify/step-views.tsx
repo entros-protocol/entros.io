@@ -299,6 +299,8 @@ const SOFT_HINT: Record<RetryableReason, string> = {
   trace_incomplete: "Trace through every dot, in order from 1.",
   audio_evidence_insufficient:
     "The service could not assess the recorded speech. Start a new verification and speak at your normal volume.",
+  anchor_retry:
+    "We couldn’t read that capture. Try again to set your baseline. Say each word once.",
   validation_unavailable:
     "We couldn't reach the verification service. Check your connection and try again.",
   validation_timeout:
@@ -527,9 +529,10 @@ export function FailedView({
       }
       break;
     case "session-broken":
-      title = "This session could not continue";
-      body =
-        "This browser session could not continue. Reload the page and try again.";
+      title = reason === "paired_required" ? "Paired capture required" : "This session could not continue";
+      body = reason === "paired_required"
+        ? "Update this page to set or replace your baseline with paired capture."
+        : "This browser session could not continue. Reload the page and try again.";
       dismissLabel = "Reload page";
       dismissAction = () => window.location.reload();
       break;
@@ -730,7 +733,7 @@ export function FailedView({
       // the static "something unexpected" copy only when the sanitized
       // message is empty (which means the original error had no useful
       // user-facing content).
-      title = "Verification failed";
+      title = reason === "anchor_retry" ? "Check your microphone" : "Verification failed";
       body =
         failure.message.trim().length > 0
           ? failure.message

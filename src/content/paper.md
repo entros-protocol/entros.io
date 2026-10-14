@@ -511,7 +511,7 @@ The client SDK, circuit definitions, and on-chain programs are open source and p
 13. Solana Labs. "SPL Token-2022 Program," 2023. https://github.com/solana-program/token-2022
 14. Dodis, Y., Reyzin, L., and Smith, A. "Fuzzy extractors: How to generate strong keys from biometrics and other noisy data." *Proc. EUROCRYPT*, 2004.
 15. Ratha, N. K., Connell, J. H., and Bolle, R. M. "Enhancing security and privacy in biometrics-based authentication systems." *IBM Systems Journal*, vol. 40, no. 3, pp. 614-634, 2001.
-16. Fuller, B., et al. "Fuzzy extractors are practical: Cryptographic strength key derivation from the iris." *Proc. ACM CCS*, 2025. IACR ePrint 2024/100.
+16. Shukla, A., et al. "Fuzzy extractors are practical: Cryptographic strength key derivation from the iris." *Proc. ACM CCS*, 2025. IACR ePrint 2024/100.
 17. Serwadda, A. and Phoha, V. V. "When kids' toys breach mobile phone security." *Proc. ACM CCS*, 2013.
 18. Hamm, D., Kupris, E., and Schreck, T. "Always authenticated, never exposed: Continuous authentication via zero-knowledge proofs." *Proc. STM*, Springer, 2025.
 19. Choudhuri, A. R., Garg, S., Lee, K., Montgomery, H., Policharla, G. V., and Sinha, R. "A cryptographic framework for proof of personhood." *IACR ePrint 2026/333*, 2026.
@@ -519,9 +519,9 @@ The client SDK, circuit definitions, and on-chain programs are open source and p
 21. Paik, S., Hwang, C., Kim, S., and Seo, J. H. "On the reversibility of locality-sensitive hashing-based biometric template protections." *IEEE Trans. Dependable and Secure Computing*, 2025.
 22. Gabizon, A., Williamson, Z. J., and Ciobotaru, O. "PLONK: Permutations over Lagrange-bases for oecumenical noninteractive arguments of knowledge." *IACR ePrint 2019/953*, 2019.
 23. Pouw, W., et al. "The human voice aligns with whole-body kinetics." *Proc. Royal Society B*, 2025.
-24. Stragapede, G., et al. "BioMoTouch: Touch-Based Behavioral Authentication Using Motion and Touch Sensor Fusion." *arXiv:2604.07071*, 2025.
+24. Ling, Z., et al. "BioMoTouch: Touch-Based Behavioral Authentication via Biometric-Motion Interaction Modeling." *arXiv:2604.07071*, 2026.
 25. Wang, X., Delgado, H., Tak, H., et al. "ASVspoof 5: Crowdsourced speech data, deepfakes, and adversarial attacks at scale." *arXiv:2408.08739*, 2024.
-26. Verma, K., et al. "Pitch Imperfect: Detecting Audio Deepfakes Through Acoustic Prosody Analysis." *arXiv:2502.14726*, 2025.
+26. Warren, K., et al. "Pitch Imperfect: Detecting Audio Deepfakes Through Acoustic Prosodic Analysis." *arXiv:2502.14726*, 2025.
 27. Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., and Sutskever, I. "Robust speech recognition via large-scale weak supervision." *arXiv:2212.04356*, 2022.
 28. Baevski, A., Zhou, H., Mohamed, A., and Auli, M. "wav2vec 2.0: A framework for self-supervised learning of speech representations." *Proc. NeurIPS*, 2020.
 29. World Foundation. "Introducing World ID 4.0," 2025. https://world.org/blog/engineering/introducing-world-id-4.0

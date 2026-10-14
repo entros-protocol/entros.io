@@ -77,6 +77,39 @@ afterEach(async () => {
 });
 
 describe("paired failure copy", () => {
+  it("explains a partly funded preflight failure without a spend warning", async () => {
+    await act(async () => {
+      root.render(
+        <FailedView
+          error="Insufficient funds: this wallet needs more SOL for account rent."
+          failedAt="signing"
+          onReset={vi.fn()}
+        />,
+      );
+    });
+    expect(container.textContent).toContain("This wallet needs SOL");
+    expect(container.textContent).toContain("account rent and network fees");
+    expect(container.textContent).not.toContain("currently has none");
+    expect(container.textContent).not.toContain("spent a network fee");
+    expect(container.querySelector('a[href="https://faucet.solana.com"]')).not.toBeNull();
+  });
+
+  it.each([
+    ["submission", "may have spent a network fee"],
+    ["confirmation", "network fee for this attempt was spent"],
+  ] as const)("keeps the funding failure's %s spend warning", async (failedAt, note) => {
+    await act(async () => {
+      root.render(
+        <FailedView
+          error="insufficient lamports"
+          failedAt={failedAt}
+          onReset={vi.fn()}
+        />,
+      );
+    });
+    expect(container.textContent).toContain(note);
+  });
+
   it("routes every reason the SDK knows", () => {
     const known = sdkReasons();
     expect(known.length).toBeGreaterThan(30);

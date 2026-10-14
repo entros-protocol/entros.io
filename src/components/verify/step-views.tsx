@@ -636,7 +636,7 @@ export function FailedView({
       // disappear or point to a "How to get SOL" docs page.
       title = "This wallet needs SOL";
       body =
-        "Verifying on devnet requires a small amount of SOL to write the on-chain anchor. Your wallet currently has none.";
+        "Your SOL balance does not cover the protocol fees, account rent and network fees for this verification. Add devnet SOL, then try again.";
       primaryCta = { label: "Get devnet SOL", href: FAUCET_URL };
       footnote = "Once the airdrop confirms in your wallet, click Try again.";
       break;
@@ -752,12 +752,10 @@ export function FailedView({
   // for two months: a baseline reset that was broadcast, charged and reverted
   // on every attempt, with the interface saying only that verification failed.
   //
-  // Two surfaces suppress it because they already establish that no fee was
-  // taken, and the phase is deliberately the more cautious of the two answers:
-  // a wallet with no SOL cannot pay one, and an expired blockhash means the
-  // transaction never landed.
-  const spendIsKnownZero =
-    failure.kind === "insufficient-sol" || failure.kind === "stale-blockhash";
+  // A funding preflight reports signing, which spends nothing. A partly funded
+  // transaction can pay its network fee before reverting for insufficient rent,
+  // so funding errors after broadcast must keep their phase's spend note.
+  const spendIsKnownZero = failure.kind === "stale-blockhash";
   const spend =
     userPaysFees && !spendIsKnownZero ? failureSpend(failedAt) : "none";
   const spendNote =

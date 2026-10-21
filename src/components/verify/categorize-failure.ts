@@ -398,7 +398,7 @@ export function categorizeFailure(
       case "automated-browser":
         return { kind: "automated-browser" };
       case "baseline-quality":
-        return { kind: "generic", message: "We couldn’t read those captures. Check your microphone, then start again to set your baseline. Say each word once." };
+        return { kind: "generic", message: "We couldn’t set your baseline from those captures. Start a new verification to try again. Say each word once." };
       case "matched":
         break;
     }

@@ -496,7 +496,7 @@ describe("paired-only verify flow", () => {
     await clickAction("Try again");
     await finishLatestRounds();
     expect(step()).toBe("failed");
-    expect(container.textContent).toContain("Check your microphone");
+    expect(container.textContent).toContain("Baseline not set");
     expect(harness.pairedOptions).toHaveLength(3);
     expect(harness.resets).toBe(3);
     expect(harness.completes).toBe(0);

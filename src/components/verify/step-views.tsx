@@ -300,7 +300,7 @@ const SOFT_HINT: Record<RetryableReason, string> = {
   audio_evidence_insufficient:
     "The service could not assess the recorded speech. Start a new verification and speak at your normal volume.",
   anchor_retry:
-    "We couldn’t read that capture. Try again to set your baseline. Say each word once.",
+    "We couldn’t set your baseline from that capture. Try again. Say each word once.",
   validation_unavailable:
     "We couldn't reach the verification service. Check your connection and try again.",
   validation_timeout:
@@ -733,7 +733,7 @@ export function FailedView({
       // the static "something unexpected" copy only when the sanitized
       // message is empty (which means the original error had no useful
       // user-facing content).
-      title = reason === "anchor_retry" ? "Check your microphone" : "Verification failed";
+      title = reason === "anchor_retry" ? "Baseline not set" : "Verification failed";
       body =
         failure.message.trim().length > 0
           ? failure.message

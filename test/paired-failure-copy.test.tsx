@@ -159,7 +159,7 @@ describe("paired failure copy", () => {
     );
     expect(surfaceOf("audio_evidence_insufficient")).toBe("matched");
     expect(softHint("anchor_retry")).toBe(
-      "We couldn’t read that capture. Try again to set your baseline. Say each word once.",
+      "We couldn’t set your baseline from that capture. Try again. Say each word once.",
     );
     expect(surfaceOf("anchor_retry")).toBe("baseline-quality");
     expect(surfaceOf("paired_required")).toBe("session-broken");
@@ -228,7 +228,7 @@ describe("paired failure copy", () => {
         expect(text).toContain("This browser reports that automation software controls it.");
         break;
       case "baseline-quality":
-        expect(text).toContain("Check your microphone");
+        expect(text).toContain("Baseline not set");
         break;
     }
   });

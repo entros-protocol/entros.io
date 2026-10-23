@@ -8,7 +8,7 @@ import { PROGRAM_IDS, SAS_CONFIG } from "@entros/pulse-sdk";
 import { ArrowRight, ExternalLink, Loader2, ShieldAlert } from "lucide-react";
 import {
   DEVNET_SAS_CREDENTIALS,
-  distinctAttestationCount,
+  totalAttestationCount,
 } from "@/lib/sas-attestation-stats";
 
 const IDENTITY_STATE_DISC_B58 = "T7d2447Yv5U";
@@ -71,7 +71,7 @@ export function ProtocolStats() {
 
       if (cancelled) return;
 
-      const attestationCount = distinctAttestationCount(
+      const attestationCount = totalAttestationCount(
         attestationGroups.map((group) =>
           group.map(({ pubkey }) => pubkey.toBase58()),
         ),

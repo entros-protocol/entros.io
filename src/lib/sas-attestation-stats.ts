@@ -1,15 +1,15 @@
 import { SAS_CONFIG } from "@entros/pulse-sdk";
 
-const LEGACY_DEVNET_SAS_CREDENTIAL =
-  "GaPTkZC6JEGds1G5h645qyUrogx7NWghR2JgjvKQwTDo";
+/**
+ * The retired devnet credential no longer issues attestations. Its final count
+ * is fixed here so the statistic does not depend on that credential's accounts.
+ */
+export const RETIRED_DEVNET_ATTESTATION_COUNT = 75;
 
-export const DEVNET_SAS_CREDENTIALS = [
-  LEGACY_DEVNET_SAS_CREDENTIAL,
-  SAS_CONFIG.entrosCredentialPda,
-] as const;
+export const DEVNET_SAS_CREDENTIALS = [SAS_CONFIG.entrosCredentialPda] as const;
 
-export function distinctAttestationCount(
+export function totalAttestationCount(
   accountGroups: readonly (readonly string[])[],
 ): number {
-  return new Set(accountGroups.flat()).size;
+  return RETIRED_DEVNET_ATTESTATION_COUNT + new Set(accountGroups.flat()).size;
 }

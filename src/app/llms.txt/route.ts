@@ -17,9 +17,9 @@ export const dynamic = "force-static";
 // make its public debut in it.
 const BRIEF = `# Entros Protocol
 
-> Proof of personhood on Solana. A person completes a short voice, motion and touch
-> capture in the browser. The device derives features locally. The protocol anchors
-> the accepted result to a wallet on chain.
+> Private human verification for Solana. A person completes three short rounds in the
+> browser, each with one word to say and one short path to trace. The device derives
+> features locally. The protocol anchors the accepted result to a wallet on chain.
 
 ## Status
 
@@ -40,7 +40,7 @@ identity, or one person per wallet.
 ## What stays on the device
 
 Raw motion recordings and the full-resolution touch stream never leave the device.
-The spoken phrase leaves as audio for transcription. Entros never stores it.
+The spoken words leave as audio for transcription. Entros never stores them.
 
 The validation request also carries a 308-value feature summary, an F0 contour, an
 acceleration-magnitude contour, a coarse path outline, client signals, capture

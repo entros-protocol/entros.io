@@ -44,11 +44,11 @@ const wordmark = JetBrains_Mono({
   display: "swap",
 });
 
-const ROOT_TITLE = `${SITE_NAME} | Temporal identity on Solana`;
+const ROOT_TITLE = `Private human verification for Solana | ${SITE_NAME}`;
 const ROOT_DESCRIPTION =
-  "Behavioral liveness in voice, motion, and touch, anchored on Solana. Raw motion and full-resolution touch stay on the device.";
+  "Private human verification for Solana. Verify your wallet in three short rounds. Raw motion and touch stay on your device.";
 const SOCIAL_DESCRIPTION =
-  "Behavioral liveness on Solana, with local feature extraction, private validation, and portable on-chain state.";
+  "Private human verification for Solana. Three short rounds put an Entros Anchor on your wallet, and any Solana app can read it for free.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

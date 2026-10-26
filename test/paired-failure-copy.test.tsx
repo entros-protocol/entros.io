@@ -165,9 +165,9 @@ describe("paired failure copy", () => {
     expect(surfaceOf("paired_required")).toBe("session-broken");
   });
 
-  it("keeps the existing phrase copy", () => {
+  it("asks for the shown word", () => {
     expect(softHint("phrase_content_mismatch")).toBe(
-      "Read the phrase clearly at a normal pace, exactly as shown.",
+      "Say the word clearly at a normal pace, exactly as shown.",
     );
   });
 

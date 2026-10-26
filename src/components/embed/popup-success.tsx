@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { CheckCircle } from "lucide-react";
 
+import { STATE_ICON_CLASS, STATE_ICON_STROKE } from "@/components/verify/console";
+
 // Matches PopupFailure timing for visual symmetry. Long enough for the
 // user to register the confirmation; short enough that the post-12s-capture
 // flow doesn't feel sluggish at the end.
@@ -32,12 +34,23 @@ export function PopupSuccess({
   }, [onClose]);
 
   return (
-    <div className="text-center space-y-4">
-      <CheckCircle className="mx-auto h-12 w-12 text-cyan" />
-      <p className="font-mono text-sm text-foreground">Verified.</p>
-      <p className="text-xs text-foreground/55">
-        Returning you to the integrator...
-      </p>
+    <div className="space-y-6 text-center">
+      <CheckCircle
+        className={`mx-auto text-cyan ${STATE_ICON_CLASS}`}
+        strokeWidth={STATE_ICON_STROKE}
+        aria-hidden
+      />
+      <div>
+        <h1 className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground">
+          Verified.
+        </h1>
+        <p className="mt-3 text-sm text-foreground/60">
+          Returning you to the integrator...
+        </p>
+      </div>
+      <div className="mx-auto h-[2px] w-40 overflow-hidden bg-foreground/10" aria-hidden>
+        <div className="vc-close-timer h-full origin-left bg-cyan" />
+      </div>
     </div>
   );
 }

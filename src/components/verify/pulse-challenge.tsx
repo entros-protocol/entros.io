@@ -389,28 +389,28 @@ export function PulseChallenge({
       {captureStarted && (
         <>
           <div className="text-center">
-            <p className="font-mono text-3xl font-bold text-foreground tabular-nums">
+            <p className="font-display text-4xl font-medium leading-none tracking-[-0.02em] text-foreground tabular-nums">
               {remaining}s
             </p>
-            <div className="mt-2 mx-auto max-w-xs h-1.5 rounded-full bg-surface overflow-hidden">
+            <div className="mx-auto mt-3 h-[2px] max-w-[12rem] bg-foreground/10" aria-hidden="true">
               <div
-                className="h-full rounded-full bg-cyan transition-[width] duration-1000 ease-linear"
+                className="h-full bg-cyan transition-[width] duration-1000 ease-linear motion-reduce:transition-none"
                 style={{ width: `${progress}%` }}
               />
             </div>
           </div>
           <div className="text-center">
-            <p className="text-xs font-mono uppercase tracking-widest text-cyan mb-1">
+            <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.24em] text-cyan">
               Speak this phrase
             </p>
             <p
-              className="text-lg font-mono font-bold transition-[color,text-shadow] duration-150 md:text-xl"
+              className="vc-reveal font-mono text-lg font-semibold tracking-[0.02em] transition-[color,text-shadow] duration-150 md:text-xl"
               style={{
                 color: isVoiceActive
                   ? "var(--color-foreground)"
-                  : "var(--color-muted)",
+                  : "color-mix(in srgb, var(--color-foreground) 55%, transparent)",
                 textShadow: isVoiceActive
-                  ? `0 0 ${10 + normalizedAudio * 20}px rgba(0, 240, 255, ${0.15 + normalizedAudio * 0.3})`
+                  ? `0 0 ${10 + normalizedAudio * 20}px color-mix(in srgb, var(--color-cyan) ${15 + normalizedAudio * 30}%, transparent)`
                   : "none",
               }}
             >
@@ -423,7 +423,7 @@ export function PulseChallenge({
       {/* Capture stage */}
       <div>
         {captureStarted && (
-          <p className="text-center text-xs font-mono uppercase tracking-widest text-solana-green mb-1">
+          <p className="mb-2 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-solana-green">
             Trace the curve
           </p>
         )}
@@ -442,13 +442,14 @@ export function PulseChallenge({
                   : "Preparing capture"}
               </span>
               <p
-                className="font-mono text-base uppercase tracking-[0.18em] text-foreground/70 md:text-lg"
+                className="font-mono text-[11px] uppercase tracking-[0.24em] text-foreground/55"
                 aria-hidden="true"
               >
                 {countdown > 0 ? "Recording starts in" : "Preparing capture"}
               </p>
               <p
-                className="font-mono text-8xl font-semibold leading-none text-[var(--verification-accent-text)] tabular-nums md:text-9xl"
+                key={countdown}
+                className="vc-reveal font-display text-8xl font-medium leading-none tracking-[-0.03em] text-[var(--verification-accent-text)] tabular-nums md:text-9xl"
                 aria-hidden="true"
               >
                 {countdown > 0 ? countdown : "\u00b7\u00b7\u00b7"}
@@ -457,7 +458,7 @@ export function PulseChallenge({
                 <p className="text-lg font-medium text-foreground md:text-xl">
                   Get ready to speak and trace.
                 </p>
-                <p className="text-base leading-relaxed text-foreground/70">
+                <p className="text-balance text-sm leading-relaxed text-foreground/60">
                   When recording starts, say the phrase and trace the curve with
                   your {hasMotion ? "finger" : "mouse"}.
                 </p>
@@ -469,7 +470,7 @@ export function PulseChallenge({
             aria-hidden={!captureStarted}
             className={`mx-auto flex h-[200px] w-[200px] items-center justify-center border touch-none md:h-[240px] md:w-[240px] ${
               captureStarted
-                ? "cursor-crosshair border-solana-green/30 bg-surface/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_18px_48px_rgba(0,0,0,0.18)]"
+                ? "cursor-crosshair border-foreground/[0.12] bg-foreground/[0.015]"
                 : "pointer-events-none absolute cursor-default border-transparent opacity-0"
             }`}
           >
@@ -479,12 +480,20 @@ export function PulseChallenge({
                 className="h-full w-full"
                 aria-hidden="true"
               >
+                <g stroke="var(--color-foreground)" strokeOpacity={0.05} strokeWidth={0.5}>
+                  {[40, 80, 120, 160].map((line) => (
+                    <g key={line}>
+                      <line x1={line} y1={0} x2={line} y2={200} />
+                      <line x1={0} y1={line} x2={200} y2={line} />
+                    </g>
+                  ))}
+                </g>
                 <path
                   d={svgPath}
                   fill="none"
                   stroke="var(--color-solana-green)"
                   strokeWidth="3"
-                  strokeOpacity={0.7}
+                  strokeOpacity={0.55}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -507,79 +516,67 @@ export function PulseChallenge({
       {/* Sensor indicators */}
       {captureStarted && (
         <div
-          className={`grid gap-3 text-center ${hasMotion ? "grid-cols-3" : "grid-cols-2"}`}
+          className={`mx-auto grid max-w-xs divide-x divide-foreground/[0.1] text-center ${hasMotion ? "grid-cols-3" : "grid-cols-2"}`}
         >
-          <div className="p-2.5">
-            <div className="h-7 flex items-center justify-center">
-              <div className="flex gap-[2px] items-end">
-                {BAR_OFFSETS.map((offset, i) => (
-                  <div
-                    key={i}
-                    className="w-1 bg-cyan/60 rounded-full"
-                    style={{
-                      height: `${2 + normalizedAudio * 32 * offset}px`,
-                      transition: "height 100ms ease",
-                    }}
-                  />
-                ))}
-              </div>
+          <div className="px-2">
+            <div className="flex h-7 items-center justify-center gap-[3px]">
+              {BAR_OFFSETS.map((offset, i) => (
+                <div
+                  key={i}
+                  className="w-[2px] bg-cyan/60"
+                  style={{
+                    height: `${2 + normalizedAudio * 24 * offset}px`,
+                    transition: "height 100ms ease",
+                  }}
+                />
+              ))}
             </div>
-            <p className="mt-1 text-[10px] text-muted font-mono">Voice</p>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/40">Voice</p>
           </div>
 
           {hasMotion && (
-            <div className="p-2.5">
-              <div className="h-7 flex items-center justify-center">
-                <div className="flex gap-[2px] items-end">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-1.5 bg-solana-purple/60 rounded-full animate-pulse"
-                      style={{
-                        height: `${MOTION_BAR_HEIGHTS[i]}px`,
-                        animationDelay: `${i * 0.2}s`,
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <p className="mt-1 text-[10px] text-muted font-mono">Motion</p>
-            </div>
-          )}
-
-          <div className="p-2.5">
-            <div className="h-7 flex items-center justify-center">
-              <div className="flex gap-[2px] items-end">
-                {TOUCH_BAR_OFFSETS.map((offset, i) => (
+            <div className="px-2">
+              <div className="flex h-7 items-center justify-center gap-[3px]">
+                {Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-1 bg-solana-green/60 rounded-full"
+                    className="w-[2px] bg-solana-purple/60 animate-pulse motion-reduce:animate-none"
                     style={{
-                      height: `${3 + normalizedTouch * 32 * offset}px`,
-                      transition: "height 120ms ease-out",
+                      height: `${MOTION_BAR_HEIGHTS[i]}px`,
+                      animationDelay: `${i * 0.2}s`,
                     }}
                   />
                 ))}
               </div>
+              <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/40">Motion</p>
             </div>
-            <p className="mt-1 text-[10px] text-muted font-mono">Touch</p>
+          )}
+
+          <div className="px-2">
+            <div className="flex h-7 items-center justify-center gap-[3px]">
+              {TOUCH_BAR_OFFSETS.map((offset, i) => (
+                <div
+                  key={i}
+                  className="w-[2px] bg-solana-green/60"
+                  style={{
+                    height: `${3 + normalizedTouch * 24 * offset}px`,
+                    transition: "height 120ms ease-out",
+                  }}
+                />
+              ))}
+            </div>
+            <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/40">Touch</p>
           </div>
         </div>
       )}
 
       {captureStarted && (
-        <div className="space-y-1.5">
-          <div className="min-h-[1rem]" role="status" aria-live="polite">
-            {audioHintVisible && (
-              <p className="text-center text-xs text-warning">
-                Microphone audio is too quiet. Try speaking up or moving closer.
-              </p>
-            )}
-          </div>
-          <p className="text-center text-xs text-muted">
-            All sensors recording simultaneously. Raw recordings are not
-            retained.
-          </p>
+        <div className="min-h-[1rem]" role="status" aria-live="polite">
+          {audioHintVisible && (
+            <p className="text-center text-xs text-warning">
+              Microphone audio is too quiet. Try speaking up or moving closer.
+            </p>
+          )}
         </div>
       )}
     </div>

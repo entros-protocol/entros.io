@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { Wallet } from "lucide-react";
+import { ArrowRight, Wallet } from "lucide-react";
 import {
   type PulseSession,
   type CurveTracePoint,
@@ -28,9 +28,18 @@ import { policyResultToWire, type PolicyReason } from "@entros/verify/policy";
 import { useMotionCapability } from "@/hooks/use-motion-capability";
 
 import { PulseChallenge } from "@/components/verify/pulse-challenge";
-import { ProvingView, SigningView } from "@/components/verify/step-views";
+import { ProofPipeline } from "@/components/verify/step-views";
+import {
+  POPUP_RAIL_STEPS,
+  PRIVACY_LINES,
+  PrivacyFooter,
+  StateIcon,
+  VerifyConsole,
+  VerifyWalletChip,
+  railStepForStage,
+} from "@/components/verify/console";
+import { primaryVerificationActionClass } from "@/components/verify/verification-styles";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
-import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
 import { usePulse } from "@/components/providers/pulse-provider";
 import {
   bindPulseValidationChallenge,
@@ -52,7 +61,13 @@ type State =
   | { step: "processing" }
   | { step: "signing" }
   | { step: "verified" }
-  | { step: "failed"; reason: EmbedErrorReason; policyReason?: PolicyReason }
+  | {
+      step: "failed";
+      reason: EmbedErrorReason;
+      policyReason?: PolicyReason;
+      /** The progress step in focus when the failure landed. */
+      railStep: number;
+    }
   // Distinct from `failed`: stale on-chain commitment (entros-anchor
   // `Custom(6011) PrevCommitmentMismatch`) can't be resolved by
   // re-clicking the integrator's button — needs a baseline reset on
@@ -113,9 +128,22 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     [params.parentOrigin, params.requestId],
   );
 
-  function fail(reason: EmbedErrorReason, policyReason?: PolicyReason) {
+  function fail(
+    reason: EmbedErrorReason,
+    policyReason?: PolicyReason,
+    railStep?: number,
+  ) {
     emitError(ctx, reason, params.policy ? policyReason : undefined);
-    setState({ step: "failed", reason, policyReason });
+    // Read from the previous state: failures land from async callbacks whose
+    // closure still holds an earlier step.
+    setState((previous) => ({
+      step: "failed",
+      reason,
+      policyReason,
+      railStep:
+        railStep ??
+        (previous.step === "signing" ? 3 : previous.step === "processing" ? 2 : 1),
+    }));
   }
 
   async function handleStart() {
@@ -338,6 +366,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           fail(
             policy.decision === "unavailable" ? "network_error" : "validation_failed",
             policy.reason,
+            4,
           );
           return;
         }
@@ -346,7 +375,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           ? policy.evidence.attestation.address
           : null;
         if (!params.policy && !attestationPda) {
-          fail("validation_failed", "attestation_required");
+          fail("validation_failed", "attestation_required", 4);
           return;
         }
         const payload: VerifiedPayload = {
@@ -370,14 +399,29 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
       .finally(() => clearTimeout(backstopTimer));
   }
 
+  const steps = POPUP_RAIL_STEPS;
+  const footer = <PrivacyFooter lines={[PRIVACY_LINES[2]]} />;
+
   if (state.step === "verified") {
-    return <PopupSuccess />;
+    return (
+      <VerifyConsole framed={false} steps={steps} rail={{ current: 4, status: "complete" }} announcement="Verified" viewKey="verified" footer={footer}>
+        <PopupSuccess />
+      </VerifyConsole>
+    );
   }
   if (state.step === "failed") {
-    return <PopupFailure reason={state.reason} policyReason={state.policyReason} />;
+    return (
+      <VerifyConsole framed={false} steps={steps} rail={{ current: state.railStep, status: "error" }} announcement="Verification stopped" viewKey="failed" footer={footer}>
+        <PopupFailure reason={state.reason} policyReason={state.policyReason} />
+      </VerifyConsole>
+    );
   }
   if (state.step === "failed-baseline-stale") {
-    return <PopupBaselineStale />;
+    return (
+      <VerifyConsole framed={false} steps={steps} rail={{ current: 2, status: "error" }} announcement="Baseline out of sync" viewKey="stale" footer={footer}>
+        <PopupBaselineStale />
+      </VerifyConsole>
+    );
   }
   if (state.step === "capturing") {
     // Invariant: handleStart only transitions to "capturing" after the
@@ -387,78 +431,109 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
       return null;
     }
     return (
-      <PulseChallenge
-        onComplete={handleCaptureComplete}
-        onCaptureWindowOpen={handleCaptureWindowOpen}
-        onCaptureError={handleCaptureError}
-        audioLevel={audioLevel}
-        hasMotion={hasMotion}
-        phrase={validationChallenge.phrase}
-        curve={validationChallenge.curve}
-      />
+      <VerifyConsole
+        framed={false}
+        steps={steps}
+        rail={{ current: 1, status: "active" }}
+        announcement=""
+        viewKey="capturing"
+        footer={<PrivacyFooter lines={["Raw motion and touch stay on this device. Audio is never stored."]} />}
+      >
+        <PulseChallenge
+          onComplete={handleCaptureComplete}
+          onCaptureWindowOpen={handleCaptureWindowOpen}
+          onCaptureError={handleCaptureError}
+          audioLevel={audioLevel}
+          hasMotion={hasMotion}
+          phrase={validationChallenge.phrase}
+          curve={validationChallenge.curve}
+        />
+      </VerifyConsole>
     );
   }
-  if (state.step === "processing") {
-    return <ProvingView stage={processingStage} />;
-  }
-  if (state.step === "signing") {
-    return <SigningView />;
+  if (state.step === "processing" || state.step === "signing") {
+    const signing = state.step === "signing";
+    const current =
+      processingStage === "Checking app requirements..."
+        ? 4
+        : signing
+          ? 3
+          : railStepForStage(processingStage);
+    return (
+      <VerifyConsole
+        framed={false}
+        steps={steps}
+        rail={{ current, status: "active" }}
+        announcement={signing ? "Approve the transaction in your wallet" : processingStage}
+        viewKey="pipeline"
+        footer={footer}
+      >
+        <ProofPipeline stage={processingStage} signing={signing} />
+      </VerifyConsole>
+    );
   }
 
   if (!connected) {
     return (
-      <div className="text-center space-y-6">
-        <Wallet
-          className="mx-auto h-10 w-10 text-foreground/50"
-          strokeWidth={1.5}
-        />
-        <p className="font-mono text-base font-semibold text-foreground">
-          Verify with Entros
-        </p>
-        <p className="mx-auto max-w-xs text-sm text-foreground/70">
-          Connect your Solana wallet to begin a 12-second behavioral capture.
-        </p>
-        <WalletConnectButton className="!rounded-full !border !border-border !bg-surface !text-foreground !font-mono !text-sm" />
-      </div>
+      <VerifyConsole
+        framed={false}
+        steps={steps}
+        rail={{ current: 0, status: "ready" }}
+        announcement="Verify with Entros"
+        viewKey="connect"
+        footer={<PrivacyFooter lines={PRIVACY_LINES} />}
+      >
+        <div className="space-y-7 text-center">
+          <StateIcon>
+            <Wallet className="h-12 w-12" strokeWidth={1.1} />
+          </StateIcon>
+          <div>
+            <h1 className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground">
+              Verify with Entros
+            </h1>
+            <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-foreground/65">
+              Connect your Solana wallet to start.
+            </p>
+          </div>
+          <div className="vc-wallet">
+            <WalletConnectButton />
+          </div>
+        </div>
+      </VerifyConsole>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <div className="mb-4 inline-flex">
-          <ConnectedWalletPill size="sm" />
+    <VerifyConsole
+      framed={false}
+      steps={steps}
+      rail={{ current: 1, status: "ready" }}
+      announcement="Verify with Entros"
+      viewKey="idle"
+      footer={<PrivacyFooter lines={PRIVACY_LINES} />}
+    >
+      <div className="space-y-8 text-center">
+        <div>
+          <VerifyWalletChip />
+          <h1 className="mt-6 font-display text-3xl font-normal tracking-[-0.015em] text-foreground">
+            Verify with Entros
+          </h1>
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-foreground/65">
+            One short capture, then one signature in your wallet.
+          </p>
         </div>
-        <p className="font-mono text-base font-semibold text-foreground">
-          Verify with Entros
-        </p>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-foreground/70">
-          Speak a phrase while tracing a shape. All sensors record for 12
-          seconds. Then sign with your wallet.
-        </p>
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={handleStart}
+            disabled={requesting}
+            className={primaryVerificationActionClass}
+          >
+            {requesting ? "Requesting access..." : "Start Verification"}
+            {!requesting && <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden />}
+          </button>
+        </div>
       </div>
-      <div className="flex justify-center">
-        <button
-          onClick={handleStart}
-          disabled={requesting}
-          className="
-            inline-flex items-center justify-center gap-2
-            rounded-full bg-foreground px-6 py-3
-            text-sm font-medium text-background
-            transition-colors hover:bg-foreground/90
-            disabled:cursor-not-allowed disabled:opacity-50
-          "
-        >
-          {requesting ? "Requesting access..." : "Start Verification"}
-        </button>
-      </div>
-      <p className="text-center text-xs text-muted">
-        Raw recordings are not retained.
-        <br />
-        Derived features support validation.
-        <br />
-        Commitments and proofs persist.
-      </p>
-    </div>
+    </VerifyConsole>
   );
 }

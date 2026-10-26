@@ -7,6 +7,10 @@ import {
   studyConsentParagraphs,
   type StudyDefinition,
 } from "@/lib/population-study";
+import {
+  primaryVerificationActionClass,
+  secondaryVerificationActionClass,
+} from "./verification-styles";
 
 interface StudyConsentProps {
   definition: StudyDefinition;
@@ -42,7 +46,7 @@ export function StudyConsent({
         <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
           Devnet population study
         </p>
-        <h2 className="mt-3 font-display text-3xl font-medium text-foreground">
+        <h2 className="mt-3 font-display text-3xl font-normal tracking-[-0.01em] text-foreground">
           Help calibrate Entros
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-foreground/65">
@@ -51,9 +55,14 @@ export function StudyConsent({
         </p>
       </div>
 
-      <div className="space-y-3 border-y border-border py-5 text-sm leading-relaxed text-foreground/65">
-        {studyConsentParagraphs(definition).map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
+      <div className="space-y-3 border-y border-foreground/[0.08] py-5 text-[13px] leading-relaxed text-foreground/60">
+        {studyConsentParagraphs(definition).map((paragraph, index) => (
+          <p key={paragraph} className="grid grid-cols-[1.75rem_1fr]">
+            <span className="font-mono text-[10px] leading-[1.6rem] text-foreground/35">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span>{paragraph}</span>
+          </p>
         ))}
         {definition.preview_only && (
           <p>This local interface preview does not write a study record.</p>
@@ -85,7 +94,7 @@ export function StudyConsent({
           type="button"
           onClick={joinStudy}
           disabled={!accepted}
-          className="rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-40"
+          className={primaryVerificationActionClass}
         >
           {acknowledged
             ? "Continue to wallet setup"
@@ -94,7 +103,7 @@ export function StudyConsent({
         <button
           type="button"
           onClick={continueNormally}
-          className="rounded-full border border-border px-6 py-3 text-sm text-foreground/70 transition-colors hover:border-foreground/35 hover:text-foreground disabled:opacity-40"
+          className={secondaryVerificationActionClass}
         >
           Continue without study
         </button>

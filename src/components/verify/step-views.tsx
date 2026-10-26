@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import {
-  CheckCircle,
   AlertCircle,
+  ArrowUpRight,
   Check,
+  CheckCircle,
+  Clock,
   Copy,
   ExternalLink,
-  Loader2,
   RefreshCcw,
   Share2,
+  ShieldAlert,
 } from "lucide-react";
 
 import { type RetryableReason } from "@entros/pulse-sdk";
@@ -20,8 +22,22 @@ import {
   failureSpend,
   requiresBaselineRecoveryChoice,
 } from "./categorize-failure";
-import { primaryVerificationActionClass } from "./verification-styles";
+import {
+  STATE_ICON_CLASS,
+  STATE_ICON_STROKE,
+  StateIcon,
+  type StateTone,
+} from "./console";
+import { MAX_CAPTURE_ATTEMPTS } from "./retry-budget";
+import {
+  accentVerificationActionClass,
+  dangerVerificationActionClass,
+  primaryVerificationActionClass,
+  secondaryVerificationActionClass,
+  verificationFocusRing,
+} from "./verification-styles";
 
+import { explorerUrl } from "@/lib/explorer";
 import { buildShareUrl, buildTwitterIntent } from "@/lib/share";
 
 // Every stage string the SDK emits from `onProgress`, and what it is doing.
@@ -41,64 +57,290 @@ const STAGE_SUBTITLES: Record<string, string> = {
   // someone their transaction is still going out when it has already landed is
   // what makes a short wait feel like a hang.
   "Finishing up...": "Your verification is confirmed on-chain",
+  // Popup only: the app's policy is read after the transaction lands.
+  "Checking app requirements...": "Reading your Entros Anchor against this app's policy",
 };
 
 /**
- * Solid cyan block that tumbles clockwise — holds on a side, rotates
- * 90° to the next, repeats four times per cycle. Replaces the lucide
- * `Loader2` circular spinner on Entros-owned proving stages
- * (Extracting features → Validating → Computing proof → Submitting).
- * The wallet-owned signing stage keeps its purple `Loader2` to
- * distinguish wallet-side wait from protocol-side work.
- *
- * Rotation pivot is the geometric centre, so the block stays put on
- * screen. The eye reads rotation during the eased 90° glide; the
- * resting holds in between let each side land as a deliberate tick,
- * giving it a calm cartoon-block rhythm rather than a continuous spin.
+ * Where each SDK stage sits in the run. Stages a run may skip (baseline
+ * recovery, validation authorization, a layout upgrade) join the list only
+ * once the SDK reports them.
  */
-function TumblingSquare() {
+const STAGE_ORDER: readonly string[] = [
+  "Extracting features...",
+  "Authorizing validation...",
+  "Validating...",
+  "Re-syncing baseline with chain...",
+  "Recovering baseline from chain...",
+  "Updating identity account...",
+  "Computing proof...",
+  "Submitting to Solana...",
+  "Submitting reset to Solana...",
+  "Finishing up...",
+  "Checking app requirements...",
+];
+
+function baseStages(reset: boolean): string[] {
+  return [
+    "Extracting features...",
+    "Validating...",
+    "Computing proof...",
+    reset ? "Submitting reset to Solana..." : "Submitting to Solana...",
+    "Finishing up...",
+  ];
+}
+
+function stageRank(stage: string): number {
+  const rank = STAGE_ORDER.indexOf(stage);
+  return rank === -1 ? STAGE_ORDER.length : rank;
+}
+
+/**
+ * The proof steps as a list that checks off each stage the SDK reports.
+ * `signing` covers the moment after the run settles and before the result
+ * renders, when the wallet step is the last one in flight.
+ */
+export function ProofPipeline({
+  stage,
+  signing = false,
+  reset = false,
+}: {
+  stage: string;
+  signing?: boolean;
+  reset?: boolean;
+}) {
+  const current = signing
+    ? reset
+      ? "Submitting reset to Solana..."
+      : "Submitting to Solana..."
+    : stage;
+  // Stages outside the base list stay listed once seen. Adjusting state
+  // during render is the documented pattern for state derived from a prop.
+  const [seen, setSeen] = useState<string[]>([]);
+  if (!seen.includes(current)) setSeen([...seen, current]);
+  const rows = [...new Set([...baseStages(reset), ...seen, current])].sort(
+    (a, b) => stageRank(a) - stageRank(b),
+  );
+  const currentRank = stageRank(current);
+
   return (
-    <div
-      className="mx-auto h-6 w-6 bg-cyan"
-      style={{ animation: "entros-tumble 3s ease-in-out infinite" }}
-      aria-hidden
-    />
+    <ol className="mx-auto w-full max-w-sm border-t border-foreground/[0.08] text-left">
+      {rows.map((row) => {
+        const rank = stageRank(row);
+        const status = rank < currentRank ? "done" : rank === currentRank ? "active" : "pending";
+        const wallet = row.startsWith("Submitting");
+        const rawSubtitle: unknown = STAGE_SUBTITLES[row];
+        const subtitle =
+          wallet && signing
+            ? "Approve the transaction in your wallet"
+            : typeof rawSubtitle === "string"
+              ? rawSubtitle
+              : "Please wait";
+        return (
+          <li
+            key={row}
+            className="grid grid-cols-[1.25rem_1fr] items-start gap-x-4 border-b border-foreground/[0.08] py-3.5"
+            aria-current={status === "active" ? "step" : undefined}
+          >
+            <span className="flex h-5 items-center justify-center" aria-hidden>
+              {status === "done" ? (
+                <Check className="h-3.5 w-3.5 text-cyan" strokeWidth={2.5} />
+              ) : status === "active" ? (
+                wallet ? (
+                  <span className="vc-orbit block h-3.5 w-3.5 rounded-full border-[1.5px] border-solana-purple/25 border-t-solana-purple" />
+                ) : (
+                  <span className="vc-tumble block h-2.5 w-2.5 bg-cyan" />
+                )
+              ) : (
+                <span className="block h-1 w-1 rounded-full bg-foreground/25" />
+              )}
+            </span>
+            <span className="min-w-0">
+              <span
+                className={`block text-sm transition-colors duration-300 ${
+                  status === "active"
+                    ? "text-foreground"
+                    : status === "done"
+                      ? "text-foreground/60"
+                      : "text-foreground/30"
+                }`}
+              >
+                {row.replace(/\.\.\.$/, "")}
+              </span>
+              {status === "active" && (
+                <span
+                  className={`vc-enter mt-1 block text-xs ${
+                    wallet ? "text-solana-purple" : "text-foreground/50"
+                  }`}
+                >
+                  {subtitle}
+                </span>
+              )}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
-export function ProvingView({ stage }: { stage?: string }) {
-  const label = stage || "Processing...";
-  // Type-checked on the result, for the same reason as the hint lookup below.
-  // Every object inherits `toString`, so a `stage` of "toString" reads back a
-  // function, and a function is truthy, so `||` would not catch it either.
-  // `stage` is SDK-controlled today, which makes this a type lie rather than
-  // a live crash, but the identical shape twenty lines down was reachable.
-  const rawSubtitle: unknown = stage ? STAGE_SUBTITLES[stage] : undefined;
-  const subtitle = typeof rawSubtitle === "string" ? rawSubtitle : "Please wait";
+const subscribeToReducedMotion = (notify: () => void) => {
+  const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+  query.addEventListener("change", notify);
+  return () => query.removeEventListener("change", notify);
+};
+const readReducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/** Moves focus to a result title once, so a screen reader starts there. */
+function useFocusOnMount<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    ref.current?.focus({ preventScroll: true });
+  }, []);
+  return ref;
+}
+
+/** Counts a number up from zero by writing the text node, never re-rendering. */
+function useCountUp(target: number | null) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const reduced = useSyncExternalStore(subscribeToReducedMotion, readReducedMotion, () => false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || target === null || reduced) return;
+    const start = performance.now();
+    let frame = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / 900);
+      node.textContent = String(Math.round(target * (1 - Math.pow(1 - t, 3))));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    node.textContent = "0";
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      node.textContent = String(target);
+    };
+  }, [target, reduced]);
+  return ref;
+}
+
+// Server and client can print trigonometry results with different trailing
+// digits, which reads as a hydration mismatch.
+const round2 = (value: number) => Math.round(value * 100) / 100;
+
+/** The Anchor seal: the commitment printed around a ring, the score inside. */
+function AnchorSeal({ commitment, score }: { commitment: string; score: number | null }) {
+  const id = useId().replace(/:/g, "");
+  const scoreRef = useCountUp(score);
+  const r = 96;
+  const arc = 2 * Math.PI * 78;
+  const hex = commitment.replace(/^0x/, "");
+  const ringText = `0x ${hex.match(/.{1,4}/g)?.join(" ") ?? hex}`;
   return (
-    <div className="text-center space-y-4">
-      <TumblingSquare />
-      <p className="font-mono text-sm text-foreground">
-        {label}
-      </p>
-      <p className="text-xs text-muted">
-        {subtitle}
-      </p>
+    <div className="relative mx-auto h-[216px] w-[216px]">
+      <svg viewBox="0 0 216 216" className="absolute inset-0 h-full w-full" aria-hidden>
+        <defs>
+          <path id={`seal-${id}`} d={`M108,108 m-${r},0 a${r},${r} 0 1,1 ${r * 2},0 a${r},${r} 0 1,1 -${r * 2},0`} />
+        </defs>
+        <text className="vc-fade font-mono" fontSize={7.2} letterSpacing={1.1} fill="var(--color-foreground)" fillOpacity={0.4}>
+          <textPath href={`#seal-${id}`} textLength={2 * Math.PI * r - 6} lengthAdjust="spacing">
+            {ringText}
+          </textPath>
+        </text>
+        {Array.from({ length: 72 }, (_, i) => {
+          const a = (i / 72) * Math.PI * 2;
+          const inner = i % 6 === 0 ? 82 : 84.5;
+          return (
+            <line
+              key={i}
+              x1={round2(108 + Math.cos(a) * inner)}
+              y1={round2(108 + Math.sin(a) * inner)}
+              x2={round2(108 + Math.cos(a) * 87)}
+              y2={round2(108 + Math.sin(a) * 87)}
+              stroke="var(--color-foreground)"
+              strokeOpacity={i % 6 === 0 ? 0.3 : 0.12}
+              strokeWidth={1}
+            />
+          );
+        })}
+        <circle cx={108} cy={108} r={78} fill="none" stroke="var(--color-foreground)" strokeOpacity={0.08} strokeWidth={1} />
+        <circle
+          cx={108}
+          cy={108}
+          r={78}
+          fill="none"
+          stroke="var(--color-cyan)"
+          strokeWidth={2}
+          strokeLinecap="round"
+          transform="rotate(-90 108 108)"
+          className="vc-draw"
+          style={{ ["--vc-len" as string]: `${arc}` }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {score !== null ? (
+          <>
+            <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-foreground/50">
+              Your Trust Score
+            </span>
+            <span
+              ref={scoreRef}
+              className="mt-1 font-display text-6xl font-medium leading-none tracking-[-0.03em] text-cyan tabular-nums"
+            >
+              {score}
+            </span>
+          </>
+        ) : (
+          <CheckCircle className="h-10 w-10 text-cyan" strokeWidth={1.5} aria-hidden />
+        )}
+      </div>
     </div>
   );
 }
 
-export function SigningView() {
+function shortValue(value: string): string {
+  return value.length <= 15 ? value : `${value.slice(0, 6)}...${value.slice(-6)}`;
+}
+
+function ResultRow({ label, value, href }: { label: string; value: string; href?: string }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1400);
+      })
+      .catch(() => undefined);
+  }
   return (
-    <div className="text-center space-y-4">
-      <Loader2 className="mx-auto h-8 w-8 text-solana-purple animate-spin" />
-      <p className="font-mono text-sm text-foreground">
-        Waiting for wallet signature...
-      </p>
-      <p className="text-xs text-muted">
-        Approve the transaction in your wallet
-      </p>
+    <div className="grid grid-cols-[6.5rem_1fr_auto] items-center gap-3 border-b border-foreground/[0.08] py-2.5">
+      <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/45">{label}</dt>
+      <dd className="truncate font-mono text-xs text-foreground/75" title={value}>
+        {shortValue(value)}
+      </dd>
+      <dd className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={copy}
+          aria-label={copied ? `${label} copied` : `Copy ${label.toLowerCase()}`}
+          className={`flex h-7 w-7 items-center justify-center text-foreground/45 transition-colors hover:text-foreground ${verificationFocusRing}`}
+        >
+          {copied ? <Check className="h-3.5 w-3.5 text-cyan" /> : <Copy className="h-3.5 w-3.5" />}
+        </button>
+        {href && (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`View ${label.toLowerCase()} on Solana Explorer`}
+            className={`flex h-7 w-7 items-center justify-center text-foreground/45 transition-colors hover:text-foreground ${verificationFocusRing}`}
+          >
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </a>
+        )}
+      </dd>
     </div>
   );
 }
@@ -150,6 +392,7 @@ export function VerifiedView({
 }) {
   const [copied, setCopied] = useState(false);
   const canShare = showShare && Boolean(walletPubkey);
+  const heading = useFocusOnMount<HTMLHeadingElement>();
 
   function handleShareToX() {
     if (!walletPubkey) return;
@@ -173,57 +416,44 @@ export function VerifiedView({
   }
 
   return (
-    <div className="text-center space-y-6">
-      <CheckCircle className="mx-auto h-12 w-12 text-cyan" />
+    <div className="space-y-6 text-center">
+      <AnchorSeal
+        commitment={commitment}
+        score={showShare && typeof trustScore === "number" ? trustScore : null}
+      />
       <div>
-        <p className="font-sans text-xl font-semibold text-foreground">
+        <h2
+          ref={heading}
+          tabIndex={-1}
+          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground outline-none"
+        >
           {title}
-        </p>
-        <p className="mt-1 text-sm text-muted">{subtitle}</p>
+        </h2>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-foreground/60">{subtitle}</p>
       </div>
-      <div className="mx-auto max-w-sm space-y-3">
-        {showShare && typeof trustScore === "number" && (
-          <div className="verification-surface verification-surface--accent p-5 text-center">
-            <p className="text-xs font-mono uppercase tracking-widest text-cyan/80 mb-2">
-              Your Trust Score
-            </p>
-            <p className="font-display text-5xl font-medium text-cyan tabular-nums leading-none">
-              {trustScore}
-            </p>
-          </div>
+      <dl className="mx-auto max-w-sm border-t border-foreground/[0.08] text-left">
+        <ResultRow label="Commitment" value={commitment} />
+        {txSignature && (
+          <ResultRow
+            label="Transaction"
+            value={txSignature}
+            href={explorerUrl(txSignature, "tx")}
+          />
         )}
-        <div className="verification-surface p-4">
-          <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">
-            Commitment
+      </dl>
+      {portableBaseline === false && (
+        <div className="mx-auto max-w-sm text-center text-warning">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em]">
+            This device only
           </p>
-          <p className="font-mono text-xs text-foreground/70 break-all">
-            {commitment}
+          <p className="mt-1.5 text-balance text-xs leading-relaxed">
+            Your wallet could not sign the message that encrypts a portable
+            copy of your baseline, so this verification is stored here alone.
+            Verifying from another device will need a reset. Connect a wallet
+            that supports message signing to make it portable.
           </p>
         </div>
-        {txSignature && (
-          <div className="verification-surface p-4">
-            <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">
-              Transaction
-            </p>
-            <p className="font-mono text-xs text-foreground/70 break-all">
-              {txSignature}
-            </p>
-          </div>
-        )}
-        {portableBaseline === false && (
-          <div className="verification-surface p-4 text-left">
-            <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">
-              This device only
-            </p>
-            <p className="text-xs text-foreground/70 leading-relaxed">
-              Your wallet could not sign the message that encrypts a portable
-              copy of your baseline, so this verification is stored here alone.
-              Verifying from another device will need a reset. Connect a wallet
-              that supports message signing to make it portable.
-            </p>
-          </div>
-        )}
-      </div>
+      )}
       <div className="flex flex-col items-center gap-3">
         <button
           type="button"
@@ -239,27 +469,28 @@ export function VerifiedView({
             type="button"
             onClick={onSecondaryAction}
             disabled={actionPending}
-            className="text-xs text-foreground/45 transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            className={`text-xs text-foreground/45 transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 ${verificationFocusRing}`}
           >
             {secondaryActionLabel}
           </button>
         )}
       </div>
       {canShare && (
-        <div className="flex justify-center gap-3">
+        <div className="flex items-center justify-center gap-5">
           <button
             type="button"
             onClick={handleShareToX}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className={`inline-flex items-center gap-2 font-mono text-xs text-foreground/55 transition-colors hover:text-foreground ${verificationFocusRing}`}
           >
             <Share2 className="h-3.5 w-3.5" />
             Share to X
           </button>
+          <span className="h-3 w-px bg-foreground/15" aria-hidden />
           <button
             type="button"
             onClick={handleCopyLink}
             aria-label={copied ? "Link copied" : "Copy share link"}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className={`inline-flex items-center gap-2 font-mono text-xs text-foreground/55 transition-colors hover:text-foreground ${verificationFocusRing}`}
           >
             {copied ? (
               <Check className="h-3.5 w-3.5 text-cyan" />
@@ -293,9 +524,9 @@ const SOFT_HINT: Record<RetryableReason, string> = {
   entropy_bounds:
     "Your gestures and speech were a bit too uniform. Try varying both naturally.",
   temporal_coupling_low:
-    "Speak and move at the same time—they were a bit out of sync.",
+    "Speak and move at the same time. They were a bit out of sync.",
   phrase_content_mismatch:
-    "Read the phrase clearly at a normal pace, exactly as shown.",
+    "Say the word clearly at a normal pace, exactly as shown.",
   trace_incomplete: "Trace through every dot, in order from 1.",
   audio_evidence_insufficient:
     "The service could not assess the recorded speech. Start a new verification and speak at your normal volume.",
@@ -306,7 +537,7 @@ const SOFT_HINT: Record<RetryableReason, string> = {
   validation_timeout:
     "Your connection stalled while sending the verification. Somewhere with a stronger signal should work.",
   captcha_required:
-    "Liveness pattern anomaly detected. Please complete this dynamic voice/motion challenge to verify your identity.",
+    "The service needs one more check. Start a new verification.",
   technical_failure:
     "The verification service could not finish this session. Start a new verification.",
   session_expired: "This session expired. Start a new verification.",
@@ -367,31 +598,54 @@ export function SoftFailedView({
   const hint = softHint(reason);
   const attemptsLabel =
     attemptsRemaining === 1 ? "1 attempt left" : `${attemptsRemaining} attempts left`;
+  const heading = useFocusOnMount<HTMLHeadingElement>();
 
   return (
-    <div className="text-center space-y-6">
-      <RefreshCcw className="mx-auto h-12 w-12 text-cyan" strokeWidth={1.5} />
+    <div className="space-y-8 text-center">
+      <StateIcon tone="retry">
+        <RefreshCcw className={STATE_ICON_CLASS} strokeWidth={STATE_ICON_STROKE} />
+      </StateIcon>
       <div>
-        <p className="font-sans text-xl font-semibold text-foreground">
+        <h2
+          ref={heading}
+          tabIndex={-1}
+          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground outline-none"
+        >
           Let&apos;s try that again
+        </h2>
+        <p className="mx-auto mt-3 max-w-sm text-balance text-sm leading-relaxed text-foreground/65">
+          {hint}
         </p>
-        <p className="mt-1 text-sm text-muted">{hint}</p>
-        <p className="mt-2 text-xs text-muted">{attemptsLabel}</p>
+        <div className="mt-5 flex items-center justify-center gap-2.5">
+          <span className="flex gap-1" aria-hidden>
+            {Array.from({ length: MAX_CAPTURE_ATTEMPTS }, (_, i) => (
+              <span
+                key={i}
+                className={`h-1.5 w-4 ${i < attemptsRemaining ? "bg-cyan" : "bg-foreground/12"}`}
+              />
+            ))}
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">
+            {attemptsLabel}
+          </span>
+        </div>
       </div>
-      <div className="flex flex-col-reverse gap-2 items-center sm:flex-row sm:justify-center">
+      <div className="flex flex-col-reverse items-center gap-3 sm:flex-row sm:justify-center">
         <button
+          type="button"
           onClick={onCancel}
           disabled={actionPending}
           aria-busy={actionPending}
-          className="rounded-full border border-border px-6 py-2 text-sm text-muted hover:text-foreground hover:border-border-hover transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className={secondaryVerificationActionClass}
         >
           Cancel
         </button>
         <button
+          type="button"
           onClick={onTryAgain}
           disabled={actionPending}
           aria-busy={actionPending}
-          className="rounded-full border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan hover:bg-cyan/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className={primaryVerificationActionClass}
         >
           {tryAgainLabel}
         </button>
@@ -399,7 +653,6 @@ export function SoftFailedView({
     </div>
   );
 }
-
 // Pre-flight cooldown checks (verify-wallet-connected.tsx) embed the
 // computed unlock timestamp in the synthetic error string so this UI
 // can show the user a specific "try again on $DATE" message. On the
@@ -492,6 +745,7 @@ export function FailedView({
     reason,
     { failedAt, opaque, baselineRecovery },
   );
+  const heading = useFocusOnMount<HTMLHeadingElement>();
 
   let title: string;
   let body: string;
@@ -537,18 +791,18 @@ export function FailedView({
       dismissAction = () => window.location.reload();
       break;
     case "relayer-down":
-      title = "Relayer not connected";
+      title = "Verification service unreachable";
       body =
-        "The Entros relayer service is not running. Verification requires a live relayer connected to Solana devnet.";
+        "The Entros verification service did not respond. Check your connection and try again.";
       footnote =
-        "This is a devnet demo. End-to-end verification will be available when the relayer is deployed.";
+        "Entros runs on Solana devnet.";
       break;
     case "wallet-mismatch":
       title = "Wrong wallet signed";
       body =
-        "A different wallet signed than the one you connected. Another wallet extension likely intercepted the signature prompt. Your on-chain baseline is intact. Sign with your connected wallet, or disable other wallet extensions (or unset their default), then try again.";
+        "A different wallet signed than the one you connected, likely another wallet extension. Your on-chain baseline is intact. Sign with your connected wallet, or turn off the other extension, then try again.";
       footnote =
-        "No reset needed. This is a wallet-selection issue, not a baseline problem.";
+        "No reset needed. Your baseline is fine.";
       break;
     case "no-portable-baseline":
       // The largest group by far: 13 of 107 devnet anchors carry an on-chain
@@ -677,13 +931,13 @@ export function FailedView({
         title = "Microphone access needed";
         body = pairedCapture
           ? "Your browser blocked microphone access. Verification needs to hear your voice in each round."
-          : "Your browser blocked microphone access. Verification needs to hear your voice for the 12-second capture.";
+          : "Your browser blocked microphone access. Verification needs to hear your voice during capture.";
         footnote = micRecoveryFootnote();
       } else {
         title = "Motion sensor access needed";
         body = pairedCapture
           ? "Your browser blocked motion sensor access. Verification needs your device's motion data during the rounds."
-          : "Your browser blocked motion sensor access. Verification needs your device's motion data during the 12-second capture.";
+          : "Your browser blocked motion sensor access. Verification needs your device's motion data during capture.";
         footnote =
           "On iOS, allow motion access when prompted (or in Safari Settings → Privacy → Motion & Orientation Access). Then refresh this page and try again.";
       }
@@ -760,23 +1014,54 @@ export function FailedView({
     userPaysFees && !spendIsKnownZero ? failureSpend(failedAt) : "none";
   const spendNote =
     spend === "certain"
-      ? "The network fee for this attempt was spent. Your identity did not change."
+      ? "The network fee for this attempt was spent. Your Entros Anchor did not change."
       : spend === "possible"
         ? "This attempt may have spent a network fee. Check your wallet's recent activity."
         : null;
 
+  const tone: StateTone =
+    failure.kind === "validation-rejected" ||
+    failure.kind === "automated-browser" ||
+    failure.kind === "session-broken"
+      ? "stop"
+      : failure.kind === "session-wait" ||
+          failure.kind === "rate-limited" ||
+          failure.kind === "cooldown-active"
+        ? "wait"
+        : failure.kind === "drift-too-high" ||
+            failure.kind === "session-restart" ||
+            failure.kind === "relayer-down" ||
+            failure.kind === "user-rejection" ||
+            failure.kind === "stale-blockhash" ||
+            failure.kind === "generic"
+          ? "retry"
+          : "action";
+  const Icon =
+    tone === "wait"
+      ? Clock
+      : tone === "stop"
+        ? ShieldAlert
+        : failure.kind === "drift-too-high"
+          ? RefreshCcw
+          : AlertCircle;
+  const details = [footnote, spendNote].filter((line): line is string => Boolean(line));
+
   return (
-    <div className="text-center space-y-6">
-      {failure.kind === "drift-too-high" ? (
-        <RefreshCcw className="mx-auto h-12 w-12 text-cyan" strokeWidth={1.5} />
-      ) : (
-        <AlertCircle className="mx-auto h-12 w-12 text-danger" />
-      )}
+    <div className="space-y-7 text-center">
+      <StateIcon tone={tone}>
+        <Icon className={STATE_ICON_CLASS} strokeWidth={STATE_ICON_STROKE} />
+      </StateIcon>
       <div>
-        <p className="font-sans text-xl font-semibold text-foreground">{title}</p>
-        <p className="mt-1 text-sm text-muted">{body}</p>
-        {footnote && <p className="mt-2 text-xs text-muted">{footnote}</p>}
-        {spendNote && <p className="mt-2 text-xs text-muted">{spendNote}</p>}
+        <h2
+          ref={heading}
+          tabIndex={-1}
+          className="font-display text-[1.75rem] font-normal leading-tight tracking-[-0.015em] text-foreground outline-none md:text-3xl"
+        >
+          {title}
+        </h2>
+        <p className="mx-auto mt-3 max-w-sm text-balance text-sm leading-relaxed text-foreground/65">
+          {[body, ...details].join(" ")}
+        </p>
       </div>
       {primaryCta && (
         <a
@@ -786,27 +1071,31 @@ export function FailedView({
           aria-disabled={actionPending}
           tabIndex={actionPending ? -1 : undefined}
           onClick={actionPending ? (event) => event.preventDefault() : undefined}
-          className="inline-flex items-center gap-2 rounded-full border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan hover:bg-cyan/20 transition-colors aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+          className={`${accentVerificationActionClass} aria-disabled:cursor-not-allowed aria-disabled:opacity-50`}
         >
           {primaryCta.label}
           <ExternalLink className="h-3.5 w-3.5" strokeWidth={2} />
         </a>
       )}
-      <div className="flex flex-col-reverse gap-2 items-center sm:flex-row sm:justify-center">
+      <div className="flex flex-col-reverse items-center gap-3 sm:flex-row sm:justify-center">
         <button
+          type="button"
           onClick={dismissAction}
           disabled={actionPending}
           aria-busy={actionPending}
-          className="rounded-full border border-border px-6 py-2 text-sm text-muted hover:text-foreground hover:border-border-hover transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className={
+            secondaryAction ? secondaryVerificationActionClass : primaryVerificationActionClass
+          }
         >
           {dismissLabel}
         </button>
         {secondaryAction && (
           <button
+            type="button"
             onClick={secondaryAction.onClick}
             disabled={actionPending}
             aria-busy={actionPending}
-            className="rounded-full border border-danger/30 bg-danger/10 px-6 py-2 text-sm font-medium text-danger hover:bg-danger/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            className={dangerVerificationActionClass}
           >
             {secondaryAction.label}
           </button>

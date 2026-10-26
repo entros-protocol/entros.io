@@ -7,19 +7,13 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import {
   type PulseSession,
-  type CurveTracePoint,
   type VerificationResult,
   PROGRAM_IDS,
   fetchIdentityState,
   reasonDisposition,
   MAX_VERIFICATION_MS,
-  createStudyContext,
   type StudyRecordStatus,
 } from "@entros/pulse-sdk";
-import {
-  fetchChallengeViaProxy,
-  type ChallengeResponse,
-} from "@/lib/relay-challenge";
 import type {
   CaptureIntent,
   PairedCaptureHandle,
@@ -27,21 +21,32 @@ import type {
   VerifyState,
   VerifyAction,
 } from "@/components/verify/types";
-import { PulseChallenge } from "@/components/verify/pulse-challenge";
-import { primaryVerificationActionClass } from "@/components/verify/verification-styles";
 import {
-  ProvingView,
-  SigningView,
+  primaryVerificationActionClass,
+  secondaryVerificationActionClass,
+  verificationFocusRing,
+} from "@/components/verify/verification-styles";
+import {
+  ProofPipeline,
   VerifiedView,
   FailedView,
   SoftFailedView,
 } from "@/components/verify/step-views";
+import {
+  PRIVACY_LINES,
+  PrivacyFooter,
+  StateIcon,
+  ToneText,
+  VerifyConsole,
+  VerifyWalletChip,
+  railStepForPhase,
+  railStepForStage,
+  type RailState,
+} from "@/components/verify/console";
 import { ResetBaselineDialog } from "@/components/verify/reset-baseline-dialog";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
-import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
-import { usePulse } from "@/components/providers/pulse-provider";
 import { useWalletError } from "@/components/providers/wallet-provider";
-import { AlertTriangle, Wallet } from "lucide-react";
+import { ArrowRight, Wallet, X } from "lucide-react";
 import type { ActiveStudyGrant } from "@/lib/population-study";
 import {
   createSigningDiagnosticWallet,
@@ -62,10 +67,6 @@ function commitmentToHex(bytes: Uint8Array): string {
 import { evaluateResetCooldown } from "@/lib/cooldown";
 import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 import { useMotionCapability } from "@/hooks/use-motion-capability";
-import {
-  bindPulseValidationChallenge,
-  stopPulseCapture,
-} from "@/lib/pulse-session";
 
 // Soft-reject retry budget. When attemptsUsed < MAX_ATTEMPTS
 // and the server returns a user-recoverable reason, the client routes to
@@ -90,45 +91,96 @@ const readSigningDiagnosticCapability = () =>
   });
 const readServerSigningDiagnosticCapability = () => false;
 
-function DevnetWalletRequirements({
-  connected = false,
-}: {
-  connected?: boolean;
-}) {
+function FaucetLink() {
   return (
-    <div className="mx-auto w-full max-w-sm rounded-lg border border-amber-500/35 bg-amber-500/10 px-5 py-4 text-left">
-      <div className="flex items-start gap-3">
-        <AlertTriangle
-          className="mt-0.5 size-5 shrink-0 text-amber-500"
-          aria-hidden="true"
-        />
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-foreground">
-            Prepare a Solana Devnet wallet
-          </p>
-          <p className="text-sm leading-relaxed text-foreground/75">
-            Switch your wallet to Devnet and add free SOL from the{" "}
-            <a
-              href="https://faucet.solana.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-cyan underline transition-colors hover:text-foreground"
-            >
-              Solana faucet
-            </a>
-            .{" "}
-            {connected
-              ? "Then confirm this wallet."
-              : "Then connect the wallet to verify."}
-          </p>
-          <p className="text-xs text-foreground/55">
-            Devnet SOL has no monetary value.
-          </p>
-        </div>
-      </div>
-    </div>
+    <a
+      href="https://faucet.solana.com/"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline decoration-current/40 underline-offset-4 transition-colors hover:decoration-current"
+    >
+      Solana faucet
+    </a>
   );
 }
+
+function VoiceGlyph() {
+  return (
+    <svg viewBox="0 0 48 24" className="h-6 w-12 text-cyan" aria-hidden>
+      {[3, 8, 14, 9, 18, 11, 6, 13, 4].map((h, i) => (
+        <line
+          key={i}
+          x1={4 + i * 5}
+          x2={4 + i * 5}
+          y1={12 - h / 2}
+          y2={12 + h / 2}
+          stroke="currentColor"
+          strokeWidth={1.75}
+          strokeLinecap="round"
+        />
+      ))}
+    </svg>
+  );
+}
+
+function TraceGlyph() {
+  return (
+    <svg viewBox="0 0 48 24" className="h-6 w-12 text-solana-green" aria-hidden>
+      <polyline
+        points="6,18 18,6 30,16 42,7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeDasharray="3 3"
+      />
+      {[
+        [6, 18],
+        [18, 6],
+        [30, 16],
+        [42, 7],
+      ].map(([x, y]) => (
+        <circle
+          key={`${x}-${y}`}
+          cx={x}
+          cy={y}
+          r={2.6}
+          fill="var(--color-background)"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        />
+      ))}
+    </svg>
+  );
+}
+
+function MotionGlyph() {
+  return (
+    <svg viewBox="0 0 48 24" className="h-6 w-12 text-solana-purple" aria-hidden>
+      <circle cx={24} cy={12} r={2.5} fill="currentColor" />
+      <path
+        d="M17 6a9 9 0 0 0 0 12M31 6a9 9 0 0 1 0 12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <path
+        d="M12 3a14 14 0 0 0 0 18M36 3a14 14 0 0 1 0 18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        opacity={0.5}
+      />
+    </svg>
+  );
+}
+
+const IDLE_STEPS = [
+  { label: "Say each word", Glyph: VoiceGlyph },
+  { label: "Trace each path", Glyph: TraceGlyph },
+  { label: "Move naturally throughout", Glyph: MotionGlyph },
+] as const;
 
 function SigningDiagnosticPanel({
   report,
@@ -143,7 +195,7 @@ function SigningDiagnosticPanel({
     (simulation) => simulation.err !== null,
   ).length;
   return (
-    <section className="mx-auto w-full max-w-xl rounded-xl border border-cyan/30 bg-cyan/5 p-5 text-left">
+    <section className="mx-auto w-full max-w-xl border border-cyan/30 bg-cyan/5 p-5 text-left">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
@@ -166,7 +218,7 @@ function SigningDiagnosticPanel({
         {report.simulations.map((simulation) => (
           <div
             key={`${simulation.endpoint}-${simulation.variant}`}
-            className="rounded-lg border border-border bg-background/50 p-3"
+            className="border border-foreground/10 bg-background/50 p-3"
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-foreground/45">
               {simulation.endpoint} · {simulation.variant}
@@ -197,14 +249,14 @@ function SigningDiagnosticPanel({
         <button
           type="button"
           onClick={onDownload}
-          className="rounded-full border border-cyan/35 px-4 py-2 font-mono text-xs text-cyan transition-colors hover:border-cyan hover:text-foreground"
+          className={`border border-cyan/35 px-4 py-2 font-mono text-xs text-cyan transition-colors hover:border-cyan hover:text-foreground ${verificationFocusRing}`}
         >
           Download redacted JSON
         </button>
         <button
           type="button"
           onClick={onDiscard}
-          className="rounded-full border border-border px-4 py-2 font-mono text-xs text-foreground/60 transition-colors hover:border-foreground/35 hover:text-foreground"
+          className={`border border-foreground/15 px-4 py-2 font-mono text-xs text-foreground/60 transition-colors hover:border-foreground/35 hover:text-foreground ${verificationFocusRing}`}
         >
           Discard report
         </button>
@@ -215,7 +267,7 @@ function SigningDiagnosticPanel({
 
 function SigningDiagnosticNotice() {
   return (
-    <div className="mx-auto max-w-sm rounded-lg border border-cyan/30 bg-cyan/5 px-4 py-3">
+    <div className="mx-auto max-w-sm border border-cyan/30 bg-cyan/5 px-4 py-3">
       <p className="text-center font-mono text-xs text-cyan">
         Local transaction diagnostic enabled
       </p>
@@ -278,16 +330,13 @@ export function VerifyWalletConnected({
 }) {
   const { connected, wallet, publicKey } = useWallet();
   const { connection } = useConnection();
-  const pulse = usePulse();
   // Wallet adapter error surface (e.g., Phantom devnet mismatch, Android MWA
   // dead-ends). Latest message is rendered as a banner above the Connect
   // button; clears automatically when the wallet successfully connects.
   const { lastError: walletError, clearError: clearWalletError } =
     useWalletError();
   const sessionRef = useRef<PulseSession | null>(null);
-  const [audioLevel, setAudioLevel] = useState(0);
   const hasMotion = useMotionCapability();
-  const [requesting, setRequesting] = useState(false);
   const [processingStage, setProcessingStage] = useState(
     "Extracting features...",
   );
@@ -343,11 +392,6 @@ export function VerifyWalletConnected({
     tx: string;
     score: number;
   } | null>(null);
-  // Keep the server nonce, lifetime, phrase, and curve together until the
-  // session binds them. A missing or malformed challenge stops capture.
-  const [validationChallenge, setValidationChallenge] =
-    useState<ChallengeResponse | null>(null);
-  const startingRef = useRef(false);
   const voicedFramesRef = useRef(0);
   // Intent is tracked alongside the state-machine mirror so the
   // capture-completion handler can choose between verify vs reset paths
@@ -367,11 +411,7 @@ export function VerifyWalletConnected({
 
   // Paired rounds are the only capture this page runs. The study-trial
   // binding to the single capture ended when web study intake closed
-  // (2026-10-06), so the flow no longer depends on the server flag or a
-  // grant. The single-capture code path below stays in the bundle but is
-  // unreachable; the `boolean` annotation keeps the constant un-narrowed so
-  // the retained path still type-checks.
-  const pairedActive: boolean = true;
+  // (2026-10-06), so the flow no longer depends on the server flag or a grant.
   // Null until the paired capture's code has loaded.
   const [pairedCapture, setPairedCapture] =
     useState<PairedCaptureHandle | null>(null);
@@ -509,179 +549,13 @@ export function VerifyWalletConnected({
       ? scoreForTx.score
       : null;
 
-  async function handleStart(intent: "verify" | "reset" = "verify") {
-    if (pairedActive) return handleStartPaired(intent);
-    if (studyCaptureBlocked) return;
-    if (startingRef.current) return;
-    startingRef.current = true;
-    // Verify and reset are different operations and must not share the
-    // retry budget. If the user just exhausted 3 verify attempts and now
-    // clicks "Reset baseline", the reset capture starts with a fresh
-    // budget—otherwise any borderline failure during reset would
-    // immediately route to hard-fail (because attemptsUsedRef >= MAX).
-    if (intentRef.current !== intent) {
-      retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
-    }
-    intentRef.current = intent;
-    if (intent === "verify") setSigningDiagnosticReport(null);
-    setRequesting(true);
-    setValidationChallenge(null);
-    // Reset the voiced-frame counter before any await so a synchronous
-    // throw in startMotion / challenge fetch can't leak the previous
-    // attempt's count into the rejection-path override evaluation in
-    // handleCaptureComplete.
-    voicedFramesRef.current = 0;
-    // Fire reset cooldown pre-flight in parallel with iOS gesture-bound motion setup.
-    // Awaiting RPC network I/O before startMotion() drops the iOS gesture token,
-    // so we launch the fetch here and await it after motion setup completes.
-    const cooldownPromise: Promise<boolean> =
-      intent === "reset" && publicKey
-        ? checkResetCooldown(publicKey)
-        : Promise.resolve(false);
-
-    try {
-      // Fire the challenge fetch in parallel with sensor setup. We do NOT
-      // await this before requesting motion permission: `DeviceMotionEvent
-      // .requestPermission()` on iOS consumes the active user-gesture token,
-      // and awaiting a network round-trip between the click and the motion
-      // prompt silently drops that token—motion permission denied.
-      // Awaiting happens after audio and motion permissions resolve but
-      // before START_CAPTURE; null → fail the verification with a clear
-      // error rather than silently fall back to nonsense.
-      const challengePromise: Promise<ChallengeResponse | null> = publicKey
-        ? fetchChallengeViaProxy(publicKey.toBase58()).catch((err: unknown) => {
-            if (process.env.NODE_ENV === "development") {
-              const msg = err instanceof Error ? err.message : String(err);
-              console.warn(`[verify] challenge fetch failed: ${msg}`);
-            }
-            return null;
-          })
-        : Promise.resolve(null);
-
-      const studyContext = studyGrant
-        ? createStudyContext(
-            {
-              token: studyGrant.token,
-              feature_schema_version:
-                studyGrant.definition.feature_schema_version,
-              projection_version: studyGrant.definition.projection_version,
-            },
-            navigator.maxTouchPoints > 0 ? "web-mobile" : "web-desktop",
-          )
-        : undefined;
-      const session = pulse.createSession(undefined, studyContext);
-      sessionRef.current = session;
-
-      // Motion first—DeviceMotionEvent.requestPermission() requires an active
-      // user gesture on iOS. getUserMedia does not. If audio goes first, the gesture
-      // token is consumed by the mic dialog and motion is silently denied.
-      if (hasMotion) {
-        try {
-          await session.startMotion();
-          if (!session.isMotionCapturing()) {
-            dispatch({
-              type: "VERIFICATION_FAILED",
-              error:
-                "Motion permission denied. Please allow motion access and try again.",
-              failedAt: "capture",
-            });
-            return;
-          }
-        } catch {
-          dispatch({
-            type: "VERIFICATION_FAILED",
-            error:
-              "Motion permission denied. Please allow motion access and try again.",
-            failedAt: "capture",
-          });
-          return;
-        }
-      } else {
-        session.skipMotion();
-      }
-
-      // Check the parallel cooldown pre-flight now that motion setup has consumed
-      // the gesture token. If on cooldown, stop motion and exit before mic/touch start.
-      const isCooldownActive = await cooldownPromise;
-      if (isCooldownActive) {
-        try {
-          await session.stopMotion();
-        } catch {
-          /* cleanup */
-        }
-        return;
-      }
-
-      // The attempt is counted on the verdict, not here. See the increment in
-      // the result handler below.
-
-      // Audio second—getUserMedia works without a gesture on secure origins
-      try {
-        let audioFrameCount = 0;
-        await session.startAudio((rms) => {
-          if (rms > 0.008) voicedFramesRef.current++;
-          audioFrameCount++;
-          if (audioFrameCount % 2 === 0) setAudioLevel(rms);
-        });
-      } catch {
-        await stopPulseCapture(session);
-        dispatch({
-          type: "VERIFICATION_FAILED",
-          error:
-            "Microphone access denied. Please allow microphone permission and try again.",
-          failedAt: "capture",
-        });
-        return;
-      }
-
-      // Await the parallel challenge fetch now that permissions have
-      // resolved. The 3-second countdown inside PulseChallenge gives
-      // another buffer for slow networks before the phrase appears.
-      // Fail the verification if no phrase came back: the previous
-      // silent fallback to client-generated nonsense produced a broken
-      // UX (users saw gibberish syllables) and bypassed phrase content
-      // binding server-side.
-      const challenge = await challengePromise;
-      if (!challenge || !challenge.phrase) {
-        await stopPulseCapture(session);
-        dispatch({
-          type: "VERIFICATION_FAILED",
-          error:
-            "Verification service unavailable. Please refresh and try again.",
-          // The challenge fetch is part of setting the capture up, and its
-          // failure is the relayer being unreachable.
-          failedAt: "capture",
-        });
-        return;
-      }
-      try {
-        bindPulseValidationChallenge(session, challenge);
-      } catch {
-        await stopPulseCapture(session);
-        dispatch({
-          type: "VERIFICATION_FAILED",
-          error:
-            "The verification challenge expired during setup. Start again.",
-          failedAt: "capture",
-        });
-        return;
-      }
-      setValidationChallenge(challenge);
-
-      dispatch({ type: "START_CAPTURE", intent });
-    } finally {
-      startingRef.current = false;
-      setRequesting(false);
-    }
-  }
-
   /**
    * Starts a paired session from the user's tap. The session asks for motion
    * permission, which needs that gesture, so nothing awaits before it starts.
    */
   function handleStartPaired(intent: CaptureIntent) {
     if (studyCaptureBlocked || !pairedCapture || !publicKey) return;
-    // Verify and reset keep separate retry budgets, as in the single capture.
+    // Verify and reset keep separate retry budgets.
     if (intentRef.current !== intent || budgetWalletRef.current !== connectedWallet) {
       retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
     }
@@ -748,78 +622,9 @@ export function VerifyWalletConnected({
 
   async function handleResetBaselineConfirm() {
     setResetDialogOpen(false);
-    // The state machine allows START_CAPTURE from failed (see reducer).
-    // Dispatch with reset intent; handleCaptureComplete will route to
-    // session.completeReset() because intentRef is now "reset".
-    await handleStart("reset");
-  }
-
-  /**
-   * The speak prompt is on screen, so the SDK can drop everything it recorded
-   * beforehand. The recorder is started early on purpose, so the prompt never
-   * appears during the microphone's cold start, which means the buffer opens
-   * with the challenge fetch and the three-second countdown in it.
-   */
-  async function handleCaptureWindowOpen(surface: HTMLDivElement) {
-    const session = sessionRef.current;
-    if (!session) throw new Error("Verification session is unavailable");
-    await session.startTouch({
-      eventTarget: surface,
-      coordinateSurface: surface,
-    });
-    session.markCaptureStart();
-  }
-
-  async function handleCaptureError(error: unknown) {
-    const session = sessionRef.current;
-    if (session) await stopPulseCapture(session);
-    dispatch({
-      type: "VERIFICATION_FAILED",
-      error:
-        error instanceof Error
-          ? sanitizeErrorMessage(error.message)
-          : "Touch capture could not start. Try again.",
-      failedAt: "capture",
-    });
-  }
-
-  async function handleCaptureComplete(outline: CurveTracePoint[]) {
-    const session = sessionRef.current;
-    if (!session) return;
-
-    try {
-      await session.stopAudio();
-    } catch {
-      /* skipped */
-    }
-    try {
-      await session.stopMotion();
-    } catch {
-      /* skipped */
-    }
-    try {
-      await session.stopTouch();
-    } catch {
-      /* skipped */
-    }
-
-    dispatch({ type: "CAPTURE_DONE" });
-
-    const completionWallet = resolveCompletionWallet();
-    const proofPromise =
-      intentRef.current === "reset"
-        ? session.completeReset(completionWallet, connection, (stage) => {
-            setProcessingStage(stage);
-          })
-        : session.complete(
-            completionWallet,
-            connection,
-            (stage) => {
-              setProcessingStage(stage);
-            },
-            outline,
-          );
-    settleVerification(proofPromise);
+    // The state machine allows START_CAPTURE from failed (see reducer). The
+    // paired capture finalizes as a reset because intentRef is now "reset".
+    handleStartPaired("reset");
   }
 
   /**
@@ -848,7 +653,7 @@ export function VerifyWalletConnected({
       : wallet?.adapter;
   }
 
-  /** Routes a finished verification to its result screen. Both capture styles end here. */
+  /** Routes a finished verification to its result screen. */
   function settleVerification(proofPromise: Promise<VerificationResult>, active: () => boolean = () => true) {
     // The SDK bounds each step and reports its own phase. A host backstop
     // below `MAX_VERIFICATION_MS` pre-empts those clocks and reports the
@@ -924,7 +729,7 @@ export function VerifyWalletConnected({
         }
         // Override the generic failure copy ONLY when our local observation
         // is unambiguous: the audio callback never saw a single voiced frame
-        // across the whole 12-second capture. That binary client-side
+        // across every round. That binary client-side
         // signal — "the user could not have produced audible speech" — is
         // independent of whatever reason the server actually rejected on,
         // so the override doesn't reveal whether the underlying server
@@ -962,8 +767,6 @@ export function VerifyWalletConnected({
   function handleReset() {
     attemptRef.current++;
     sessionRef.current = null;
-    setValidationChallenge(null);
-    setAudioLevel(0);
     // Wipe the retry budget when the user explicitly resets—a fresh
     // session starts at 0 attempts used.
     retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
@@ -1014,7 +817,7 @@ export function VerifyWalletConnected({
 
   // Mounted ahead of the capture step at one place in the tree, so the session
   // a start tap opens survives the move into the rounds.
-  const pairedHost = pairedActive ? (
+  const pairedHost = (
     <PairedCapture
       capturing={state.step === "capturing"}
       wallet={connectedWallet}
@@ -1024,66 +827,92 @@ export function VerifyWalletConnected({
       onHandle={setPairedCapture}
       onCommitted={completePairedSession}
     />
-  ) : null;
-  const frame = (view: React.ReactNode) => (
-    <>
-      {pairedHost}
-      {view}
-    </>
   );
+  const frame = (
+    rail: RailState,
+    announcement: string,
+    viewKey: string,
+    view: React.ReactNode,
+    footer?: React.ReactNode,
+  ) => (
+    <VerifyConsole
+      rail={rail}
+      announcement={announcement}
+      viewKey={viewKey}
+      footer={footer}
+      persistent={pairedHost}
+    >
+      {view}
+    </VerifyConsole>
+  );
+  const idleFooter = <PrivacyFooter lines={PRIVACY_LINES} />;
 
   if (!connected) {
     return frame(
-      <div className="text-center space-y-6">
-        <Wallet className="mx-auto h-10 w-10 text-muted" strokeWidth={1.5} />
-        <p className="text-foreground/70 max-w-md mx-auto">
-          Connect your Solana wallet to verify with full self-custody. You sign
-          the verification transaction directly.
-        </p>
+      { current: 0, status: "ready" },
+      "Prepare a Solana Devnet wallet",
+      "connect",
+      <div className="space-y-8 text-center">
+        <StateIcon>
+          <Wallet className="h-14 w-14" strokeWidth={1.1} />
+        </StateIcon>
+        <div>
+          <h2 className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground">
+            Prepare a Solana Devnet wallet
+          </h2>
+          <p className="mx-auto mt-3 max-w-sm text-balance text-sm leading-relaxed text-foreground/65 md:text-base">
+            Switch your wallet to Devnet and add free SOL from the <FaucetLink />.
+            {" "}Then connect the wallet to verify.
+          </p>
+        </div>
         {signingDiagnosticActive && <SigningDiagnosticNotice />}
-        <DevnetWalletRequirements />
         {walletError && (
-          <div className="mx-auto max-w-sm rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
-            <div className="flex items-start gap-2">
-              <p className="flex-1 text-left text-xs text-foreground/70 leading-relaxed">
-                Wallet didn&apos;t connect: {walletError}
-              </p>
-              <button
-                type="button"
-                onClick={clearWalletError}
-                className="text-xs text-foreground/40 hover:text-foreground transition-colors"
-                aria-label="Dismiss wallet error"
-              >
-                &times;
-              </button>
-            </div>
+          <div
+            role="alert"
+            className="mx-auto flex w-full max-w-sm items-center gap-3 border border-danger/30 bg-danger/[0.07] py-2.5 pl-4 pr-2 text-left"
+          >
+            <p className="flex-1 text-xs leading-5 text-foreground/80">
+              Wallet didn&apos;t connect: {walletError}
+            </p>
+            <button
+              type="button"
+              onClick={clearWalletError}
+              aria-label="Dismiss wallet error"
+              className={`flex h-7 w-7 shrink-0 items-center justify-center text-foreground/50 transition-colors hover:text-foreground ${verificationFocusRing}`}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
-        <WalletConnectButton
-          className="!rounded-full !border !border-border !bg-surface !text-foreground !font-mono !text-sm"
-          showDesktopHint={false}
-        />
-      </div>
+        <div className="vc-wallet">
+          <WalletConnectButton showDesktopHint={false} />
+        </div>
+      </div>,
+      idleFooter,
     );
   }
 
   if (state.step === "idle") {
     if (studyPreparationRequired) {
       return frame(
-        <div className="space-y-6 text-center">
+        { current: 0, status: "active" },
+        "Confirm your study wallet",
+        "study-wallet",
+        <div className="space-y-8 text-center">
           <div>
-            <div className="mb-4 inline-flex">
-              <ConnectedWalletPill size="sm" />
-            </div>
-            <p className="font-mono text-base font-semibold text-foreground">
+            <VerifyWalletChip />
+            <h2 className="mt-6 font-display text-3xl font-normal tracking-[-0.01em] text-foreground">
               Confirm your study wallet
-            </p>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-foreground/70">
+            </h2>
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-foreground/65">
               Sign to confirm this wallet. Nothing is sent or spent.
             </p>
           </div>
 
-          <DevnetWalletRequirements connected />
+          <ToneText tone="warning">
+            Switch your wallet to Devnet and add free SOL from the <FaucetLink />.
+            {" "}Then confirm this wallet.
+          </ToneText>
 
           {studyPreparationError && (
             <p className="mx-auto max-w-sm text-sm text-danger" role="alert">
@@ -1103,7 +932,7 @@ export function VerifyWalletConnected({
                 studyCaptureBlocked ||
                 (studyPreparationRetryAllowed ? !onStudyPrepare : !onStudyLeave)
               }
-              className="rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className={primaryVerificationActionClass}
             >
               {studyCaptureBlocked
                 ? "Preparing verification..."
@@ -1116,13 +945,13 @@ export function VerifyWalletConnected({
                 type="button"
                 onClick={onStudyLeave}
                 disabled={studyCaptureBlocked}
-                className="rounded-full border border-border px-6 py-3 text-sm text-foreground/70 transition-colors hover:border-foreground/35 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                className={secondaryVerificationActionClass}
               >
                 Continue without study
               </button>
             )}
           </div>
-        </div>
+        </div>,
       );
     }
 
@@ -1148,147 +977,104 @@ export function VerifyWalletConnected({
       hoursAgo === 0
         ? "less than an hour"
         : `${hoursAgo} hour${hoursAgo === 1 ? "" : "s"}`;
+    const steps = hasMotion ? IDLE_STEPS : IDLE_STEPS.slice(0, 2);
 
     return frame(
-      <div className="space-y-6">
+      { current: 1, status: "ready" },
+      "Behavioral Verification",
+      "idle",
+      <div className="space-y-9">
         <div className="text-center">
-          <div className="mb-4 inline-flex">
-            <ConnectedWalletPill size="sm" />
-          </div>
-          <p className="font-mono text-base font-semibold text-foreground">
+          <VerifyWalletChip />
+          <h2 className="mt-7 font-display text-3xl font-normal tracking-[-0.015em] text-foreground md:text-4xl">
             Behavioral Verification
-          </p>
-          <p className="mt-2 text-sm text-foreground/70 max-w-sm mx-auto">
-            {pairedActive ? (
-              <>
-                Say one word and trace one short path in each of three rounds.
-                Each round opens when the one before it ends. Then sign with
-                your wallet.
-              </>
-            ) : (
-              <>
-                Speak a phrase while tracing a shape. All sensors record
-                simultaneously for 12 seconds. Then sign with your wallet.
-              </>
-            )}
+          </h2>
+          <p className="mx-auto mt-3 max-w-sm text-balance text-sm leading-relaxed text-foreground/65 md:text-base">
+            Three rounds: say one word and trace one short path in each.
+            Then sign with your wallet.
           </p>
         </div>
-        <div
-          className={`grid gap-4 mx-auto max-w-sm ${hasMotion ? "grid-cols-3" : "grid-cols-2"}`}
+        <ol
+          className={`mx-auto grid divide-x divide-foreground/[0.1] ${
+            hasMotion ? "max-w-md grid-cols-3" : "max-w-xs grid-cols-2"
+          }`}
         >
-          <div className="flex flex-col items-center gap-2 text-center">
-            <span className="text-cyan font-mono text-xl font-bold">1</span>
-            <span className="text-sm text-foreground/70">
-              {pairedActive ? "Say each word" : "Speak the displayed phrase"}
-            </span>
-          </div>
-          <div className="flex flex-col items-center gap-2 text-center">
-            <span className="text-solana-green font-mono text-xl font-bold">
-              2
-            </span>
-            <span className="text-sm text-foreground/70">
-              {pairedActive ? "Trace each path" : "Trace the curve on screen"}
-            </span>
-          </div>
-          {hasMotion && (
-            <div className="flex flex-col items-center gap-2 text-center">
-              <span className="text-solana-purple font-mono text-xl font-bold">
-                3
+          {steps.map(({ label, Glyph }, index) => (
+            <li key={label} className="flex flex-col items-center px-2 text-center">
+              <span className="font-mono text-[10px] tracking-[0.2em] text-foreground/40">
+                {String(index + 1).padStart(2, "0")}
               </span>
-              <span className="text-sm text-foreground/70">
-                Move naturally throughout
+              <span className="mt-3 flex h-8 w-12 items-center justify-center">
+                <Glyph />
               </span>
-            </div>
-          )}
-        </div>
+              <span className="mt-3 max-w-[8rem] text-balance text-[13px] leading-snug text-foreground/75">
+                {label}
+              </span>
+            </li>
+          ))}
+        </ol>
         {showCadenceHint && (
-          <div className="verification-surface verification-surface--accent mx-auto max-w-sm px-5 py-4">
-            <p className="text-center text-xs text-foreground/70 leading-relaxed">
-              You verified {hoursAgoLabel} ago. Trust Score grows with the
-              number of separate weeks you verify in, so this one will not raise
-              it. Verifying again is free of any penalty, and an integrator can
-              ask for a fresh check whenever it needs one.
-            </p>
-          </div>
+          <ToneText tone="accent">
+            You verified {hoursAgoLabel} ago. Trust Score counts separate
+            weeks, so this one will not raise it. Verifying again carries no
+            penalty.
+          </ToneText>
         )}
         {micPermissionState === "denied" && (
-          <div className="mx-auto max-w-sm rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
-            <p className="text-center text-xs text-foreground/70 leading-relaxed">
-              Microphone access is blocked for this site. Click the lock icon in
-              your address bar, set Microphone to Allow, then refresh this page
-              to verify.
-            </p>
-          </div>
+          <ToneText tone="danger" alert>
+            Microphone access is blocked for this site. Click the lock icon in
+            your address bar, set Microphone to Allow, then refresh.
+          </ToneText>
         )}
         <div className="flex justify-center">
           <button
-            onClick={() => handleStart("verify")}
+            type="button"
+            onClick={() => handleStartPaired("verify")}
             disabled={
-              requesting ||
               micPermissionState === "denied" ||
               studyCaptureBlocked ||
-              (pairedActive && !pairedCapture)
+              !pairedCapture
             }
             className={primaryVerificationActionClass}
           >
             {studyCaptureBlocked
               ? "Preparing next research trial..."
-              : requesting
-                ? "Requesting access..."
-                : "Start Verification"}
+              : "Start Verification"}
+            {!studyCaptureBlocked && <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden />}
           </button>
         </div>
         {signingDiagnosticActive && <SigningDiagnosticNotice />}
-        <p className="text-center text-xs text-muted">
-          Raw recordings are not retained.
-          <br />
-          Derived features support validation.
-          <br />
-          Commitments and proofs persist.
-        </p>
-      </div>
+      </div>,
+      idleFooter,
     );
   }
 
   // The paired capture draws its rounds from its own place in the frame.
-  if (state.step === "capturing" && pairedActive) {
-    return frame(null);
-  }
-
   if (state.step === "capturing") {
-    // Invariant: handleStart only dispatches START_CAPTURE after the
-    // server-issued phrase is in state, so challengePhrase is non-null
-    // here. Guard kept for type safety.
-    if (!validationChallenge) {
-      return frame(null);
-    }
     return frame(
-      <PulseChallenge
-        onComplete={handleCaptureComplete}
-        onCaptureWindowOpen={handleCaptureWindowOpen}
-        onCaptureError={handleCaptureError}
-        audioLevel={audioLevel}
-        hasMotion={hasMotion}
-        phrase={validationChallenge.phrase}
-        curve={validationChallenge.curve}
-      />
+      { current: 1, status: "active" },
+      "",
+      "capturing",
+      null,
+      <PrivacyFooter lines={["Raw motion and touch stay on this device. Audio is never stored."]} />,
     );
   }
 
-  if (state.step === "processing") {
+  if (state.step === "processing" || state.step === "signing") {
+    const signing = state.step === "signing";
+    const reset = state.intent === "reset";
     return frame(
+      {
+        current: signing ? 3 : railStepForStage(processingStage),
+        status: "active",
+      },
+      signing ? "Approve the transaction in your wallet" : processingStage,
+      "pipeline",
       <div className="space-y-6">
-        <ProvingView stage={processingStage} />
+        <ProofPipeline stage={processingStage} signing={signing} reset={reset} />
         {diagnosticPanel}
-      </div>
-    );
-  }
-  if (state.step === "signing") {
-    return frame(
-      <div className="space-y-6">
-        <SigningView />
-        {diagnosticPanel}
-      </div>
+      </div>,
+      <PrivacyFooter lines={[PRIVACY_LINES[2]]} />,
     );
   }
 
@@ -1304,24 +1090,30 @@ export function VerifyWalletConnected({
 
   if (state.step === "soft_failed") {
     return frame(
+      { current: 1, status: "error" },
+      "Let's try that again",
+      "soft",
       <SoftFailedView
         reason={state.reason}
         attemptsRemaining={state.attemptsRemaining}
         onTryAgain={
           studyNextTrialAvailable || leaveStudyAfterResult
             ? handleResultRetry
-            : () => handleStart(state.intent)
+            : () => handleStartPaired(state.intent)
         }
         onCancel={handleResultCancel}
         tryAgainLabel={studyResultActionLabel ?? "Try again"}
         actionPending={studyNextTrialPending}
-      />
+      />,
     );
   }
 
   if (state.step === "verified") {
     const wasReset = state.intent === "reset";
     return frame(
+      { current: 4, status: "complete" },
+      wasReset ? "Baseline reset" : "Verified",
+      "verified",
       <div className="space-y-6">
         <VerifiedView
           commitment={state.commitment}
@@ -1353,12 +1145,15 @@ export function VerifyWalletConnected({
           showShare={!wasReset}
         />
         {diagnosticPanel}
-      </div>
+      </div>,
     );
   }
 
   if (state.step === "failed") {
     return frame(
+      { current: railStepForPhase(state.failedAt), status: "error" },
+      "Verification stopped",
+      "failed",
       <>
         <FailedView
           error={state.error}
@@ -1372,7 +1167,7 @@ export function VerifyWalletConnected({
           retryLabel={studyResultActionLabel ?? "Try again"}
           actionPending={studyNextTrialPending}
           onResetBaseline={handleResetBaselineClick}
-          pairedCapture={pairedActive}
+          pairedCapture
         />
         <ResetBaselineDialog
           open={resetDialogOpen}
@@ -1380,9 +1175,9 @@ export function VerifyWalletConnected({
           onConfirm={handleResetBaselineConfirm}
         />
         {diagnosticPanel}
-      </>
+      </>,
     );
   }
 
-  return frame(null);
+  return frame({ current: 1, status: "ready" }, "", "empty", null);
 }

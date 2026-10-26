@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { AlertTriangle } from "lucide-react";
+
+import {
+  dangerVerificationActionClass,
+  secondaryVerificationActionClass,
+} from "./verification-styles";
+
+const RESET_CONSEQUENCES = [
+  "Your on-chain commitment is overwritten with a fresh fingerprint from this capture.",
+  "Verification count and Trust Score reset to zero. You rebuild them over time.",
+  "Your wallet, Entros Anchor token, and SAS attestation are preserved.",
+  "7-day cooldown before you can reset again.",
+] as const;
 
 /**
  * Confirmation overlay for `reset_identity_state`.
@@ -20,94 +31,97 @@ export function ResetBaselineDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   // Focus the Cancel button on open—safer default than Confirm for a
-  // destructive action.
-  useEffect(() => {
-    if (open) cancelRef.current?.focus();
-  }, [open]);
-
-  // Escape-to-cancel for keyboard users.
+  // destructive action. Escape cancels, Tab stays inside the dialog, and
+  // focus returns to the control that opened it.
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
+    const previous = document.activeElement as HTMLElement | null;
+    cancelRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onCancel();
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const items = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>("button, a[href]"),
+      );
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      previous?.focus?.();
+    };
   }, [open, onCancel]);
 
   if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="reset-baseline-dialog-title"
     >
-      <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl">
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-danger/30 bg-danger/10">
-            <AlertTriangle
-              className="h-5 w-5 text-danger"
-              strokeWidth={1.75}
-              aria-hidden="true"
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2
-              id="reset-baseline-dialog-title"
-              className="font-sans text-lg font-semibold text-foreground"
+      <div
+        ref={panelRef}
+        className="vc-slide relative w-full max-w-md border border-foreground/10 bg-background p-6"
+      >
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-danger">
+          Irreversible
+        </p>
+        <h2
+          id="reset-baseline-dialog-title"
+          className="mt-3 font-display text-2xl font-normal tracking-[-0.01em] text-foreground"
+        >
+          Reset baseline?
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+          Your Entros Anchor stays. Your on-chain commitment and verification
+          history do not.
+        </p>
+
+        <ol className="mt-5 border-t border-foreground/[0.08]">
+          {RESET_CONSEQUENCES.map((item, index) => (
+            <li
+              key={item}
+              className="grid grid-cols-[2rem_1fr] border-b border-foreground/[0.08] py-2.5 text-sm leading-relaxed text-foreground/75"
             >
-              Reset baseline?
-            </h2>
-            <p className="mt-2 text-sm text-foreground/70">
-              Your Entros Anchor stays. Your on-chain commitment and verification
-              history do not.
-            </p>
-          </div>
-        </div>
+              <span className="font-mono text-[10px] leading-6 text-foreground/40">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ol>
 
-        <ul className="mt-5 space-y-2.5 text-sm text-foreground/80">
-          <li className="flex gap-2.5">
-            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foreground/40" />
-            <span>
-              Your on-chain commitment is overwritten with a fresh fingerprint
-              from this capture.
-            </span>
-          </li>
-          <li className="flex gap-2.5">
-            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foreground/40" />
-            <span>
-              Verification count and Trust Score reset to zero. You rebuild
-              them over time.
-            </span>
-          </li>
-          <li className="flex gap-2.5">
-            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foreground/40" />
-            <span>
-              Your wallet, Entros Anchor token, and SAS attestation are preserved.
-            </span>
-          </li>
-          <li className="flex gap-2.5">
-            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foreground/40" />
-            <span>7-day cooldown before you can reset again.</span>
-          </li>
-        </ul>
-
-        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             ref={cancelRef}
+            type="button"
             onClick={onCancel}
-            className="rounded-full border border-border px-5 py-2 text-sm font-medium text-muted transition-colors hover:border-border-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/50"
+            className={secondaryVerificationActionClass}
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={onConfirm}
-            className="rounded-full border border-danger/30 bg-danger/10 px-5 py-2 text-sm font-medium text-danger transition-colors hover:bg-danger/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/50"
+            className={dangerVerificationActionClass}
           >
             Reset baseline
           </button>

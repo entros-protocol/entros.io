@@ -115,13 +115,12 @@ describe("paired verify boundary", () => {
     }
   });
 
-  it("keeps the embed popup and the walletless flow on the single capture", () => {
+  it("keeps the embed popup on the single capture", () => {
     const singleOnly = FILES.filter(
       (file) =>
         file.path.startsWith("components/embed/") ||
         file.path.startsWith("app/(app)/embed/") ||
-        file.path.startsWith("lib/embed/") ||
-        file.path === "components/sections/verify-walletless.tsx",
+        file.path.startsWith("lib/embed/"),
     );
     expect(singleOnly.map((file) => file.path)).toContain(
       "components/embed/popup-content.tsx",
@@ -155,9 +154,12 @@ describe("paired verify boundary", () => {
     expect(source("components/sections/verify-flow.tsx")).not.toContain(
       "pairedVerify",
     );
-    expect(source("components/sections/verify-wallet-connected.tsx")).toContain(
-      "const pairedActive: boolean = true",
-    );
+    // The single-capture path is gone from the host, so nothing there can
+    // start it.
+    const host = source("components/sections/verify-wallet-connected.tsx");
+    expect(host).not.toContain("pairedActive");
+    expect(host).not.toContain("PulseChallenge");
+    expect(host).not.toContain("fetchChallengeViaProxy");
     expect(source("app/paired/commit/route.ts")).toContain(
       "pairedVerifyEnabled()",
     );

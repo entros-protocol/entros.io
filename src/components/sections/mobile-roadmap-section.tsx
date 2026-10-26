@@ -42,19 +42,14 @@ export function MobileRoadmapSection() {
           </div>
 
           <div className="max-w-xl">
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-              // COMING TO MOBILE
-            </span>
-
-            <h2 className="mt-4 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
               Verify on the go<span className="text-cyan">.</span>
             </h2>
 
             <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-              A Solana Mobile app is in development for the Solana dApp
-              Store, targeting Seeker. Native sensor APIs extend the
-              biometric surface, and Trust Score carries across every
-              dApp in the mobile ecosystem.
+              A Seeker app for the Solana dApp Store is in development. It
+              will read sensors through native APIs and write to the same
+              Entros Anchor.
             </p>
           </div>
         </div>

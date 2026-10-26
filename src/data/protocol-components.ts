@@ -6,11 +6,11 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "Pulse SDK",
     subtitle: "Client-side capture and proving",
     description:
-      "A TypeScript library that captures sensor data, extracts 308 features, creates commitments, and produces ZK proofs. Raw motion and full-resolution touch stay on the device. Phrase audio and derived evidence go to the validation path.",
+      "A TypeScript library for sensor capture, 308-feature extraction, commitments, and ZK proofs.",
     highlights: [
       "Browser and React Native support",
       "Audio, IMU, and touch capture in parallel",
-      "On-device Groth16 proof generation",
+      "Groth16 proof generation in the browser",
       "Wallet-adapter integration for one-call verification",
     ],
     links: [
@@ -23,12 +23,12 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "ZK Circuit",
     subtitle: "Hamming distance verification",
     description:
-      "A Groth16 circuit that proves two Poseidon commitments open correctly and their Hamming distance falls inside the configured range. It does not prove capture provenance.",
+      "A Groth16 circuit proves two Poseidon commitments open correctly and their Hamming distance falls inside the configured range. It does not prove capture provenance.",
     highlights: [
       "Groth16 over BN254 curve",
       "Poseidon hash for ZK efficiency",
       "On-chain Groth16 verification",
-      "Proof generation targets under 5 seconds on mobile",
+      "ZK verification uses under 200,000 compute units",
     ],
     links: [
       { label: "GitHub", href: "https://github.com/entros-protocol/circuits" },
@@ -39,12 +39,12 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "On-Chain Programs",
     subtitle: "Three Solana programs",
     description:
-      "The entros-verifier program checks ZK proofs. The entros-anchor program stores Trust Score and manages non-transferable Token-2022 Anchors. The entros-registry stores protocol configuration, treasury state, and validator-registration scaffolding.",
+      "entros-verifier checks ZK proofs. entros-anchor stores Trust Score and manages non-transferable Token-2022 Anchors. entros-registry stores protocol configuration, treasury state, and validator-registration scaffolding.",
     highlights: [
       "Anchor framework with full constraint validation",
       "Non-transferable token via Token-2022 extension",
       "Trust Score from active weekly bins and account age",
-      "PDA-derived identity (one per wallet)",
+      "PDA-derived accounts, keyed to the wallet",
     ],
     links: [
       { label: "GitHub", href: "https://github.com/entros-protocol/protocol-core" },
@@ -57,7 +57,7 @@ export const protocolComponents: ProtocolComponent[] = [
     description:
       "A Rust gateway that issues challenges, authenticates integrators, applies quotas, forwards evidence to the private validator, relays protocol writes, and attempts SAS issuance.",
     highlights: [
-      "Server-generated signed challenges (anti-bot)",
+      "Server-generated signed challenges",
       "Best-effort SAS attestation issuance",
       "Per-integrator API-key rate limiting",
       "Configurable CORS and per-IP throttles",
@@ -71,7 +71,7 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "Validation Service",
     subtitle: "Proprietary defense layer",
     description:
-      "A private Rust crate that analyzes the 308-dimensional statistical feature summary for synthetic artifacts, submitted-signal statistics, and Sybil patterns. Protocol behavior remains open and auditable. Detection thresholds and model internals stay private because they provide calibration data to an attacker.",
+      "A private Rust crate screens the 308-feature summary for synthetic artifacts, submitted-signal statistics, and Sybil patterns. Protocol behavior remains open and auditable. Detection thresholds and model internals stay private: they are calibration data for an attacker.",
     highlights: [
       "TTS and synthetic data detection",
       "Cross-wallet fingerprint registry (Sybil detection)",

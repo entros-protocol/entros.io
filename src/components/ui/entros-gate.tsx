@@ -228,27 +228,15 @@ function DefaultFallback({
   minTrustScore: number;
   verifyHref: string;
 }) {
-  const statusLabel =
-    state.status === "disconnected"
-      ? "WALLET"
-      : state.status === "no-identity"
-        ? "UNVERIFIED"
-        : "BELOW THRESHOLD";
-
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-          // {statusLabel}
+      {state.status === "below-threshold" && (
+        <p className="mb-8 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+          {state.trustScore} &lt; {minTrustScore}
         </p>
-        {state.status === "below-threshold" && (
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-            {state.trustScore} &lt; {minTrustScore}
-          </span>
-        )}
-      </div>
+      )}
 
-      <div className="mt-8 flex flex-col items-start gap-6">
+      <div className="flex flex-col items-start gap-6">
         {state.status === "disconnected" ? (
           <Wallet className="h-7 w-7 text-cyan/80" strokeWidth={1.5} />
         ) : (

@@ -6,9 +6,6 @@ export function AgentPermitDiagram() {
   return (
     <div className="relative rounded-2xl bg-foreground/[0.06] p-8 md:p-12">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-          // AGENT PERMIT
-        </p>
         <div className="flex items-center gap-2">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-solana-green/60" />

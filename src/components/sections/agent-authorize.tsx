@@ -17,11 +17,11 @@ const readServerHash = () => "";
 const COPY = {
   request: {
     title: "Your agent asks for a permit",
-    body: "Check the action below. If you asked your agent for it, sign with the wallet that owns the agent. The app checks your signature, your Entros verification and the agent's key before it runs the action.",
+    body: "Check the action below. If you asked for it, sign with the wallet that owns the agent. The app checks your signature, your Entros verification, and the agent's key before it runs the action.",
   },
   bind: {
     title: "Bind your agent's key",
-    body: "Your agent asks to record its own key in the Solana Agent Registry as its agent wallet. Permits need this once, and again after the agent changes hands. Send the transaction from the wallet that owns the agent.",
+    body: "Your agent asks to record its own key in the Solana Agent Registry as its agent wallet. Permits need this once, and again after the agent changes hands. Send it from the owning wallet.",
   },
   invalid: {
     title: "This link is incomplete",
@@ -39,10 +39,7 @@ export function AgentAuthorize({ children }: { children: ReactNode }) {
   return (
     <section>
       <div className="mx-auto max-w-3xl px-6 pt-32 pb-24 md:pt-40 md:pb-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // AGENT OPERATOR PERMIT
-        </span>
-        <h1 className="mt-6 font-display text-4xl font-medium leading-[1.05] tracking-[-0.02em] text-foreground md:text-5xl">
+        <h1 className="font-display text-4xl font-normal leading-[1.05] tracking-[-0.02em] text-foreground md:text-5xl">
           {copy.title}
           <span className="text-cyan">.</span>
         </h1>

@@ -3,19 +3,19 @@ const tiers = [
     name: "TIER 0",
     label: "Cryptographic gate",
     description:
-      "Re-verification produces a Groth16 proof that committed fingerprints satisfy the circuit's Hamming-distance bounds. The public Solana verifier checks the proof without receiving either plaintext fingerprint. First verification uses a validator-signed receipt instead.",
+      "Re-verification produces a Groth16 proof that committed fingerprints satisfy the circuit's Hamming-distance bounds. The Solana verifier sees neither plaintext fingerprint. A wallet's initial verification uses a validator-signed receipt instead.",
   },
   {
     name: "TIER 1",
     label: "Statistical distribution checks",
     description:
-      "The private validation service checks the submitted 308-feature summary against configured capture, phrase, acoustic, and distribution policies. The service does not publish operational thresholds.",
+      "The validation service checks the 308-feature summary against configured capture, phrase, acoustic, and distribution policies. It publishes no thresholds.",
   },
   {
     name: "TIER 2",
     label: "Behavioral coupling signals",
     description:
-      "The validator records time-series relationships between speech and motion. Current code keeps enforcement disabled by default while Entros measures reliability across people, devices, and adaptive synthesis.",
+      "The validator records speech-motion time-series relationships. Enforcement stays off while Entros measures reliability across people, devices, and adaptive synthesis.",
   },
 ];
 
@@ -29,18 +29,13 @@ export function DefenseLayers() {
   return (
     <section id="defense-layers" className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // DEFENSE LAYERS
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Three layers, one evidence stack<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
           Enforced checks decide whether a capture can settle. Temporal
-          analysis remains research telemetry until human and adversarial
-          evidence supports a policy decision.
+          analysis remains research telemetry.
         </p>
 
         <div className="mt-16 border-t border-border">

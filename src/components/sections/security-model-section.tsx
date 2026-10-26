@@ -2,32 +2,32 @@ const DEFENSES = [
   {
     title: "Minimum Distance Constraint",
     description:
-      "Re-verification proves that committed fingerprints satisfy the circuit's minimum and maximum Hamming-distance bounds. The circuit rejects identical committed fingerprints.",
+      "Re-verification proves committed fingerprints sit inside the circuit's minimum and maximum Hamming-distance bounds. The circuit rejects identical committed fingerprints.",
   },
   {
     title: "Server-Side Feature Validation",
     description:
-      "The validation service checks the 308-dimensional statistical feature summary before accepting the on-chain proof. It measures acoustic artifacts, submitted-signal statistics, and duplicate fingerprint patterns. Detection logic and thresholds remain private calibration material.",
+      "The validation service checks the 308-feature summary before accepting the on-chain proof: acoustic artifacts, submitted-signal statistics, duplicate fingerprints. Detection logic and thresholds stay private as calibration material.",
   },
   {
     title: "Progressive Trust Score",
     description:
-      "Trust Score uses active weekly verification bins and account age. Repeating a verification inside one weekly bin does not add another active bin.",
+      "Trust Score counts active weekly verification bins and account age. A repeat inside one weekly bin adds no active bin.",
   },
   {
     title: "Per-Session Randomness",
     description:
-      "Each session generates a fresh random phrase and Lissajous curve. The server checks the transcript against the issued phrase before settlement.",
+      "The server issues fresh words and paths, one pair per round. It checks the transcript against the issued words before settlement.",
   },
   {
     title: "Multi-Modal Capture",
     description:
-      "The client captures microphone, pointer or touch, and available motion data. Entros is measuring which combined signals add reliable separation across people, devices, and synthesis methods.",
+      "The client captures microphone, pointer or touch, and available motion. Entros is measuring which combinations add reliable separation across people, devices, and synthesis methods.",
   },
   {
     title: "Cross-Wallet Fingerprint Registry",
     description:
-      "The private service keeps a bounded registry of recent server-side fingerprints. It compares new submissions with other wallets under the configured policy. Population-scale performance remains under evaluation.",
+      "The private service keeps a bounded registry of recent fingerprints and compares new submissions with other wallets; population-scale performance remains under evaluation.",
   },
   {
     title: "Economic Disincentives",
@@ -46,18 +46,14 @@ export function SecurityModelSection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // SECURITY MODEL
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          How Entros resists bots<span className="text-cyan">.</span>
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          How Entros checks a capture<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          The private service evaluates each submitted capture before
-          settlement. Detection logic stays private. Public campaign results
-          state their tested attack class and denominator.
+          The private service evaluates each capture before settlement.
+          Detection logic stays private. Published results state their tested
+          attack class and denominator.
         </p>
 
         <div className="mt-16 border-t border-border">

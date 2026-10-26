@@ -149,17 +149,14 @@ export function ProtocolStats() {
         {/* Devnet pilot banner */}
         <div className="flex flex-col items-start justify-between gap-6 border border-cyan/30 bg-cyan/[0.03] p-6 md:flex-row md:items-center md:p-8">
           <div className="max-w-4xl">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan">
-              // DEVNET PILOT · OPEN TO ALL
-            </p>
-            <p className="mt-3 text-base leading-relaxed text-foreground/75 md:text-lg">
-              The pilot is open. Verify your humanness and join the first
-              wave of Entros Anchors.
+            <p className="text-base leading-relaxed text-foreground/75 md:text-lg">
+              The pilot is open. Verify your wallet and mint its Entros
+              Anchor on devnet.
             </p>
           </div>
           <Link
             href="/verify"
-            className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+            className="group inline-flex shrink-0 items-center gap-2 bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
           >
             Verify now
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

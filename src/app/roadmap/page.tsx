@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Roadmap",
   description:
-    "Live on devnet with a shipped SDK and red-team results. The token funds the path to mainnet: protocol hardening, a public trusted setup ceremony, and an external audit.",
+    "Live on devnet with a shipped SDK and red-team results. The token funds the path to mainnet: hardening, a trusted-setup ceremony, and an external audit.",
   path: "/roadmap",
 });
 
@@ -16,28 +16,28 @@ const gates = [
     label: "Protocol hardening",
     window: "Ongoing",
     description:
-      "Adversarial campaigns test the live pipeline. Controlled studies measure same-wallet drift, cross-wallet separation, device effects, and human completion. New detection layers record evidence before any enforcement decision.",
+      "Adversarial campaigns test the live pipeline. Controlled studies measure same-wallet drift, cross-wallet separation, device effects, and human completion. Detection layers record evidence before enforcement.",
   },
   {
     Icon: KeyRound,
     label: "Trusted setup ceremony",
     window: "Public ceremony",
     description:
-      "Multiple participants run the ceremony in sequence, each contributing random entropy and destroying it after use. The resulting verifying key replaces the one currently compiled into entros-verifier. The math holds when one participant is honest about the destruction step. Ecosystem builders and integrators sign up to participate; contributors fill the remaining slots.",
+      "Multiple participants will each contribute entropy and destroy it after use. The resulting key will replace the one compiled into entros-verifier. The math holds if one participant is honest about the destruction.",
   },
   {
     Icon: ShieldCheck,
     label: "External security audit",
     window: "Independent audit",
     description:
-      "An established Solana audit firm reviews the three on-chain programs and proof flow. The registry currently handles fees, treasury state, and validator registration scaffolding. Safe remediation summaries publish after fixes land.",
+      "An established Solana audit firm will review the three on-chain programs and the proof flow, including the registry's fee, treasury, and validator-registration scaffolding. Remediation summaries publish after fixes land.",
   },
   {
     Icon: Wrench,
     label: "Operational lift",
     window: "Launch prep",
     description:
-      "Paid RPC capacity, a hardware-wallet upgrade authority, treasury backup and recovery procedures, monitoring, an incident-response runbook, and a partner integrator on standby for the first live mainnet verification. Each item is small. The items run in sequence.",
+      "Paid RPC capacity, a hardware-wallet upgrade authority, treasury backup and recovery, monitoring, an incident-response runbook, and a partner integrator on standby for mainnet launch. Each item is small; they run in sequence.",
   },
 ];
 
@@ -45,37 +45,37 @@ const timeline = [
   {
     window: "May 2026",
     title: "Devnet pilot live",
-    body: "The devnet pilot is open at entros.io/verify. Three protocol programs run on devnet. The SDK attempts a wallet-bound SAS attestation after successful verification. The Realms voter-weight program and Agent Anchor prototype are deployed on devnet, with client integration work still open.",
+    body: "The pilot is open at entros.io/verify. The SDK attempts a wallet-bound SAS attestation after verification. The Realms voter-weight program and Agent Anchor prototype are deployed; client integration remains open.",
   },
   {
     window: "Now",
     title: "$ENTROS launch",
-    body: "The token launched to fund the path to mainnet. Validator staking, fee share, and protocol governance remain planned mechanisms that require specification, implementation, and audit.",
+    body: "The token launched to fund the path to mainnet. Validator staking, fee share, and protocol governance remain planned; each needs specification, implementation, and audit.",
   },
   {
     window: "Ongoing",
     title: "Protocol hardening",
-    body: "Adversarial campaigns run against the live pipeline. We measure it against real capture data and tighten what the data shows. The fingerprint pipeline carries a version, so it can change without invalidating identities already issued. Mainnet waits on this work.",
+    body: "We tighten what the capture data shows. The fingerprint pipeline carries a version, so a projection change routes users to re-enrolment rather than invalidating issued Anchors. Mainnet waits on it.",
   },
   {
     window: "Next",
     title: "Trusted setup ceremony",
-    body: "Participants from across the ecosystem run the multi-party setup, each contributing entropy. We recompile entros-verifier against the new key and publish the log and hash chain at entros.io/ceremony.",
+    body: "Participants across the ecosystem will run the multi-party setup. We will recompile entros-verifier against the new key and publish the log and hash chain at entros.io/ceremony.",
   },
   {
     window: "Then",
     title: "External security audit",
-    body: "An established Solana firm reviews the three programs and the proof flow. The firm publishes its final report and we publish the patch trail alongside.",
+    body: "An established Solana firm will review the three programs and the proof flow; the final report and patch trail publish together.",
   },
   {
     window: "Launch",
     title: "Mainnet launch",
-    body: "The three programs deploy under a hardware-wallet upgrade authority, with a partner integrator on the first live verification. The treasury and incident procedures run against real flow.",
+    body: "The three programs will deploy under a hardware-wallet upgrade authority, with a partner integrator on standby. The treasury and incident procedures will run against real flow.",
   },
   {
     window: "After launch",
     title: "Decentralized validator network",
-    body: "The planned network adds validator admission, request assignment, quorum settlement, rewards, and governance. The final distribution and attestation model remains under design.",
+    body: "The planned network would add validator admission, request assignment, quorum settlement, rewards, and governance; the distribution and attestation model remains under design.",
   },
 ];
 
@@ -89,7 +89,7 @@ const flipCriteria = [
   "Deploy procedure verified end-to-end against a mainnet-cloned local validator",
   "Monitoring and incident-response runbook documented",
   "Treasury backup and recovery procedure tested",
-  "Partner integrator on standby for the first live mainnet verification",
+  "Partner integrator on standby for mainnet launch",
 ];
 
 export default function Roadmap() {
@@ -101,11 +101,7 @@ export default function Roadmap() {
       <section>
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-10">
           <div className="lg:col-span-5">
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-              // MAINNET ROADMAP
-            </span>
-
-            <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+            <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
               Devnet today<span className="text-cyan">.</span>
               <br />
               Mainnet next<span className="text-cyan">.</span>
@@ -113,9 +109,9 @@ export default function Roadmap() {
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
               Entros is live on devnet: three programs, a shipped SDK, and a
-              private validation service with published, scoped red-team
-              results. T5 and population-level uniqueness evidence remain
-              open. The token funds the path to mainnet.
+              private validation service with scoped red-team results. T5 and
+              population-level uniqueness evidence remain open. The token
+              funds the path to mainnet.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -123,7 +119,7 @@ export default function Roadmap() {
                 href="#timeline"
                 className="
                   group inline-flex items-center justify-center gap-2
-                  rounded-full bg-foreground px-6 py-3
+                  bg-foreground px-6 py-3
                   text-sm font-medium text-background
                   transition-colors hover:bg-foreground/90
                 "
@@ -135,7 +131,7 @@ export default function Roadmap() {
                 href="/paper"
                 className="
                   group inline-flex items-center justify-center gap-2
-                  rounded-full border border-foreground/20 px-6 py-3
+                  border border-foreground/20 px-6 py-3
                   text-sm font-medium text-foreground
                   transition-colors hover:border-foreground/40 hover:bg-foreground/5
                 "
@@ -147,8 +143,8 @@ export default function Roadmap() {
           </div>
 
           {/* Hero panel: the path to mainnet as a plain ordered sequence.
-              No header — the section eyebrow and headline beside it already
-              say what this is and that devnet is live. No per-gate icons or
+              No header: the headline beside it already says
+              what this is and that devnet is live. No per-gate icons or
               category chips either: those restated the step titles. What is
               left is the order, which step is next, and where the sequence
               ends. Each gate's substance lives in the section below. */}
@@ -216,18 +212,13 @@ export default function Roadmap() {
       {/* The four gates, vertical hairline stack, full description */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // THE GATES
-          </span>
-
-          <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             What still has to happen<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Four pieces of work take Entros to mainnet: protocol hardening, a
-            public cryptographic ceremony, an independent audit, and the
-            operational lift to run real value on live infrastructure. Each
+            Four pieces of work take Entros to mainnet: hardening, a public
+            ceremony, an independent audit, and the operational lift. Each
             ships in public.
           </p>
 
@@ -266,11 +257,7 @@ export default function Roadmap() {
       {/* Timeline — vertical milestone list with date rails */}
       <section id="timeline" className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // TIMELINE
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             From devnet to decentralized<span className="text-cyan">.</span>
           </h2>
 
@@ -307,17 +294,13 @@ export default function Roadmap() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // LAUNCH CRITERIA
-                </span>
-
-                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
+                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
                   The go/no-go list<span className="text-cyan">.</span>
                 </h2>
 
                 <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                  The four gates above, restated as conditions anyone
-                  can check. Each one gets ticked off in the open.
+                  The four gates above, restated as conditions anyone can
+                  check, ticked off in the open.
                 </p>
               </div>
             </div>
@@ -348,21 +331,16 @@ export default function Roadmap() {
       {/* Why wait — closing principle */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // RATIONALE
-          </span>
-
-          <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Why both, and why in public<span className="text-cyan">.</span>
           </h2>
 
           <div className="mt-8 space-y-6 text-base leading-relaxed text-foreground/70 md:text-lg">
             <p>
-              The multi-party ceremony matters because a single-party setup
-              lets whoever ran it forge proofs against the verifier. The audit
-              matters because a bug in the cryptographic anchor should surface
-              under contract with an audit firm, not under live traffic. So we
-              do both, in public, before mainnet carries real value.
+              A single-party ceremony would let whoever ran it forge proofs
+              against the verifier. An audit surfaces a bug in the
+              cryptographic anchor before mainnet carries real value. We do
+              both in public.
             </p>
             <p>
               The token funds that work.
@@ -374,7 +352,7 @@ export default function Roadmap() {
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             The road to mainnet<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -382,7 +360,7 @@ export default function Roadmap() {
               href="/security"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -394,7 +372,7 @@ export default function Roadmap() {
               href="/verify"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

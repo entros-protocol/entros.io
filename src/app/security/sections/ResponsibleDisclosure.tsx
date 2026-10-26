@@ -12,7 +12,7 @@ const disclosureItems = [
   {
     label: "Safe harbor",
     value:
-      "Good-faith research is welcome. We will not pursue legal action against researchers acting within the scope of this policy.",
+      "We will not pursue legal action against good-faith research within this policy's scope.",
   },
   {
     label: "Attribution",
@@ -35,11 +35,7 @@ export function ResponsibleDisclosure() {
   return (
     <section id="disclosure" className="border-t border-border">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // DISCLOSURE
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Reporting vulnerabilities<span className="text-cyan">.</span>
         </h2>
 

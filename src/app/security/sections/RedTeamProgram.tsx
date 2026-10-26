@@ -18,18 +18,13 @@ export function RedTeamProgram() {
   return (
     <section id="red-team" className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // RED TEAM
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           How we test our defenses<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
           The private harness runs isolated and full-stack campaigns against
-          the devnet pipeline. Published rows name their configuration and
-          denominator. T5 remains open. T6 through T8 remain planned.
+          the devnet pipeline. T5 remains open; T6 through T8 are planned.
         </p>
 
         <div className="mt-16 overflow-x-auto border-y border-border">
@@ -75,9 +70,8 @@ export function RedTeamProgram() {
         </div>
 
         <p className="mt-8 max-w-3xl text-sm leading-relaxed text-foreground/55">
-          Attack implementation code, per-attempt telemetry, and
-          parameter values that produce elevated pass rates are kept
-          in a private repository.
+          Attack code, per-attempt telemetry, and parameter values that
+          produce elevated pass rates stay in a private repository.
         </p>
       </div>
     </section>

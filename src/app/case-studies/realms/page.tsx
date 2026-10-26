@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Realms Case Study",
   description:
-    "Design study for Entros voter weight on Realms, based on the devnet on-chain prototype and planned client integration.",
+    "Design study for Entros voter weight on Realms, from the devnet prototype and planned client integration.",
   path: "/case-studies/realms",
 });
 
@@ -18,21 +18,21 @@ const incidents = [
     actor: "Mango Markets",
     headline: "$47M whale self-vote",
     detail:
-      "The exploiter who drained the Mango Markets treasury used the protocol's own governance to vote on returning a portion and keeping the rest. Their wallet still held enough MNGO to clear quorum, and token balance was the only barrier they had to clear.",
+      "The exploiter who drained the treasury then voted through Mango's governance on returning a portion and keeping the rest. Their wallet held enough MNGO to clear quorum. Token balance was the whole barrier.",
   },
   {
     year: "2023",
     actor: "Synthetify",
     headline: "~$230K from ten proposals",
     detail:
-      "Ten self-funded governance proposals moved roughly $230K out of the Synthetify treasury before the DAO responded. Each wallet bought enough tokens to clear the proposal threshold. The vote process had no way to ask whether a human stood behind any of them.",
+      "Ten self-funded proposals moved roughly $230K out of the Synthetify treasury before the DAO responded. Each wallet bought enough tokens to clear the threshold. The vote had no way to ask whether a human stood behind them.",
   },
   {
     year: "2025",
     actor: "Jupiter Jupuary",
     headline: "750K wallets filtered as Sybil",
     detail:
-      "The Jupiter team filtered more than 750,000 wallets out of Jupuary distribution after the fact. Each filter was hand-built, downstream, and ran on data the team had to source itself. An upstream personhood primitive moves that work off every protocol's plate.",
+      "The Jupiter team filtered more than 750,000 wallets out of Jupuary after the fact. Each filter was hand-built and downstream. An upstream personhood primitive moves that work off every protocol's plate.",
   },
 ];
 
@@ -40,22 +40,22 @@ const integrationSteps = [
   {
     Icon: GitBranch,
     title: "Register the future client",
-    body: "The planned JavaScript client registers with Governance UI and constructs each required plugin instruction.",
+    body: "The planned JavaScript client registers with Governance UI and constructs each plugin instruction.",
   },
   {
     Icon: Vote,
     title: "Choose the floor",
-    body: "The operator picks a minimum Trust Score and a maximum staleness window. A comment thread can use a low floor and a long window. A treasury allocation can ask for a higher score and a recent verification.",
+    body: "The operator picks a minimum Trust Score and a maximum staleness window: a comment thread a low floor, a treasury allocation a recent verification.",
   },
   {
     Icon: Coins,
-    title: "Voters verify once",
-    body: "A voter holds an Entros Anchor, a non-transferable Token-2022 mint. They run a twelve-second verification capture at entros.io/verify and the Anchor updates. The same Anchor reads to this DAO and every other Entros-gated surface on Solana.",
+    title: "Voters stay current",
+    body: "A voter holds an Entros Anchor, a non-transferable Token-2022 mint. Verification at entros.io/verify runs three paired rounds, each one word to say and one short path to trace, locked in before the next appears. A pass refreshes the Anchor, and any Solana app reads it from chain state.",
   },
   {
     Icon: Layers,
     title: "Insert the eligibility update",
-    body: "The planned client updates the voter-weight record before the governed action. The on-chain program then applies the configured Anchor checks.",
+    body: "The planned client updates the voter-weight record before the governed action. The program then applies the configured Anchor checks.",
   },
 ];
 
@@ -63,23 +63,23 @@ const beforeAfter = [
   {
     scenario: "Spam-quorum on a small DAO",
     before:
-      "An attacker spins up a hundred fresh wallets, funds each one with the minimum token balance, and casts a hundred votes. Quorum lands at near-zero cost.",
+      "An attacker spins up a hundred fresh wallets, funds each with the minimum balance, and casts a hundred votes. Quorum passes.",
     after:
-      "The intended design requires each wallet to clear the configured Anchor policy. Population-level uniqueness must prove that the wallets represent distinct people before this becomes a one-person-one-vote claim.",
+      "The intended design requires each wallet to clear the configured Anchor policy. That the wallets are distinct people is open work before any one-person-one-vote claim.",
   },
   {
     scenario: "Whale dictating treasury allocation",
     before:
-      "A whale holds concentrated token weight and pushes through proposals that pay their own bag. The outcome tracks the balance.",
+      "A whale holds concentrated weight and pushes through proposals that pay their own bag. The outcome tracks the balance.",
     after:
-      "The current prototype writes one unit for an eligible Anchor. Future plugin chaining can define how that eligibility composes with token weight.",
+      "The prototype writes one unit for an eligible Anchor. Future plugin chaining can define how that composes with token weight.",
   },
   {
     scenario: "Dormant delegations",
     before:
-      "Stakers delegate tokens to staking contracts and the contracts auto-vote off whale signals. Holders never see the proposal page.",
+      "Stakers delegate to contracts that auto-vote off whale signals. Holders never see the proposal page.",
     after:
-      "The intended client requests a recent Entros result before the action. Realms integration tests must confirm the behavior for delegated voting.",
+      "The intended client requests a recent Entros result before the action. Integration tests must confirm the behavior for delegated voting.",
   },
 ];
 
@@ -96,11 +96,7 @@ export default function RealmsCaseStudy() {
       {/* Hero — centered editorial */}
       <section>
         <div className="mx-auto max-w-5xl px-6 pt-32 pb-24 text-center md:pt-40 md:pb-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // CASE STUDY · REALMS
-          </span>
-
-          <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
             Verified humans<span className="text-cyan">.</span>
             <br />
             Verified votes<span className="text-cyan">.</span>
@@ -110,7 +106,7 @@ export default function RealmsCaseStudy() {
               single-word orphan on the last row. */}
           <p className="mx-auto mt-8 max-w-2xl text-balance text-base leading-relaxed text-foreground/70 md:text-lg">
             The devnet program reads an Entros Anchor and writes an eligible
-            voter-weight record. The Realms client layer remains planned.
+            voter-weight record.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -120,7 +116,7 @@ export default function RealmsCaseStudy() {
               rel="noopener noreferrer"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -132,7 +128,7 @@ export default function RealmsCaseStudy() {
               href="/governance"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "
@@ -147,20 +143,13 @@ export default function RealmsCaseStudy() {
       {/* Why this exists — named incidents */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // WHY THIS EXISTS
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Token weight tells you about balances<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
             A standard Solana DAO counts ballots by token balance. Tokens
-            change hands, sit in cold wallets, get delegated, and pile up
-            on attackers willing to pay. The price of attacking governance
-            tracks the token price; it has no connection to the price of
-            being a returning human.
+            change hands, sit in cold wallets, and get delegated.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -186,8 +175,8 @@ export default function RealmsCaseStudy() {
           </div>
 
           <p className="mt-12 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            In every case the ballot asked about balance. None of them
-            asked whether a returning human stood behind it.
+            Each ballot asked about balance. None asked whether a
+            returning human stood behind it.
           </p>
         </div>
       </section>
@@ -195,18 +184,14 @@ export default function RealmsCaseStudy() {
       {/* How it integrates — 4-step */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // HOW IT INTEGRATES
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Program first, client next<span className="text-cyan">.</span>
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            Program now, client next<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
             The on-chain addin implements the voter-weight record format.
-            A JavaScript client and Governance UI registration are still
-            required before voters can use the normal Realms flow.
+            A JavaScript client and Governance UI registration are required
+            before voters can use the normal Realms flow.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2 lg:grid-cols-4">
@@ -245,11 +230,7 @@ export default function RealmsCaseStudy() {
       {/* Before / after */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // BEFORE AND AFTER
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             What the plugin changes<span className="text-cyan">.</span>
           </h2>
 
@@ -290,18 +271,13 @@ export default function RealmsCaseStudy() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // DEPLOYMENT
-                </span>
-
-                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
+                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
                   Deployed and inspectable<span className="text-cyan">.</span>
                 </h2>
 
                 <p className="mt-8 text-base leading-relaxed text-foreground/65 md:text-lg">
                   The plugin runs on Solana devnet under the program ID
-                  below. The source is on GitHub. Read it, run it locally,
-                  fork it.
+                  below. The source is on GitHub: read it, run it, fork it.
                 </p>
               </div>
             </div>
@@ -348,22 +324,22 @@ export default function RealmsCaseStudy() {
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Run your DAO<span className="text-cyan">.</span>
             <br />
             On verified humans<span className="text-cyan">.</span>
           </h2>
           <p className="mx-auto mt-8 max-w-xl text-base leading-relaxed text-foreground/65 md:text-lg">
             The on-chain prototype is ready for program-level testing.
-            Realms proposal pilots begin after the client and chaining
-            boundaries are implemented and tested.
+            Proposal pilots begin after the client and chaining
+            boundaries ship.
           </p>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="mailto:contact@entros.io?subject=Realms%20plugin%20pilot"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -375,7 +351,7 @@ export default function RealmsCaseStudy() {
               href="/verify"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

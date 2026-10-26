@@ -12,26 +12,22 @@ export function ForDevelopersSection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // FOR DEVELOPERS
-        </span>
-
-        <div className="mt-6 grid grid-cols-1 gap-12 lg:grid-cols-5 lg:items-start lg:gap-16">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-5 lg:items-start lg:gap-16">
           <div className="lg:col-span-2">
-            <h2 className="font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
               {sdkSnippet.title}
               <span className="text-cyan">.</span>
             </h2>
 
             <p className="mt-6 max-w-md text-base leading-relaxed text-foreground/65 md:text-lg">
-              One React component, one callback. <code className="font-mono text-cyan">{`<EntrosVerify />`}</code> opens the verification popup, runs the behavioral capture, mints the on-chain Anchor, and hands you a verified payload for someone who is there. Any Solana program can read the result for free.
+              One React component, one callback. <code className="font-mono text-cyan">{`<EntrosVerify />`}</code> opens the popup, runs the capture, mints the Entros Anchor and returns the result. Any Solana program reads it for free.
             </p>
 
             <Link
               href="/docs"
               className="
                 group mt-8 inline-flex items-center gap-2
-                rounded-full border border-foreground/20 px-5 py-2.5
+                border border-foreground/20 px-5 py-2.5
                 text-sm text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

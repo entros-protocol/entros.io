@@ -9,10 +9,10 @@ export interface TrustSignal {
 export const trustSignals: TrustSignal[] = [
   {
     icon: "shield",
-    name: "Security Audit",
-    description: "Continuous adversarial testing with scoped results.",
+    name: "Red-Team Testing",
+    description: "Adversarial testing with published, scoped results.",
     detail:
-      "Published T1 through T4b campaigns report their attack class, denominator, and observed pass rate. T5 remains open. External review remains a mainnet gate.",
+      "Published T1 through T4b campaigns report attack class, denominator and observed pass rate. T5 is open. An external audit gates mainnet.",
     href: "/security",
   },
   {
@@ -26,9 +26,9 @@ export const trustSignals: TrustSignal[] = [
   {
     icon: "globe",
     name: "Ecosystem Fit",
-    description: "Integration surfaces mapped across Solana.",
+    description: "Integrations mapped across Solana.",
     detail:
-      "Best-effort SAS issuance and Agent Operator Permits run on devnet. The Realms voter-weight program is an on-chain prototype. Client integration work remains open.",
+      "Best-effort SAS issuance and Agent Operator Permits run on devnet. The Realms voter-weight program is a prototype, and client work remains open.",
     href: "/solutions",
   },
   {
@@ -36,7 +36,7 @@ export const trustSignals: TrustSignal[] = [
     name: "Devnet Live",
     description: "Programs deployed and accepting requests.",
     detail:
-      "The three protocol programs and the hosted verification flow run on Solana devnet. Mainnet remains gated on hardening, ceremony, and audit.",
+      "The three programs and the hosted verification flow run on Solana devnet. Mainnet waits on hardening, a trusted-setup ceremony and an external audit.",
     href: "/verify",
   },
 ];

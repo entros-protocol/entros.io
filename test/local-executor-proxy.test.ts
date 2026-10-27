@@ -62,10 +62,18 @@ describe("local relayer transport", () => {
 });
 
 describe("development-only executor proxy", () => {
+  const openSession = (url: string, init: RequestInit = {}) =>
+    new Request(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ wallet: "11111111111111111111111111111111", tier: "trace" }),
+      ...init,
+    });
+
   it("fails closed outside development", async () => {
     const response = await proxyExecutorRequest(
-      new Request("https://entros.io/challenge?wallet=11111111111111111111111111111111"),
-      { path: "/challenge", method: "GET", timeoutMs: 100 },
+      openSession("https://entros.io/challenge/paired"),
+      { path: "/challenge/paired", method: "POST", timeoutMs: 100, maxRequestBytes: 1_024 },
       { ...runtime, enabled: false },
     );
     expect(response.status).toBe(404);
@@ -73,29 +81,43 @@ describe("development-only executor proxy", () => {
 
   it("rejects missing server configuration", async () => {
     const response = await proxyExecutorRequest(
-      new Request("http://localhost:3010/challenge?wallet=11111111111111111111111111111111"),
-      { path: "/challenge", method: "GET", timeoutMs: 100 },
+      openSession("http://localhost:3010/challenge/paired"),
+      { path: "/challenge/paired", method: "POST", timeoutMs: 100, maxRequestBytes: 1_024 },
       { enabled: true },
     );
     expect(response.status).toBe(503);
   });
 
-  it("forwards only the required challenge data", async () => {
+  it("rejects the wrong method", async () => {
+    const fetchImpl = vi.fn();
+    const response = await proxyExecutorRequest(
+      new Request("http://localhost:3010/challenge/paired"),
+      { path: "/challenge/paired", method: "POST", timeoutMs: 100, maxRequestBytes: 1_024 },
+      { ...runtime, fetchImpl },
+    );
+    expect(response.status).toBe(405);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("forwards the body with the server key and no caller headers", async () => {
     const fetchImpl = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
-      expect(String(input)).toBe(
-        "https://executor.example/challenge?wallet=11111111111111111111111111111111",
-      );
+      expect(String(input)).toBe("https://executor.example/challenge/paired");
       expect(init?.headers).toEqual({
         Accept: "application/json",
+        "Content-Type": "application/json",
         "X-API-Key": "server-secret",
       });
-      return Response.json({ nonce: Array(32).fill(1), phrase: "test phrase", expires_in: 60 });
+      expect(JSON.parse(String(init?.body))).toEqual({
+        wallet: "11111111111111111111111111111111",
+        tier: "trace",
+      });
+      return Response.json({ session_id: "s" });
     });
     const response = await proxyExecutorRequest(
-      new Request("http://localhost:3010/challenge?wallet=11111111111111111111111111111111", {
-        headers: { Authorization: "must-not-forward" },
+      openSession("http://localhost:3010/challenge/paired", {
+        headers: { "Content-Type": "application/json", Authorization: "must-not-forward" },
       }),
-      { path: "/challenge", method: "GET", timeoutMs: 100 },
+      { path: "/challenge/paired", method: "POST", timeoutMs: 100, maxRequestBytes: 1_024 },
       { ...runtime, fetchImpl },
     );
     expect(response.status).toBe(200);
@@ -105,13 +127,13 @@ describe("development-only executor proxy", () => {
   it("rejects an oversized body before forwarding it", async () => {
     const fetchImpl = vi.fn();
     const response = await proxyExecutorRequest(
-      new Request("http://localhost:3010/validate-features", {
+      new Request("http://localhost:3010/validate-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value: "x".repeat(128) }),
       }),
       {
-        path: "/validate-features",
+        path: "/validate-session",
         method: "POST",
         timeoutMs: 100,
         maxRequestBytes: 32,
@@ -121,7 +143,6 @@ describe("development-only executor proxy", () => {
     expect(response.status).toBe(413);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
-
   it("rejects a non-JSON request", async () => {
     const fetchImpl = vi.fn();
     const response = await proxyExecutorRequest(
@@ -145,13 +166,13 @@ describe("development-only executor proxy", () => {
       }),
     );
     const response = await proxyExecutorRequest(
-      new Request("http://localhost:3010/validate-features", {
+      new Request("http://localhost:3010/validate-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: "{}",
       }),
       {
-        path: "/validate-features",
+        path: "/validate-session",
         method: "POST",
         timeoutMs: 100,
         maxRequestBytes: 32,

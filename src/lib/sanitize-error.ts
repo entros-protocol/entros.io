@@ -13,9 +13,8 @@
  * `-32002`, `SendTransactionPreflightFailure`, `Custom`, `InstructionError`
  * and the leading `error sending request`.
  *
- * Lifted out of `verify-wallet-connected.tsx` because `verify-walletless.tsx`
- * rendered raw adapter and SDK strings without it. Two failure surfaces, one
- * scrubber.
+ * Kept out of `verify-wallet-connected.tsx` so every failure surface that
+ * renders adapter or SDK strings shares one scrubber.
  */
 
 function safeStringify(value: unknown): string {

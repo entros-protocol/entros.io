@@ -25,11 +25,7 @@ export function SolutionCasesSection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // USE CASES
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Where Entros fits<span className="text-cyan">.</span>
         </h2>
 
@@ -46,7 +42,6 @@ export function SolutionCasesSection() {
                 }`}
               >
                 <Scene
-                  label={`CASE ${number}`}
                   aspect="4/5"
                   fit
                   className="lg:col-span-5 lg:h-full"

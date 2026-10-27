@@ -183,15 +183,14 @@ export function DashboardAnchorView() {
                 No Entros Anchor yet<span className="text-cyan">.</span>
               </p>
               <p className="mt-3 text-sm leading-relaxed text-foreground/60">
-                Complete your first verification to mint your Entros
-                Anchor identity.
+                Complete a verification to mint your Entros Anchor.
               </p>
             </div>
             <Link
               href="/verify"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -236,8 +235,7 @@ export function DashboardAnchorView() {
                 </p>
                 <p className="mt-3 text-xs leading-relaxed text-foreground/55">
                   Re-verify to start building your Trust Score. Each
-                  session that matches your behavioral pattern increases
-                  it.
+                  matching session increases it.
                 </p>
               </div>
             )}

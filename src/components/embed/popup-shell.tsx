@@ -19,7 +19,7 @@ import { CloseButton } from "./close-button";
 export function PopupShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background">
-      <header className="flex items-center justify-between border-b border-border px-5 py-4">
+      <header className="flex items-center justify-between border-b border-foreground/[0.07] px-5 py-3">
         <Link
           href="/"
           style={{ fontFamily: "var(--font-wordmark)" }}
@@ -34,10 +34,8 @@ export function PopupShell({ children }: { children: ReactNode }) {
         </Link>
         <CloseButton />
       </header>
-      <main className="flex flex-1 items-center justify-center p-8">
-        {children}
-      </main>
-      <footer className="border-t border-border px-5 py-3 text-center">
+      <main className="flex flex-1 flex-col">{children}</main>
+      <footer className="border-t border-foreground/[0.07] px-5 py-3 text-center">
         <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/30">
           powered by entros.io
         </span>

@@ -12,13 +12,13 @@ const technologyDropdown: DropdownItem[] = [
     label: "How It Works",
     href: "/technology",
     description:
-      "From challenge to on-chain proof in twelve seconds.",
+      "Three short rounds to an on-chain proof.",
   },
   {
     label: "Security Program",
     href: "/security",
     description:
-      "Continuous red team audit, transparent results.",
+      "Red-team testing with published results.",
   },
   {
     label: "Roadmap",
@@ -32,7 +32,7 @@ const solutionsDropdown: DropdownItem[] = [
   {
     label: "Use Cases",
     href: "/solutions",
-    description: "Where temporal proof changes the equation.",
+    description: "Where a verified wallet matters.",
   },
   {
     label: "Agent Permits",
@@ -42,7 +42,7 @@ const solutionsDropdown: DropdownItem[] = [
   {
     label: "Governance",
     href: "/governance",
-    description: "Sybil-resistant DAO voting and DAO oversight.",
+    description: "Gate DAO votes on Entros verification.",
   },
   {
     label: "Realms Case Study",
@@ -52,12 +52,12 @@ const solutionsDropdown: DropdownItem[] = [
   {
     label: "Integrate",
     href: "/integrate",
-    description: "Two modes, one SDK. Drop-in for any dApp.",
+    description: "One SDK, drop-in for any dApp.",
   },
   {
     label: "Stats",
     href: "/stats",
-    description: "Live protocol metrics, on-chain truth.",
+    description: "Live protocol metrics from devnet.",
   },
 ];
 

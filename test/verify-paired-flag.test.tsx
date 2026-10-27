@@ -267,18 +267,7 @@ beforeEach(() => {
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
-  fetchMock = vi.fn(async (input: string | URL | Request) => {
-    const url = String(input);
-    if (url.startsWith("/api/relay-challenge")) {
-      return Response.json({
-        nonce: Array(32).fill(7),
-        phrase: "amber cedar drift maple orbit",
-        expires_in: 180,
-        curve: { a: 2, b: 3, delta: 1, points: 200, anchor_x: 50, anchor_y: 50 },
-      });
-    }
-    return new Response(null, { status: 404 });
-  });
+  fetchMock = vi.fn(async () => new Response(null, { status: 404 }));
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -294,7 +283,7 @@ describe("paired-only verify flow", () => {
     await renderPaired();
 
     expect(container.textContent).toContain(
-      "Say one word and trace one short path in each of three rounds.",
+      "Three rounds: say one word and trace one short path in each.",
     );
     expect(container.textContent).not.toContain(
       "All sensors record simultaneously",
@@ -315,7 +304,7 @@ describe("paired-only verify flow", () => {
     await flush();
 
     expect(container.textContent).toContain(
-      "Say one word and trace one short path in each of three rounds.",
+      "Three rounds: say one word and trace one short path in each.",
     );
 
     await clickStart();
@@ -328,7 +317,7 @@ describe("paired-only verify flow", () => {
     await renderPaired();
 
     expect(container.textContent).toContain(
-      "Say one word and trace one short path in each of three rounds.",
+      "Three rounds: say one word and trace one short path in each.",
     );
 
     await clickStart();
@@ -598,7 +587,7 @@ describe("paired-only verify flow", () => {
 
     expect(harness.aborts).toBe(1);
     expect(step()).toBe("idle");
-    expect(container.textContent).toContain("Connect your Solana wallet");
+    expect(container.textContent).toContain("Prepare a Solana Devnet wallet");
 
     harness.publicKey = WALLET;
     await render(<Harness />);

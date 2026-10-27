@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 
+import { STATE_ICON_CLASS, STATE_ICON_STROKE } from "@/components/verify/console";
+
 import type { EmbedErrorReason } from "@/lib/embed/types";
 import type { PolicyReason } from "@entros/verify/policy";
 
@@ -98,10 +100,23 @@ export function PopupFailure({
   }, [onClose]);
 
   return (
-    <div className="text-center space-y-4">
-      <AlertCircle className="mx-auto h-12 w-12 text-danger" />
-      <p className="font-mono text-sm text-foreground">{title}</p>
-      <p className="text-xs text-foreground/55">{body}</p>
+    <div className="space-y-6 text-center">
+      <AlertCircle
+        className={`mx-auto text-danger ${STATE_ICON_CLASS}`}
+        strokeWidth={STATE_ICON_STROKE}
+        aria-hidden
+      />
+      <div>
+        <h1 className="font-display text-[1.75rem] font-normal leading-tight tracking-[-0.015em] text-foreground">
+          {title}
+        </h1>
+        <p className="mx-auto mt-3 max-w-xs text-balance text-sm leading-relaxed text-foreground/65">
+          {body}
+        </p>
+      </div>
+      <div className="mx-auto h-[2px] w-40 overflow-hidden bg-foreground/10" aria-hidden>
+        <div className="vc-close-timer h-full origin-left bg-danger/70" />
+      </div>
     </div>
   );
 }

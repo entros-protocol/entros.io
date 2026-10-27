@@ -139,7 +139,7 @@ function policyCheck(
     };
   }
   if (search !== "found" || !policy || policy.decision === "unavailable") {
-    return { id: "policy", label, status: "fail", detail: "Could not read your Entros Anchor. Try again." };
+    return { id: "policy", label, status: "fail", detail: "Your Entros verification could not be read from devnet. Reload the page to try again." };
   }
   if (policy.decision === "allow") {
     return {

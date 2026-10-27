@@ -6,11 +6,7 @@ export function ProblemSection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // THE PROBLEM
-        </span>
-
-        <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           {/* Non-breaking spaces bind "within two years" into one unit so it
               wraps to the second line together, instead of stranding "years."
               alone. Responsive in a way a hard <br /> would not be. */}
@@ -21,10 +17,9 @@ export function ProblemSection() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          As autonomous activity grows, applications need a portable signal
-          for returning human control. Entros is designed to build that
-          signal through repeated behavioral verification and public
-          Solana state.
+          Apps need a signal that a person still holds the controls. Entros
+          is designed to give that signal through repeated verification on
+          Solana.
         </p>
       </div>
     </section>

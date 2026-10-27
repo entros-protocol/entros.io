@@ -9,7 +9,7 @@ export function Footer() {
             entros<span className="text-cyan">.</span>
           </p>
           <p className="mt-2 text-xs text-foreground/60">
-            Temporal identity on Solana
+            Private human verification
           </p>
         </div>
 
@@ -31,6 +31,9 @@ export function Footer() {
           </Link>
           <Link href="/press" className="transition-colors hover:text-foreground">
             Press
+          </Link>
+          <Link href="/privacy" className="transition-colors hover:text-foreground">
+            Privacy
           </Link>
         </div>
 

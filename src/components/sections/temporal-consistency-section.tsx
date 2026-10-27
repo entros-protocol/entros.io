@@ -11,19 +11,19 @@ const phases = [
     day: "Day 1",
     title: "First verification",
     description:
-      "You speak a phrase and trace a curve during one capture. The protocol validates the submitted evidence and stores a commitment.",
+      "Three words, three short paths. The protocol checks the evidence and stores a commitment.",
   },
   {
     day: "Day 7",
     title: "Re-verification",
     description:
-      "A later capture produces a new commitment. The ZK proof checks that both commitments open correctly and that fingerprint distance stays inside the circuit bounds.",
+      "A new verification makes a new commitment. The ZK proof shows both open correctly and sit within the distance bounds.",
   },
   {
     day: "Day 30+",
     title: "Trust compounds",
     description:
-      "Successful re-verifications extend the wallet's history. Trust Score reflects active weekly bins, recency, and account age.",
+      "Each pass extends the wallet's history. Trust Score counts active weeks, recency and account age.",
   },
 ];
 
@@ -52,20 +52,14 @@ export function TemporalConsistencySection() {
           </div>
 
           <div className="max-w-xl">
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-              // TEMPORAL CONSISTENCY
-            </span>
-
-            <h2 className="mt-4 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-              Identity is a pattern<span className="text-cyan">.</span>
+            <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+              Continuity is a pattern<span className="text-cyan">.</span>
             </h2>
 
             <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-              Entros measures fingerprint distance across sessions. The
-              current circuit proves a bounded relationship between supplied
-              commitments. The research program measures whether that signal
-              can support reliable returning-human continuity across people
-              and devices.
+              The circuit proves that the fingerprints from two sessions sit
+              within set distance bounds. Research tests whether that signal
+              holds across people and devices.
             </p>
           </div>
         </div>

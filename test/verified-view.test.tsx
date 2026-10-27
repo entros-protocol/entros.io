@@ -33,13 +33,14 @@ describe("VerifiedView", () => {
     );
   });
 
-  it("uses sharp result and cadence surfaces", () => {
+  it("draws results as square controls and plain toned text, without cards", () => {
     const stepViews = readFileSync(STEP_VIEWS, "utf8");
     const walletConnected = readFileSync(WALLET_CONNECTED, "utf8");
-    expect(stepViews.match(/verification-surface/g)).toHaveLength(5);
-    expect(stepViews).not.toContain("rounded-lg border border-cyan/30");
-    expect(walletConnected).toContain(
-      "verification-surface verification-surface--accent mx-auto max-w-sm",
-    );
+    for (const source of [stepViews, walletConnected]) {
+      expect(source).not.toContain("verification-surface");
+      expect(source).not.toMatch(/rounded-full (border border-|bg-foreground px-)/);
+    }
+    expect(walletConnected).toContain('<ToneText tone="accent">');
+    expect(walletConnected).toContain('<ToneText tone="danger" alert>');
   });
 });

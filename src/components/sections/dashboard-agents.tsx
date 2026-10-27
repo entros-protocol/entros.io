@@ -64,8 +64,7 @@ export function DashboardAgents() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">// AI AGENTS</span>
-        <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Your agents<span className="text-cyan">.</span>
         </h2>
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
@@ -78,9 +77,6 @@ export function DashboardAgents() {
 
         <div className="mt-12 border border-border p-6 md:p-8">
           <div className="flex items-center gap-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-              // REGISTERED TO THIS WALLET
-            </p>
             {!current && <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan" aria-hidden />}
           </div>
           {current?.status === "error" && (
@@ -116,9 +112,6 @@ export function DashboardAgents() {
         </div>
 
         <div className="mt-6 border border-border p-6 md:p-8">
-          <p className="mb-6 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-            // CHECK ANY AGENT ADDRESS
-          </p>
           <AgentCheckForm inputId="dashboard-agent-asset" />
         </div>
       </div>

@@ -12,7 +12,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Security Program",
   description:
-    "Scoped adversarial campaigns against the Entros verification pipeline, with attack classes, denominators, and observed results.",
+    "Scoped adversarial campaigns against the verification pipeline, with attack classes, denominators, and observed results.",
   path: "/security",
 });
 
@@ -33,11 +33,7 @@ export default function Security() {
       <section>
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-10">
           <div className="lg:col-span-5">
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-              // SECURITY PROGRAM
-            </span>
-
-            <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+            <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
               Continuous adversarial
               <br />
               testing<span className="text-cyan">.</span>
@@ -45,8 +41,7 @@ export default function Security() {
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
               Each published campaign names its attack class, attempt count,
-              and observed pass rate. T5 remains open, and later tiers remain
-              planned.
+              and observed pass rate.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -54,7 +49,7 @@ export default function Security() {
                 href="#measurements"
                 className="
                   group inline-flex items-center justify-center gap-2
-                  rounded-full bg-foreground px-6 py-3
+                  bg-foreground px-6 py-3
                   text-sm font-medium text-background
                   transition-colors hover:bg-foreground/90
                 "
@@ -66,7 +61,7 @@ export default function Security() {
                 href="/paper"
                 className="
                   group inline-flex items-center justify-center gap-2
-                  rounded-full border border-foreground/20 px-6 py-3
+                  border border-foreground/20 px-6 py-3
                   text-sm font-medium text-foreground
                   transition-colors hover:border-foreground/40 hover:bg-foreground/5
                 "
@@ -109,7 +104,7 @@ export default function Security() {
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Methodology public.
             <br />
             Defenses private<span className="text-cyan">.</span>
@@ -119,7 +114,7 @@ export default function Security() {
               href="/paper"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -131,7 +126,7 @@ export default function Security() {
               href="/technology"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

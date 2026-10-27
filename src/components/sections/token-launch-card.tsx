@@ -99,7 +99,7 @@ export function TokenLaunchCard() {
 
       {/* Address plate. The copy button is flush to the body, sharing the
           hairline, and inverts with the theme via bg-foreground. */}
-      <div className="mt-6 flex h-[68px] items-stretch overflow-hidden rounded-xl border border-border bg-surface">
+      <div className="mt-6 flex h-[68px] items-stretch overflow-hidden border border-border bg-surface">
         <div className="flex min-w-0 flex-1 flex-col justify-center px-4 py-3 text-left sm:px-5">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
             Contract address

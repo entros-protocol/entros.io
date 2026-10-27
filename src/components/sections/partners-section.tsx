@@ -10,18 +10,14 @@ export function PartnersSection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // TARGET INTEGRATIONS
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Building for the Solana ecosystem<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Integration surfaces mapped across identity primitives, agent
+          Target surfaces across identity primitives, agent
           infrastructure, DeFi, governance, and creator tooling. Each
-          reads the same on-chain Trust Score with zero integration cost.
+          reads the same on-chain Trust Score, free.
         </p>
 
         <div className="mt-16 grid grid-cols-2 gap-px border-y border-border bg-border md:grid-cols-3 lg:grid-cols-4">

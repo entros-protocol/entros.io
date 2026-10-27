@@ -10,13 +10,9 @@ export function UseCasesSection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // USE CASES
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          Where temporal proof
-          changes the equation<span className="text-cyan">.</span>
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          Where a verified
+          wallet matters<span className="text-cyan">.</span>
         </h2>
 
         <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -40,7 +36,7 @@ export function UseCasesSection() {
           href="/solutions"
           className="
             group mt-12 inline-flex items-center gap-2
-            rounded-full border border-foreground/20 px-5 py-2.5
+            border border-foreground/20 px-5 py-2.5
             text-sm text-foreground
             transition-colors hover:border-foreground/40 hover:bg-foreground/5
           "

@@ -75,7 +75,7 @@ The `fallback` prop replaces every failing state: "wallet disconnected", "below 
 
 ## Self-host the verify route
 
-`verifyHref` defaults to `https://entros.io/verify`, the canonical hosted verification flow. Unverified users land on entros.io, complete the 12-second behavioral capture, mint or update their Anchor, and return to your app on the next gate read.
+`verifyHref` defaults to `https://entros.io/verify`, the canonical hosted verification flow. Unverified users land on entros.io, complete the paired-round verification (three rounds, each one word to say and one short path to trace), mint or update their Anchor, and return to your app on the next gate read.
 
 If you're hosting the verification flow yourself (e.g. a self-hosted `/verify` route built on `@entros/pulse-sdk`), set `verifyHref` to your route: `verifyHref="/verify"` for a same-origin route, or an absolute URL for another host.
 

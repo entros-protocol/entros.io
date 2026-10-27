@@ -214,7 +214,7 @@ describe("permit request review", () => {
     ready();
     mocks.findLatestVerificationTransaction.mockResolvedValueOnce({ status: "unavailable" });
     const result = await reviewPermitRequest({ request, wallet: operator, connection, nowSeconds: clock });
-    expect(result.checks.at(-1)?.detail).toBe("Could not read your Entros Anchor. Try again.");
+    expect(result.checks.at(-1)?.detail).toBe("Your Entros verification could not be read from devnet. Reload the page to try again.");
     expect(result.needsVerification).toBe(false);
     expect(result.canSign).toBe(false);
   });

@@ -26,6 +26,12 @@ describe("sitemap", () => {
     expect(urls).toContain("https://entros.io/technology");
   });
 
+  it("lists the privacy notice the footer links to", () => {
+    const urls = sitemap().map((entry) => entry.url);
+
+    expect(urls).toContain("https://entros.io/privacy");
+  });
+
   it("emits every url once", () => {
     const urls = sitemap().map((entry) => entry.url);
 
@@ -75,6 +81,12 @@ describe("llms.txt", () => {
 
     expect(body).toContain("](https://entros.io/docs/concepts/trust-score)");
     expect(body).not.toContain("](/docs");
+  });
+
+  it("links the privacy notice", async () => {
+    const body = await brief();
+
+    expect(body).toContain("](https://entros.io/privacy)");
   });
 
   it("repeats no banned claim", async () => {

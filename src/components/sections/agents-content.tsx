@@ -9,22 +9,18 @@ export function AgentsContent() {
     <>
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // WHY PERMITS
-          </span>
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             A third option for agents<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
             <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
-              Today an app has two options with agents. It can block all automation, which shuts out
-              the agents people want to use. Or it can let every agent in, and then nothing shows
-              whether anyone approved what an agent does.
+              An app blocks automation and loses the agents people want, or
+              admits every agent with no record of who approved what.
             </p>
             <p className="text-base leading-relaxed text-foreground/65 md:text-lg">
-              A permit adds a third option. The app lets an agent through for one action when the
-              wallet that owns it signs off, and that wallet holds a recent Entros verification.
-              Entros verification is the gate. The permit carries it to each agent action.
+              A permit is that option: one action, signed by the owning wallet,
+              which holds a current Entros verification. The permit carries that
+              check to every action.
             </p>
           </div>
         </div>
@@ -32,18 +28,15 @@ export function AgentsContent() {
 
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // THE PERMIT
-          </span>
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             One permit covers one action<span className="text-cyan">.</span>
           </h2>
           <div className="mt-16 grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-6">
               <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
-                When an agent wants to do something that matters at an app, such as casting a vote or
-                claiming a reward, it brings a permit. The agent's current owner signed it. It covers
-                that one action and expires within 15 minutes.
+                An agent that wants to cast a vote or claim a reward brings a
+                permit. Its current owner signed it, and it expires within 15
+                minutes.
               </p>
               <p className="mt-6 text-base leading-relaxed text-foreground/70 md:text-lg">
                 When the action runs, the app checks three things:
@@ -59,8 +52,8 @@ export function AgentsContent() {
                 ))}
               </ol>
               <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-                If the agent changes hands, its unused permits stop working. A copied permit is useless
-                without the agent's key.
+                If the agent changes hands, unused permits stop working. A copied
+                permit is useless without the agent's key.
               </p>
             </div>
             <div className="lg:col-span-6">
@@ -72,10 +65,7 @@ export function AgentsContent() {
 
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // HOW IT WORKS
-          </span>
-          <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             From request to action<span className="text-cyan">.</span>
           </h2>
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -97,15 +87,12 @@ export function AgentsContent() {
 
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // ON DEVNET
-          </span>
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             One run, on the record<span className="text-cyan">.</span>
           </h2>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            An owner bound a test agent, signed one permit for one action, and then tried four ways to
-            reuse it. Every transaction is on devnet.
+            An owner bound a test agent, signed one permit, and tried four ways
+            to reuse it. Every transaction is on devnet.
           </p>
           <ol className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
             {agentPermitRun.steps.map((step) => (
@@ -142,21 +129,18 @@ export function AgentsContent() {
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
-              <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-                // FOR INTEGRATORS
-              </span>
-              <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+              <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
                 Everything the check needs is on Solana<span className="text-cyan">.</span>
               </h2>
               <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                The Solana Agent Registry records each agent's owner and its own key. It does not say
-                whether anyone approved what the agent does. The owner's Entros Anchor sits on Solana
-                too, and any app can read it.
+                The Solana Agent Registry records each agent's owner and key,
+                and the owner's Entros Anchor sits on Solana for any app to
+                read. Neither says who approved the agent's action.
               </p>
               <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-                Your service checks the permit against the chain with Pulse and @entros/verify. No
-                Entros service takes part. Expired and forged permits fail before any chain read.
-                Devnet only.
+                Your service checks the permit against the chain with Pulse and
+                @entros/verify. No Entros service takes part. Expired and forged
+                permits fail before any chain read. Devnet today.
               </p>
             </div>
             <div className="lg:col-span-7">

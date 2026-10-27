@@ -8,6 +8,7 @@ import {
   initialState,
 } from "@/components/verify/verify-state-machine";
 import { VerifyWalletConnected } from "./verify-wallet-connected";
+import { secondaryVerificationActionClass } from "@/components/verify/verification-styles";
 import { StudyConsent } from "@/components/verify/study-consent";
 import {
   clearPendingStudyEnrolmentId,
@@ -50,7 +51,7 @@ class VerifyErrorBoundary extends Component<
               this.setState({ error: null });
               this.props.onError();
             }}
-            className="rounded-full border border-border px-6 py-2 text-sm text-foreground/65 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className={secondaryVerificationActionClass}
           >
             Try again
           </button>
@@ -327,12 +328,9 @@ export function VerifyFlow() {
 
   return (
     <div className="space-y-8">
-      {/* Pinned-height card: sized for the tallest state (capturing) so the
-          surrounding layout doesn't shift between idle / capturing /
-          processing / failed / verified. Content centers vertically within
-          the fixed container, occasional whitespace in shorter states is
-          the deliberate trade-off for layout stability across the flow. */}
-      <div className="mx-auto flex min-h-[620px] md:min-h-[660px] max-w-xl flex-col justify-center border border-border px-8 py-10">
+      {/* The verification console pins its own height, sized for the
+          capture view, so the page does not shift between states. */}
+      <div className="mx-auto max-w-xl">
         <VerifyErrorBoundary onError={handleBoundaryError}>
           {STUDY_INTAKE_OPEN &&
           study.definition &&

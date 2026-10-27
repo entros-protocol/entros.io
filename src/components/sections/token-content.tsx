@@ -20,17 +20,13 @@ export function TokenContent() {
       {/* Revenue Flywheel */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // REVENUE FLYWHEEL
-          </span>
-
-          <h2 className="mt-6 max-w-5xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Real usage drives real demand<span className="text-cyan">.</span>
+          <h2 className="max-w-5xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            Each verification pays a fee<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Protocol fees already accrue in SOL. The roadmap connects future
-            validator security, capacity, and governance to $ENTROS.
+            The roadmap connects validator security, capacity, and governance
+            to $ENTROS.
           </p>
 
           {/* Labeled diagram — five nodes in a horizontal flow with
@@ -42,7 +38,7 @@ export function TokenContent() {
               viewBox="0 0 1200 320"
               className="block w-full"
               role="img"
-              aria-label="Token flywheel diagram. Five steps from human verification through protocol revenue, integrator adoption, token-secured validation, and a compounding network, looping back to human verification."
+              aria-label="Token flywheel diagram: verification, protocol fees, integrator adoption, token-secured validation, a compounding network, looping back to verification."
             >
               <defs>
                 <marker
@@ -211,17 +207,12 @@ export function TokenContent() {
       {/* Supply — fair launch */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // SUPPLY
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             A fair launch<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
             No presale and no VC round. One launch, open to everyone.
-            What the team holds, it bought there and locked.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -248,14 +239,10 @@ export function TokenContent() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // PROTOCOL FEE
-                </span>
-
-                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
+                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
                   Every verification<span className="text-cyan">.</span>
                   <br />
-                  On-chain revenue<span className="text-cyan">.</span>
+                  One on-chain treasury<span className="text-cyan">.</span>
                 </h2>
               </div>
             </div>
@@ -278,10 +265,10 @@ export function TokenContent() {
                   {protocolFee.description}
                 </p>
                 <p className="mt-4 text-base leading-relaxed text-foreground/65 md:text-lg">
-                  Users pay the configured fee when writing protocol state.
+                  Users pay the configured fee to write protocol state.
                   Integrators read that state for free. Detection decides
                   whether a verification passes. The fee bounds repeated
-                  attempts and funds protocol operation.
+                  attempts.
                 </p>
               </div>
             </div>
@@ -292,11 +279,7 @@ export function TokenContent() {
       {/* Token Utility */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // PLANNED TOKEN UTILITY
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Utility expands with decentralization<span className="text-cyan">.</span>
           </h2>
 
@@ -333,11 +316,7 @@ export function TokenContent() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // PLANNED ECONOMIC HARDENING
-                </span>
-
-                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
+                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
                   Slashing and incentive design<span className="text-cyan">.</span>
                 </h2>
                 
@@ -403,11 +382,7 @@ export function TokenContent() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // LAUNCH
-                </span>
-
-                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
+                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
                   How the token works<span className="text-cyan">.</span>
                 </h2>
               </div>
@@ -444,12 +419,11 @@ export function TokenContent() {
                   <TrendingUp className="h-6 w-6 text-cyan" strokeWidth={1.5} />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      Real revenue behind it
+                      The treasury is on-chain
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Every wallet-connected verification pays the configured
-                      SOL fee into the on-chain treasury. Future $ENTROS utility
-                      remains separate until its mechanisms ship.
+                      $ENTROS utility stays separate from the fee until its
+                      mechanisms ship.
                     </p>
                   </div>
                 </div>

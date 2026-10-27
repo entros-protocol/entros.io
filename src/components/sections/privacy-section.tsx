@@ -11,16 +11,12 @@ export function PrivacySection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // PRIVACY MODEL
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Privacy by architecture<span className="text-cyan">.</span>
         </h2>
 
         <div className="mt-16 grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-start lg:gap-16">
-          <AsciiDataFlowScene label="DATA FLOW" aspect="4/5" fit />
+          <AsciiDataFlowScene aspect="4/5" fit />
 
           <ul className="flex flex-col divide-y divide-border border-y border-border">
             {privacyGuarantees.map((guarantee) => {

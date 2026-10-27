@@ -93,7 +93,7 @@ export function IntegratePlayground() {
       });
     } catch {
       if (requestId.current === thisRequest)
-        setError("Network error. Check the address and try again.");
+        setError("Network error. Try again.");
     } finally {
       if (requestId.current === thisRequest) setLoading(false);
     }
@@ -103,9 +103,6 @@ export function IntegratePlayground() {
     <div>
       <div className="border border-border p-6 md:p-8">
         <div className="flex items-center justify-between">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-            // LIVE ON DEVNET
-          </p>
           <div className="flex items-center gap-2">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-solana-green/60" />
@@ -118,8 +115,7 @@ export function IntegratePlayground() {
         </div>
 
         <p className="mt-6 text-sm leading-relaxed text-foreground/65">
-          Paste any wallet address to check its Entros verification status
-          on-chain.
+          Check any wallet's verification status on devnet.
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -168,8 +164,8 @@ export function IntegratePlayground() {
             <div>
               <p className="text-sm font-medium text-foreground">Not verified</p>
               <p className="mt-0.5 text-xs text-foreground/50">
-                This wallet has no Entros Anchor on devnet. No Trust Score,
-                no verification history.
+                No Entros Anchor on devnet. No Trust Score,
+                no history.
               </p>
             </div>
           </div>
@@ -180,7 +176,7 @@ export function IntegratePlayground() {
             <div className="mb-8 flex items-center gap-3">
               <CheckCircle className="h-5 w-5 shrink-0 text-solana-green" />
               <p className="text-sm font-medium text-foreground">
-                Verified Human
+                Verified wallet
               </p>
             </div>
 
@@ -255,8 +251,8 @@ export function IntegratePlayground() {
           className="font-mono text-cyan transition-colors hover:text-foreground"
         >
           2jowce…SNQw
-        </button>{" "}
-       —Entros verified wallet on devnet.
+        </button>
+        {", a verified devnet wallet."}
       </p>
     </div>
   );

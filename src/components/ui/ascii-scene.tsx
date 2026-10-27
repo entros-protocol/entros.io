@@ -22,7 +22,6 @@ interface AsciiSceneProps {
   cols: number;
   rows: number;
   render: SceneRender;
-  label?: string;
   aspect?: string;
   className?: string;
   fill?: boolean;
@@ -41,7 +40,6 @@ export function AsciiScene({
   cols,
   rows,
   render,
-  label,
   aspect = "16/9",
   className,
   fill = false,
@@ -204,12 +202,6 @@ export function AsciiScene({
       )}
       style={fill ? undefined : { aspectRatio: aspect }}
     >
-
-      {label && (
-        <div className="absolute left-4 top-3 z-10 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/30">
-          // {label}
-        </div>
-      )}
 
       <div className="absolute inset-0 flex items-center justify-center">
         <pre

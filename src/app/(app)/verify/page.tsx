@@ -8,7 +8,7 @@ const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const baseMetadata = pageMetadata({
   title: "Verify",
   description:
-    "Complete the Entros behavioral verification flow on Solana devnet using voice, motion, and touch evidence.",
+    "Verify your wallet on Solana devnet: three short rounds of voice, touch and motion, then one signature.",
   path: "/verify",
 });
 
@@ -76,17 +76,13 @@ export default function Verify() {
     <>
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-12 text-center md:pt-40 md:pb-16">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // VERIFY
-          </span>
-
-          <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-            Mint your Anchor<span className="text-cyan">.</span>
+          <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+            Verify your wallet<span className="text-cyan">.</span>
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-balance text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
-            Connect a Solana wallet to mint your Entros Anchor and start
-            building Trust Score.
+            Three short rounds, then one signature on Solana devnet. Your
+            wallet gets an Entros Anchor and a Trust Score.
           </p>
         </div>
       </section>

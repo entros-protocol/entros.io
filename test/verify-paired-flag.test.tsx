@@ -267,18 +267,7 @@ beforeEach(() => {
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
-  fetchMock = vi.fn(async (input: string | URL | Request) => {
-    const url = String(input);
-    if (url.startsWith("/api/relay-challenge")) {
-      return Response.json({
-        nonce: Array(32).fill(7),
-        phrase: "amber cedar drift maple orbit",
-        expires_in: 180,
-        curve: { a: 2, b: 3, delta: 1, points: 200, anchor_x: 50, anchor_y: 50 },
-      });
-    }
-    return new Response(null, { status: 404 });
-  });
+  fetchMock = vi.fn(async () => new Response(null, { status: 404 }));
   vi.stubGlobal("fetch", fetchMock);
 });
 

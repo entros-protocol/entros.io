@@ -8,8 +8,8 @@ import type { VerificationPhase } from "@entros/pulse-sdk";
 import { verificationFocusRing } from "./verification-styles";
 
 export const RAIL_STEPS = ["Connect", "Rounds", "Proof", "Sign", "Anchor"] as const;
-/** The popup runs one capture and hands back to the app, so its steps differ. */
-export const POPUP_RAIL_STEPS = ["Connect", "Capture", "Proof", "Sign", "Done"] as const;
+/** The popup hands back to the app instead of showing the Anchor, so its last step differs. */
+export const POPUP_RAIL_STEPS = ["Connect", "Rounds", "Proof", "Sign", "Done"] as const;
 
 export interface RailState {
   /** Index into RAIL_STEPS of the step in focus. */

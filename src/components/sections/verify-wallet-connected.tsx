@@ -279,8 +279,8 @@ function SigningDiagnosticNotice() {
   );
 }
 
-// Loaded only when the server turns paired rounds on, so the single capture
-// never downloads it.
+// Loaded in a chunk of its own, so pages that never start a capture never
+// download it.
 const PairedCapture = dynamic(
   () =>
     import("@/components/verify/paired-capture").then(

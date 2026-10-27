@@ -1,19 +1,16 @@
 import { readBoundedJson } from "./bounded-json";
 
-const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const MAX_RESPONSE_BYTES = 64 * 1_024;
 const NO_STORE_HEADERS = { "Cache-Control": "no-store" } as const;
 
 export interface ExecutorProxyRoute {
   path:
-    | "/challenge"
-    | "/validate-features"
     | "/attest"
     | "/challenge/paired"
     | "/paired/commit"
     | "/paired/cue"
     | "/validate-session";
-  method: "GET" | "POST";
+  method: "POST";
   timeoutMs: number;
   maxRequestBytes?: number;
 }
@@ -93,27 +90,19 @@ export async function proxyExecutorRequest(
     return json({ error: "Relayer not configured" }, 503);
   }
 
-  let body: string | undefined;
-  if (route.method === "GET") {
-    const wallet = new URL(request.url).searchParams.get("wallet");
-    if (!wallet || !PUBKEY_REGEX.test(wallet)) {
-      return json({ error: "Invalid or missing wallet pubkey" }, 400);
-    }
-    upstream.searchParams.set("wallet", wallet);
-  } else {
-    if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
-      return json({ error: "Content-Type must be application/json" }, 415);
-    }
-    try {
-      const parsed = await readBoundedJson(request, route.maxRequestBytes ?? 0);
-      body = JSON.stringify(parsed);
-    } catch (error) {
-      const status = error instanceof RangeError ? 413 : 400;
-      return json(
-        { error: status === 413 ? "Request too large" : "Invalid request" },
-        status,
-      );
-    }
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return json({ error: "Content-Type must be application/json" }, 415);
+  }
+  let body: string;
+  try {
+    const parsed = await readBoundedJson(request, route.maxRequestBytes ?? 0);
+    body = JSON.stringify(parsed);
+  } catch (error) {
+    const status = error instanceof RangeError ? 413 : 400;
+    return json(
+      { error: status === 413 ? "Request too large" : "Invalid request" },
+      status,
+    );
   }
 
   const controller = new AbortController();
@@ -123,10 +112,10 @@ export async function proxyExecutorRequest(
       method: route.method,
       headers: {
         Accept: "application/json",
-        ...(body ? { "Content-Type": "application/json" } : {}),
+        "Content-Type": "application/json",
         "X-API-Key": runtime.relayerApiKey,
       },
-      ...(body ? { body } : {}),
+      body,
       cache: "no-store",
       signal: controller.signal,
     });

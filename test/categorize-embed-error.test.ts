@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { VerificationResult } from "@entros/pulse-sdk";
 import {
   PREV_COMMITMENT_MISMATCH_PATTERN,
+  bucketForCaptureFailure,
   bucketForResult,
   categorizeError,
 } from "../src/components/embed/categorize-embed-error";
@@ -138,5 +139,23 @@ describe("PREV_COMMITMENT_MISMATCH_PATTERN", () => {
     expect(
       PREV_COMMITMENT_MISMATCH_PATTERN.test('{"InstructionError":[2,{"Custom":60110}]}'),
     ).toBe(false);
+  });
+});
+
+describe("bucketForCaptureFailure", () => {
+  it("names an unreachable or slow service as a network error", () => {
+    expect(bucketForCaptureFailure("validation_unavailable")).toBe("network_error");
+    expect(bucketForCaptureFailure("validation_timeout")).toBe("network_error");
+  });
+
+  it("names a round or session that ran out of time as a timeout", () => {
+    expect(bucketForCaptureFailure("round_expired")).toBe("timeout");
+    expect(bucketForCaptureFailure("session_expired")).toBe("timeout");
+  });
+
+  it("keeps every other capture failure opaque", () => {
+    expect(bucketForCaptureFailure(undefined)).toBe("validation_failed");
+    expect(bucketForCaptureFailure("technical_failure")).toBe("validation_failed");
+    expect(bucketForCaptureFailure("rate_limited")).toBe("validation_failed");
   });
 });

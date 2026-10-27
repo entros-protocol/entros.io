@@ -72,6 +72,7 @@ its protected action executes.
 - [Paper](${SITE_URL}/paper): the research write-up.
 - [Roadmap](${SITE_URL}/roadmap): what is live and what is planned.
 - [Token](${SITE_URL}/token): $ENTROS status and lock records.
+- [Privacy](${SITE_URL}/privacy): what Entros receives, where it goes, and how long it is kept.
 - [Source](https://github.com/entros-protocol): on-chain programs, SDK, and clients.
 
 ## Documentation

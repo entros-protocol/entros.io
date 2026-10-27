@@ -1,8 +1,8 @@
 export const SITE_URL = "https://entros.io";
 export const SITE_NAME = "Entros Protocol";
-export const CATEGORY_LINE = "Private human verification for Solana.";
+export const CATEGORY_LINE = "Private human verification.";
 export const SITE_DESCRIPTION =
-  "Private human verification for Solana. Any Solana app can read a verified wallet's Entros Anchor for free.";
+  "Private human verification. Any Solana app can read a verified wallet's Entros Anchor for free.";
 
 export const BRAND_COLOR_DARK = "#0A0A0F";
 export const BRAND_COLOR_LIGHT = "#FAFAF8";

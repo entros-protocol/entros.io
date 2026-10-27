@@ -44,18 +44,18 @@ const assets = [
 const blurbs = [
   {
     length: "Short",
-    chars: "1 line · 112 chars",
-    text: "Private human verification for Solana. We designed Entros to verify a live human without storing raw biometrics.",
+    chars: "1 line · 101 chars",
+    text: "Private human verification. We designed Entros to verify a live human without storing raw biometrics.",
   },
   {
     length: "Medium",
-    chars: "2 sentences · 200 chars",
-    text: "Private human verification for Solana. Raw motion and full-resolution touch stay on the device, your spoken words are transcribed and never stored, and a zero-knowledge proof puts the result on-chain.",
+    chars: "2 sentences · 189 chars",
+    text: "Private human verification. Raw motion and full-resolution touch stay on the device, your spoken words are transcribed and never stored, and a zero-knowledge proof puts the result on-chain.",
   },
   {
     length: "Long",
-    chars: "3 sentences · 388 chars",
-    text: "Private human verification for Solana, designed to prove a live human through voice, motion, and touch. Raw motion and full-resolution touch stay on the device while the verification service checks derived evidence, and Entros never stores the spoken words. Trust Score records verification history, and owner-signed permits link registered AI agents to that wallet, one action at a time.",
+    chars: "3 sentences · 377 chars",
+    text: "Private human verification, designed to prove a live human through voice, motion, and touch. Raw motion and full-resolution touch stay on the device while the verification service checks derived evidence, and Entros never stores the spoken words. Trust Score records verification history, and owner-signed permits link registered AI agents to that wallet, one action at a time.",
   },
 ];
 

@@ -9,7 +9,7 @@ export function Footer() {
             entros<span className="text-cyan">.</span>
           </p>
           <p className="mt-2 text-xs text-foreground/60">
-            Private human verification for Solana
+            Private human verification
           </p>
         </div>
 

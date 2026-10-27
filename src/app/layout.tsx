@@ -44,11 +44,11 @@ const wordmark = JetBrains_Mono({
   display: "swap",
 });
 
-const ROOT_TITLE = `Private human verification for Solana | ${SITE_NAME}`;
+const ROOT_TITLE = `Private human verification | ${SITE_NAME}`;
 const ROOT_DESCRIPTION =
-  "Private human verification for Solana. Verify your wallet in three short rounds. Raw motion and touch stay on your device.";
+  "Private human verification. Verify your wallet in three short rounds. Raw motion and touch stay on your device.";
 const SOCIAL_DESCRIPTION =
-  "Private human verification for Solana. Three short rounds put an Entros Anchor on your wallet, and any Solana app can read it for free.";
+  "Private human verification. Three short rounds put an Entros Anchor on your wallet, and any Solana app can read it for free.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

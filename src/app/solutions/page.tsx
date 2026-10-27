@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Solutions",
   description:
-    "Entros Protocol use cases: Sybil-resistant airdrops, human-verified governance, fair gaming mints, creator verification, bot prevention.",
+    "Entros use cases: sybil-resistant airdrops, verified governance, fair mints, creator verification, bot prevention.",
   path: "/solutions",
 });
 
@@ -20,11 +20,7 @@ export default function Solutions() {
           cases below ARE the visual story. */}
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-24 md:pt-40 md:pb-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // SOLUTIONS
-          </span>
-
-          <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
             Proof of personhood<span className="text-cyan">,</span>
             <br />
             wherever bots break things<span className="text-cyan">.</span>
@@ -33,7 +29,7 @@ export default function Solutions() {
           <p className="mt-12 max-w-3xl text-base leading-relaxed text-foreground/70 md:text-lg">
             For protocols that need to know their users are real,
             without learning who they are. Five concrete patterns,
-            one SDK, deployed across the Solana ecosystem.
+            one SDK.
           </p>
 
           <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -41,7 +37,7 @@ export default function Solutions() {
               href="/integrate"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -53,7 +49,7 @@ export default function Solutions() {
               href="/verify"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "
@@ -71,7 +67,7 @@ export default function Solutions() {
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Verify once<span className="text-cyan">.</span>
             <br />
             Compose anywhere<span className="text-cyan">.</span>
@@ -81,7 +77,7 @@ export default function Solutions() {
               href="/integrate"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -93,7 +89,7 @@ export default function Solutions() {
               href="/technology"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

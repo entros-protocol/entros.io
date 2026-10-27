@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Press Kit",
   description:
-    "Press kit for Entros Protocol. Logos, defensible numbers, descriptions, and public artifacts for journalists, podcasters, and ecosystem partners.",
+    "Press kit for Entros Protocol. Logos, descriptions, and public artifacts for journalists, podcasters, and ecosystem partners.",
   path: "/press",
 });
 
@@ -22,21 +22,21 @@ const assets = [
     name: "Primary mark",
     file: "/logos/Entros.png",
     format: "PNG · 500 × 500",
-    note: "Used as the social card and favicon source. Solid background versions for light and dark in the same file.",
+    note: "The social card and favicon source. Solid background versions for light and dark in the same file.",
     previewClass: "bg-foreground/[0.04]",
   },
   {
     name: "Wordmark",
     file: "/logos/wordmark.svg",
     format: "SVG · scalable",
-    note: "Text wordmark. Inherits currentColor — drop it on any background and set the parent text color.",
+    note: "Text wordmark. Inherits currentColor: drop it on any background and set the parent text color.",
     previewClass: "bg-foreground/[0.04]",
   },
   {
     name: "Social card",
     file: "/logos/og-card.png",
     format: "PNG · 1200 × 630",
-    note: "Open Graph card for sharing the project on X, LinkedIn, and link-preview platforms.",
+    note: "Open Graph card for sharing on X, LinkedIn, and link-preview platforms.",
     previewClass: "bg-foreground/[0.04]",
   },
 ];
@@ -44,18 +44,18 @@ const assets = [
 const blurbs = [
   {
     length: "Short",
-    chars: "1 line · 130 chars",
-    text: "Entros is the temporal identity layer for Solana, designed to prove a returning human through voice, motion, and touch.",
+    chars: "1 line · 101 chars",
+    text: "Private human verification. We designed Entros to verify a live human without storing raw biometrics.",
   },
   {
     length: "Medium",
-    chars: "2 sentences · 290 chars",
-    text: "Entros is the temporal identity layer for Solana. Local feature extraction, private validation, and zero-knowledge proofs produce portable on-chain verification state.",
+    chars: "2 sentences · 189 chars",
+    text: "Private human verification. Raw motion and full-resolution touch stay on the device, your spoken words are transcribed and never stored, and a zero-knowledge proof puts the result on-chain.",
   },
   {
     length: "Long",
-    chars: "3 sentences · 520 chars",
-    text: "Entros is the temporal identity layer for Solana, designed to prove a returning human through voice, motion, and touch. Raw motion and full-resolution touch stay on the device while the private validation service checks derived evidence. Trust Score records verification history, and Agent Anchor can link registered AI agents to the wallet that completed verification.",
+    chars: "3 sentences · 377 chars",
+    text: "Private human verification, designed to prove a live human through voice, motion, and touch. Raw motion and full-resolution touch stay on the device while the verification service checks derived evidence, and Entros never stores the spoken words. Trust Score records verification history, and owner-signed permits link registered AI agents to that wallet, one action at a time.",
   },
 ];
 
@@ -94,21 +94,16 @@ export default function Press() {
       <section>
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-10">
           <div className="lg:col-span-5">
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-              // PRESS KIT
-            </span>
-
-            <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+            <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
               Direct answers<span className="text-cyan">.</span>
               <br />
               Downloadable assets<span className="text-cyan">.</span>
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Brand marks, ready-to-paste descriptions of the protocol,
-              and direct links to the live devnet, the source, and the
-              security program. Built so a writer reaches the underlying
-              truth in one click.
+              Brand marks, ready-to-paste descriptions, and links to the
+              live devnet, the source, and the security program. A writer
+              checks the source in one click.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -116,7 +111,7 @@ export default function Press() {
                 href="#assets"
                 className="
                   group inline-flex items-center justify-center gap-2
-                  rounded-full bg-foreground px-6 py-3
+                  bg-foreground px-6 py-3
                   text-sm font-medium text-background
                   transition-colors hover:bg-foreground/90
                 "
@@ -128,7 +123,7 @@ export default function Press() {
                 href="mailto:contact@entros.io"
                 className="
                   group inline-flex items-center justify-center gap-2
-                  rounded-full border border-foreground/20 px-6 py-3
+                  border border-foreground/20 px-6 py-3
                   text-sm font-medium text-foreground
                   transition-colors hover:border-foreground/40 hover:bg-foreground/5
                 "
@@ -163,17 +158,13 @@ export default function Press() {
       {/* Descriptions — short / medium / long for journalists to paste */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // DESCRIPTIONS
-          </span>
-
-          <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Pick a length, paste it in<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Each description reads against the live devnet pilot. The
-            numbers verify on Solana Explorer.
+            Each description matches the live devnet pilot. Verify the
+            details on Solana Explorer.
           </p>
 
           <div className="mt-16 space-y-px bg-border border-y border-border">
@@ -202,18 +193,14 @@ export default function Press() {
       {/* Logo assets — preview cards with download links */}
       <section id="assets" className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // BRAND ASSETS
-          </span>
-
-          <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Logos and marks<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
             Hold the wordmark&apos;s aspect ratio. Pair the cyan accent
-            (#22D3E6) with the void or the cream from the site palette.
-            Skip colored or photographic backgrounds.
+            (#22D3E6) with the void or the cream. Skip colored or
+            photographic backgrounds.
           </p>
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
@@ -261,18 +248,14 @@ export default function Press() {
       {/* Public artifacts */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55">
-            // PUBLIC ARTIFACTS
-          </span>
-
-          <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Verify the claims directly<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
             Source, packages, the live devnet, and the protocol stats are
-            all open. A writer can run the demo, read the code, and read
-            the on-chain state without asking us for access.
+            open. Run the demo, read the code, read the chain without
+            asking for access.
           </p>
 
           <ul className="mt-16 border border-border">
@@ -314,11 +297,7 @@ export default function Press() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
               <div className="lg:relative">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/55 lg:absolute lg:bottom-full lg:left-0 lg:mb-6 lg:whitespace-nowrap">
-                  // CONTACT
-                </span>
-
-                <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
+                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
                   Reach the team<span className="text-cyan">.</span>
                 </h2>
               </div>
@@ -357,8 +336,8 @@ export default function Press() {
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65 md:text-base">
                       File issues, ask code questions, and start
-                      integration conversations on GitHub. Every repo
-                      under the org is public.
+                      integrations on GitHub. The client and program
+                      code is public.
                     </p>
                   </div>
                 </div>
@@ -371,7 +350,7 @@ export default function Press() {
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Run the demo<span className="text-cyan">.</span>
             <br />
             Watch the chain<span className="text-cyan">.</span>
@@ -381,7 +360,7 @@ export default function Press() {
               href="/verify"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -393,7 +372,7 @@ export default function Press() {
               href="/stats"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

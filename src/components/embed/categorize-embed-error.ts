@@ -83,8 +83,24 @@ export function bucketForResult(result: VerificationResult): EmbedErrorReason | 
   return PHASE_BUCKETS[phase] ?? null;
 }
 
-export function categorizeError(error: string): EmbedErrorReason {
-  const e = error.toLowerCase();
+/**
+ * Bucket a failure the paired capture reports before any result exists: a
+ * refused microphone, a session that could not open, a round that ran out of
+ * time. The capture carries the SDK's reason when it has one.
+ *
+ * Every reason here is client-origin, because no verdict exists yet, so the
+ * SDK's client-origin predicate cannot separate them. Only an unreachable
+ * service and an expired round get their own bucket.
+ */
+export function bucketForCaptureFailure(reason: string | undefined): EmbedErrorReason {
+  if (reason === "round_expired" || reason === "session_expired") return "timeout";
+  if (reason === "validation_unavailable" || reason === "validation_timeout") {
+    return "network_error";
+  }
+  return "validation_failed";
+}
+
+export function categorizeError(error: string): EmbedErrorReason {  const e = error.toLowerCase();
   if (
     // `isUserRejection` comes from the SDK, which runs the same predicate to
     // decide whether a failure was `signing` or `submission`. A local copy here

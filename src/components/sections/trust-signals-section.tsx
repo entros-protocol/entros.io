@@ -12,13 +12,9 @@ export function TrustSignalsSection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // STATUS
-        </span>
-
-        <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          Deployed<span className="text-cyan">,</span> open source<span className="text-cyan">,</span>{" "}
-          continuously red-teamed<span className="text-cyan">.</span>
+        <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          Live on devnet<span className="text-cyan">,</span> open source<span className="text-cyan">,</span>{" "}
+          red-teamed<span className="text-cyan">.</span>
         </h2>
 
         <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2">

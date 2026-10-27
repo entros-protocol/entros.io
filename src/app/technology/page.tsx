@@ -12,7 +12,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Technology",
   description:
-    "Speaking and tracing produce local feature extraction and ZK proofs. Raw motion and full-resolution touch stay on the device.",
+    "Three paired rounds of speech and tracing, client-side proving, and the on-chain Entros Anchor. Raw motion and touch stay on the device; phrase audio leaves for transcription, never stored.",
   path: "/technology",
 });
 
@@ -25,21 +25,17 @@ export default function Technology() {
       <section>
         <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 pt-28 pb-6 md:pt-36 md:pb-12 lg:min-h-[calc(100vh-4rem)] lg:flex-row lg:items-center lg:gap-12 lg:pt-24 lg:pb-24">
           <div className="relative z-10 flex flex-col lg:w-3/5 lg:max-w-3xl">
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-              // HOW IT WORKS
-            </span>
-
-            <h1 className="mt-6 font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+            <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
               From challenge
               <br />
               to on-chain proof<span className="text-cyan">.</span>
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Capture, feature extraction, and proof generation all run on
-              your device. The validation path receives a statistical summary
-              and transient challenge evidence. Solana stores protocol state,
-              commitments, and proofs.
+              Your device captures each round, extracts features, and
+              generates the ZK proof. Raw motion and touch never leave it.
+              Phrase audio leaves for transcription, never stored. Solana
+              stores commitments, proofs, and protocol state.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -47,7 +43,7 @@ export default function Technology() {
                 href="/verify"
                 className="
                   group inline-flex items-center justify-center gap-2
-                  rounded-full bg-foreground px-6 py-3
+                  bg-foreground px-6 py-3
                   text-sm font-medium text-background
                   transition-colors hover:bg-foreground/90
                 "
@@ -59,7 +55,7 @@ export default function Technology() {
                 href="/paper"
                 className="
                   group inline-flex items-center justify-center gap-2
-                  rounded-full border border-foreground/20 px-6 py-3
+                  border border-foreground/20 px-6 py-3
                   text-sm font-medium text-foreground
                   transition-colors hover:border-foreground/40 hover:bg-foreground/5
                 "
@@ -97,7 +93,7 @@ export default function Technology() {
               href="/verify"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -109,7 +105,7 @@ export default function Technology() {
               href="/solutions"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

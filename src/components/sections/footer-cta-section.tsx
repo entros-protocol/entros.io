@@ -9,12 +9,12 @@ export function FooterCTASection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-        {/* Non-breaking spaces bind "portable identity" and "every dApp"
+        {/* Non-breaking spaces bind "on-chain proof" and "every dApp"
             so each sentence splits at its comma on narrow viewports
             instead of orphaning a trailing word. text-balance cannot do
             this here because it will not balance across the <br>. */}
-        <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-          Fast<span className="text-cyan">,</span> private<span className="text-cyan">,</span> portable&nbsp;identity<span className="text-cyan">.</span>
+        <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          Private<span className="text-cyan">,</span> open<span className="text-cyan">,</span> on-chain&nbsp;proof<span className="text-cyan">.</span>
           <br />
           Readable by every&nbsp;dApp<span className="text-cyan">.</span>
         </h2>
@@ -24,7 +24,7 @@ export function FooterCTASection() {
             href="/verify"
             className="
               group inline-flex items-center justify-center gap-2
-              rounded-full bg-foreground px-6 py-3
+              bg-foreground px-6 py-3
               text-sm font-medium text-background
               transition-colors hover:bg-foreground/90
             "
@@ -36,7 +36,7 @@ export function FooterCTASection() {
             href="/technology"
             className="
               group inline-flex items-center justify-center gap-2
-              rounded-full border border-foreground/20 px-6 py-3
+              border border-foreground/20 px-6 py-3
               text-sm font-medium text-foreground
               transition-colors hover:border-foreground/40 hover:bg-foreground/5
             "

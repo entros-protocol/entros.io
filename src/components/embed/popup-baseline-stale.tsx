@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowUpRight } from "lucide-react";
+
+import { STATE_ICON_CLASS, STATE_ICON_STROKE } from "@/components/verify/console";
+import {
+  accentVerificationActionClass,
+  secondaryVerificationActionClass,
+} from "@/components/verify/verification-styles";
 
 /**
  * Failure surface for the stale-baseline case (on-chain `Custom(6011)`
@@ -27,25 +33,27 @@ export function PopupBaselineStale({
   onClose?: () => void;
 }) {
   return (
-    <div className="space-y-5 text-center">
+    <div className="space-y-7 text-center">
       <AlertCircle
-        className="mx-auto h-12 w-12 text-amber-500"
-        strokeWidth={1.5}
+        className={`mx-auto text-warning ${STATE_ICON_CLASS}`}
+        strokeWidth={STATE_ICON_STROKE}
+        aria-hidden
       />
       <div>
-        <p className="font-mono text-sm text-foreground">
+        <h1 className="font-display text-[1.75rem] font-normal leading-tight tracking-[-0.015em] text-foreground">
           Baseline out of sync
-        </p>
-        <p className="mx-auto mt-2 max-w-xs text-xs leading-relaxed text-foreground/55">
+        </h1>
+        <p className="mx-auto mt-3 max-w-xs text-balance text-sm leading-relaxed text-foreground/65">
           This wallet&apos;s on-chain identity doesn&apos;t match the
-          recovered baseline—usually after a reset on another device.
+          recovered baseline, usually after a reset on another device.
           Reset to re-enroll, then return here to verify.
         </p>
       </div>
-      <div className="flex flex-col-reverse items-center gap-2 sm:flex-row sm:justify-center">
+      <div className="flex flex-col-reverse items-center gap-3 sm:flex-row sm:justify-center">
         <button
+          type="button"
           onClick={onClose}
-          className="rounded-full border border-border px-5 py-2 text-xs text-foreground/65 transition-colors hover:border-foreground/40 hover:text-foreground"
+          className={secondaryVerificationActionClass}
         >
           Close
         </button>
@@ -53,9 +61,10 @@ export function PopupBaselineStale({
           href="/verify"
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-full border border-cyan/30 bg-cyan/10 px-5 py-2 text-xs font-medium text-cyan transition-colors hover:bg-cyan/20"
+          className={accentVerificationActionClass}
         >
-          Reset baseline →
+          Reset baseline
+          <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
         </a>
       </div>
     </div>

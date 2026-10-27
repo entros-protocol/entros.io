@@ -19,15 +19,11 @@ interface PaperContentProps {
 export function PaperContent({ title, meta, body }: PaperContentProps) {
   return (
     <article className="mx-auto max-w-3xl px-6 pt-28 pb-24 md:pt-32 md:pb-32">
-      {/* Compact title block—eyebrow, title + small action buttons on
+      {/* Compact title block—title + small action buttons on
           the right, mono metadata row, hairline divider. Abstract
           visible immediately below. */}
-      <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-        // RESEARCH PAPER
-      </span>
-
-      <div className="mt-4 flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-8">
-        <h1 className="font-display text-2xl font-medium leading-[1.15] tracking-[-0.01em] text-foreground md:max-w-2xl md:text-3xl lg:text-4xl">
+      <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-8">
+        <h1 className="font-display text-2xl font-normal leading-[1.15] tracking-[-0.01em] text-foreground md:max-w-2xl md:text-3xl lg:text-4xl">
           {title}<span className="text-cyan">.</span>
         </h1>
 
@@ -36,7 +32,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
             href="https://doi.org/10.5281/zenodo.19517441"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className="inline-flex items-center gap-2 border border-border px-4 py-1.5 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
           >
             Zenodo
             <span aria-hidden="true">↗</span>
@@ -44,7 +40,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
           <a
             href="/entros-protocol-2026.pdf"
             download
-            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className="inline-flex items-center gap-2 border border-border px-4 py-1.5 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
           >
             PDF
             <span aria-hidden="true">↓</span>
@@ -92,12 +88,12 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
           remarkPlugins={[remarkGfm]}
           components={{
             h1: ({ children }) => (
-              <h1 className="mt-16 font-display text-3xl font-medium tracking-tight text-foreground first:mt-0 md:text-4xl">
+              <h1 className="mt-16 font-display text-3xl font-normal tracking-tight text-foreground first:mt-0 md:text-4xl">
                 {children}
               </h1>
             ),
             h2: ({ children }) => (
-              <h2 className="mt-16 font-display text-2xl font-medium tracking-tight text-foreground first:mt-0 md:text-3xl md:leading-[1.15]">
+              <h2 className="mt-16 font-display text-2xl font-normal tracking-tight text-foreground first:mt-0 md:text-3xl md:leading-[1.15]">
                 {children}
               </h2>
             ),

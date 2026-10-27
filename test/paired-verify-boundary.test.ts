@@ -115,21 +115,20 @@ describe("paired verify boundary", () => {
     }
   });
 
-  it("keeps the embed popup and the walletless flow on the single capture", () => {
-    const singleOnly = FILES.filter(
+  it("runs the paired rounds in the embed popup", () => {
+    const embed = FILES.filter(
       (file) =>
         file.path.startsWith("components/embed/") ||
         file.path.startsWith("app/(app)/embed/") ||
-        file.path.startsWith("lib/embed/") ||
-        file.path === "components/sections/verify-walletless.tsx",
+        file.path.startsWith("lib/embed/"),
     );
-    expect(singleOnly.map((file) => file.path)).toContain(
-      "components/embed/popup-content.tsx",
-    );
-    for (const file of singleOnly) {
-      expect(file.body, file.path).not.toMatch(PAIRED_API);
+    const popup = source("components/embed/popup-content.tsx");
+    expect(dynamicImports(popup)).toEqual(["@/components/verify/paired-capture"]);
+    expect(popup).toContain("{ ssr: false }");
+    for (const file of embed) {
+      expect(file.body, file.path).not.toMatch(/\bcreateSession\(|PulseChallenge|relay-challenge/);
       expect(file.body, file.path).not.toContain("pairedVerify");
-      for (const specifier of [...staticImports(file.body), ...dynamicImports(file.body)]) {
+      for (const specifier of staticImports(file.body)) {
         expect(specifier, file.path).not.toMatch(
           /paired-challenge|paired-capture|server\/paired-verify|verify-wallet-connected/,
         );
@@ -137,6 +136,22 @@ describe("paired verify boundary", () => {
     }
   });
 
+  it("keeps no single capture anywhere on the site", () => {
+    const paths = FILES.map((file) => file.path);
+    for (const gone of [
+      "components/verify/pulse-challenge.tsx",
+      "lib/relay-challenge.ts",
+      "lib/pulse-session.ts",
+      "app/api/relay-challenge/route.ts",
+      "app/challenge/route.ts",
+      "app/validate-features/route.ts",
+    ]) {
+      expect(paths).not.toContain(gone);
+    }
+    for (const file of FILES) {
+      expect(file.body, file.path).not.toMatch(/\bcreateSession\(|bindValidationChallenge/);
+    }
+  });
   it("defaults the flag to off", () => {
     vi.stubEnv("ENTROS_PAIRED_VERIFY", "");
     expect(pairedVerifyEnabled()).toBe(false);
@@ -155,9 +170,12 @@ describe("paired verify boundary", () => {
     expect(source("components/sections/verify-flow.tsx")).not.toContain(
       "pairedVerify",
     );
-    expect(source("components/sections/verify-wallet-connected.tsx")).toContain(
-      "const pairedActive: boolean = true",
-    );
+    // The single-capture path is gone from the host, so nothing there can
+    // start it.
+    const host = source("components/sections/verify-wallet-connected.tsx");
+    expect(host).not.toContain("pairedActive");
+    expect(host).not.toContain("PulseChallenge");
+    expect(host).not.toContain("fetchChallengeViaProxy");
     expect(source("app/paired/commit/route.ts")).toContain(
       "pairedVerifyEnabled()",
     );

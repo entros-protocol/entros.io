@@ -4,14 +4,14 @@ const openSource = [
   "Client SDK (pulse-sdk on npm)",
   "Executor node",
   "Website and documentation",
-  "Security program page, public documentation, and scoped campaign results",
+  "Security program page and scoped campaign results",
   "Baseline adversarial testing (script-kiddie tier in pulse-sdk)",
 ];
 
 const privateComponents = [
-  "Server-side validation service (entros-validation): check thresholds and parameter values",
+  "Server-side validation service (entros-validation): thresholds and parameter values",
   "Red-team harness (entros-redteam): attack code, per-attempt telemetry, captured baseline fixtures",
-  "Pre-disclosure vulnerability reports (per standard responsible-disclosure practice)",
+  "Pre-disclosure vulnerability reports (standard practice)",
 ];
 
 /**
@@ -23,11 +23,7 @@ export function OpenSourcePosture() {
   return (
     <section id="open-source" className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // OPEN SOURCE
-        </span>
-
-        <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           What we open-source,
           and why<span className="text-cyan">.</span>
         </h2>
@@ -76,8 +72,8 @@ export function OpenSourcePosture() {
         <p className="mt-12 max-w-3xl text-sm leading-relaxed text-foreground/55">
           On-chain transitions, cryptographic checks, and client computations
           are public. The private service decides whether submitted evidence
-          satisfies the current acceptance policy. Its operational detectors
-          and thresholds remain private to limit directed calibration.
+          satisfies the acceptance policy. Its detectors and thresholds stay
+          private to limit directed calibration.
         </p>
       </div>
     </section>

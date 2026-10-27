@@ -211,13 +211,9 @@ export default function BadgeDemo() {
           a profile-list mockup showing the badge in real context. */}
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-20 md:pt-40 md:pb-28">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // ENTROS BADGE
-          </span>
-
-          <div className="mt-8 grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-7">
-              <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+              <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
                 Trust<span className="text-cyan">,</span>
                 <br />
                 on display<span className="text-cyan">.</span>
@@ -234,7 +230,7 @@ export default function BadgeDemo() {
                   href="/integrate"
                   className="
                     group inline-flex items-center justify-center gap-2
-                    rounded-full bg-foreground px-6 py-3
+                    bg-foreground px-6 py-3
                     text-sm font-medium text-background
                     transition-colors hover:bg-foreground/90
                   "
@@ -246,7 +242,7 @@ export default function BadgeDemo() {
                   href="/verify"
                   className="
                     group inline-flex items-center justify-center gap-2
-                    rounded-full border border-foreground/20 px-6 py-3
+                    border border-foreground/20 px-6 py-3
                     text-sm font-medium text-foreground
                     transition-colors hover:border-foreground/40 hover:bg-foreground/5
                   "
@@ -261,11 +257,7 @@ export default function BadgeDemo() {
             <div className="lg:col-span-5">
               <div className="relative rounded-2xl bg-foreground/[0.06] p-6 md:p-8">
 
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                  // PROFILES
-                </p>
-
-                <div className="mt-8 space-y-6">
+                <div className="space-y-6">
                   {[
                     { handle: "anatoly.sol", score: "1,247", state: "verified", pulse: true },
                     { handle: "lily.sol", score: "482", state: "verified", pulse: false },
@@ -317,11 +309,7 @@ export default function BadgeDemo() {
       {/* Live preview */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // LIVE PREVIEW
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Try it now<span className="text-cyan">.</span>
           </h2>
 
@@ -332,9 +320,6 @@ export default function BadgeDemo() {
 
           <div className="mt-12 border border-border p-6 md:p-8">
             <div className="flex items-center justify-between">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                // INPUT
-              </p>
               <div className="flex items-center gap-2">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-solana-green/60" />
@@ -390,13 +375,9 @@ export default function BadgeDemo() {
       {/* Usage */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // USAGE
-          </span>
-
-          <div className="mt-6 grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
-              <h2 className="font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+              <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
                 Import<span className="text-cyan">.</span> Render
                 <span className="text-cyan">.</span>
               </h2>
@@ -418,11 +399,7 @@ export default function BadgeDemo() {
       {/* Component source */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // COMPONENT SOURCE
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Copy<span className="text-cyan">.</span> Paste
             <span className="text-cyan">.</span> Ship
             <span className="text-cyan">.</span>
@@ -454,7 +431,7 @@ export default function BadgeDemo() {
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             One component<span className="text-cyan">.</span>
             <br />
             Every profile<span className="text-cyan">.</span>
@@ -464,7 +441,7 @@ export default function BadgeDemo() {
               href="/integrate"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -476,7 +453,7 @@ export default function BadgeDemo() {
               href="/gate-demo"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

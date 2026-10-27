@@ -123,11 +123,7 @@ export function DashboardHistory() {
   return (
     <section>
       <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-        <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-          // VERIFICATION HISTORY
-        </span>
-
-        <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+        <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Every session on-chain<span className="text-cyan">.</span>
         </h2>
 

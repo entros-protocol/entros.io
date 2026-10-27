@@ -32,17 +32,16 @@ export default function GlobalError({
           <div className="max-w-md space-y-6 text-center">
             <AlertCircle className="mx-auto h-12 w-12 text-danger" strokeWidth={1.5} />
             <div>
-              <h1 className="font-sans text-2xl font-semibold">
+              <h1 className="font-sans text-2xl font-normal">
                 Something unexpected happened
               </h1>
               <p className="mt-2 text-sm text-muted">
-                We hit an unexpected error. Please reload the page, or contact
-                support if this persists.
+                The page hit an error. Reload it to try again.
               </p>
             </div>
             <button
               onClick={() => reset()}
-              className="rounded-full border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan transition-colors hover:bg-cyan/20"
+              className="border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan transition-colors hover:bg-cyan/20"
             >
               Reload
             </button>

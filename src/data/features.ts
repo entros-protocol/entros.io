@@ -5,24 +5,24 @@ export const features: Feature[] = [
     icon: "pulse",
     title: "The Pulse",
     description:
-      "Voice, motion, and touch are captured during one session. The flow generates a fresh random challenge each time.",
+      "Say one word and trace one short path, three rounds in a row, each with a fresh challenge.",
     benefit:
-      "Raw motion and full-resolution touch stay on the device. The validation path receives derived features, phrase audio, timing summaries, and a coarse curve outline.",
+      "Raw motion and touch stay on your device. The service receives derived features, your spoken words for transcription and a coarse path outline.",
   },
   {
     icon: "proof",
     title: "The Proof",
     description:
-      "A ZK proof that two committed fingerprints satisfy the configured Hamming-distance bounds.",
+      "A ZK proof that two committed fingerprints sit within the Hamming-distance bounds.",
     benefit:
-      "Groth16 proof with minimum distance constraint blocks perfect replay attacks.",
+      "A minimum-distance floor in the Groth16 circuit rejects an exact replay.",
   },
   {
     icon: "anchor",
     title: "The Anchor",
     description:
-      "A non-transferable Solana token tied to your wallet. Trust Score grows with consistent re-verification over time.",
+      "A non-transferable token on your wallet. Its Trust Score grows as you re-verify across separate weeks.",
     benefit:
-      "Weekly verification span and account age contribute to the on-chain score.",
+      "Active weeks, recency and account age set the on-chain score.",
   },
 ];

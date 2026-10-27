@@ -13,19 +13,17 @@ export function HeroSection() {
     <section className="relative mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pt-28 pb-0 md:pt-32 lg:min-h-[calc(100vh-4rem)] lg:pt-28">
       {/* Copy + CTAs */}
       <div className="relative z-10 flex max-w-2xl flex-col lg:max-w-5xl">
-        {/* The headline measures 868px set on one line at lg's 72px, so the
-            column opens up at lg to carry it. Below that the break stays:
-            md's 60px still needs 723px against a 676px column. */}
-        <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-          The temporal{" "}
+        {/* At lg the column opens up and the headline wraps on its own.
+            Below lg the break keeps "Private human" together on line one. */}
+        <h1 className="font-display text-4xl font-normal leading-[1.04] tracking-[-0.02em] text-foreground md:text-5xl lg:text-6xl">
+          Private human{" "}
           <br className="lg:hidden" />
-          identity layer
+          verification
           <span className="text-cyan">.</span>
         </h1>
 
         <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg lg:max-w-2xl">
-          Behavioral ZK-proofs for humans. Owner-signed permits for the agents
-          they run. On-device and Solana-native, portable across every dApp.
+          Give your wallet a verified status that any Solana app can check.
         </p>
 
         <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -34,7 +32,7 @@ export function HeroSection() {
             href="/verify"
             className="
               group inline-flex items-center justify-center gap-2
-              rounded-full bg-foreground px-6 py-3
+              bg-foreground px-6 py-3
               text-sm font-medium text-background
               transition-colors hover:bg-foreground/90
             "
@@ -48,7 +46,7 @@ export function HeroSection() {
             href="/integrate"
             className="
               group inline-flex items-center justify-center gap-2
-              rounded-full border border-foreground/20 px-6 py-3
+              border border-foreground/20 px-6 py-3
               text-sm font-medium text-foreground
               transition-colors hover:border-foreground/40 hover:bg-foreground/5
             "

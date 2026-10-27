@@ -29,7 +29,7 @@ export default function Token() {
               runs ~6.29x the font size and the column is `100vw - 92px`,
               which is what the slope solves for. It reaches the full 3rem
               by ~400px and never exceeds it. md and up are untouched. */}
-          <h1 className="font-display text-[clamp(2rem,calc(15.2vw_-_14px),3rem)] font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-[clamp(2rem,calc(15.2vw_-_14px),3rem)] font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
             The economic{" "}
             <br className="md:hidden" />
             layer{" "}
@@ -62,7 +62,7 @@ export default function Token() {
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             $ENTROS
             <br />
             Built to secure human verification<span className="text-cyan">.</span>
@@ -72,7 +72,7 @@ export default function Token() {
               href="/verify"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -84,7 +84,7 @@ export default function Token() {
               href="/stats"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

@@ -261,27 +261,15 @@ function DefaultFallback({
   minTrustScore: number;
   verifyHref: string;
 }) {
-  const statusLabel =
-    state.status === "disconnected"
-      ? "WALLET"
-      : state.status === "no-identity"
-        ? "UNVERIFIED"
-        : "BELOW THRESHOLD";
-
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-          // {statusLabel}
+      {state.status === "below-threshold" && (
+        <p className="mb-8 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+          {state.trustScore} &lt; {minTrustScore}
         </p>
-        {state.status === "below-threshold" && (
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-            {state.trustScore} &lt; {minTrustScore}
-          </span>
-        )}
-      </div>
+      )}
 
-      <div className="mt-8 flex flex-col items-start gap-6">
+      <div className="flex flex-col items-start gap-6">
         {state.status === "disconnected" ? (
           <Wallet className="h-7 w-7 text-cyan/80" strokeWidth={1.5} />
         ) : (
@@ -369,13 +357,9 @@ export default function GateDemo() {
           two stacked state cards showing the gate's branching output. */}
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-20 md:pt-40 md:pb-28">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // ENTROS GATE
-          </span>
-
-          <div className="mt-8 grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-7">
-              <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+              <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
                 Trust<span className="text-cyan">,</span>
                 <br />
                 as a gate<span className="text-cyan">.</span>
@@ -393,7 +377,7 @@ export default function GateDemo() {
                   href="/integrate"
                   className="
                     group inline-flex items-center justify-center gap-2
-                    rounded-full bg-foreground px-6 py-3
+                    bg-foreground px-6 py-3
                     text-sm font-medium text-background
                     transition-colors hover:bg-foreground/90
                   "
@@ -405,7 +389,7 @@ export default function GateDemo() {
                   href="/verify"
                   className="
                     group inline-flex items-center justify-center gap-2
-                    rounded-full border border-foreground/20 px-6 py-3
+                    border border-foreground/20 px-6 py-3
                     text-sm font-medium text-foreground
                     transition-colors hover:border-foreground/40 hover:bg-foreground/5
                   "
@@ -422,9 +406,6 @@ export default function GateDemo() {
                 {/* PASS state */}
                 <div className="relative border border-cyan/40 bg-cyan/[0.03] p-6 md:p-7">
                   <div className="flex items-center justify-between">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/80">
-                      // PASS
-                    </p>
                     <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/70">
                       482 ≥ 100
                     </span>
@@ -443,9 +424,6 @@ export default function GateDemo() {
                 {/* BLOCK state */}
                 <div className="relative border border-border p-6 md:p-7">
                   <div className="flex items-center justify-between">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                      // BLOCK
-                    </p>
                     <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
                       0 &lt; 100
                     </span>
@@ -471,11 +449,7 @@ export default function GateDemo() {
       {/* Live preview */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // LIVE PREVIEW
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Try it now<span className="text-cyan">.</span>
           </h2>
 
@@ -496,9 +470,6 @@ export default function GateDemo() {
 
           <div className="mt-8 border border-border p-6 md:p-8">
             <div className="flex items-center justify-between">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-                // GATE
-              </p>
               <div className="flex items-center gap-2">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan/60" />
@@ -563,13 +534,9 @@ export default function GateDemo() {
       {/* Usage */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // USAGE
-          </span>
-
-          <div className="mt-6 grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
-              <h2 className="font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+              <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
                 Wrap<span className="text-cyan">.</span> Set
                 <span className="text-cyan">.</span> Render
                 <span className="text-cyan">.</span>
@@ -592,13 +559,9 @@ export default function GateDemo() {
       {/* Custom fallback */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // CUSTOM FALLBACK
-          </span>
-
-          <div className="mt-6 grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
+          <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
-              <h2 className="font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+              <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
                 Override the prompt<span className="text-cyan">.</span>
               </h2>
               <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
@@ -619,11 +582,7 @@ export default function GateDemo() {
       {/* Component source */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40">
-            // COMPONENT SOURCE
-          </span>
-
-          <h2 className="mt-6 max-w-3xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Copy. Paste. Ship<span className="text-cyan">.</span>
           </h2>
 
@@ -660,7 +619,7 @@ export default function GateDemo() {
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-medium tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             One wrapper<span className="text-cyan">.</span>
             <br />
             Every gated route<span className="text-cyan">.</span>
@@ -670,7 +629,7 @@ export default function GateDemo() {
               href="/integrate"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full bg-foreground px-6 py-3
+                bg-foreground px-6 py-3
                 text-sm font-medium text-background
                 transition-colors hover:bg-foreground/90
               "
@@ -682,7 +641,7 @@ export default function GateDemo() {
               href="/badge-demo"
               className="
                 group inline-flex items-center justify-center gap-2
-                rounded-full border border-foreground/20 px-6 py-3
+                border border-foreground/20 px-6 py-3
                 text-sm font-medium text-foreground
                 transition-colors hover:border-foreground/40 hover:bg-foreground/5
               "

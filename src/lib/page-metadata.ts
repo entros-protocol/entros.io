@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OG_IMAGE_PATH, SITE_NAME, TWITTER_HANDLE } from "./site";
+import { CATEGORY_LINE, OG_IMAGE_PATH, SITE_NAME, TWITTER_HANDLE } from "./site";
 
 type PageMetadataOptions = {
   title: string;
@@ -26,13 +26,17 @@ export function pageMetadata({
   path,
 }: PageMetadataOptions): Metadata {
   const shareTitle = `${title} | ${SITE_NAME}`;
+  // Shared cards open with the category line so a link says what Entros is.
+  const socialDescription = description.startsWith(CATEGORY_LINE)
+    ? description
+    : `${CATEGORY_LINE} ${description}`;
   return {
     title,
     description,
     alternates: { canonical: path },
     openGraph: {
       title: shareTitle,
-      description,
+      description: socialDescription,
       url: path,
       siteName: SITE_NAME,
       type: "website",
@@ -48,7 +52,7 @@ export function pageMetadata({
     twitter: {
       card: "summary",
       title: shareTitle,
-      description,
+      description: socialDescription,
       site: TWITTER_HANDLE,
       creator: TWITTER_HANDLE,
       images: [OG_IMAGE_PATH],

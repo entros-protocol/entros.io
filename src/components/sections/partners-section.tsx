@@ -38,11 +38,8 @@ export function PartnersSection() {
                       className="rounded-full"
                     />
                   ) : (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border">
-                      <Icon
-                        className="h-4 w-4 text-foreground/50"
-                        strokeWidth={1.5}
-                      />
+                    <div className="flex h-7 w-7 items-center justify-center border border-border">
+                      <Icon className="h-4 w-4 text-foreground/60" />
                     </div>
                   )}
                   <h3 className="font-display text-base font-medium tracking-tight text-foreground">

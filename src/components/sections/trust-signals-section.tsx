@@ -25,7 +25,7 @@ export function TrustSignalsSection() {
             const content = (
               <>
                 <div className="flex items-start justify-between gap-4">
-                  <Icon className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                  <Icon className="h-10 w-10 text-foreground/80" />
                   <ArrowUpRight className="h-4 w-4 text-foreground/30 transition-colors group-hover:text-foreground" />
                 </div>
 

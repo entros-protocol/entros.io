@@ -26,16 +26,16 @@ export default function Technology() {
         <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 pt-28 pb-6 md:pt-36 md:pb-12 lg:min-h-[calc(100vh-4rem)] lg:flex-row lg:items-center lg:gap-12 lg:pt-24 lg:pb-24">
           <div className="relative z-10 flex flex-col lg:w-3/5 lg:max-w-3xl">
             <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-              From challenge
+              Three short rounds<span className="text-cyan">.</span>
               <br />
-              to on-chain proof<span className="text-cyan">.</span>
+              One verified wallet<span className="text-cyan">.</span>
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Your device captures each round, extracts features, and
-              generates the ZK proof. Raw motion and touch never leave it.
-              Phrase audio leaves for transcription, never stored. Solana
-              stores commitments, proofs, and protocol state.
+              Your device records each round, measures it and builds the
+              proof. Raw motion and touch never leave it. Your spoken words
+              leave for transcription and are never stored. Solana keeps the
+              proof result and your wallet&apos;s record.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -81,13 +81,8 @@ export default function Technology() {
       <PrivacySection />
       <SecurityModelSection />
       <VerificationModesSection />
-      <ResearchValidationSection />
-
-      {/* Calls to action, no closing headline. No border or top padding:
-          the research section's own bottom padding sets the gap, so these
-          read as the tail of that section rather than a separate band. */}
-      <section>
-        <div className="mx-auto max-w-7xl px-6 pb-24 md:pb-32">
+      <ResearchValidationSection
+        actions={
           <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-start">
             <Link
               href="/verify"
@@ -114,8 +109,8 @@ export default function Technology() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-        </div>
-      </section>
+        }
+      />
     </>
   );
 }

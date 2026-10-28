@@ -20,10 +20,9 @@ const tiers = [
 ];
 
 /**
- * Defense Layers—vertical tier stack. Each layer is a full-width row
- * with a left rail (tier label) and a right column (label + description).
- * The vertical hairline between rail and content visually connects the
- * tiers from top to bottom, suggesting "stacked defense in depth."
+ * Defense Layers: one row per tier across the full span. The tier rail,
+ * the title and the description each take a column, so the rows fill the
+ * width and the descriptions keep a readable measure.
  */
 export function DefenseLayers() {
   return (
@@ -42,30 +41,22 @@ export function DefenseLayers() {
           {tiers.map((tier, idx) => (
             <div
               key={tier.name}
-              className="grid grid-cols-1 gap-x-12 gap-y-4 border-b border-border py-10 md:grid-cols-[10rem_1fr] md:py-14"
+              className="grid grid-cols-1 gap-y-4 border-b border-border py-10 md:py-14 lg:grid-cols-12 lg:gap-x-16"
             >
-              {/* Mobile keeps the left rail / right column stacked. Desktop
-                  flattens via display:contents so all four leaves
-                  participate directly in the parent's 2x2 grid. That lets
-                  TIER N self-center vertically against the title row,
-                  putting the small label on the same horizontal axis as
-                  the larger display headline. */}
-              <div className="flex flex-col gap-3 md:contents">
-                <span className="font-mono text-xs leading-none tracking-[0.2em] text-cyan md:col-start-1 md:row-start-1 md:self-center">
+              <div className="flex items-baseline gap-4 lg:col-span-2 lg:flex-col lg:gap-3">
+                <span className="font-mono text-xs leading-none tracking-[0.2em] text-cyan">
                   {tier.name}
                 </span>
-                <span className="font-mono text-xs uppercase leading-none tracking-[0.15em] text-foreground/40 md:col-start-1 md:row-start-2">
+                <span className="font-mono text-xs uppercase leading-none tracking-[0.15em] text-foreground/40">
                   {String(idx).padStart(2, "0")} / {String(tiers.length - 1).padStart(2, "0")}
                 </span>
               </div>
-              <div className="flex flex-col gap-4 md:contents">
-                <h3 className="font-display text-xl font-medium leading-tight tracking-tight text-foreground md:col-start-2 md:row-start-1 md:text-2xl">
-                  {tier.label}
-                </h3>
-                <p className="max-w-3xl text-base leading-relaxed text-foreground/65 md:col-start-2 md:row-start-2">
-                  {tier.description}
-                </p>
-              </div>
+              <h3 className="font-display text-xl font-medium leading-tight tracking-tight text-foreground md:text-2xl lg:col-span-4">
+                {tier.label}
+              </h3>
+              <p className="text-base leading-relaxed text-foreground/65 lg:col-span-6">
+                {tier.description}
+              </p>
             </div>
           ))}
         </div>

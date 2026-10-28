@@ -131,7 +131,7 @@ export function NavDropdown({
             : "pointer-events-none opacity-0 duration-0"
         )}
       >
-        <div className="w-[340px] border border-border bg-surface p-1.5 shadow-2xl shadow-black/30">
+        <div className="w-[340px] border border-border bg-surface p-1.5 shadow-xl shadow-black/[0.06] dark:shadow-2xl dark:shadow-black/30">
           {items.map((item) => (
             <Link
               key={item.href}

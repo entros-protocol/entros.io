@@ -255,7 +255,7 @@ export default function BadgeDemo() {
 
             {/* Mock profile list—the badge in real UI context */}
             <div className="lg:col-span-5">
-              <div className="relative rounded-2xl bg-foreground/[0.06] p-6 md:p-8">
+              <div className="relative border border-panel-line bg-panel p-6 md:p-8">
 
                 <div className="space-y-6">
                   {[

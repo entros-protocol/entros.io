@@ -1,72 +1,79 @@
-import { AsciiSpiral } from "@/components/ui/ascii-spiral";
-
-/**
- * Temporal Consistency—the conceptual heart of Entros. The rotating
- * ascii disk and the copy read as one centered unit in the band above
- * the three phase cards, which sit in a hairline grid below.
- */
+import { AsciiHelix } from "@/components/ui/ascii-helix";
 
 const phases = [
   {
     day: "Day 1",
     title: "First verification",
     description:
-      "Three words, three short paths. The protocol checks the evidence and stores a commitment.",
+      "Say three words and trace three short paths. Your wallet receives its Entros Anchor.",
   },
   {
     day: "Day 7",
-    title: "Re-verification",
+    title: "Verify again",
     description:
-      "A new verification makes a new commitment. The ZK proof shows both open correctly and sit within the distance bounds.",
+      "The new session is compared with your last one. A zero-knowledge proof shows they match without revealing either.",
   },
   {
     day: "Day 30+",
-    title: "Trust compounds",
+    title: "Trust grows",
     description:
-      "Each pass extends the wallet's history. Trust Score counts active weeks, recency and account age.",
+      "Each return adds to your wallet's history. Trust Score counts the weeks you were active, how recently you verified and how long you have held the Anchor.",
   },
 ];
 
+const HELIX_COLS = 200;
+const HELIX_ROWS = 26;
+
+/**
+ * Temporal Consistency: the headline and its explanation side by side,
+ * then a twisting thread that runs over the three visits. Ticks drop from
+ * the thread to each card, so it reads as the history those visits build.
+ */
 export function TemporalConsistencySection() {
   return (
     <section className="border-t border-border">
-      <div className="mx-auto max-w-7xl px-6 pt-16 pb-24 md:pt-20 md:pb-32">
-        {/* `lg:justify-center` centers the spiral + copy pair as a unit on
-            the x axis; both children are content-sized so the pair balances
-            around the container's midpoint rather than hugging either rail. */}
-        {/* Side by side at every width. Below lg the spiral floats right,
-            so the copy runs down the left and wraps beside it, then reflows
-            to full width once it clears — keeping the ascii next to the text
-            without crushing the paragraph into a 20-character measure. At lg
-            the spiral moves to the left of the copy. `after:` is the clearfix
-            that makes this row contain the float; at lg the row is a flex
-            container, floats stop applying, and the pseudo-element has to
-            go or `gap-16` would count it as a third item. */}
-        <div className="after:table after:clear-both lg:flex lg:items-center lg:justify-center lg:gap-16 lg:after:hidden">
-          {/* Container dimensions track the spiral's rendered block at each
-              step of its size ladder (80 cols × 0.6em advance wide, 80 rows
-              × 1.5 line-height tall), so the row reserves its space before
-              the frame payload decodes. */}
-          <div className="relative float-right ml-5 flex h-[250px] w-[104px] items-center justify-center sm:ml-8 sm:h-[400px] sm:w-[170px] md:h-[440px] md:w-[200px] lg:float-none lg:ml-0 lg:h-[520px] lg:w-[280px] lg:shrink-0 xl:h-[560px]">
-            <AsciiSpiral className="text-[2.2px] opacity-95 sm:text-[3.5px] md:text-[4px] lg:text-[5px] xl:text-[5.5px]" />
-          </div>
+      <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-end lg:gap-16">
+          <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:col-span-6">
+            Come back, and your wallet builds a history
+            <span className="text-cyan">.</span>
+          </h2>
 
-          <div className="max-w-xl">
-            <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-              Continuity is a pattern<span className="text-cyan">.</span>
-            </h2>
+          <p className="text-base leading-relaxed text-foreground/65 md:text-lg lg:col-span-5 lg:col-start-8">
+            Each time you verify, a zero-knowledge proof shows you match
+            your last session without revealing either one. Your Trust
+            Score grows with the weeks you return.
+          </p>
+        </div>
 
-            <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
-              The circuit proves that the fingerprints from two sessions sit
-              within set distance bounds. Research tests whether that signal
-              holds across people and devices.
-            </p>
+        {/* Glyph size follows the viewport so the thread spans the content
+            width: HELIX_COLS glyphs at a 0.6em advance, capped at 11px. The box
+            height is the row count in em, reserved before the frames decode. */}
+        <div
+          className="relative mt-16 mb-10 md:mt-20"
+          style={{
+            fontSize: `min(calc((100vw - 7rem) / ${(HELIX_COLS * 0.6).toFixed(1)}), 11px)`,
+          }}
+        >
+          <div
+            className="flex items-center justify-center overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]"
+            style={{ height: `${HELIX_ROWS}em` }}
+          >
+            <AsciiHelix cols={HELIX_COLS} rows={HELIX_ROWS} className="text-[1em]" />
           </div>
         </div>
 
-        <div className="mt-20 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
+        <div className="relative grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
           {phases.map((phase) => (
-            <div key={phase.day} className="bg-background p-8">
+            <div key={phase.day} className="relative bg-background p-8">
+              <span
+                aria-hidden
+                className="absolute -top-10 left-1/2 hidden h-10 w-px bg-gradient-to-b from-transparent to-cyan/50 md:block"
+              />
+              <span
+                aria-hidden
+                className="absolute -top-[3px] left-1/2 hidden size-[5px] -translate-x-1/2 bg-cyan md:block"
+              />
               <span className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
                 {phase.day}
               </span>

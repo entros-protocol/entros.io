@@ -8,6 +8,7 @@ import { OpenSourcePosture } from "./sections/OpenSourcePosture";
 import { ResponsibleDisclosure } from "./sections/ResponsibleDisclosure";
 import { References } from "./sections/References";
 import { pageMetadata } from "@/lib/page-metadata";
+import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
   title: "Security Program",
@@ -16,22 +17,33 @@ export const metadata = pageMetadata({
   path: "/security",
 });
 
-const heroStats = [
-  { value: "17,000+", label: "Published attempts" },
-  { value: "T1–T4b", label: "Published campaign range" },
-  { value: "Open", label: "T5 status" },
-  { value: "Live", label: "Continuous testing" },
+type RungState = "published" | "open" | "planned";
+
+const ladder: { tier: string; state: RungState }[] = [
+  { tier: "T1", state: "published" },
+  { tier: "T2", state: "published" },
+  { tier: "T3", state: "published" },
+  { tier: "T4a", state: "published" },
+  { tier: "T4b", state: "published" },
+  { tier: "T5", state: "open" },
+  { tier: "T6", state: "planned" },
+  { tier: "T7", state: "planned" },
+  { tier: "T8", state: "planned" },
 ];
+
+const STATE_LABEL: Record<RungState, string> = {
+  published: "result published",
+  open: "testing now",
+  planned: "planned",
+};
 
 export default function Security() {
   return (
     <>
-      {/* Hero—asymmetric: text left (3/5), key-results stat panel right
-          (2/5). Distinct from the home (split with animation) and the
-          technology page (centered with diagram). The stats panel is the
-          visual element—numbers up front, no decorative art. */}
+      {/* Hero: copy left, the published attempt count and the campaign
+          ladder right. */}
       <section>
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-10">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-16">
           <div className="lg:col-span-5">
             <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
               Continuous adversarial
@@ -72,25 +84,61 @@ export default function Security() {
             </div>
           </div>
 
-          {/* Stat panel—2×2 hairline grid, doubles as the hero's visual element. */}
+          {/* Campaign ladder: one square per attack tier, filled where a
+              campaign result is published, outlined where testing is open,
+              hairline where it is planned. */}
           <div className="lg:col-span-4">
-            <div className="grid grid-cols-2 gap-px border border-border bg-border">
-              {heroStats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="flex flex-col justify-end bg-background p-7 md:p-10"
-                >
-                  <div className="font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                    {stat.value}
-                  </div>
-                  <p className="mt-3 font-mono text-xs uppercase tracking-[0.15em] text-foreground/50">
-                    {stat.label}
-                  </p>
-                </div>
+            <p className="font-display text-6xl font-normal tracking-[-0.02em] text-foreground md:text-7xl">
+              17,000<span className="text-cyan">+</span>
+            </p>
+            <p className="mt-3 text-sm text-foreground/60">
+              published attack attempts, T1 to T4b
+            </p>
+
+            <ol className="mt-12 grid grid-cols-9 gap-1.5 sm:gap-2">
+              {ladder.map((rung) => (
+                <li key={rung.tier} className="flex flex-col items-center gap-3">
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "relative block aspect-square w-full",
+                      rung.state === "published" && "bg-cyan",
+                      rung.state === "open" && "border border-cyan",
+                      rung.state === "planned" && "border border-foreground/20",
+                    )}
+                  >
+                    {rung.state === "open" && (
+                      <span className="absolute inset-[30%] animate-pulse bg-cyan/60 motion-reduce:animate-none" />
+                    )}
+                  </span>
+                  <span
+                    className={cn(
+                      "font-mono text-[10px] tracking-[0.05em] sm:text-[11px]",
+                      rung.state === "planned" ? "text-foreground/35" : "text-foreground/70",
+                    )}
+                  >
+                    {rung.tier}
+                  </span>
+                  <span className="sr-only">{STATE_LABEL[rung.state]}</span>
+                </li>
               ))}
-            </div>
-          </div>
-        </div>
+            </ol>
+
+            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs text-foreground/55">
+              <li className="inline-flex items-center gap-2">
+                <span aria-hidden className="size-2.5 bg-cyan" />
+                Published
+              </li>
+              <li className="inline-flex items-center gap-2">
+                <span aria-hidden className="size-2.5 border border-cyan" />
+                Testing now
+              </li>
+              <li className="inline-flex items-center gap-2">
+                <span aria-hidden className="size-2.5 border border-foreground/25" />
+                Planned
+              </li>
+            </ul>
+          </div>        </div>
       </section>
 
       <ThreatModel />

@@ -31,6 +31,8 @@
   --verification-surface-shadow: rgba(26, 26, 31, 0.06);
   --verification-accent-text: #007888;
   --verification-focus-ring: #007888;
+  --color-panel: #EEF1F3;
+  --color-panel-line: rgba(26, 26, 31, 0.07);
 }
 
 .dark {
@@ -56,6 +58,8 @@
   --verification-surface-shadow: rgba(0, 0, 0, 0.42);
   --verification-accent-text: #22d3ee;
   --verification-focus-ring: #22d3ee;
+  --color-panel: rgba(232, 230, 224, 0.06);
+  --color-panel-line: transparent;
 }
 
 /* ----------------------------------------------------------------
@@ -79,6 +83,8 @@
   --color-border: var(--color-border);
   --color-border-hover: var(--color-border-hover);
   --color-effect: var(--color-effect);
+  --color-panel: var(--color-panel);
+  --color-panel-line: var(--color-panel-line);
 }
 
 /* ----------------------------------------------------------------
@@ -159,6 +165,12 @@ body {
   box-shadow:
     inset 0 1px 0 var(--verification-surface-highlight),
     0 20px 56px var(--verification-surface-shadow);
+}
+
+/* Line glyphs keep one hairline weight at every rendered size.
+   vector-effect does not inherit, so it targets each shape. */
+.entros-glyph :is(path, rect, line, polyline, circle) {
+  vector-effect: non-scaling-stroke;
 }
 
 /* Minimal scrollbars for code blocks and overflow containers */
@@ -415,7 +427,7 @@ body {
 .wallet-adapter-modal-wrapper {
   background-color: var(--color-surface) !important;
   border: 1px solid var(--color-border) !important;
-  border-radius: 1rem !important;
+  border-radius: 0 !important;
 }
 
 .wallet-adapter-modal-title {
@@ -434,7 +446,7 @@ body {
 .wallet-adapter-dropdown-list {
   background-color: var(--color-surface) !important;
   border: 1px solid var(--color-border) !important;
-  border-radius: 0.75rem !important;
+  border-radius: 0 !important;
 }
 
 .wallet-adapter-dropdown-list-item {

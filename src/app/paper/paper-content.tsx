@@ -49,33 +49,33 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
       </div>
 
       {(meta.version || meta.original || meta.updated || meta.wordCount) && (
-        <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.15em]">
+        <div className="text-sm font-medium mt-6 flex flex-wrap items-center gap-x-6 gap-y-2">
           {meta.version && (
             <span className="text-foreground/40">
-              <span className="text-foreground/30">v</span>
+              <span className="text-foreground/55">v</span>
               {" "}
-              <span className="text-foreground/65">{meta.version}</span>
+              <span className="text-foreground/85">{meta.version}</span>
             </span>
           )}
           {meta.original && (
             <span className="text-foreground/40">
-              <span className="text-foreground/30">Original</span>
+              <span className="text-foreground/55">Original</span>
               {" "}
-              <span className="text-foreground/65">{meta.original}</span>
+              <span className="text-foreground/85">{meta.original}</span>
             </span>
           )}
           {meta.updated && (
             <span className="text-foreground/40">
-              <span className="text-foreground/30">Last Updated</span>
+              <span className="text-foreground/55">Last Updated</span>
               {" "}
-              <span className="text-foreground/65">{meta.updated}</span>
+              <span className="text-foreground/85">{meta.updated}</span>
             </span>
           )}
           {meta.wordCount && (
             <span className="text-foreground/40">
-              <span className="text-foreground/30">Length</span>
+              <span className="text-foreground/55">Length</span>
               {" "}
-              <span className="text-foreground/65">{meta.wordCount}</span>
+              <span className="text-foreground/85">{meta.wordCount}</span>
             </span>
           )}
         </div>
@@ -113,12 +113,12 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
               </p>
             ),
             ul: ({ children }) => (
-              <ul className="mt-6 list-disc space-y-2 pl-6 text-base text-foreground/75 marker:text-foreground/30 md:text-[17px]">
+              <ul className="mt-6 list-disc space-y-2 pl-6 text-base text-foreground/75 marker:text-foreground/55 md:text-[17px]">
                 {children}
               </ul>
             ),
             ol: ({ children }) => (
-              <ol className="mt-6 list-decimal space-y-2 pl-6 text-base text-foreground/75 marker:font-mono marker:text-foreground/30 md:text-[17px]">
+              <ol className="mt-6 list-decimal space-y-2 pl-6 text-base text-foreground/75 marker:font-mono marker:text-foreground/55 md:text-[17px]">
                 {children}
               </ol>
             ),
@@ -132,22 +132,26 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
             ),
             code: ({ children, className }) => {
               const isBlock = className?.startsWith("language-");
-              if (isBlock) {
-                return (
-                  <code className="block overflow-x-auto border border-panel-line bg-panel p-5 font-mono text-sm leading-relaxed text-foreground/80">
-                    {children}
-                  </code>
-                );
-              }
+              if (isBlock) return <code>{children}</code>;
               return (
-                <code className="border border-border bg-surface px-1.5 py-0.5 font-mono text-[13px] text-cyan">
+                <code className="border border-border bg-surface px-1.5 py-0.5 font-mono text-[13px] text-cyan [overflow-wrap:anywhere]">
                   {children}
                 </code>
               );
             },
-            pre: ({ children }) => <pre className="mt-6">{children}</pre>,
+            // The block box lives on <pre> so fences without a language,
+            // which arrive as inline-styled code, scroll instead of running
+            // past a phone screen.
+            pre: ({ children }) => (
+              <pre
+                tabIndex={0}
+                className="mt-6 overflow-x-auto border border-panel-line bg-panel p-5 font-mono text-sm leading-relaxed text-foreground/80 [&>code]:border-0 [&>code]:bg-transparent [&>code]:p-0 [&>code]:text-[length:inherit] [&>code]:text-inherit"
+              >
+                {children}
+              </pre>
+            ),
             table: ({ children }) => (
-              <div className="mt-8 overflow-x-auto border border-border">
+              <div tabIndex={0} className="mt-8 overflow-x-auto border border-border">
                 <table className="w-full border-collapse text-sm">
                   {children}
                 </table>
@@ -159,7 +163,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
               </thead>
             ),
             th: ({ children }) => (
-              <th className="px-5 py-4 text-left font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+              <th className="text-sm font-medium px-5 py-4 text-left text-foreground/60">
                 {children}
               </th>
             ),
@@ -171,7 +175,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
             a: ({ href, children }) => (
               <a
                 href={href}
-                className="text-cyan underline underline-offset-[3px] decoration-cyan/30 transition-colors hover:text-foreground hover:decoration-foreground/40"
+                className="text-cyan underline underline-offset-[3px] decoration-cyan/30 transition-colors [overflow-wrap:anywhere] hover:text-foreground hover:decoration-foreground/40"
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -14,7 +14,7 @@
  *   - @solana/wallet-adapter-react (useWallet, useConnection)
  *   - @solana/wallet-adapter-react-ui (WalletMultiButton, the universal Solana wallet UI)
  *   - @entros/pulse-sdk (PROGRAM_IDS constant)
- *   - lucide-react (icons)
+ *   - lucide-react (loading spinner)
  *   - Tailwind CSS for styling (no custom design system imports)
  *
  * Drop into any Next.js + Tailwind project with Solana wallet adapter set up.
@@ -47,7 +47,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { PROGRAM_IDS } from "@entros/pulse-sdk";
-import { Loader2, ShieldAlert, Wallet } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 /**
  * Smallest account this component can read. `last_verification_timestamp` ends
@@ -219,8 +219,51 @@ type FallbackState =
   | { status: "no-identity" }
   | { status: "below-threshold"; trustScore: number };
 
-function DefaultFallback({
-  state,
+/**
+ * Line marks for the three fallback states, drawn inline so the gate ships
+ * without an icon set: a wallet to connect, an Anchor to earn, and a gauge
+ * that reads below the floor. The dot carries the accent colour.
+ */
+function StateMark({ status }: { status: FallbackState["status"] }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="square"
+      strokeLinejoin="miter"
+      className="h-8 w-8 text-foreground/80"
+      aria-hidden="true"
+    >
+      {status === "disconnected" && (
+        <>
+          <path d="M3.5 7.5h17v12h-17z" />
+          <path d="M3.5 7.5l12-3.5v3.5" />
+          <path d="M14.5 11.5h6v4h-6z" />
+          <circle cx={17} cy={13.5} r={1.1} stroke="none" className="fill-cyan" />
+        </>
+      )}
+      {status === "no-identity" && (
+        <>
+          <rect x="5" y="3.5" width="14" height="12" />
+          <path d="M8.5 15.5v5l3.5-2 3.5 2v-5" />
+          <circle cx={12} cy={9.5} r={1.4} stroke="none" className="fill-cyan" />
+        </>
+      )}
+      {status === "below-threshold" && (
+        <>
+          <path d="M3.5 17.5a8.5 8.5 0 0 1 17 0" />
+          <path d="M12 17.5l-4-6" />
+          <path d="M3.5 20.5h17" />
+          <circle cx={12} cy={17.5} r={1.4} stroke="none" className="fill-cyan" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function DefaultFallback({  state,
   minTrustScore,
   verifyHref,
 }: {
@@ -231,17 +274,13 @@ function DefaultFallback({
   return (
     <div className="w-full">
       {state.status === "below-threshold" && (
-        <p className="mb-8 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+        <p className="text-sm font-medium mb-8 text-foreground/60">
           {state.trustScore} &lt; {minTrustScore}
         </p>
       )}
 
       <div className="flex flex-col items-start gap-6">
-        {state.status === "disconnected" ? (
-          <Wallet className="h-7 w-7 text-cyan/80" strokeWidth={1.5} />
-        ) : (
-          <ShieldAlert className="h-7 w-7 text-cyan/80" strokeWidth={1.5} />
-        )}
+        <StateMark status={state.status} />
 
         {state.status === "disconnected" && (
           <>
@@ -271,7 +310,7 @@ function DefaultFallback({
             </div>
             <Link
               href={verifyHref}
-              className="inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
+              className="text-sm font-medium inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
             >
               Verify now
             </Link>
@@ -294,7 +333,7 @@ function DefaultFallback({
             </div>
             <Link
               href={verifyHref}
-              className="inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
+              className="text-sm font-medium inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
             >
               Re-verify
             </Link>

@@ -124,7 +124,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-xs transition-colors",
+        "inline-flex items-center gap-2 border px-3 py-1.5 font-mono text-xs transition-colors",
         invalid
           ? "border-danger/30 bg-danger/10 text-danger"
           : loading
@@ -137,7 +137,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
     >
       {invalid ? (
         <>
-          <span className="h-2 w-2 rounded-full bg-danger/50" />
+          <span className="h-1.5 w-1.5 bg-danger/60" />
           <span>Invalid Address</span>
         </>
       ) : loading ? (
@@ -147,7 +147,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
         </>
       ) : trustScore !== null ? (
         <>
-          <span className="h-2 w-2 rounded-full bg-cyan animate-pulse" />
+          <span className="h-1.5 w-1.5 bg-cyan" />
           <span>
             Verified <span className="text-cyan/50">·</span> Trust:{" "}
             <span className="font-bold">{trustScore}</span>
@@ -162,7 +162,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
         </>
       ) : (
         <>
-          <span className="h-2 w-2 rounded-full bg-danger/50" />
+          <span className="h-1.5 w-1.5 bg-danger/60" />
           <span>Not Verified</span>
         </>
       )}

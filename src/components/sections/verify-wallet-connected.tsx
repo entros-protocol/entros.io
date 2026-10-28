@@ -198,7 +198,7 @@ function SigningDiagnosticPanel({
     <section className="mx-auto w-full max-w-xl border border-cyan/30 bg-cyan/5 p-5 text-left">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
+          <p className="text-sm font-medium text-foreground">
             Local transaction diagnostic
           </p>
           <p className="mt-2 text-sm text-foreground/70">
@@ -209,7 +209,7 @@ function SigningDiagnosticPanel({
               : `${errorCount} RPC result${errorCount === 1 ? " contains" : "s contain"} an error.`}
           </p>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/45">
+        <span className="text-sm font-medium text-foreground/60">
           Report v{report.reportVersion}
         </span>
       </div>
@@ -220,7 +220,7 @@ function SigningDiagnosticPanel({
             key={`${simulation.endpoint}-${simulation.variant}`}
             className="border border-foreground/10 bg-background/50 p-3"
           >
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-foreground/45">
+            <p className="text-sm font-medium text-foreground/60">
               {simulation.endpoint} · {simulation.variant}
             </p>
             <div className="mt-2 flex items-center justify-between gap-3 text-xs">

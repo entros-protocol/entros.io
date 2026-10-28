@@ -24,7 +24,7 @@ function failure(reason: string): string {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">{label}</p>
+      <p className="text-sm font-medium text-foreground/60">{label}</p>
       <div className="mt-2 text-sm text-foreground/85">{children}</div>
     </div>
   );

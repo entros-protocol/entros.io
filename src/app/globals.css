@@ -167,10 +167,54 @@ body {
     0 20px 56px var(--verification-surface-shadow);
 }
 
+/* ----------------------------------------------------------------
+   Contrast floor for text tints (WCAG 2.2 AA, 4.5:1 for body text).
+   Measured against the page, surface and panel colours: light mode
+   passes from 65% foreground, dark mode from 55%. Fainter tints in the
+   markup render at that floor. `:where()` keeps the specificity of a
+   plain utility, and the utilities layer keeps the rule below hover and
+   focus variants, so `hover:text-foreground` still wins. The inverted
+   navbar and mobile menu use `text-background/*` on a foreground fill,
+   which behaves like the opposite theme.
+   ---------------------------------------------------------------- */
+@layer utilities {
+  :where(:root:not(.dark))
+    :is(.text-foreground\/25, .text-foreground\/30, .text-foreground\/35,
+      .text-foreground\/40, .text-foreground\/45, .text-foreground\/50,
+      .text-foreground\/55, .text-foreground\/60) {
+    color: color-mix(in oklab, var(--color-foreground) 65%, transparent);
+  }
+  :where(.dark)
+    :is(.text-foreground\/25, .text-foreground\/30, .text-foreground\/35,
+      .text-foreground\/40, .text-foreground\/45, .text-foreground\/50) {
+    color: color-mix(in oklab, var(--color-foreground) 55%, transparent);
+  }
+  /* Brand cyan reads at 2.4 to 2.6:1 on the light page. Readable cyan
+     text takes the deeper teal the verification console already uses
+     (about 4.6 to 5:1). Fills, strokes and aria-hidden ascii art keep
+     the brand cyan. */
+  :where(:root:not(.dark))
+    :is(.text-cyan, .text-cyan\/90, .text-cyan\/80, .text-cyan\/75,
+      .text-cyan\/70, .text-cyan\/60):where(:not([aria-hidden="true"])) {
+    color: var(--verification-accent-text);
+  }
+  :where(:root:not(.dark)) .text-background\/40 {
+    color: color-mix(in oklab, var(--color-background) 55%, transparent);
+  }
+  :where(.dark) .text-background\/40 {
+    color: color-mix(in oklab, var(--color-background) 65%, transparent);
+  }
+}
 /* Line glyphs keep one hairline weight at every rendered size.
    vector-effect does not inherit, so it targets each shape. */
 .entros-glyph :is(path, rect, line, polyline, circle) {
   vector-effect: non-scaling-stroke;
+}
+
+/* Scroll containers take keyboard focus so arrow keys can scroll them. */
+[tabindex="0"]:is(div, pre, code):focus-visible {
+  outline: 1px solid var(--color-cyan);
+  outline-offset: 2px;
 }
 
 /* Minimal scrollbars for code blocks and overflow containers */
@@ -360,7 +404,20 @@ body {
 .vc-fade { animation: vc-fade 500ms cubic-bezier(0.23, 1, 0.32, 1) 300ms both; }
 @keyframes vc-fade { from { opacity: 0; } }
 
+/* A highlight travelling a diagram's hairline, start to end. */
+.flow-pulse {
+  transform: translateX(-100%);
+  animation: flow-pulse 2.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes flow-pulse {
+  0% { transform: translateX(-100%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(0); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .flow-pulse { animation: none; transform: none; opacity: 0.6; }
   .vc-shimmer, .vc-target, .vc-sweep, .vc-orbit, .vc-tumble,
   .vc-enter, .vc-reveal, .vc-slide, .vc-pop, .vc-fade, .vc-close-timer { animation: none; }
   .vc-shimmer { transform: none; opacity: 0.4; }
@@ -396,6 +453,15 @@ body {
 #nd-docs-layout :has(> [data-theme-toggle]),
 [role="dialog"] :is(button, a[href], input) {
   border-radius: 0;
+}
+
+/* Two docs greys sit just under 4.5:1: the search button's placeholder and
+   the light code theme's comment colour. */
+[data-search-full] {
+  color: color-mix(in oklab, var(--color-foreground) 70%, transparent);
+}
+:root:not(.dark) #nd-docs-layout pre [style*="--shiki-light:#66707B"] {
+  color: #57606a;
 }
 
 /* The connect control inside the verification console matches its
@@ -519,6 +585,14 @@ section > .mx-auto.max-w-7xl > .border-b,
 section > .mx-auto.max-w-7xl > div:not(.border) > .border-y {
   margin-left: -1.5rem;
   margin-right: -1.5rem;
+}
+
+/* A grid that sits flush against a panel on its left bleeds to the right
+   rail only, so its rules end on the panel's edge instead of under it. */
+@media (min-width: 64rem) {
+  section > .mx-auto.max-w-7xl > div:not(.border) > .border-y.bleed-right {
+    margin-left: 0;
+  }
 }
 
 /* Nav clearance: the bar floats instead of occupying a fixed 64px row. */

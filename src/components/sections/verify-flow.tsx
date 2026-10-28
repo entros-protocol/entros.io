@@ -380,7 +380,7 @@ export function VerifyFlow() {
       {STUDY_INTAKE_OPEN && study.decision === "joined" && study.progress && (
         <div className="space-y-2 text-center" aria-live="polite">
           {!study.tokenError && (
-            <p className="font-mono text-xs uppercase tracking-[0.14em] text-foreground/45">
+            <p className="text-sm font-medium text-foreground/60">
               {study.tokenPending
                 ? "Preparing the next research trial"
                 : studyProgressMessage(

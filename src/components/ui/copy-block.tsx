@@ -20,11 +20,11 @@ export function CopyBlock({ label, text }: { label: string; text: string }) {
   return (
     <div>
       <div className="flex items-center justify-between gap-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">{label}</p>
+        <p className="text-sm font-medium text-foreground/60">{label}</p>
         <button
           type="button"
           onClick={copy}
-          className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-cyan transition-colors hover:text-foreground"
+          className="text-sm font-medium inline-flex items-center gap-1.5 text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan"
         >
           {copied ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
           {copied ? "Copied" : "Copy"}

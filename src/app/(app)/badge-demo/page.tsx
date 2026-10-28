@@ -133,7 +133,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-xs transition-colors",
+        "inline-flex items-center gap-2 border px-3 py-1.5 font-mono text-xs transition-colors",
         invalid
           ? "border-danger/30 bg-danger/10 text-danger"
           : loading
@@ -146,7 +146,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
     >
       {invalid ? (
         <>
-          <span className="h-2 w-2 rounded-full bg-danger/50" />
+          <span className="h-1.5 w-1.5 bg-danger/60" />
           <span>Invalid Address</span>
         </>
       ) : loading ? (
@@ -156,7 +156,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
         </>
       ) : trustScore !== null ? (
         <>
-          <span className="h-2 w-2 rounded-full bg-cyan animate-pulse" />
+          <span className="h-1.5 w-1.5 bg-cyan" />
           <span>
             Verified <span className="text-cyan/50">·</span> Trust:{" "}
             <span className="font-bold">{trustScore}</span>
@@ -171,7 +171,7 @@ export function EntrosBadge({ walletAddress, connection, className }: EntrosBadg
         </>
       ) : (
         <>
-          <span className="h-2 w-2 rounded-full bg-danger/50" />
+          <span className="h-1.5 w-1.5 bg-danger/60" />
           <span>Not Verified</span>
         </>
       )}
@@ -259,41 +259,31 @@ export default function BadgeDemo() {
 
                 <div className="space-y-6">
                   {[
-                    { handle: "anatoly.sol", score: "1,247", state: "verified", pulse: true },
-                    { handle: "lily.sol", score: "482", state: "verified", pulse: false },
-                    { handle: "ada.sol", score: null, state: "loading", pulse: false },
-                    { handle: "0x4ku9.sol", score: null, state: "unverified", pulse: false },
+                    { handle: "anatoly.sol", score: "1,247", state: "verified" },
+                    { handle: "lily.sol", score: "482", state: "verified" },
+                    { handle: "ada.sol", score: null, state: "loading" },
+                    { handle: "0x4ku9.sol", score: null, state: "unverified" },
                   ].map((row) => (
                     <div key={row.handle} className="flex items-center gap-3">
-                      <div
-                        className={`h-8 w-8 shrink-0 rounded-full border ${
-                          row.state === "verified"
-                            ? "border-cyan/50 bg-cyan shadow-[0_0_12px_rgba(34,211,230,0.45)]"
-                            : "border-border bg-surface"
-                        }`}
-                      />
+                      <div className="h-8 w-8 shrink-0 border border-foreground/15 bg-background" />
                       <p className="flex-1 truncate font-mono text-sm text-foreground/85">
                         {row.handle}
                       </p>
                       {row.state === "verified" && (
-                        <span className="inline-flex items-center gap-2 rounded-full border border-cyan/30 bg-cyan/[0.05] px-3 py-1 font-mono text-[11px] text-cyan">
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full bg-cyan ${
-                              row.pulse ? "animate-pulse" : ""
-                            }`}
-                          />
+                        <span className="inline-flex items-center gap-2 border border-cyan/30 bg-cyan/10 px-3 py-1 font-mono text-xs text-cyan">
+                          <span className="h-1.5 w-1.5 bg-cyan" />
                           {row.score}
                         </span>
                       )}
                       {row.state === "loading" && (
-                        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-[11px] text-foreground/45">
-                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-foreground/40" />
+                        <span className="inline-flex items-center gap-2 border border-border bg-surface px-3 py-1 font-mono text-xs text-foreground/60">
+                          <span className="h-1.5 w-1.5 animate-pulse bg-foreground/40" />
                           …
                         </span>
                       )}
                       {row.state === "unverified" && (
-                        <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 font-mono text-[11px] text-foreground/35">
-                          <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
+                        <span className="inline-flex items-center gap-2 border border-border px-3 py-1 font-mono text-xs text-foreground/60">
+                          <span className="h-1.5 w-1.5 bg-foreground/30" />
                           —
                         </span>
                       )}
@@ -321,11 +311,8 @@ export default function BadgeDemo() {
           <div className="mt-12 border border-border p-6 md:p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-solana-green/60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-solana-green" />
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
+                <span className="text-sm font-medium text-foreground/60">
                   Devnet
                 </span>
               </div>
@@ -335,7 +322,7 @@ export default function BadgeDemo() {
               <div>
                 <label
                   htmlFor="wallet-input"
-                  className="mb-2 block font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40"
+                  className="text-sm font-medium mb-2 block text-foreground/60"
                 >
                   Wallet Address
                 </label>
@@ -354,14 +341,14 @@ export default function BadgeDemo() {
               </div>
 
               <div>
-                <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium mb-2 text-foreground/60">
                   Preview
                 </p>
                 <div className="flex min-h-[120px] items-center justify-center border border-border bg-surface p-6">
                   {isValidLength ? (
                     <EntrosBadge walletAddress={walletInput} connection={connection} />
                   ) : (
-                    <span className="font-mono text-xs uppercase tracking-[0.15em] text-foreground/35">
+                    <span className="text-sm font-medium text-foreground/60">
                       Enter a valid address
                     </span>
                   )}
@@ -419,9 +406,9 @@ export default function BadgeDemo() {
           <div className="relative mt-12">
             <button
               onClick={copySource}
-              className="absolute right-4 top-4 z-10 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40 transition-colors hover:text-cyan"
+              className="text-sm font-medium absolute right-4 top-4 z-10 text-foreground/60 transition-colors hover:text-cyan"
             >
-              {copied ? "COPIED" : "COPY"}
+              {copied ? "Copied" : "Copy"}
             </button>
             <CodeBlock code={COMPONENT_CODE} className="max-h-[600px] overflow-y-auto" />
           </div>

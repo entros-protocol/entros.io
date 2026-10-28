@@ -74,7 +74,7 @@ export function AgentBindingReview({ binding }: { binding: AgentWalletBindingReq
 
   return (
     <div className="verification-surface p-6 md:p-10">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">Bind agent wallet</p>
+      <p className="text-sm font-medium text-foreground/60">Bind agent wallet</p>
       <p className="mt-2 font-display text-2xl font-medium tracking-tight text-foreground">
         Let this key present permits for your agent
       </p>

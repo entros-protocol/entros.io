@@ -1,7 +1,7 @@
 /** Settlement snippet, sized to its longest line like the home page snippet. */
 export function AgentPermitSnippet() {
   return (
-    <div className="overflow-x-auto border border-panel-line bg-panel p-6 font-mono text-sm md:p-8">
+    <div tabIndex={0} className="overflow-x-auto border border-panel-line bg-panel p-6 font-mono text-sm md:p-8">
       <pre className="leading-relaxed text-foreground">
         <span className="text-cyan">{"import"}</span>
         {" { readAgentState } "}

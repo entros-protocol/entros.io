@@ -79,8 +79,9 @@ export function TokenLaunchCard() {
             rel="noopener noreferrer"
             className="
               group inline-flex items-center gap-1.5
-              font-mono text-xs uppercase tracking-[0.14em] text-cyan
-              transition-colors hover:text-foreground
+              text-sm font-medium text-foreground
+              underline decoration-cyan/60 underline-offset-4
+              transition-colors hover:decoration-cyan
             "
           >
             Token URL
@@ -90,7 +91,7 @@ export function TokenLaunchCard() {
             />
           </a>
         ) : (
-          <span className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em] text-cyan">
+          <span className="text-sm font-medium inline-flex items-center gap-1.5 text-foreground">
             Token URL
             <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
           </span>
@@ -101,7 +102,7 @@ export function TokenLaunchCard() {
           hairline, and inverts with the theme via bg-foreground. */}
       <div className="mt-6 flex h-[68px] items-stretch overflow-hidden border border-border bg-surface">
         <div className="flex min-w-0 flex-1 flex-col justify-center px-4 py-3 text-left sm:px-5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+          <span className="text-sm font-medium text-foreground/60">
             Contract address
           </span>
           <span

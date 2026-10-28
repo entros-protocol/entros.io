@@ -47,7 +47,7 @@ export function DefenseLayers() {
                 <span className="font-mono text-xs leading-none tracking-[0.2em] text-cyan">
                   {tier.name}
                 </span>
-                <span className="font-mono text-xs uppercase leading-none tracking-[0.15em] text-foreground/40">
+                <span className="text-sm font-medium leading-none text-foreground/60">
                   {String(idx).padStart(2, "0")} / {String(tiers.length - 1).padStart(2, "0")}
                 </span>
               </div>

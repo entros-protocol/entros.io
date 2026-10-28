@@ -57,7 +57,7 @@ export function ProtocolComponentsSection() {
                   <h3 className="mt-6 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl md:leading-[1.05]">
                     {component.title}
                   </h3>
-                  <p className="mt-2 font-mono text-xs uppercase tracking-[0.15em] text-cyan/80">
+                  <p className="text-sm font-medium mt-2 text-foreground">
                     {component.subtitle}
                   </p>
                   <p className="mt-5 text-base leading-relaxed text-foreground/65">
@@ -69,7 +69,7 @@ export function ProtocolComponentsSection() {
                         key={highlight}
                         className="flex items-start gap-2 text-sm text-foreground/55"
                       >
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-cyan" />
+                        <span className="mt-1.5 h-1 w-1 shrink-0 bg-cyan" />
                         {highlight}
                       </li>
                     ))}

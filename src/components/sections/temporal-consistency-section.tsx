@@ -74,7 +74,7 @@ export function TemporalConsistencySection() {
                 aria-hidden
                 className="absolute -top-[3px] left-1/2 hidden size-[5px] -translate-x-1/2 bg-cyan md:block"
               />
-              <span className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
+              <span className="text-sm font-medium text-foreground">
                 {phase.day}
               </span>
               <h3 className="mt-4 font-display text-lg font-medium tracking-tight text-foreground">

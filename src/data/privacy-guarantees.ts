@@ -3,38 +3,37 @@ import type { PrivacyGuarantee } from "./types";
 export const privacyGuarantees: PrivacyGuarantee[] = [
   {
     icon: "smartphone",
-    title: "What stays on your device",
+    title: "Done on your device",
     description:
-      "Sensor capture, feature extraction, hashing, and proof generation run locally. Raw motion and full-resolution touch never leave the device; the spoken phrase leaves for transcription, never stored.",
+      "Capture, measurement and the proof run in your browser. Raw motion and touch never leave it.",
   },
   {
     icon: "database",
-    title: "No raw biometric storage",
+    title: "Words never stored",
     description:
-      "The validation service processes phrase audio in memory and writes it to no log or store. The SDK keeps fingerprint, salt, commitment, and timestamp locally; wallet-connected flows can also hold that baseline in a wallet-keyed AES-256-GCM blob on-chain.",
+      "Your spoken words leave for transcription, stay in memory and are never written to a log or store.",
   },
   {
     icon: "file-lock",
-    title: "Minimal data transmission",
+    title: "Only what the check needs",
     description:
-      "The Pulse SDK sends the 308-feature summary, selected F0 and acceleration series, phrase audio, capture timing, client signals, a coarse curve outline, commitment data, and receipt intent to the validation path. The wallet flow submits commitments, proofs, public inputs, and encrypted baseline material on-chain when available.",
+      "The service receives signal summaries, your words and a rough outline of each path.",
   },
   {
     icon: "eye-off",
-    title: "No identity mapping",
-    description:
-      "The protocol is designed to prove humanness without identifying the person. It requires no name, email, document, face scan, or social account.",
+    title: "No identity",
+    description: "No name, email, document, face scan or social account.",
   },
   {
     icon: "lock",
-    title: "One-way commitment",
+    title: "A one-way record",
     description:
-      "Poseidon commits to the fingerprint and a large random salt. Preimage resistance and the hidden salt prevent direct recovery under the protocol's threat model.",
+      "On chain, a salted hash stands in for your fingerprint. The salt stays with you or is encrypted under your wallet's key.",
   },
   {
     icon: "shield",
-    title: "Data minimization by design",
+    title: "Apps read a result",
     description:
-      "The architecture limits raw-data movement and separates transient validation inputs from persistent state. Each deployer must still assess its own legal and regulatory obligations.",
+      "Apps read your Entros Anchor and Trust Score, never the data behind them.",
   },
 ];

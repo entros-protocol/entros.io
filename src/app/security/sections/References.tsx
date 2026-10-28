@@ -39,8 +39,7 @@ function RowBody({ label, host, external }: { label: string; host: string; exter
         aria-hidden="true"
         className="
           inline-flex h-9 w-9 items-center justify-center border border-border
-          text-foreground/60 transition-colors
-          group-hover:border-foreground group-hover:bg-foreground group-hover:text-background
+          text-foreground/60
         "
       >
         <Arrow className="h-4 w-4" strokeWidth={1.5} />
@@ -51,7 +50,7 @@ function RowBody({ label, host, external }: { label: string; host: string; exter
 
 /**
  * References: hairline-divided link rows. Each row names the destination
- * host and ends in a square arrow tile that fills on hover.
+ * host and ends in a square arrow tile.
  */
 export function References() {
   return (

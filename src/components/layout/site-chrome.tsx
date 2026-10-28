@@ -16,7 +16,9 @@ export function SiteChrome({
   const inDocs = pathname?.startsWith("/docs") ?? false;
   const inEmbed = pathname?.startsWith("/embed") ?? false;
 
-  if (inDocs || inEmbed) return <>{children}</>;
+  if (inEmbed) return <>{children}</>;
+  // The docs layout renders no landmark of its own.
+  if (inDocs) return <main>{children}</main>;
 
   return (
     <>

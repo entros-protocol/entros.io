@@ -35,8 +35,8 @@ export function OpenSourcePosture() {
 
         <div className="mt-16 grid grid-cols-1 gap-px border border-border bg-border lg:grid-cols-2">
           <div className="bg-background p-8 md:p-10">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
-              // OPEN—MIT LICENSED
+            <p className="text-sm font-medium text-foreground">
+              Open source, MIT licensed
             </p>
             <ul className="mt-8 space-y-4 border-t border-border pt-6">
               {openSource.map((item) => (
@@ -44,7 +44,7 @@ export function OpenSourcePosture() {
                   key={item}
                   className="flex items-start gap-3 text-sm leading-relaxed text-foreground/75"
                 >
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-cyan" />
+                  <span className="mt-1.5 h-1 w-1 shrink-0 bg-cyan" />
                   {item}
                 </li>
               ))}
@@ -52,8 +52,8 @@ export function OpenSourcePosture() {
           </div>
 
           <div className="bg-background p-8 md:p-10">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/50">
-              // PRIVATE—DEFENSE LAYER
+            <p className="text-sm font-medium text-foreground/65">
+              Kept private
             </p>
             <ul className="mt-8 space-y-4 border-t border-border pt-6">
               {privateComponents.map((item) => (
@@ -61,7 +61,7 @@ export function OpenSourcePosture() {
                   key={item}
                   className="flex items-start gap-3 text-sm leading-relaxed text-foreground/65"
                 >
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foreground/30" />
+                  <span className="mt-1.5 h-1 w-1 shrink-0 bg-foreground/30" />
                   {item}
                 </li>
               ))}

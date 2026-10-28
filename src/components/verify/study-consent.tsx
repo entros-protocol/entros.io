@@ -43,7 +43,7 @@ export function StudyConsent({
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
       <div className="text-center">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-cyan">
+        <p className="text-sm font-medium text-foreground">
           Devnet population study
         </p>
         <h2 className="mt-3 font-display text-3xl font-normal tracking-[-0.01em] text-foreground">

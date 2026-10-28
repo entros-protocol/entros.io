@@ -146,7 +146,7 @@ export function DashboardAnchorView() {
           {walletPill}
           <div className="flex flex-col items-center gap-4 border border-border py-20">
             <Loader2 className="h-6 w-6 animate-spin text-cyan" />
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+            <p className="text-sm font-medium text-foreground/60">
               Reading from Solana devnet…
             </p>
           </div>
@@ -212,7 +212,7 @@ export function DashboardAnchorView() {
         <div className="grid grid-cols-1 gap-px border border-border bg-border lg:grid-cols-3">
           {/* Trust Score panel */}
           <div className="flex flex-col items-center justify-center bg-background p-8 text-center md:p-10 lg:col-span-1">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+            <p className="text-sm font-medium text-foreground/60">
               Trust Score
             </p>
             <p className="mt-4 font-display text-7xl font-medium tracking-tight text-foreground md:text-8xl">
@@ -225,12 +225,12 @@ export function DashboardAnchorView() {
               />
             </div>
             {identity.trustScore > 0 ? (
-              <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/80">
+              <p className="text-sm font-medium mt-4 text-foreground">
                 Active
               </p>
             ) : (
               <div className="mt-4 max-w-[240px]">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/80">
+                <p className="text-sm font-medium text-foreground">
                   Baseline established
                 </p>
                 <p className="mt-3 text-xs leading-relaxed text-foreground/55">
@@ -245,7 +245,7 @@ export function DashboardAnchorView() {
           <div className="flex flex-col bg-background p-8 md:p-10 lg:col-span-2">
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Verifications
                 </p>
                 <p className="mt-2 font-display text-3xl font-medium tracking-tight text-foreground md:text-4xl">
@@ -253,7 +253,7 @@ export function DashboardAnchorView() {
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Last verified
                 </p>
                 <p className="mt-2 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
@@ -263,7 +263,7 @@ export function DashboardAnchorView() {
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Anchor created
                 </p>
                 <p className="mt-2 font-mono text-sm text-foreground">
@@ -271,7 +271,7 @@ export function DashboardAnchorView() {
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Commitment
                 </p>
                 <p className="mt-2 truncate font-mono text-sm text-foreground/70">
@@ -282,7 +282,7 @@ export function DashboardAnchorView() {
 
             <div className="mt-8 grid grid-cols-1 gap-4 border-t border-border pt-6 sm:grid-cols-2">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Owner
                 </p>
                 <div className="mt-2 flex items-center gap-2">
@@ -301,7 +301,7 @@ export function DashboardAnchorView() {
                 </div>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Mint
                 </p>
                 <div className="mt-2 flex items-center gap-2">
@@ -323,7 +323,7 @@ export function DashboardAnchorView() {
 
             <Link
               href="/verify"
-              className="mt-6 inline-flex w-fit items-center gap-2 font-mono text-[11px] uppercase tracking-[0.15em] text-cyan transition-colors hover:text-foreground"
+              className="text-sm font-medium mt-6 inline-flex w-fit items-center gap-2 text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan"
             >
               Re-verify
               <ArrowRight className="h-3 w-3" />

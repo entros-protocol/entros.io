@@ -224,7 +224,7 @@ export function VerifyWalletChip() {
   return (
     <div className="inline-flex h-8 items-stretch border border-foreground/12 font-mono text-xs" title={address}>
       <span className="inline-flex items-center gap-2 pl-3 pr-2.5 text-foreground/80">
-        <span className="h-1.5 w-1.5 rounded-full bg-solana-green" aria-hidden />
+        <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
         {address.length > 10 ? `${address.slice(0, 4)}...${address.slice(-4)}` : address}
       </span>
       <button

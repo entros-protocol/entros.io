@@ -56,7 +56,7 @@ export function AgentCheckForm({
         <div className="flex-1">
           <label
             htmlFor={inputId}
-            className="mb-2 block font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40"
+            className="text-sm font-medium mb-2 block text-foreground/60"
           >
             Agent Asset Address
           </label>

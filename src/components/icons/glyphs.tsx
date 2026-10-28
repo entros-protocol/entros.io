@@ -463,6 +463,17 @@ export function GaugeGlyph(props: GlyphProps) {
   );
 }
 
+/** A person, with the dot as their verification. */
+export function HumanGlyph(props: GlyphProps) {
+  return (
+    <Glyph {...props}>
+      <rect x="8.5" y="3.5" width="7" height="7" />
+      <path d="M4.5 20.5v-4.5l3-3h9l3 3v4.5" />
+      <Dot cx={19} cy={5} r={1.5} />
+    </Glyph>
+  );
+}
+
 /**
  * The Solana mark, unmodified, inset on the glyph grid. A filled mark at
  * full bleed reads far heavier than the line glyphs beside it, so it takes
@@ -494,6 +505,65 @@ export function ToolGlyph(props: GlyphProps) {
       <path d="M10.5 10.5l9 9" />
       <path d="M14 20.5h6.5V14" />
       <Dot cx={7} cy={7} r={1.2} />
+    </Glyph>
+  );
+}
+
+/** A one-time ticket, torn along the perforation. */
+export function OnceGlyph(props: GlyphProps) {
+  return (
+    <Glyph {...props}>
+      <rect x="3.5" y="6.5" width="17" height="11" />
+      <path d="M14.5 6.5v1.5M14.5 11.25v1.5M14.5 16v1.5" />
+      <Dot cx={9} cy={12} />
+    </Glyph>
+  );
+}
+
+/** A square clock: still valid now. */
+export function ClockGlyph(props: GlyphProps) {
+  return (
+    <Glyph {...props}>
+      <rect x="3.5" y="3.5" width="17" height="17" />
+      <path d="M12 7v5h4.5" />
+      <Dot cx={12} cy={12} r={1.2} />
+    </Glyph>
+  );
+}
+
+/** Blocks joined in a row. */
+export function ChainGlyph(props: GlyphProps) {
+  return (
+    <Glyph {...props}>
+      <rect x="2.5" y="9" width="5" height="6" />
+      <rect x="9.5" y="9" width="5" height="6" />
+      <rect x="16.5" y="9" width="5" height="6" />
+      <path d="M7.5 12h2M14.5 12h2" />
+      <Dot cx={19} cy={12} r={1.1} />
+    </Glyph>
+  );
+}
+
+/** The badge: a status tag with its dot and a line of text. */
+export function BadgeGlyph(props: GlyphProps) {
+  return (
+    <Glyph {...props}>
+      <rect x="2.5" y="7.5" width="19" height="9" />
+      <path d="M10 12h8" />
+      <Dot cx={6.25} cy={12} r={1.3} />
+    </Glyph>
+  );
+}
+
+/** The gate: a barrier arm on its post, with the check light on top. */
+export function GateGlyph(props: GlyphProps) {
+  return (
+    <Glyph {...props}>
+      <path d="M2.5 20.5h19" />
+      <rect x="3.5" y="9.5" width="4" height="11" />
+      <rect x="7.5" y="10.5" width="13" height="3" />
+      <path d="M11.5 10.5v3M15.5 10.5v3" />
+      <Dot cx={5.5} cy={6.5} r={1.4} />
     </Glyph>
   );
 }

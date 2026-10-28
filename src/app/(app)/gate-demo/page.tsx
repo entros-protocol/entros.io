@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { LockGlyph, VerifiedGlyph } from "@/components/icons/glyphs";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { EntrosGate } from "@/components/ui/entros-gate";
 import { CodeBlock } from "@/components/ui/code-block";
@@ -47,7 +48,7 @@ const COMPONENT_CODE = `"use client";
  *   - @solana/wallet-adapter-react (useWallet, useConnection)
  *   - @solana/wallet-adapter-react-ui (WalletMultiButton, the universal Solana wallet UI)
  *   - @entros/pulse-sdk (PROGRAM_IDS constant)
- *   - lucide-react (icons)
+ *   - lucide-react (loading spinner)
  *   - Tailwind CSS for styling (no custom design system imports)
  *
  * Drop into any Next.js + Tailwind project with Solana wallet adapter set up.
@@ -80,7 +81,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { PROGRAM_IDS } from "@entros/pulse-sdk";
-import { Loader2, ShieldAlert, Wallet } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 /**
  * Smallest account this component can read. \`last_verification_timestamp\` ends
@@ -252,8 +253,51 @@ type FallbackState =
   | { status: "no-identity" }
   | { status: "below-threshold"; trustScore: number };
 
-function DefaultFallback({
-  state,
+/**
+ * Line marks for the three fallback states, drawn inline so the gate ships
+ * without an icon set: a wallet to connect, an Anchor to earn, and a gauge
+ * that reads below the floor. The dot carries the accent colour.
+ */
+function StateMark({ status }: { status: FallbackState["status"] }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="square"
+      strokeLinejoin="miter"
+      className="h-8 w-8 text-foreground/80"
+      aria-hidden="true"
+    >
+      {status === "disconnected" && (
+        <>
+          <path d="M3.5 7.5h17v12h-17z" />
+          <path d="M3.5 7.5l12-3.5v3.5" />
+          <path d="M14.5 11.5h6v4h-6z" />
+          <circle cx={17} cy={13.5} r={1.1} stroke="none" className="fill-cyan" />
+        </>
+      )}
+      {status === "no-identity" && (
+        <>
+          <rect x="5" y="3.5" width="14" height="12" />
+          <path d="M8.5 15.5v5l3.5-2 3.5 2v-5" />
+          <circle cx={12} cy={9.5} r={1.4} stroke="none" className="fill-cyan" />
+        </>
+      )}
+      {status === "below-threshold" && (
+        <>
+          <path d="M3.5 17.5a8.5 8.5 0 0 1 17 0" />
+          <path d="M12 17.5l-4-6" />
+          <path d="M3.5 20.5h17" />
+          <circle cx={12} cy={17.5} r={1.4} stroke="none" className="fill-cyan" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function DefaultFallback({  state,
   minTrustScore,
   verifyHref,
 }: {
@@ -264,17 +308,13 @@ function DefaultFallback({
   return (
     <div className="w-full">
       {state.status === "below-threshold" && (
-        <p className="mb-8 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+        <p className="text-sm font-medium mb-8 text-foreground/60">
           {state.trustScore} &lt; {minTrustScore}
         </p>
       )}
 
       <div className="flex flex-col items-start gap-6">
-        {state.status === "disconnected" ? (
-          <Wallet className="h-7 w-7 text-cyan/80" strokeWidth={1.5} />
-        ) : (
-          <ShieldAlert className="h-7 w-7 text-cyan/80" strokeWidth={1.5} />
-        )}
+        <StateMark status={state.status} />
 
         {state.status === "disconnected" && (
           <>
@@ -304,7 +344,7 @@ function DefaultFallback({
             </div>
             <Link
               href={verifyHref}
-              className="inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
+              className="text-sm font-medium inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
             >
               Verify now
             </Link>
@@ -327,7 +367,7 @@ function DefaultFallback({
             </div>
             <Link
               href={verifyHref}
-              className="inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
+              className="text-sm font-medium inline-flex items-center gap-2 border border-cyan/40 bg-cyan/[0.08] px-4 py-2 text-cyan transition-colors hover:border-cyan/70 hover:bg-cyan/[0.15]"
             >
               Re-verify
             </Link>
@@ -406,12 +446,12 @@ export default function GateDemo() {
                 {/* PASS state */}
                 <div className="relative border border-cyan/40 bg-cyan/[0.03] p-6 md:p-7">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/70">
+                    <span className="text-sm font-medium text-foreground">
                       482 ≥ 100
                     </span>
                   </div>
                   <div className="mt-6 flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 shrink-0 text-cyan" />
+                    <VerifiedGlyph className="h-6 w-6 shrink-0 text-foreground/85" />
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Welcome, verified human.
                     </p>
@@ -424,14 +464,12 @@ export default function GateDemo() {
                 {/* BLOCK state */}
                 <div className="relative border border-border p-6 md:p-7">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                    <span className="text-sm font-medium text-foreground/60">
                       0 &lt; 100
                     </span>
                   </div>
                   <div className="mt-6 flex items-center gap-3">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-foreground/30 text-foreground/40">
-                      <span className="h-1 w-1 rounded-full bg-foreground/40" />
-                    </span>
+                    <LockGlyph className="h-6 w-6 shrink-0 text-foreground/50" />
                     <p className="font-display text-base font-medium tracking-tight text-foreground/55 md:text-lg">
                       Verify your humanness.
                     </p>
@@ -471,11 +509,8 @@ export default function GateDemo() {
           <div className="mt-8 border border-border p-6 md:p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan/60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan" />
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
+                <span className="text-sm font-medium text-foreground/60">
                   Devnet
                 </span>
               </div>
@@ -485,7 +520,7 @@ export default function GateDemo() {
               <div>
                 <label
                   htmlFor="threshold-input"
-                  className="mb-2 block font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40"
+                  className="text-sm font-medium mb-2 block text-foreground/60"
                 >
                   Required Trust Score
                 </label>
@@ -508,13 +543,13 @@ export default function GateDemo() {
               </div>
 
               <div>
-                <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium mb-2 text-foreground/60">
                   Output
                 </p>
                 <div className="border border-border bg-surface p-6">
                   <EntrosGate minTrustScore={threshold}>
                     <div className="border border-cyan/30 bg-cyan/[0.05] p-6 text-center">
-                      <CheckCircle className="mx-auto mb-3 h-7 w-7 text-cyan" />
+                      <VerifiedGlyph className="mx-auto mb-3 h-8 w-8 text-foreground/85" />
                       <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                         Protected content visible
                       </p>
@@ -604,9 +639,9 @@ export default function GateDemo() {
           <div className="relative mt-12">
             <button
               onClick={copySource}
-              className="absolute right-4 top-4 z-10 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40 transition-colors hover:text-cyan"
+              className="text-sm font-medium absolute right-4 top-4 z-10 text-foreground/60 transition-colors hover:text-cyan"
             >
-              {copied ? "COPIED" : "COPY"}
+              {copied ? "Copied" : "Copy"}
             </button>
             <CodeBlock
               code={COMPONENT_CODE}

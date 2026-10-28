@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, ShieldCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { BadgeGlyph, GateGlyph } from "@/components/icons/glyphs";
 import {
   integrationSnippets,
   useCaseSnippets,
@@ -64,8 +65,8 @@ export function IntegrateGuide() {
               <div className="flex items-center gap-3">
                 <span className="font-mono text-xs tracking-[0.2em] text-cyan">01</span>
                 <span className="h-px flex-1 bg-border" />
-                <span className="font-mono text-xs uppercase tracking-[0.15em] text-foreground/50">
-                  RECOMMENDED
+                <span className="text-sm font-medium text-foreground/65">
+                  Recommended
                 </span>
               </div>
 
@@ -210,7 +211,7 @@ export function IntegrateGuide() {
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2">
             <div className="flex flex-col bg-background p-8 md:p-10">
               <div className="flex items-center gap-3">
-                <BadgeCheck className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                <BadgeGlyph className="h-9 w-9 text-foreground/80" />
                 <span className="h-px flex-1 bg-border" />
               </div>
 
@@ -225,7 +226,7 @@ export function IntegrateGuide() {
 
               <Link
                 href="/badge-demo"
-                className="mt-6 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-cyan transition-colors hover:text-foreground"
+                className="text-sm font-medium mt-6 inline-flex items-center gap-1.5 text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan"
               >
                 Live demo · source
                 <ArrowRight className="h-3 w-3" />
@@ -234,7 +235,7 @@ export function IntegrateGuide() {
 
             <div className="flex flex-col bg-background p-8 md:p-10">
               <div className="flex items-center gap-3">
-                <ShieldCheck className="h-5 w-5 text-cyan" strokeWidth={1.5} />
+                <GateGlyph className="h-9 w-9 text-foreground/80" />
                 <span className="h-px flex-1 bg-border" />
               </div>
 
@@ -250,7 +251,7 @@ export function IntegrateGuide() {
 
               <Link
                 href="/gate-demo"
-                className="mt-6 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-cyan transition-colors hover:text-foreground"
+                className="text-sm font-medium mt-6 inline-flex items-center gap-1.5 text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan"
               >
                 Live demo · source
                 <ArrowRight className="h-3 w-3" />
@@ -271,17 +272,17 @@ export function IntegrateGuide() {
             Tier 2 only. The drop-in <code className="font-mono text-cyan">{`<EntrosVerify />`}</code> component takes fewer props: integrator key, cluster, optional Trust Score floor.
           </p>
 
-          <div className="mt-12 overflow-x-auto border border-border">
+          <div tabIndex={0} className="mt-12 overflow-x-auto border border-border">
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface">
-                  <th className="px-5 py-4 text-left font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                  <th className="text-sm font-medium px-5 py-4 text-left text-foreground/60">
                     Option
                   </th>
-                  <th className="px-5 py-4 text-left font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                  <th className="text-sm font-medium px-5 py-4 text-left text-foreground/60">
                     Type
                   </th>
-                  <th className="px-5 py-4 text-left font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                  <th className="text-sm font-medium px-5 py-4 text-left text-foreground/60">
                     Description
                   </th>
                 </tr>

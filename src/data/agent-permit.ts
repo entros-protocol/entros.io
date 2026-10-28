@@ -32,9 +32,6 @@ export const agentPermitChecks = [
   "The agent's own key handed the permit in.",
 ];
 
-// Ten characters at most, so each label holds one line in the narrowest diagram column.
-export const agentPermitProperties = ["Single use", "Key bound", "Live check"];
-
 export interface AgentPermitRunStep {
   outcome: string;
   detail: string;

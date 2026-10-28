@@ -242,7 +242,7 @@ export function GovernanceContent() {
 
             {/* Diagram—concentric rings + signal channel */}
             <div className="lg:col-span-6">
-              <div className="relative flex h-full flex-col rounded-2xl bg-foreground/[0.06] p-8 md:p-12">
+              <div className="relative flex h-full flex-col border border-panel-line bg-panel p-8 md:p-12">
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -446,7 +446,7 @@ export function GovernanceContent() {
                   padding so it lands on the rail exactly. */}
               <div className="flex h-full items-center">
                 <div className="min-w-0 w-full lg:w-auto lg:shrink lg:grow-0 lg:basis-[38rem]">
-                  <div className="overflow-x-auto rounded-2xl bg-foreground/[0.06] p-6 font-mono text-sm md:p-8">
+                  <div className="overflow-x-auto border border-panel-line bg-panel p-6 font-mono text-sm md:p-8">
                 <pre className="leading-relaxed text-foreground/80">
                   <span className="text-foreground/40">
                     {"// DAO admin configures the Entros voter weight plugin\n"}

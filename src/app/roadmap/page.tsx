@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Gauge, KeyRound, ShieldCheck, Wrench } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { GaugeGlyph, KeyGlyph, ShieldGlyph, ToolGlyph } from "@/components/icons/glyphs";
 import { cn } from "@/lib/utils";
 import { pageMetadata } from "@/lib/page-metadata";
 
@@ -12,28 +13,28 @@ export const metadata = pageMetadata({
 
 const gates = [
   {
-    Icon: Gauge,
+    Icon: GaugeGlyph,
     label: "Protocol hardening",
     window: "Ongoing",
     description:
       "Adversarial campaigns test the live pipeline. Controlled studies measure same-wallet drift, cross-wallet separation, device effects, and human completion. Detection layers record evidence before enforcement.",
   },
   {
-    Icon: KeyRound,
+    Icon: KeyGlyph,
     label: "Trusted setup ceremony",
     window: "Public ceremony",
     description:
       "Multiple participants will each contribute entropy and destroy it after use. The resulting key will replace the one compiled into entros-verifier. The math holds if one participant is honest about the destruction.",
   },
   {
-    Icon: ShieldCheck,
+    Icon: ShieldGlyph,
     label: "External security audit",
     window: "Independent audit",
     description:
       "An established Solana audit firm will review the three on-chain programs and the proof flow, including the registry's fee, treasury, and validator-registration scaffolding. Remediation summaries publish after fixes land.",
   },
   {
-    Icon: Wrench,
+    Icon: ToolGlyph,
     label: "Operational lift",
     window: "Launch prep",
     description:
@@ -149,7 +150,7 @@ export default function Roadmap() {
               left is the order, which step is next, and where the sequence
               ends. Each gate's substance lives in the section below. */}
           <div className="lg:col-span-4">
-            <div className="rounded-2xl bg-foreground/[0.06] px-8 py-10 md:px-10 md:py-12">
+            <div className="border border-panel-line bg-panel px-8 py-10 md:px-10 md:py-12">
               {/* `w-fit` collapses the list to its own content width so the
                   sequence sits centred rather than against the left edge
                   with a wide empty gutter. */}
@@ -231,10 +232,7 @@ export default function Roadmap() {
                   className="grid grid-cols-1 gap-x-12 gap-y-4 border-b border-border py-10 md:grid-cols-[14rem_1fr] md:py-14"
                 >
                   <div className="flex items-start gap-3">
-                    <Icon
-                      className="mt-1 h-5 w-5 shrink-0 text-cyan"
-                      strokeWidth={1.5}
-                    />
+                    <Icon className="h-7 w-7 shrink-0 text-foreground/80" />
                     <div>
                       <p className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                         {gate.label}

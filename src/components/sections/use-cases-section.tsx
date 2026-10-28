@@ -20,7 +20,7 @@ export function UseCasesSection() {
             const Icon = getIcon(useCase.icon);
             return (
               <div key={useCase.title} className="bg-background p-8">
-                <Icon className="h-9 w-9 text-cyan" strokeWidth={1.5} />
+                <Icon className="h-12 w-12 text-foreground/80" />
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground">
                   {useCase.title}
                 </h3>

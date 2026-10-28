@@ -1,5 +1,3 @@
-import type { ReactNode } from "react";
-
 const FINDINGS = [
   {
     title: "Single-modality detection degrades across models",
@@ -35,10 +33,9 @@ const FINDINGS = [
 
 /**
  * Research Validation: six findings in a 3-column hairline grid (3×2,
- * no orphan cells), then the closing statement set in the display face
- * under a hairline, with the page's calls to action directly beneath it.
+ * no orphan cells).
  */
-export function ResearchValidationSection({ actions }: { actions?: ReactNode }) {
+export function ResearchValidationSection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
@@ -58,7 +55,7 @@ export function ResearchValidationSection({ actions }: { actions?: ReactNode }) 
               <h3 className="font-display text-base font-medium tracking-tight text-foreground">
                 {f.title}
               </h3>
-              <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-cyan/80">
+              <p className="text-sm font-medium mt-2 text-foreground">
                 {f.source}
               </p>
               <p className="mt-4 text-sm leading-relaxed text-foreground/60">
@@ -66,20 +63,6 @@ export function ResearchValidationSection({ actions }: { actions?: ReactNode }) 
               </p>
             </article>
           ))}
-        </div>
-
-        <div className="mt-20 grid grid-cols-1 gap-10 md:mt-24 lg:grid-cols-12 lg:gap-16">
-          <span aria-hidden className="hidden h-px bg-cyan lg:col-span-1 lg:mt-[0.9rem] lg:block" />
-          <div className="lg:col-span-10">
-            <p className="max-w-4xl text-balance font-display text-2xl font-normal leading-snug tracking-tight text-foreground md:text-3xl">
-              Entros records voice, movement and touch in one session. The
-              current fingerprint combines them without proving that one
-              causes another. Timing between the signals stays under study
-              while new round designs and completion rates are tested
-              <span className="text-cyan">.</span>
-            </p>
-            {actions && <div className="mt-10">{actions}</div>}
-          </div>
         </div>
       </div>
     </section>

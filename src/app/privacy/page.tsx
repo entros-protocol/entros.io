@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { pageMetadata } from "@/lib/page-metadata";
+import { ProseSection as Section } from "@/components/ui/prose-section";
 
 export const metadata = pageMetadata({
   title: "Privacy",
@@ -72,30 +73,6 @@ const browser = [
   "Your theme choice and, on mobile, your wallet app's authorization.",
   "A note that you answered the study consent screen.",
 ];
-
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section id={id} className="border-t border-border">
-      <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
-        <h2 className="font-display text-2xl font-normal tracking-tight text-foreground md:text-3xl">
-          {title}
-          <span className="text-cyan">.</span>
-        </h2>
-        <div className="mt-6 space-y-4 text-base leading-relaxed text-foreground/70">
-          {children}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function Bullets({ items }: { items: string[] }) {
   return (

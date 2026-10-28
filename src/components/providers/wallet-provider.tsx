@@ -21,7 +21,7 @@ import {
 import type { WalletError } from "@solana/wallet-adapter-base";
 import { clusterApiUrl } from "@solana/web3.js";
 
-import "@solana/wallet-adapter-react-ui/styles.css";
+import "@/styles/wallet-adapter.css";
 
 const NETWORK = "devnet" as const;
 

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 const FINDINGS = [
   {
     title: "Single-modality detection degrades across models",
@@ -32,11 +34,11 @@ const FINDINGS = [
 ];
 
 /**
- * Research Validation—six findings in a 3-column hairline grid (3×2,
- * no orphan cells), followed by a cyan-bordered closing callout. The
- * cards intentionally compact—academic citation card feel.
+ * Research Validation: six findings in a 3-column hairline grid (3×2,
+ * no orphan cells), then the closing statement set in the display face
+ * under a hairline, with the page's calls to action directly beneath it.
  */
-export function ResearchValidationSection() {
+export function ResearchValidationSection({ actions }: { actions?: ReactNode }) {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
@@ -66,13 +68,18 @@ export function ResearchValidationSection() {
           ))}
         </div>
 
-        <div className="mt-16 border-l-2 border-cyan pl-6">
-          <p className="max-w-3xl text-base leading-relaxed text-foreground/75 md:text-lg">
-            Entros captures voice, movement, and touch in one session; the
-            current fingerprint projection mixes them without proving a causal
-            link. Temporal analysis stays observable while challenge-bound
-            designs and human completion are tested.
-          </p>
+        <div className="mt-20 grid grid-cols-1 gap-10 md:mt-24 lg:grid-cols-12 lg:gap-16">
+          <span aria-hidden className="hidden h-px bg-cyan lg:col-span-1 lg:mt-[0.9rem] lg:block" />
+          <div className="lg:col-span-10">
+            <p className="max-w-4xl text-balance font-display text-2xl font-normal leading-snug tracking-tight text-foreground md:text-3xl">
+              Entros records voice, movement and touch in one session. The
+              current fingerprint combines them without proving that one
+              causes another. Timing between the signals stays under study
+              while new round designs and completion rates are tested
+              <span className="text-cyan">.</span>
+            </p>
+            {actions && <div className="mt-10">{actions}</div>}
+          </div>
         </div>
       </div>
     </section>

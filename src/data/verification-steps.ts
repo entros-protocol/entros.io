@@ -2,11 +2,11 @@ import type { VerificationStep } from "./types";
 
 export const verificationSteps: VerificationStep[] = [
   {
-    title: "01. Challenge",
+    title: "01. Prompt",
     description:
-      "A fresh word and path for every round; no round repeats.",
+      "A new word and a new path for every round. No round repeats.",
     detail:
-      "Each round pairs one word from a curated vocabulary with one short path from random parameters. The browser locks in a round before the next appears, so the client fixes its evidence before seeing the next challenge.",
+      "Each round pairs one word from a curated vocabulary with one short path from random parameters. The browser locks in a round before the next appears, so the client fixes its evidence before it sees the next word.",
     icon: "mic",
   },
   {

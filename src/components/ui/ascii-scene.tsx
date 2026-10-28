@@ -196,7 +196,7 @@ export function AsciiScene({
     <div
       ref={boxRef}
       className={cn(
-        "relative w-full overflow-hidden rounded-2xl bg-foreground/[0.06]",
+        "relative w-full overflow-hidden border border-panel-line bg-panel",
         fill && "h-full",
         className
       )}

@@ -20,10 +20,7 @@ export function VerificationTimelineSection() {
           {head && " "}
           <span className="whitespace-nowrap">
             {last}
-            <Icon
-              className="ml-3 inline-block h-7 w-7 align-middle text-cyan"
-              strokeWidth={1.5}
-            />
+            <Icon className="ml-3 inline-block h-7 w-7 align-middle text-foreground/80" />
           </span>
         </span>
       ),

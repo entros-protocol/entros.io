@@ -23,10 +23,7 @@ export function PrivacySection() {
               const Icon = getIcon(guarantee.icon);
               return (
                 <li key={guarantee.title} className="flex gap-4 py-6">
-                  <Icon
-                    className="mt-0.5 h-5 w-5 shrink-0 text-cyan"
-                    strokeWidth={1.5}
-                  />
+                  <Icon className="h-7 w-7 shrink-0 text-foreground/80" />
                   <div>
                     <h3 className="font-display text-base font-medium tracking-tight text-foreground">
                       {guarantee.title}

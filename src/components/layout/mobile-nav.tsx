@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { GithubMark } from "./github-mark";
-import { NavThemeSquare } from "./nav-theme-square";
 
 /**
  * The menu opens as a sheet under the nav strip, square-cornered and
@@ -18,6 +17,7 @@ const sections = [
       { label: "How It Works", href: "/technology" },
       { label: "Security Program", href: "/security" },
       { label: "Roadmap", href: "/roadmap" },
+      { label: "Paper", href: "/paper" },
     ],
   },
   {
@@ -36,7 +36,6 @@ const sections = [
     items: [
       { label: "Token", href: "/token" },
       { label: "Docs", href: "/docs" },
-      { label: "Paper", href: "/paper" },
     ],
   },
 ];
@@ -79,7 +78,7 @@ export function MobileNav() {
           />
 
           <div className="absolute inset-x-0 top-[66px] px-6">
-            <div className="mx-auto max-h-[calc(100svh-84px)] max-w-7xl overflow-y-auto bg-foreground text-background shadow-[0_10px_34px_rgba(0,0,0,0.3)]">
+            <div className="mx-auto max-h-[calc(100svh-84px)] max-w-7xl overflow-y-auto bg-foreground text-background dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]">
               <div className="px-5 py-4">
                 {sections.map((section, i) => (
                   <div
@@ -150,7 +149,6 @@ export function MobileNav() {
                 >
                   <GithubMark className="h-[17px] w-[17px]" />
                 </a>
-                <NavThemeSquare variant="sheet" />
               </div>
             </div>
           </div>

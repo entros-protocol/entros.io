@@ -59,7 +59,7 @@ export function MobileRoadmapSection() {
             const Icon = getIcon(item.icon);
             return (
               <div key={item.title} className="bg-background p-8">
-                <Icon className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                <Icon className="h-10 w-10 text-foreground/80" />
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground">
                   {item.title}
                 </h3>

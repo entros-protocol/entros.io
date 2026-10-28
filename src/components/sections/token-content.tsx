@@ -1,6 +1,21 @@
 import { SolanaIcon } from "@/lib/solana-icon";
-import { Shield, Vote, Layers, Share2, Rocket, TrendingUp, Lock, Flame, AlertTriangle,
-  Fingerprint, Coins, Blocks, KeyRound, Network, Users } from "lucide-react";
+import {
+  BallotGlyph,
+  BenchmarkGlyph,
+  BuildGlyph,
+  DelegateGlyph,
+  FeeGlyph,
+  KeyGlyph,
+  LaunchGlyph,
+  LockGlyph,
+  NetworkGlyph,
+  PersonGlyph,
+  QuorumGlyph,
+  SlashGlyph,
+  StakeGlyph,
+  TierGlyph,
+  TreasuryGlyph,
+} from "@/components/icons/glyphs";
 import {
   protocolFee,
   flywheel,
@@ -9,10 +24,10 @@ import {
   launchDetails,
 } from "@/data/token-economics";
 
-const UTILITY_ICONS = [Shield, Share2, Layers, Vote];
+const UTILITY_GLYPHS = [StakeGlyph, DelegateGlyph, TierGlyph, BallotGlyph];
 
 /** One glyph per flywheel node, in order. None reused elsewhere on this page. */
-const FLYWHEEL_ICONS = [Fingerprint, Coins, Blocks, KeyRound, Network];
+const FLYWHEEL_GLYPHS = [PersonGlyph, FeeGlyph, BuildGlyph, KeyGlyph, NetworkGlyph];
 
 export function TokenContent() {
   return (
@@ -29,13 +44,12 @@ export function TokenContent() {
             to $ENTROS.
           </p>
 
-          {/* Labeled diagram — five nodes in a horizontal flow with
-              connector arrows between, and a dashed return arrow under
-              the row signaling the loop. ViewBox keeps the layout
-              proportional across breakpoints. */}
-          <div className="mt-16 hidden overflow-hidden border border-border md:block">
+          {/* Five square nodes in a row, hairline connectors between them,
+              and a dashed return path under the labels that closes the
+              loop. The viewBox keeps the layout proportional. */}
+          <div className="mt-16 hidden border border-panel-line bg-panel md:block">
             <svg
-              viewBox="0 0 1200 320"
+              viewBox="0 0 1200 300"
               className="block w-full"
               role="img"
               aria-label="Token flywheel diagram: verification, protocol fees, integrator adoption, token-secured validation, a compounding network, looping back to verification."
@@ -43,62 +57,67 @@ export function TokenContent() {
               <defs>
                 <marker
                   id="flywheel-arrow"
-                  viewBox="0 0 10 10"
-                  refX="8"
-                  refY="5"
-                  markerWidth="7"
-                  markerHeight="7"
+                  viewBox="0 0 8 8"
+                  refX="7"
+                  refY="4"
+                  markerWidth="8"
+                  markerHeight="8"
                   orient="auto"
                 >
                   <path
-                    d="M 0 0 L 10 5 L 0 10 z"
-                    style={{ fill: "var(--color-cyan)" }}
+                    d="M 1 1 L 7 4 L 1 7"
+                    fill="none"
+                    strokeWidth="1"
+                    style={{ stroke: "var(--color-cyan)" }}
                   />
                 </marker>
               </defs>
 
-              {/* Nodes */}
               {flywheel.map((step, i) => {
                 const cx = 120 + i * 240;
+                const Glyph = FLYWHEEL_GLYPHS[i] ?? PersonGlyph;
                 return (
                   <g key={step.step}>
-                    <circle
-                      cx={cx}
-                      cy={130}
-                      r="46"
-                      style={{
-                        fill: "var(--color-background)",
-                        stroke: "var(--color-cyan)",
-                        strokeOpacity: 0.5,
-                      }}
-                      strokeWidth="1"
-                    />
-                    {(() => {
-                      // Nested <svg> inside the diagram: lucide spreads
-                      // unknown props onto its root element, so x/y/width/
-                      // height position each glyph inside its own circle.
-                      const Glyph = FLYWHEEL_ICONS[i] ?? Fingerprint;
-                      const S = 30;
-                      return (
-                        <Glyph
-                          x={cx - S / 2}
-                          y={130 - S / 2}
-                          width={S}
-                          height={S}
-                          stroke="var(--color-cyan)"
-                          strokeWidth={1.4}
-                          fill="none"
-                        />
-                      );
-                    })()}
                     <text
                       x={cx}
-                      y={208}
+                      y={70}
+                      textAnchor="middle"
+                      style={{
+                        fill: "var(--color-cyan)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
+                        letterSpacing: "0.2em",
+                      }}
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </text>
+                    <rect
+                      x={cx - 36}
+                      y={84}
+                      width="72"
+                      height="72"
+                      strokeWidth="1"
+                      style={{
+                        fill: "var(--color-background)",
+                        stroke: "var(--color-foreground)",
+                        strokeOpacity: 0.18,
+                      }}
+                    />
+                    <Glyph
+                      x={cx - 19}
+                      y={101}
+                      width={38}
+                      height={38}
+                      className="text-foreground/80"
+                    />
+                    <text
+                      x={cx}
+                      y={186}
                       textAnchor="middle"
                       style={{
                         fill: "var(--color-foreground)",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 13,
+                        fontFamily: "var(--font-sans)",
+                        fontSize: 14,
                       }}
                     >
                       {step.step}
@@ -107,49 +126,38 @@ export function TokenContent() {
                 );
               })}
 
-              {/* Connector arrows between consecutive nodes */}
-              {[0, 1, 2, 3].map((i) => {
-                const x1 = 120 + i * 240 + 52;
-                const x2 = 120 + (i + 1) * 240 - 56;
-                return (
-                  <line
-                    key={i}
-                    x1={x1}
-                    y1={130}
-                    x2={x2}
-                    y2={130}
-                    style={{
-                      stroke: "var(--color-cyan)",
-                      strokeOpacity: 0.5,
-                    }}
-                    strokeWidth="1"
-                    markerEnd="url(#flywheel-arrow)"
-                  />
-                );
-              })}
+              {[0, 1, 2, 3].map((i) => (
+                <line
+                  key={i}
+                  x1={120 + i * 240 + 48}
+                  y1={120}
+                  x2={120 + (i + 1) * 240 - 48}
+                  y2={120}
+                  strokeWidth="1"
+                  style={{ stroke: "var(--color-cyan)", strokeOpacity: 0.55 }}
+                  markerEnd="url(#flywheel-arrow)"
+                />
+              ))}
 
-              {/* Return loop — node 5 back to node 1 */}
               <path
-                d="M 1080 178 Q 1080 268 940 268 L 260 268 Q 120 268 120 178"
+                d="M 1080 204 V 236 H 120 V 206"
                 fill="none"
-                style={{ stroke: "var(--color-cyan)", strokeOpacity: 0.35 }}
                 strokeWidth="1"
-                strokeDasharray="4,4"
+                strokeDasharray="3 5"
+                style={{ stroke: "var(--color-cyan)", strokeOpacity: 0.45 }}
                 markerEnd="url(#flywheel-arrow)"
               />
 
-              {/* Loop label */}
               <text
                 x={600}
-                y={290}
+                y={264}
                 textAnchor="middle"
                 style={{
                   fill: "var(--color-foreground)",
-                  fillOpacity: 0.5,
+                  fillOpacity: 0.45,
                   fontFamily: "var(--font-mono)",
-                  fontSize: 11,
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
+                  fontSize: 10,
+                  letterSpacing: "0.24em",
                 }}
               >
                 THE LOOP
@@ -157,49 +165,32 @@ export function TokenContent() {
             </svg>
           </div>
 
-          {/* Mobile fallback — vertical stack with arrow glyphs */}
-          <ol className="mt-16 space-y-2 border border-border p-6 md:hidden">
-            {flywheel.map((step, i) => (
-              <li
-                key={step.step}
-                className="flex items-center gap-3 font-mono text-xs"
-              >
-                <span className="text-cyan">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="text-foreground/80">{step.step}</span>
-                {i < flywheel.length - 1 && (
-                  <span className="ml-auto text-cyan/80" aria-hidden="true">↓</span>
-                )}
-                {i === flywheel.length - 1 && (
-                  <span className="ml-auto text-cyan/35">↺</span>
-                )}
-              </li>
-            ))}
-          </ol>
-
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-5">
-            {flywheel.map((step, i) => (
-              <div
-                key={step.step}
-                className="flex flex-col bg-background p-6 md:p-8"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="h-px flex-1 bg-border" />
+            {flywheel.map((step, i) => {
+              const Glyph = FLYWHEEL_GLYPHS[i] ?? PersonGlyph;
+              return (
+                <div
+                  key={step.step}
+                  className="flex flex-col bg-background p-6 md:p-8"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs tracking-[0.2em] text-cyan">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="h-px flex-1 bg-border" />
+                    <Glyph className="h-7 w-7 text-foreground/80 md:hidden" />
+                  </div>
+
+                  <h3 className="mt-6 font-display text-lg font-medium tracking-tight text-foreground">
+                    {step.step}
+                  </h3>
+
+                  <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+                    {step.description}
+                  </p>
                 </div>
-
-                <h3 className="mt-6 font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                  {step.step}
-                </h3>
-
-                <p className="mt-3 text-sm leading-relaxed text-foreground/60">
-                  {step.description}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -285,14 +276,14 @@ export function TokenContent() {
 
           <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2">
             {tokenUtilities.map((utility, i) => {
-              const Icon = UTILITY_ICONS[i] ?? Shield;
+              const Icon = UTILITY_GLYPHS[i] ?? StakeGlyph;
               return (
                 <div
                   key={utility.title}
                   className="flex flex-col bg-background p-8 md:p-10"
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                    <Icon className="h-10 w-10 text-foreground/80" />
                     <span className="h-px flex-1 bg-border" />
                   </div>
 
@@ -330,7 +321,7 @@ export function TokenContent() {
             <div className="lg:col-span-7">
               <div className="border border-border">
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Flame className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                  <BenchmarkGlyph className="h-9 w-9 text-foreground/80" />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Ground-Truth Honey-pots
@@ -344,7 +335,7 @@ export function TokenContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <AlertTriangle className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                  <SlashGlyph className="h-9 w-9 text-foreground/80" />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Asymmetric Slashing
@@ -358,7 +349,7 @@ export function TokenContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Users className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                  <QuorumGlyph className="h-9 w-9 text-foreground/80" />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       Multi-Party Consensus
@@ -391,7 +382,7 @@ export function TokenContent() {
             <div className="lg:col-span-7">
               <div className="border border-border">
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Rocket className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                  <LaunchGlyph className="h-9 w-9 text-foreground/80" />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       {launchDetails.mechanism}
@@ -403,7 +394,7 @@ export function TokenContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <Lock className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                  <LockGlyph className="h-9 w-9 text-foreground/80" />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       {launchDetails.standard}
@@ -416,7 +407,7 @@ export function TokenContent() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <TrendingUp className="h-6 w-6 text-cyan" strokeWidth={1.5} />
+                  <TreasuryGlyph className="h-9 w-9 text-foreground/80" />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                       The treasury is on-chain

@@ -48,37 +48,37 @@ export function LatestResults() {
           </div>
 
           <div className="lg:col-span-2">
-            <div className="overflow-x-auto border-y border-border">
+            <div tabIndex={0} className="overflow-x-auto border-y border-border">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border">
                     <th
                       scope="col"
-                      className="py-4 pl-2 pr-4 text-left font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50"
+                      className="text-sm font-medium py-4 pl-2 pr-4 text-left text-foreground/65"
                     >
                       Tier
                     </th>
                     <th
                       scope="col"
-                      className="py-4 pr-4 text-left font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50"
+                      className="text-sm font-medium py-4 pr-4 text-left text-foreground/65"
                     >
                       Description
                     </th>
                     <th
                       scope="col"
-                      className="py-4 pr-4 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50"
+                      className="text-sm font-medium py-4 pr-4 text-right text-foreground/65"
                     >
                       Attempts
                     </th>
                     <th
                       scope="col"
-                      className="py-4 pr-4 text-right font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50"
+                      className="text-sm font-medium py-4 pr-4 text-right text-foreground/65"
                     >
                       Pass
                     </th>
                     <th
                       scope="col"
-                      className="py-4 pr-2 text-left font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50"
+                      className="text-sm font-medium py-4 pr-2 text-left text-foreground/65"
                     >
                       Status
                     </th>
@@ -129,7 +129,7 @@ export function LatestResults() {
               </table>
             </div>
 
-            <p className="mt-4 font-mono text-xs uppercase tracking-[0.15em] text-foreground/40">
+            <p className="text-sm font-medium mt-4 text-foreground/60">
               Last updated: {lastUpdated}
             </p>
           </div>

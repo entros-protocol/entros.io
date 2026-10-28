@@ -98,6 +98,7 @@ export function CodeBlock({ code, className }: CodeBlockProps) {
 
   return (
     <pre
+      tabIndex={0}
       className={cn(
         "overflow-x-auto border border-panel-line bg-panel p-6 font-mono text-sm leading-relaxed text-foreground/80",
         className

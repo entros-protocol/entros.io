@@ -27,25 +27,25 @@ export function RedTeamProgram() {
           the devnet pipeline. T5 remains open; T6 through T8 are planned.
         </p>
 
-        <div className="mt-16 overflow-x-auto border-y border-border">
+        <div tabIndex={0} className="mt-16 overflow-x-auto border-y border-border">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border">
                 <th
                   scope="col"
-                  className="py-4 pl-2 pr-6 text-left font-mono text-xs uppercase tracking-[0.2em] text-foreground/50"
+                  className="text-sm font-medium py-4 pl-2 pr-6 text-left text-foreground/65"
                 >
                   Tier
                 </th>
                 <th
                   scope="col"
-                  className="py-4 pr-6 text-left font-mono text-xs uppercase tracking-[0.2em] text-foreground/50"
+                  className="text-sm font-medium py-4 pr-6 text-left text-foreground/65"
                 >
                   Attack class
                 </th>
                 <th
                   scope="col"
-                  className="py-4 pr-2 text-left font-mono text-xs uppercase tracking-[0.2em] text-foreground/50"
+                  className="text-sm font-medium py-4 pr-2 text-left text-foreground/65"
                 >
                   Tests defense against
                 </th>

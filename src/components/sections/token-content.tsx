@@ -36,7 +36,7 @@ export function TokenContent() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-5xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Each verification pays a fee<span className="text-cyan">.</span>
+            The Entros flywheel<span className="text-cyan">.</span>
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
@@ -246,7 +246,7 @@ export function TokenContent() {
                     <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
                       {protocolFee.amount}
                     </p>
-                    <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
+                    <p className="text-sm font-medium mt-3 text-foreground/65">
                       {protocolFee.destination}
                     </p>
                   </div>

@@ -4,7 +4,6 @@ import { mainNav } from "@/data/navigation";
 import { MobileNav } from "./mobile-nav";
 import { NavDropdown, type DropdownItem } from "./nav-dropdown";
 import { NavbarWordmark } from "./navbar-wordmark";
-import { NavThemeSquare } from "./nav-theme-square";
 import { GithubMark } from "./github-mark";
 
 const technologyDropdown: DropdownItem[] = [
@@ -12,7 +11,7 @@ const technologyDropdown: DropdownItem[] = [
     label: "How It Works",
     href: "/technology",
     description:
-      "Three short rounds to an on-chain proof.",
+      "Three short rounds to a verified wallet.",
   },
   {
     label: "Security Program",
@@ -25,6 +24,11 @@ const technologyDropdown: DropdownItem[] = [
     href: "/roadmap",
     description:
       "Where Entros is, and where it's headed.",
+  },
+  {
+    label: "Paper",
+    href: "/paper",
+    description: "The protocol design, in full.",
   },
 ];
 
@@ -64,11 +68,12 @@ const solutionsDropdown: DropdownItem[] = [
 export function Navbar() {
   return (
     /* Floating bar: a wordmark-and-links strip plus detached action
-       blocks, each 46px square with its own shadow. */
+       blocks, each 46px tall. Dark mode lifts them with a soft shadow;
+       light mode keeps them flat so no dark halo sits on the cream. */
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50 pt-2.5 md:pt-3">
       <div className="pointer-events-auto mx-auto flex max-w-7xl items-center gap-2.5 px-6 md:gap-3">
         {/* White strip: wordmark, then links pushed left to free right-hand room */}
-        <div className="flex h-[46px] min-w-0 flex-1 items-center bg-foreground px-5 shadow-[0_10px_34px_rgba(0,0,0,0.3)]">
+        <div className="flex h-[46px] min-w-0 flex-1 items-center bg-foreground px-5 dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]">
           <div className="shrink-0 text-background [&_a]:text-background [&_a]:text-2xl">
             <NavbarWordmark />
           </div>
@@ -116,7 +121,7 @@ export function Navbar() {
           aria-label="Entros on GitHub"
           className="
             hidden h-[46px] w-[46px] items-center justify-center bg-foreground
-            text-background shadow-[0_10px_34px_rgba(0,0,0,0.3)]
+            text-background dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]
             transition-colors hover:bg-foreground/90 navbar:inline-flex
           "
         >
@@ -124,11 +129,23 @@ export function Navbar() {
         </a>
 
         <Link
+          href="/docs"
+          className="
+            hidden h-[46px] items-center bg-foreground px-4
+            text-sm font-medium text-background
+            dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]
+            transition-colors hover:bg-foreground/90 navbar:inline-flex
+          "
+        >
+          Docs
+        </Link>
+
+        <Link
           href="/dashboard"
           className="
             hidden h-[46px] items-center bg-foreground px-4
             text-sm font-medium text-background
-            shadow-[0_10px_34px_rgba(0,0,0,0.3)]
+            dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]
             transition-colors hover:bg-foreground/90 navbar:inline-flex
           "
         >
@@ -140,7 +157,7 @@ export function Navbar() {
           className="
             hidden h-[46px] items-center gap-2 border border-foreground/25
             bg-background px-4 text-sm font-medium text-foreground
-            shadow-[0_10px_34px_rgba(0,0,0,0.3)]
+            dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]
             transition-colors hover:bg-surface navbar:inline-flex
           "
         >
@@ -148,9 +165,7 @@ export function Navbar() {
           <ArrowRight className="h-4 w-4" />
         </Link>
 
-        <NavThemeSquare />
-
-        <div className="flex h-[46px] items-center bg-foreground px-1 shadow-[0_10px_34px_rgba(0,0,0,0.3)] navbar:hidden [&_button]:text-background">
+        <div className="flex h-[46px] items-center bg-foreground px-1 dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)] navbar:hidden [&_button]:text-background">
           <MobileNav />
         </div>
       </div>

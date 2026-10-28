@@ -60,7 +60,7 @@ export function ConnectedWalletPill({ size = "md" }: { size?: Size }) {
     >
       <div className={`inline-flex items-center text-cyan ${config.text}`}>
         <span
-          className={`inline-block rounded-full bg-cyan shadow-[0_0_8px_rgba(0,240,255,0.6)] ${config.dot}`}
+          className={`inline-block bg-cyan ${config.dot}`}
           aria-hidden="true"
         />
         <span>{truncateWallet(address)}</span>

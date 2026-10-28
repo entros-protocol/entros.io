@@ -46,7 +46,7 @@ export function PartnersSection() {
                     {partner.name}
                   </h3>
                 </div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-cyan/80">
+                <span className="text-sm font-medium text-foreground">
                   {partner.category}
                 </span>
                 <p className="mt-3 text-sm leading-relaxed text-foreground/55">

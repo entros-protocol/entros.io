@@ -196,7 +196,7 @@ export default function Roadmap() {
                           {label}
                         </p>
                         {isNext && (
-                          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-cyan">
+                          <span className="text-sm font-medium text-foreground">
                             Now
                           </span>
                         )}
@@ -237,7 +237,7 @@ export default function Roadmap() {
                       <p className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                         {gate.label}
                       </p>
-                      <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/50">
+                      <p className="text-sm font-medium mt-2 text-foreground/65">
                         {gate.window}
                       </p>
                     </div>
@@ -269,7 +269,7 @@ export default function Roadmap() {
                 key={item.title}
                 className="grid grid-cols-1 gap-x-12 gap-y-3 border-b border-border py-10 md:grid-cols-[14rem_1fr] md:py-12"
               >
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
+                <p className="text-sm font-medium text-foreground">
                   {item.window}
                 </p>
                 <div>

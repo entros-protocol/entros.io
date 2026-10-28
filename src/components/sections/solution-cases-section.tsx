@@ -54,7 +54,7 @@ export function SolutionCasesSection() {
                     <span className="font-mono text-xs tracking-[0.2em] text-cyan">
                       {number}
                     </span>
-                    <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/50">
+                    <span className="text-sm font-medium text-foreground/65">
                       {c.category}
                     </span>
                     <span className="h-px flex-1 bg-border" />
@@ -68,19 +68,19 @@ export function SolutionCasesSection() {
                       pt-[0.2rem] on the label nudges its cap-height onto the
                       body's first-line baseline, removing visual drift. */}
                   <dl className="mt-10 grid grid-cols-1 gap-x-6 gap-y-2 md:grid-cols-[6rem_1fr] md:gap-y-6">
-                    <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40 md:pt-[0.2rem]">
+                    <dt className="text-sm font-medium text-foreground/60 md:pt-[0.2rem]">
                       Problem
                     </dt>
                     <dd className="text-sm leading-relaxed text-foreground/65">
                       {c.problem}
                     </dd>
-                    <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan md:pt-[0.2rem]">
+                    <dt className="text-sm font-medium text-foreground md:pt-[0.2rem]">
                       Solution
                     </dt>
                     <dd className="text-sm leading-relaxed text-foreground/75">
                       {c.solution}
                     </dd>
-                    <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40 md:pt-[0.2rem]">
+                    <dt className="text-sm font-medium text-foreground/60 md:pt-[0.2rem]">
                       Example
                     </dt>
                     <dd className="text-sm leading-relaxed text-foreground/65">

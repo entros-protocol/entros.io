@@ -12,7 +12,7 @@ export function DetailField({
 }) {
   return (
     <div className={`min-w-0 ${wide ? "sm:col-span-2" : ""}`}>
-      <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">{label}</dt>
+      <dt className="text-sm font-medium text-foreground/60">{label}</dt>
       <dd
         className={
           prose

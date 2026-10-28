@@ -19,7 +19,7 @@ export function AgentSnapshotNote({
   const matches = currentOwner !== null && snapshot.wallet === currentOwner;
   return (
     <div className="border-t border-border pt-6">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+      <p className="text-sm font-medium text-foreground/60">
         Legacy operator snapshot
       </p>
       <p className="mt-3 text-sm leading-relaxed text-foreground/65">

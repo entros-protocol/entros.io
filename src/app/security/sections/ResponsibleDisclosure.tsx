@@ -45,7 +45,7 @@ export function ResponsibleDisclosure() {
               key={item.label}
               className="grid grid-cols-1 gap-x-12 gap-y-3 border-b border-border py-6 md:grid-cols-[12rem_1fr] md:py-8"
             >
-              <dt className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
+              <dt className="text-sm font-medium text-foreground">
                 {item.label}
               </dt>
               <dd className="text-base leading-relaxed text-foreground/75">

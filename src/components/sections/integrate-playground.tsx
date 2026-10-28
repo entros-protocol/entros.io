@@ -104,11 +104,8 @@ export function IntegratePlayground() {
       <div className="border border-border p-6 md:p-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-solana-green/60" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-solana-green" />
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+            <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
+            <span className="text-sm font-medium text-foreground/60">
               Devnet
             </span>
           </div>
@@ -122,7 +119,7 @@ export function IntegratePlayground() {
           <div className="flex-1">
             <label
               htmlFor="playground-wallet"
-              className="mb-2 block font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40"
+              className="text-sm font-medium mb-2 block text-foreground/60"
             >
               Wallet Address
             </label>
@@ -182,7 +179,7 @@ export function IntegratePlayground() {
 
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Trust Score
                 </p>
                 <p className="mt-2 font-display text-3xl font-medium tracking-tight text-foreground">
@@ -190,7 +187,7 @@ export function IntegratePlayground() {
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Verifications
                 </p>
                 <p className="mt-2 font-display text-3xl font-medium tracking-tight text-foreground">
@@ -198,7 +195,7 @@ export function IntegratePlayground() {
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Last Verified
                 </p>
                 <p className="mt-2 font-mono text-sm text-foreground">
@@ -209,7 +206,7 @@ export function IntegratePlayground() {
                 </p>
               </div>
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <p className="text-sm font-medium text-foreground/60">
                   Created
                 </p>
                 <p className="mt-2 font-mono text-sm text-foreground">
@@ -219,7 +216,7 @@ export function IntegratePlayground() {
             </div>
 
             <div className="mt-8 border-t border-border/50 pt-6">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+              <p className="text-sm font-medium text-foreground/60">
                 Entros Anchor PDA
               </p>
               <div className="mt-2 flex items-center gap-2">

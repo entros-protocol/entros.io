@@ -143,7 +143,7 @@ export default function Privacy() {
       <Section id="kept" title="What Entros keeps, and for how long">
         <div
           aria-hidden
-          className="hidden gap-6 pb-1 font-mono text-xs uppercase tracking-[0.12em] text-foreground/45 md:grid md:grid-cols-[1fr_1.4fr_0.9fr]"
+          className="text-sm font-medium hidden gap-6 pb-1 text-foreground/60 md:grid md:grid-cols-[1fr_1.4fr_0.9fr]"
         >
           <span>Data</span>
           <span>Use</span>

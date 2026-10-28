@@ -97,14 +97,14 @@ export function AgentsContent() {
           <ol className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
             {agentPermitRun.steps.map((step) => (
               <li key={step.outcome} className="flex flex-col bg-background p-6">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan/80">
+                <p className="text-sm font-medium text-foreground">
                   {step.outcome}
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-foreground/65">{step.detail}</p>
               </li>
             ))}
           </ol>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-8">
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:gap-10">
             {[
               { label: "The agent", href: explorerUrl(agentPermitRun.agent) },
               { label: "Binding transaction", href: explorerUrl(agentPermitRun.bindTransaction, "tx") },
@@ -115,10 +115,10 @@ export function AgentsContent() {
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 font-mono text-xs tracking-[0.1em] text-cyan transition-colors hover:text-foreground"
+                className="group inline-flex items-center gap-2.5 text-base font-medium text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan md:text-lg"
               >
                 {link.label}
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                <ExternalLink className="h-4 w-4" aria-hidden />
               </a>
             ))}
           </div>

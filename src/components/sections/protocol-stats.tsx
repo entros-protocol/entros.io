@@ -166,7 +166,7 @@ export function ProtocolStats() {
         {loading && (
           <div className="mt-12 flex flex-col items-center justify-center gap-4 border border-border py-24">
             <Loader2 className="h-6 w-6 animate-spin text-cyan" />
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+            <p className="text-sm font-medium text-foreground/60">
               Reading from Solana devnet…
             </p>
           </div>
@@ -217,7 +217,7 @@ export function ProtocolStats() {
                   key={stat.label}
                   className="flex flex-col bg-background p-6 md:p-8"
                 >
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                  <p className="text-sm font-medium text-foreground/60">
                     {stat.label}
                   </p>
                   <p className="mt-6 break-all font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl">
@@ -233,11 +233,8 @@ export function ProtocolStats() {
             {/* Most recent verification */}
             <div className="mt-8 border border-border p-6 md:p-8">
               <div className="flex items-center gap-3">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan/60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan" />
-                </span>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
+                <p className="text-sm font-medium text-foreground/60">
                   Most recent verification
                 </p>
               </div>
@@ -260,7 +257,7 @@ export function ProtocolStats() {
             {/* Data source attribution */}
             <div className="mt-6 flex flex-col items-start justify-between gap-3 border border-border p-5 md:flex-row md:items-center">
               <div className="flex items-center gap-3">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan" />
+                <span className="h-1.5 w-1.5 shrink-0 bg-cyan" aria-hidden />
                 <p className="font-mono text-[11px] text-foreground/50">
                   Live read from{" "}
                   <a
@@ -275,7 +272,7 @@ export function ProtocolStats() {
                   {" · entros-anchor"}
                 </p>
               </div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+              <p className="text-sm font-medium text-foreground/60">
                 Solana devnet
               </p>
             </div>

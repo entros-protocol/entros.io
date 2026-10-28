@@ -145,7 +145,7 @@ export default function Press() {
                   <div className="font-display text-4xl font-medium tracking-tight text-foreground md:text-5xl lg:text-6xl">
                     {stat.value}
                   </div>
-                  <p className="mt-3 font-mono text-xs uppercase tracking-[0.15em] text-foreground/65">
+                  <p className="text-sm font-medium mt-3 text-foreground/65">
                     {stat.label}
                   </p>
                 </div>
@@ -177,7 +177,7 @@ export default function Press() {
                   <p className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                     {blurb.length}
                   </p>
-                  <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/65">
+                  <p className="text-sm font-medium mt-2 text-foreground/65">
                     {blurb.chars}
                   </p>
                 </div>
@@ -224,7 +224,7 @@ export default function Press() {
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground">
                   {asset.name}
                 </h3>
-                <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.15em] text-foreground/65">
+                <p className="text-sm font-medium mt-2 text-foreground/65">
                   {asset.format}
                 </p>
                 <p className="mt-4 text-sm leading-relaxed text-foreground/60">
@@ -234,7 +234,7 @@ export default function Press() {
                 <a
                   href={asset.file}
                   download
-                  className="mt-6 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.15em] text-cyan transition-colors hover:text-foreground"
+                  className="text-sm font-medium mt-6 inline-flex items-center gap-2 text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan"
                 >
                   Download
                   <Download className="h-3.5 w-3.5" />
@@ -266,7 +266,7 @@ export default function Press() {
                   i < artifacts.length - 1 ? "border-b border-border" : ""
                 }`}
               >
-                <p className="font-mono text-xs uppercase tracking-[0.15em] text-foreground/65">
+                <p className="text-sm font-medium text-foreground/65">
                   {artifact.label}
                 </p>
                 <p className="font-mono text-sm text-foreground/80 md:text-base">
@@ -280,7 +280,7 @@ export default function Press() {
                       ? "noopener noreferrer"
                       : undefined
                   }
-                  className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.15em] text-cyan transition-colors hover:text-foreground"
+                  className="text-sm font-medium inline-flex items-center gap-2 text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan"
                 >
                   Open
                   <ArrowRight className="h-3.5 w-3.5" />

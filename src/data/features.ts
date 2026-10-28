@@ -3,26 +3,26 @@ import type { Feature } from "./types";
 export const features: Feature[] = [
   {
     icon: "pulse",
-    title: "The Pulse",
+    title: "Three short rounds",
     description:
-      "Say one word and trace one short path, three rounds in a row, each with a fresh challenge.",
+      "Say one word and trace one short path. Each of the three rounds brings a new word and a new path.",
     benefit:
-      "Raw motion and touch stay on your device. The service receives derived features, your spoken words for transcription and a coarse path outline.",
+      "Raw motion and touch stay on your device. The service receives a summary of each signal, your spoken words for transcription and a rough outline of each path.",
   },
   {
     icon: "proof",
-    title: "The Proof",
+    title: "One private proof",
     description:
-      "A ZK proof that two committed fingerprints sit within the Hamming-distance bounds.",
+      "When you come back, your browser builds a zero-knowledge proof that the new session matches your last one, without revealing either.",
     benefit:
-      "A minimum-distance floor in the Groth16 circuit rejects an exact replay.",
+      "The proof also rejects a session that is an exact copy of the last one.",
   },
   {
     icon: "anchor",
-    title: "The Anchor",
+    title: "Your Entros Anchor",
     description:
-      "A non-transferable token on your wallet. Its Trust Score grows as you re-verify across separate weeks.",
+      "A token on your wallet that cannot be transferred. Its Trust Score grows as you verify again across separate weeks.",
     benefit:
-      "Active weeks, recency and account age set the on-chain score.",
+      "The score counts active weeks, how recently you verified and how long you have held the Anchor.",
   },
 ];

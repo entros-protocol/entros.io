@@ -1,29 +1,57 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
-const internalLinks = [{ label: "Research paper", href: "/paper" }];
-
-const externalLinks = [
+const links = [
+  { label: "Research paper", href: "/paper", host: "entros.io/paper" },
   {
-    label: "On-chain programs (Solana Explorer)",
+    label: "On-chain programs",
     href: "https://explorer.solana.com/address/GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2?cluster=devnet",
+    host: "explorer.solana.com",
   },
   {
-    label: "AUDIT.md (public fix tracker)",
+    label: "AUDIT.md, the public fix tracker",
     href: "https://github.com/entros-protocol/entros.io/blob/main/AUDIT.md",
+    host: "github.com",
   },
   {
     label: "Public adversarial baseline tests",
     href: "https://github.com/entros-protocol/pulse-sdk/blob/main/test/pentest.test.ts",
+    host: "github.com",
   },
   {
     label: "GitHub organization",
     href: "https://github.com/entros-protocol",
+    host: "github.com",
   },
 ];
 
+const ROW =
+  "group grid grid-cols-[1fr_auto] items-center gap-6 py-5 text-foreground/80 transition-colors hover:text-foreground md:grid-cols-[1fr_14rem_auto]";
+
+function RowBody({ label, host, external }: { label: string; host: string; external: boolean }): ReactNode {
+  const Arrow = external ? ArrowUpRight : ArrowRight;
+  return (
+    <>
+      <span className="text-base">{label}</span>
+      <span className="hidden font-mono text-xs text-foreground/40 md:block">{host}</span>
+      <span
+        aria-hidden="true"
+        className="
+          inline-flex h-9 w-9 items-center justify-center border border-border
+          text-foreground/60 transition-colors
+          group-hover:border-foreground group-hover:bg-foreground group-hover:text-background
+        "
+      >
+        <Arrow className="h-4 w-4" strokeWidth={1.5} />
+      </span>
+    </>
+  );
+}
+
 /**
- * References—compact link list. Each row has a small chevron and
- * an external arrow indicator on hover; rows are hairline-divided.
+ * References: hairline-divided link rows. Each row names the destination
+ * host and ends in a square arrow tile that fills on hover.
  */
 export function References() {
   return (
@@ -34,40 +62,22 @@ export function References() {
         </h2>
 
         <ul className="mt-12 border-t border-border">
-          {internalLinks.map((ref) => (
-            <li key={ref.label} className="border-b border-border">
-              <Link
-                href={ref.href}
-                className="group flex items-center justify-between py-5 text-foreground/80 transition-colors hover:text-foreground"
-              >
-                <span className="text-base">{ref.label}</span>
-                <span
-                  aria-hidden="true"
-                  className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40 transition-colors group-hover:text-cyan"
-                >
-                  Internal →
-                </span>
-              </Link>
-            </li>
-          ))}
-          {externalLinks.map((ref) => (
-            <li key={ref.label} className="border-b border-border">
-              <a
-                href={ref.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center justify-between py-5 text-foreground/80 transition-colors hover:text-foreground"
-              >
-                <span className="text-base">{ref.label}</span>
-                <span
-                  aria-hidden="true"
-                  className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/40 transition-colors group-hover:text-cyan"
-                >
-                  External ↗
-                </span>
-              </a>
-            </li>
-          ))}
+          {links.map((ref) => {
+            const external = ref.href.startsWith("http");
+            return (
+              <li key={ref.label} className="border-b border-border">
+                {external ? (
+                  <a href={ref.href} target="_blank" rel="noopener noreferrer" className={ROW}>
+                    <RowBody label={ref.label} host={ref.host} external />
+                  </a>
+                ) : (
+                  <Link href={ref.href} className={ROW}>
+                    <RowBody label={ref.label} host={ref.host} external={false} />
+                  </Link>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

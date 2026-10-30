@@ -55,7 +55,11 @@ export function SolutionCasesSection() {
                     <span className="text-sm font-medium text-foreground/65">
                       {c.category}
                     </span>
-                    <span className="h-px flex-1 bg-border" />
+                    {/* The rule runs on to the right rail, or to the scene's
+                        edge where the scene sits on the right. */}
+                    <span
+                      className={`-mr-6 h-px flex-1 bg-border ${reverse ? "lg:-mr-20" : ""}`}
+                    />
                   </div>
 
                   <h3 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-4xl md:leading-[1.05]">

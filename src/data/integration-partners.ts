@@ -18,14 +18,14 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "SendAI",
     category: "AI Agent Toolkit",
-    description: "Integration surface: PoP gate on agent registration, paired with 8004.",
+    description: "Integration surface: human gate on agent registration, paired with 8004.",
     icon: "bot",
     logoUrl: "https://github.com/sendaifun.png",
   },
   {
     name: "Arcium",
     category: "Confidential Compute",
-    description: "Integration surface: PoP-gated access to confidential MPC apps.",
+    description: "Integration surface: human-gated access to confidential MPC apps.",
     icon: "shield",
     logoUrl: "/logos/arcium.webp",
   },
@@ -53,7 +53,7 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "Jupiter",
     category: "DeFi / Aggregator",
-    description: "Integration surface: pre-claim PoP gate on airdrops.",
+    description: "Integration surface: pre-claim human gate on airdrops.",
     icon: "airdrop",
     logoUrl: "https://github.com/jup-ag.png",
   },
@@ -88,7 +88,7 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "DRiP",
     category: "Creator Distribution",
-    description: "Integration surface: PoP gate on free-claim eligibility.",
+    description: "Integration surface: human gate on free-claim eligibility.",
     icon: "palette",
     logoUrl: "/logos/drip.webp",
   },
@@ -102,7 +102,7 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "Jito",
     category: "Restaking / MEV",
-    description: "Integration surface: PoP-gated NCN operator selection.",
+    description: "Integration surface: human-gated NCN operator selection.",
     icon: "chart",
     logoUrl: "/logos/jito.webp",
   },
@@ -123,7 +123,7 @@ export const integrationPartners: IntegrationPartner[] = [
   {
     name: "MetaDAO",
     category: "Futarchy Governance",
-    description: "Integration surface: PoP-gated futarchy markets.",
+    description: "Integration surface: human-gated futarchy markets.",
     icon: "vote",
     logoUrl: "https://github.com/metaDAOproject.png",
   },

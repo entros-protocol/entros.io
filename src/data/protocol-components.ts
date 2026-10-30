@@ -4,14 +4,13 @@ export const protocolComponents: ProtocolComponent[] = [
   {
     icon: "pulse",
     title: "Pulse SDK",
-    subtitle: "Client-side capture and proving",
+    subtitle: "Capture and proving on your device",
     description:
-      "A TypeScript library for sensor capture, 308-feature extraction, commitments, and ZK proofs.",
+      "A TypeScript library that records the rounds, extracts the 308 features and builds the commitment and proof.",
     highlights: [
-      "Browser and React Native support",
-      "Audio, IMU, and touch capture in parallel",
-      "Groth16 proof generation in the browser",
-      "Wallet-adapter integration for one-call verification",
+      "Browser and React Native",
+      "Groth16 proving in the browser",
+      "One-call verification through the wallet adapter",
     ],
     links: [
       { label: "GitHub", href: "https://github.com/entros-protocol/pulse-sdk" },
@@ -21,14 +20,13 @@ export const protocolComponents: ProtocolComponent[] = [
   {
     icon: "proof",
     title: "ZK Circuit",
-    subtitle: "Hamming distance verification",
+    subtitle: "Hamming distance in zero knowledge",
     description:
-      "A Groth16 circuit proves two Poseidon commitments open correctly and their Hamming distance falls inside the configured range. It does not prove capture provenance.",
+      "A Groth16 circuit proves two Poseidon commitments open to fingerprints within the configured distance range. It does not prove where a capture came from.",
     highlights: [
-      "Groth16 over BN254 curve",
-      "Poseidon hash for ZK efficiency",
-      "On-chain Groth16 verification",
-      "ZK verification uses under 200,000 compute units",
+      "Groth16 over BN254",
+      "Poseidon commitments",
+      "Verified on chain in under 200,000 compute units",
     ],
     links: [
       { label: "GitHub", href: "https://github.com/entros-protocol/circuits" },
@@ -39,12 +37,11 @@ export const protocolComponents: ProtocolComponent[] = [
     title: "On-Chain Programs",
     subtitle: "Three Solana programs",
     description:
-      "entros-verifier checks ZK proofs. entros-anchor stores Trust Score and manages non-transferable Token-2022 Anchors. entros-registry stores protocol configuration, treasury state, and validator-registration scaffolding.",
+      "entros-verifier checks proofs. entros-anchor holds the non-transferable Anchor and Trust Score. entros-registry holds protocol configuration and treasury state.",
     highlights: [
-      "Anchor framework with full constraint validation",
-      "Non-transferable token via Token-2022 extension",
+      "Non-transferable Token-2022 Anchor",
       "Trust Score from active weekly bins and account age",
-      "PDA-derived accounts, keyed to the wallet",
+      "Accounts derived from your wallet",
     ],
     links: [
       { label: "GitHub", href: "https://github.com/entros-protocol/protocol-core" },
@@ -53,14 +50,13 @@ export const protocolComponents: ProtocolComponent[] = [
   {
     icon: "server",
     title: "Executor Node",
-    subtitle: "Off-chain relay and challenge service",
+    subtitle: "Challenges and relay",
     description:
-      "A Rust gateway that issues challenges, authenticates integrators, applies quotas, forwards evidence to the private validator, relays protocol writes, and attempts SAS issuance.",
+      "A Rust gateway that issues signed challenges, applies integrator quotas, forwards evidence to the validator and relays protocol writes.",
     highlights: [
-      "Server-generated signed challenges",
-      "Best-effort SAS attestation issuance",
-      "Per-integrator API-key rate limiting",
-      "Configurable CORS and per-IP throttles",
+      "Signed challenges for every session",
+      "Per-integrator API keys and rate limits",
+      "Best-effort SAS attestation",
     ],
     links: [
       { label: "GitHub", href: "https://github.com/entros-protocol/executor-node" },
@@ -69,14 +65,13 @@ export const protocolComponents: ProtocolComponent[] = [
   {
     icon: "shield",
     title: "Validation Service",
-    subtitle: "Proprietary defense layer",
+    subtitle: "Private defense layer",
     description:
-      "A private Rust crate screens the 308-feature summary for synthetic artifacts, submitted-signal statistics, and Sybil patterns. Protocol behavior remains open and auditable. Detection thresholds and model internals stay private: they are calibration data for an attacker.",
+      "A private Rust service screens each capture for synthetic audio, unusual signal statistics and fingerprints seen on other wallets. The protocol stays open. Detection thresholds stay private because they would guide an attacker.",
     highlights: [
-      "TTS and synthetic data detection",
-      "Cross-wallet fingerprint registry (Sybil detection)",
-      "Cross-signal research telemetry (devnet)",
-      "Uniform public failure classes",
+      "Synthetic audio detection",
+      "Cross-wallet fingerprint registry",
+      "Uniform public failure reasons",
     ],
     links: [],
   },

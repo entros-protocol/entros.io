@@ -19,23 +19,19 @@ export const metadata = pageMetadata({
 export default function Technology() {
   return (
     <>
-      {/* Hero—split layout. Copy and CTAs on the left, fingerprint on
-          the right. The cryptographic-loop subheading frames the page;
-          the verification-flow section below carries the timing detail. */}
+      {/* Hero: split layout. Copy and CTAs on the left, fingerprint on
+          the right. */}
       <section>
         <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 pt-28 pb-6 md:pt-36 md:pb-12 lg:min-h-[calc(100vh-4rem)] lg:flex-row lg:items-center lg:gap-12 lg:pt-24 lg:pb-24">
           <div className="relative z-10 flex flex-col lg:w-3/5 lg:max-w-3xl">
             <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-              Three short rounds<span className="text-cyan">.</span>
-              <br />
-              One verified wallet<span className="text-cyan">.</span>
+              Behavioral verification for the agent&nbsp;era
+              <span className="text-cyan">.</span>
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Your device records each round, measures it and builds the
-              proof. Raw motion and touch never leave it. Your spoken words
-              leave for transcription and are never stored. Solana keeps the
-              proof result and your wallet&apos;s record.
+              Your device measures voice, touch and motion, then builds a
+              zero-knowledge proof that Solana verifies.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

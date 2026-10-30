@@ -1,33 +1,33 @@
 const FINDINGS = [
   {
-    title: "Single-modality detection degrades across models",
+    title: "Single-signal detectors age fast",
     source: "SONAR Benchmark, ACM 2024-2025",
-    body: "The best available classifier detects OpenAI's TTS 78% of the time; classifiers trained on older datasets lose up to 43% against newer TTS.",
+    body: "The best classifier caught OpenAI's TTS 78% of the time. Detectors trained on older data lost up to 43% against newer TTS.",
   },
   {
-    title: "Mobile fusion can improve authentication",
+    title: "Touch and motion fusion",
     source: "BioMoTouch, arXiv 2025",
-    body: "BioMoTouch reports 99.71% accuracy and a 0.27% equal error rate for touch and motion fusion. It does not establish Entros liveness or resistance to generated input.",
+    body: "Fusion reached 99.71% accuracy and a 0.27% equal error rate for authentication, a different task from liveness.",
   },
   {
-    title: "Arm movement can perturb the voice",
+    title: "Arm movement perturbs the voice",
     source: "Pouw et al., Royal Society Proceedings B, 2025",
-    body: "Pouw et al. measured upper-limb movement changing a sustained vowel's amplitude envelope under laboratory conditions. Whether consumer devices can turn that into a liveness signal remains open.",
+    body: "Upper-limb movement changed a sustained vowel's amplitude in the lab. Whether phones can use it for liveness is open.",
   },
   {
-    title: "Physics-informed features merit evaluation",
+    title: "Physics-informed voice features",
     source: "VoiceRadar, NDSS 2025",
-    body: "VoiceRadar reports a 0.45% equal error rate for its micro-frequency feature. That result does not establish an Entros error rate.",
+    body: "A micro-frequency feature reached a 0.45% equal error rate in the authors' tests.",
   },
   {
-    title: "Modern TTS produces artifacts in both directions",
+    title: "TTS artifacts run both ways",
     source: "Warren et al., \"Pitch Imperfect\", 2025",
-    body: "Neural vocoders can push acoustic perturbation above human baselines as well as below. Detection must account for artifacts in both directions.",
+    body: "Neural vocoders can push acoustic perturbation above human levels as well as below, so a detector has to check both directions.",
   },
   {
-    title: "Touch and motion can share a physical response",
+    title: "Touch shows up in motion",
     source: "Device physics, BioMoTouch 2025",
-    body: "A physical touch can produce a time-aligned response in motion sensors. Whether consumer devices can measure it well enough to separate physical interaction from generated input remains open research.",
+    body: "A physical touch can leave a time-aligned trace in motion sensors. Whether consumer devices measure it well enough is open.",
   },
 ];
 
@@ -45,8 +45,8 @@ export function ResearchValidationSection() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          External studies motivate this research; their accuracy numbers do
-          not establish Entros performance on consumer devices.
+          Outside studies shape this research. Their numbers describe their
+          own tests and do not describe Entros on consumer devices.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2 lg:grid-cols-3">

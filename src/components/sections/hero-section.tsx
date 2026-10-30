@@ -13,18 +13,12 @@ export function HeroSection() {
     <section className="relative mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pt-28 pb-0 md:pt-32 lg:min-h-[calc(100vh-4rem)] lg:pt-28">
       {/* Copy + CTAs */}
       <div className="relative z-10 flex max-w-2xl flex-col lg:max-w-5xl">
-        {/* At lg the column opens up and the headline wraps on its own.
-            Below lg the break keeps "Private human" together on line one. */}
-        <h1 className="font-display text-4xl font-normal leading-[1.04] tracking-[-0.02em] text-foreground md:text-5xl lg:text-6xl">
-          Private human{" "}
-          <br className="lg:hidden" />
-          verification
-          <span className="text-cyan">.</span>
+        {/* Each clause is bound with non-breaking spaces, so on narrow
+            screens the headline breaks only at the comma. */}
+        <h1 className="font-display text-[2rem] font-normal leading-[1.04] tracking-[-0.02em] text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
+          Prove&nbsp;you&rsquo;re&nbsp;human<span className="text-cyan">,</span>{" "}
+          not&nbsp;who&nbsp;you&nbsp;are<span className="text-cyan">.</span>
         </h1>
-
-        <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg lg:max-w-2xl">
-          Give your wallet a verified status that any Solana app can check.
-        </p>
 
         <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
           {/* Primary CTA—solid filled, cyan label */}

@@ -2,21 +2,15 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 /**
- * Footer CTA—closing statement before the global footer. Display
- * copy with two CTAs (filled primary + outlined secondary).
+ * Footer CTA: the closing statement before the global footer, with the
+ * demo as the primary action and the technology page beside it.
  */
 export function FooterCTASection() {
   return (
     <section className="border-t border-border">
       <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-        {/* Non-breaking spaces bind "on-chain proof" and "every dApp"
-            so each sentence splits at its comma on narrow viewports
-            instead of orphaning a trailing word. text-balance cannot do
-            this here because it will not balance across the <br>. */}
-        <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-          Private<span className="text-cyan">,</span> open<span className="text-cyan">,</span> on-chain&nbsp;proof<span className="text-cyan">.</span>
-          <br />
-          Readable by every&nbsp;dApp<span className="text-cyan">.</span>
+        <h2 className="text-balance font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
+          Private human verification<span className="text-cyan">.</span>
         </h2>
 
         <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">

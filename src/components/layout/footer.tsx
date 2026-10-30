@@ -38,7 +38,7 @@ const SOCIAL = [
 export function Footer() {
   return (
     <footer className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-6 pt-16 pb-10 md:pt-20">
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-16 md:pt-20">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
             <Link
@@ -103,8 +103,10 @@ export function Footer() {
             </FooterColumn>
           </nav>
         </div>
+      </div>
 
-        <div className="mt-16 flex items-center justify-between gap-4 border-t border-border pt-6">
+      <div className="border-t border-border">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 pt-6 pb-10">
           <p className="text-xs text-foreground/50">&copy; 2026 Entros Protocol</p>
           <NavThemeSquare variant="footer" />
         </div>

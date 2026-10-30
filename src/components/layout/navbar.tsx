@@ -58,11 +58,6 @@ const solutionsDropdown: DropdownItem[] = [
     href: "/integrate",
     description: "One SDK, drop-in for any dApp.",
   },
-  {
-    label: "Stats",
-    href: "/stats",
-    description: "Live protocol metrics from devnet.",
-  },
 ];
 
 export function Navbar() {

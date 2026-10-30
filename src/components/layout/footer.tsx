@@ -86,18 +86,17 @@ export function Footer() {
               <FooterLink href="/verify">Verify</FooterLink>
               <FooterLink href="/dashboard">Dashboard</FooterLink>
               <FooterLink href="/solutions">Solutions</FooterLink>
-              <FooterLink href="/stats">Stats</FooterLink>
               <FooterLink href="/token">Token</FooterLink>
             </FooterColumn>
             <FooterColumn title="Build">
               <FooterLink href="/docs">Docs</FooterLink>
               <FooterLink href="/integrate">Integrate</FooterLink>
               <FooterLink href="/technology">Technology</FooterLink>
-              <FooterLink href="/paper">Paper</FooterLink>
               <FooterLink href="/security">Security</FooterLink>
             </FooterColumn>
             <FooterColumn title="About">
               <FooterLink href="/manifesto">Manifesto</FooterLink>
+              <FooterLink href="/paper">Paper</FooterLink>
               <FooterLink href="/roadmap">Roadmap</FooterLink>
               <FooterLink href="/press">Press</FooterLink>
               <FooterLink href="/privacy">Privacy</FooterLink>

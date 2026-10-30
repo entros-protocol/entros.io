@@ -80,18 +80,6 @@ export default function Token() {
               Try the demo
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <Link
-              href="/stats"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              See live stats
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
           </div>
         </div>
       </section>

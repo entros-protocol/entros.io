@@ -28,7 +28,6 @@ const sections = [
       { label: "Governance", href: "/governance" },
       { label: "Realms Case Study", href: "/case-studies/realms" },
       { label: "Integrate", href: "/integrate" },
-      { label: "Stats", href: "/stats" },
     ],
   },
   {

@@ -11,7 +11,7 @@ export function PartnersSection() {
     <section className="border-t border-border">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          Building for the Solana ecosystem<span className="text-cyan">.</span>
+          Building with the Solana ecosystem<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">

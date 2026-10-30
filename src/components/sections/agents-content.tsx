@@ -1,3 +1,4 @@
+import { StepNumber } from "@/components/ui/step-number";
 import { AgentPermitDiagram } from "@/components/ui/agent-permit-diagram";
 import { AgentPermitSnippet } from "@/components/ui/agent-permit-snippet";
 import { ExternalLink } from "lucide-react";
@@ -44,9 +45,7 @@ export function AgentsContent() {
               <ol className="mt-5 space-y-3">
                 {agentPermitChecks.map((check, index) => (
                   <li key={check} className="flex gap-4 text-base leading-relaxed text-foreground/70 md:text-lg">
-                    <span className="mt-[0.4em] shrink-0 font-mono text-xs tracking-[0.2em] text-cyan">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                    <StepNumber n={index + 1} className="mt-[0.05em] shrink-0 text-lg md:text-xl" />
                     <span>{check}</span>
                   </li>
                 ))}
@@ -72,7 +71,7 @@ export function AgentsContent() {
             {agentPermitSteps.map((step) => (
               <div key={step.number} className="flex flex-col bg-background p-8 md:p-10">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs tracking-[0.2em] text-cyan">{step.number}</span>
+                  <StepNumber n={step.number} />
                   <span className="h-px flex-1 bg-border" />
                 </div>
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">

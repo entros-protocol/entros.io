@@ -1,3 +1,4 @@
+import { StepNumber } from "@/components/ui/step-number";
 import Link from "next/link";
 import {
   AgentGlyph,
@@ -268,9 +269,7 @@ export function GovernanceContent() {
               return (
                 <div key={step.number} className="flex flex-col bg-background p-8 md:p-10">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                      {step.number}
-                    </span>
+                    <StepNumber n={step.number} />
                     <Icon className="h-5 w-5 text-foreground/70" />
                     <span className="h-px flex-1 bg-border" />
                   </div>

@@ -1,3 +1,4 @@
+import { StepNumber } from "@/components/ui/step-number";
 import {
   AsciiAirdropScene,
   AsciiBotScene,
@@ -31,7 +32,6 @@ export function SolutionCasesSection() {
 
         <div className="mt-10 flex flex-col gap-40 md:gap-56">
           {solutionCases.map((c, idx) => {
-            const number = String(idx + 1).padStart(2, "0");
             const reverse = idx % 2 === 1;
             const Scene = SCENES[idx] ?? AsciiAirdropScene;
             return (
@@ -51,9 +51,7 @@ export function SolutionCasesSection() {
                     column doesn't sit top-aligned with dead space under it. */}
                 <div className="lg:col-span-7 lg:self-center">
                   <div className="flex items-center gap-4">
-                    <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                      {number}
-                    </span>
+                    <StepNumber n={idx + 1} />
                     <span className="text-sm font-medium text-foreground/65">
                       {c.category}
                     </span>

@@ -1,3 +1,4 @@
+import { StepNumber } from "@/components/ui/step-number";
 import { SolanaIcon } from "@/lib/solana-icon";
 import {
   BallotGlyph,
@@ -80,13 +81,15 @@ export function TokenContent() {
                   <g key={step.step}>
                     <text
                       x={cx}
-                      y={70}
+                      y={68}
                       textAnchor="middle"
                       style={{
-                        fill: "var(--color-cyan)",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: 11,
-                        letterSpacing: "0.2em",
+                        fill: "var(--color-foreground)",
+                        fillOpacity: 0.45,
+                        fontFamily: "var(--font-display)",
+                        fontSize: 22,
+                        fontWeight: 300,
+                        fontVariantNumeric: "tabular-nums",
                       }}
                     >
                       {String(i + 1).padStart(2, "0")}
@@ -174,9 +177,7 @@ export function TokenContent() {
                   className="flex flex-col bg-background p-6 md:p-8"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
+                    <StepNumber n={i + 1} />
                     <span className="h-px flex-1 bg-border" />
                     <Glyph className="h-7 w-7 text-foreground/80 md:hidden" />
                   </div>

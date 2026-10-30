@@ -1,3 +1,4 @@
+import { StepNumber } from "@/components/ui/step-number";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import {
@@ -40,7 +41,7 @@ const incidents = [
     actor: "Jupiter Jupuary",
     headline: "750K wallets filtered as Sybil",
     detail:
-      "The Jupiter team filtered more than 750,000 wallets out of Jupuary after the fact. Each filter was hand-built and downstream. An upstream personhood primitive moves that work off every protocol's plate.",
+      "The Jupiter team filtered more than 750,000 wallets out of Jupuary after the fact. Each filter was hand-built and downstream. An upstream human check moves that work off every protocol's plate.",
   },
 ];
 
@@ -224,9 +225,7 @@ export default function RealmsCaseStudy() {
                   className="flex flex-col bg-background p-6 md:p-8"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
+                    <StepNumber n={i + 1} />
                     <span className="h-px flex-1 bg-border" />
                     <Icon className="h-5 w-5 text-foreground/70" />
                   </div>

@@ -1,3 +1,4 @@
+import { StepNumber } from "@/components/ui/step-number";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { BadgeGlyph, GateGlyph } from "@/components/icons/glyphs";
@@ -63,7 +64,7 @@ export function IntegrateGuide() {
           <div className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border lg:grid-cols-5">
             <div className="flex flex-col bg-background p-8 md:p-10 lg:col-span-2">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xs tracking-[0.2em] text-cyan">01</span>
+                <StepNumber n="01" />
                 <span className="h-px flex-1 bg-border" />
                 <span className="text-sm font-medium text-foreground/65">
                   Recommended
@@ -172,9 +173,7 @@ export function IntegrateGuide() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                    {String(idx + 1).padStart(2, "0")}
-                  </span>
+                  <StepNumber n={idx + 1} />
                   <span className="h-px flex-1 bg-border" />
                 </div>
 
@@ -355,9 +354,7 @@ export function IntegrateGuide() {
             {ABUSE_MECHANISMS.map((m) => (
               <div key={m.number} className="flex flex-col bg-background p-8 md:p-10">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                    {m.number}
-                  </span>
+                  <StepNumber n={m.number} />
                   <span className="h-px flex-1 bg-border" />
                 </div>
 

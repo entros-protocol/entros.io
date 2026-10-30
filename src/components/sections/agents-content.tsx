@@ -44,8 +44,10 @@ export function AgentsContent() {
               </p>
               <ol className="mt-5 space-y-3">
                 {agentPermitChecks.map((check, index) => (
-                  <li key={check} className="flex gap-4 text-base leading-relaxed text-foreground/70 md:text-lg">
-                    <StepNumber n={index + 1} className="mt-[0.05em] shrink-0 text-lg md:text-xl" />
+                  <li key={check} className="flex items-start gap-4 text-base leading-relaxed text-foreground/70 md:text-lg">
+                    <span className="flex h-[1.625rem] shrink-0 items-center md:h-[1.828rem]">
+                      <StepNumber n={index + 1} className="text-lg md:text-xl" />
+                    </span>
                     <span>{check}</span>
                   </li>
                 ))}

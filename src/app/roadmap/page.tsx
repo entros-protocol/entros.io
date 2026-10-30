@@ -313,7 +313,9 @@ export default function Roadmap() {
                       i < flipCriteria.length - 1 ? "border-b border-border" : ""
                     }`}
                   >
-                    <StepNumber n={i + 1} className="mt-0.5 w-9 shrink-0" />
+                    <span className="flex h-[1.625rem] w-9 shrink-0 items-center md:h-[1.828rem]">
+                      <StepNumber n={i + 1} />
+                    </span>
                     <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
                       {item}
                     </p>

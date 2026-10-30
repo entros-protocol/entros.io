@@ -1,22 +1,33 @@
-const signals = [
+import type { ComponentType } from "react";
+import {
+  AgentGlyph,
+  SignalGlyph,
+  WalletGlyph,
+  type GlyphProps,
+} from "@/components/icons/glyphs";
+
+const signals: { label: string; text: string; Icon: ComponentType<GlyphProps> }[] = [
   {
     label: "Agents",
     text: "Software now holds wallets, trades and votes on its own.",
+    Icon: AgentGlyph,
   },
   {
     label: "The gap",
     text: "A wallet address cannot show whether a person stands behind it.",
+    Icon: WalletGlyph,
   },
   {
     label: "The signal",
     text: "Entros is designed to show that a person verified, without asking who they are.",
+    Icon: SignalGlyph,
   },
 ];
 
 /**
  * Problem section: the stakes at display size across the full span, then
- * a two-column band with the frame on the left and three numbered lines
- * on the right.
+ * a two-column band with the frame on the left and three lines, each
+ * marked with its line glyph, on the right.
  */
 export function ProblemSection() {
   return (
@@ -33,14 +44,12 @@ export function ProblemSection() {
           </p>
 
           <ol className="divide-y divide-border lg:col-span-6 lg:col-start-7">
-            {signals.map((signal, i) => (
+            {signals.map((signal) => (
               <li
                 key={signal.label}
-                className="grid grid-cols-[3rem_1fr] items-baseline gap-x-4 gap-y-1 py-6 text-base leading-relaxed first:pt-1 last:pb-0 md:grid-cols-[3.5rem_8rem_1fr] md:gap-x-6"
+                className="grid grid-cols-[2.5rem_1fr] items-baseline gap-x-4 gap-y-1 py-6 text-base leading-relaxed first:pt-1 last:pb-0 md:grid-cols-[3rem_8rem_1fr] md:gap-x-6"
               >
-                <span className="font-mono text-sm tracking-[0.2em] text-cyan">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
+                <signal.Icon className="h-6 w-6 translate-y-0.5 self-start text-foreground" />
                 <span className="font-medium text-foreground">
                   {signal.label}
                 </span>

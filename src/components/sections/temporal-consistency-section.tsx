@@ -63,7 +63,9 @@ export function TemporalConsistencySection() {
           </div>
         </div>
 
-        <div className="relative grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
+        {/* The cards are positioned for their ticks, so they paint over the
+            section rails; border-x redraws the rails along the grid. */}
+        <div className="relative grid grid-cols-1 gap-px border-x border-y border-border bg-border md:grid-cols-3">
           {phases.map((phase) => (
             <div key={phase.day} className="relative bg-background p-8">
               <span

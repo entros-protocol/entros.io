@@ -1,5 +1,6 @@
 "use client";
 
+import { StepNumber } from "@/components/ui/step-number";
 import { useEffect, useRef } from "react";
 
 import {
@@ -101,9 +102,7 @@ export function ResetBaselineDialog({
               key={item}
               className="grid grid-cols-[2rem_1fr] border-b border-foreground/[0.08] py-2.5 text-sm leading-relaxed text-foreground/75"
             >
-              <span className="font-mono text-[10px] leading-6 text-foreground/40">
-                {String(index + 1).padStart(2, "0")}
-              </span>
+              <StepNumber n={index + 1} className="text-sm leading-6 md:text-sm" />
               <span>{item}</span>
             </li>
           ))}

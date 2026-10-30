@@ -149,14 +149,14 @@ export function GovernanceContent() {
 
                       <div className="flex items-center justify-end gap-2">
                         <span className="h-1.5 w-1.5 bg-foreground/30" aria-hidden />
-                        <span className="font-mono text-xs text-foreground/45">×1</span>
+                        <span className="text-sm tabular-nums text-foreground/45">×1</span>
                       </div>
 
                       <div className="flex items-center justify-end gap-2">
                         {row.verified ? (
                           <>
                             <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
-                            <span className="font-mono text-xs text-foreground">×1</span>
+                            <span className="text-sm tabular-nums text-foreground">×1</span>
                           </>
                         ) : (
                           <span className="text-sm font-medium text-foreground/60">

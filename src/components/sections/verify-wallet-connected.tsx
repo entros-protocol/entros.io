@@ -1,5 +1,6 @@
 "use client";
 
+import { StepNumber } from "@/components/ui/step-number";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -1001,9 +1002,7 @@ export function VerifyWalletConnected({
         >
           {steps.map(({ label, Glyph }, index) => (
             <li key={label} className="flex flex-col items-center px-2 text-center">
-              <span className="font-mono text-[10px] tracking-[0.2em] text-foreground/40">
-                {String(index + 1).padStart(2, "0")}
-              </span>
+              <StepNumber n={index + 1} className="text-lg md:text-xl" />
               <span className="mt-3 flex h-8 w-12 items-center justify-center">
                 <Glyph />
               </span>

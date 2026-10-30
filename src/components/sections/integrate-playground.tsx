@@ -198,7 +198,7 @@ export function IntegratePlayground() {
                 <p className="text-sm font-medium text-foreground/60">
                   Last Verified
                 </p>
-                <p className="mt-2 font-mono text-sm text-foreground">
+                <p className="mt-2 text-sm tabular-nums text-foreground">
                   {timeAgo(result.lastVerified)}
                 </p>
                 <p className="text-xs text-foreground/50">
@@ -209,7 +209,7 @@ export function IntegratePlayground() {
                 <p className="text-sm font-medium text-foreground/60">
                   Created
                 </p>
-                <p className="mt-2 font-mono text-sm text-foreground">
+                <p className="mt-2 text-sm tabular-nums text-foreground">
                   {formatTimestamp(result.createdAt)}
                 </p>
               </div>

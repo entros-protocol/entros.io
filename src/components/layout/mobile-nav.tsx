@@ -88,7 +88,7 @@ export function MobileNav() {
                         : undefined
                     }
                   >
-                    <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-background/40">
+                    <span className="block text-xs font-medium text-background/45">
                       {section.heading}
                     </span>
                     {/* Two columns keeps the whole tree on one screen.

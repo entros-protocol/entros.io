@@ -110,7 +110,7 @@ export default function Privacy() {
             What Entros receives when you use entros.io, where it goes, how long
             it is kept, and what stays on your device.
           </p>
-          <p className="mt-6 font-mono text-xs text-foreground/50">Updated {UPDATED}</p>
+          <p className="mt-6 text-sm text-foreground/50">Updated {UPDATED}</p>
         </div>
       </section>
 

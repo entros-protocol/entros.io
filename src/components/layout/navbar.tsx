@@ -39,6 +39,11 @@ const solutionsDropdown: DropdownItem[] = [
     description: "Where a verified wallet matters.",
   },
   {
+    label: "Integrate",
+    href: "/integrate",
+    description: "One SDK, drop-in for any dApp.",
+  },
+  {
     label: "Agent Permits",
     href: "/agents",
     description: "Owner-signed permits for agent actions.",
@@ -52,11 +57,6 @@ const solutionsDropdown: DropdownItem[] = [
     label: "Realms Case Study",
     href: "/case-studies/realms",
     description: "Devnet voter-weight prototype and planned Realms client.",
-  },
-  {
-    label: "Integrate",
-    href: "/integrate",
-    description: "One SDK, drop-in for any dApp.",
   },
 ];
 

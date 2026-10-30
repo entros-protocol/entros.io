@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 const links = [
@@ -26,31 +25,12 @@ const links = [
   },
 ];
 
-const ROW =
-  "group grid grid-cols-[1fr_auto] items-center gap-6 py-5 text-foreground/80 transition-colors hover:text-foreground md:grid-cols-[1fr_14rem_auto]";
-
-function RowBody({ label, host, external }: { label: string; host: string; external: boolean }): ReactNode {
-  const Arrow = external ? ArrowUpRight : ArrowRight;
-  return (
-    <>
-      <span className="text-base">{label}</span>
-      <span className="hidden font-mono text-xs text-foreground/40 md:block">{host}</span>
-      <span
-        aria-hidden="true"
-        className="
-          inline-flex h-9 w-9 items-center justify-center border border-border
-          text-foreground/60
-        "
-      >
-        <Arrow className="h-4 w-4" strokeWidth={1.5} />
-      </span>
-    </>
-  );
-}
+const LINK =
+  "inline-flex items-center gap-2.5 text-base font-medium text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan md:text-lg";
 
 /**
- * References: hairline-divided link rows. Each row names the destination
- * host and ends in a square arrow tile.
+ * References: hairline-divided rows, each an underlined link with its
+ * destination host on the right.
  */
 export function References() {
   return (
@@ -64,16 +44,22 @@ export function References() {
           {links.map((ref) => {
             const external = ref.href.startsWith("http");
             return (
-              <li key={ref.label} className="border-b border-border">
+              <li
+                key={ref.label}
+                className="flex items-center justify-between gap-6 border-b border-border py-5"
+              >
                 {external ? (
-                  <a href={ref.href} target="_blank" rel="noopener noreferrer" className={ROW}>
-                    <RowBody label={ref.label} host={ref.host} external />
+                  <a href={ref.href} target="_blank" rel="noopener noreferrer" className={LINK}>
+                    {ref.label}
+                    <ArrowUpRight className="h-4 w-4" aria-hidden />
                   </a>
                 ) : (
-                  <Link href={ref.href} className={ROW}>
-                    <RowBody label={ref.label} host={ref.host} external={false} />
+                  <Link href={ref.href} className={LINK}>
+                    {ref.label}
+                    <ArrowRight className="h-4 w-4" aria-hidden />
                   </Link>
                 )}
+                <span className="hidden text-sm text-foreground/40 md:block">{ref.host}</span>
               </li>
             );
           })}

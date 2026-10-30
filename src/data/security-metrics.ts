@@ -1,115 +1,97 @@
-export interface CampaignResult {
-  tier: string;
-  description: string;
+export interface CampaignWave {
+  label: string;
+  condition: string;
   attempts: string;
   passRate: string;
-  status: string;
-  note?: string;
+  /** Pass rate as a number from 0 to 100, for the bar. */
+  percent: number;
 }
 
-export const campaignResults: CampaignResult[] = [
+export interface Campaign {
+  tier: string;
+  name: string;
+  description: string;
+  passRate: string;
+  caption: string;
+  date?: string;
+  note?: string;
+  waves?: CampaignWave[];
+}
+
+export interface PlannedCampaign {
+  tier: string;
+  name: string;
+  status: string;
+  active?: boolean;
+}
+
+export const campaigns: Campaign[] = [
   {
     tier: "T1",
-    description: "Procedural synthesis",
-    attempts: "2,000",
+    name: "Procedural synthesis",
+    description: "Scripted voice, motion and touch generated from simple procedures.",
     passRate: "0%",
-    status: "hardened · 2026-03",
+    caption: "0 of 2,000 passed",
+    date: "Hardened March 2026",
   },
   {
     tier: "T2",
-    description: "Multi-strategy parameter variation",
-    attempts: "4,000",
+    name: "Parameter variation",
+    description: "Procedural signals across several strategies and parameter ranges.",
     passRate: "0%",
-    status: "hardened · 2026-03",
+    caption: "0 of 4,000 passed",
+    date: "Hardened March 2026",
   },
   {
     tier: "T3a",
-    description: "Unconstrained feature optimization",
-    attempts: "1,000",
+    name: "Unconstrained feature optimization",
+    description: "Inputs tuned against the feature space with access to the source.",
     passRate: "0%",
-    status: "hardened · 2026-04",
+    caption: "0 of 1,000 passed",
+    date: "Hardened April 2026",
   },
   {
     tier: "T3b",
-    description: "Constrained feature optimization",
-    attempts: "9,000",
+    name: "Constrained feature optimization",
+    description: "The same search, held to realistic feature ranges.",
     passRate: "0%",
-    status: "hardened · 2026-04",
-    note: "Campaign surfaced a gap in server-side feature validation. Hardened. See AUDIT.md.",
+    caption: "0 of 9,000 passed",
+    date: "Hardened April 2026",
+    note: "This campaign surfaced a gap in server-side feature validation. It is fixed and listed in AUDIT.md.",
   },
   {
-    tier: "T4a - Wave 1",
-    description: "Pre-recorded human voice + procedural motion/touch (temporal enforcement OFF, log-only)",
-    attempts: "50",
-    passRate: "100%",
-    status: "campaign counterfactual",
-  },
-  {
-    tier: "T4a - Wave 2",
-    description: "Pre-recorded human voice + procedural motion/touch (temporal enforcement ON)",
-    attempts: "10",
-    passRate: "10%",
-    status: "campaign enforcement condition",
-    note: "A cross-program binding gap surfaced and was fixed; the public audit records the resolved issue without operational details.",
-  },
-  {
-    tier: "T4a - Wave 3",
-    description: "Pre-recorded human voice + procedural motion/touch (temporal enforcement ON + phrase content binding ON)",
-    attempts: "20",
+    tier: "T4a",
+    name: "Prerecorded human voice",
+    description: "A person's recorded voice with procedural motion and touch, run under four conditions.",
     passRate: "0%",
-    status: "0% observed for this attack class",
-    note: "Phrase matching rejected all 20 attempts in this wave, covering the tested prerecorded, arbitrary-content class.",
-  },
-  {
-    tier: "T4a - Wave 4",
-    description: "Wave 3 methodology at scale (N=1000) to tighten the statistical bound on the closed attack class",
-    attempts: "1,000",
-    passRate: "0%",
-    status: "0% observed at N=1,000",
-    note: "The validator rejected 1,000 of 1,000 attempts (95% confidence interval [0%, 0.37%] for the pass rate). This bounds the tested class, not all synthesis.",
+    caption: "0 of 1,000 in the final wave",
+    note: "Wave 2 surfaced a cross-program binding gap, now fixed. The final wave gives a 95% confidence interval of 0% to 0.37%. It covers this attack class, not all synthesis.",
+    waves: [
+      { label: "Wave 1", condition: "Temporal checks logged only", attempts: "50", passRate: "100%", percent: 100 },
+      { label: "Wave 2", condition: "Temporal checks enforced", attempts: "10", passRate: "10%", percent: 10 },
+      { label: "Wave 3", condition: "Plus phrase binding", attempts: "20", passRate: "0%", percent: 0 },
+      { label: "Wave 4", condition: "Wave 3 at scale", attempts: "1,000", passRate: "0%", percent: 0 },
+    ],
   },
   {
     tier: "T4b",
-    description: "Real-time synthesized voice speaking the issued phrase across two TTS families and 58 voices, with procedural motion and touch, in a full-stack campaign",
-    attempts: "200",
+    name: "Real-time synthetic voice",
+    description: "Two TTS families and 58 voices speak the issued phrase, with procedural motion and touch, through the full stack.",
     passRate: "0%",
-    status: "0% observed · 2026-06",
-    note: "No attempt in this 200-run campaign reached the chain; the result covers the named models, voices, and configuration.",
-  },
-  {
-    tier: "T5",
-    description: "Coupled cross-modal synthesis",
-    attempts: "None yet",
-    passRate: "in progress",
-    status: "open",
-  },
-  {
-    tier: "T6",
-    description: "Targeted human-mimicry / identity theft",
-    attempts: "None yet",
-    passRate: "blocked",
-    status: "waits for T5 closure",
-  },
-  {
-    tier: "T7",
-    description: "Replay-perturbed",
-    attempts: "None yet",
-    passRate: "queued",
-    status: "next-phase",
-  },
-  {
-    tier: "T8",
-    description: "Adaptive probing",
-    attempts: "None yet",
-    passRate: "queued",
-    status: "post-mainnet",
+    caption: "0 of 200 passed",
+    date: "June 2026",
+    note: "No attempt reached the chain. The result covers the named models, voices and configuration.",
   },
 ];
 
-export const lastUpdated = "August 7, 2026";
+export const plannedCampaigns: PlannedCampaign[] = [
+  { tier: "T5", name: "Coupled cross-modal synthesis", status: "Testing now", active: true },
+  { tier: "T6", name: "Targeted human mimicry", status: "Starts after T5" },
+  { tier: "T7", name: "Replay with perturbation", status: "Next phase" },
+  { tier: "T8", name: "Adaptive probing", status: "After mainnet" },
+];
 
-export const t4aNote =
-  "T4a measured one prerecorded, arbitrary-content attack class across four campaign conditions; pass rates moved from 100% to 10% to 0%. The final 1,000-run wave observed 0 passes (95% confidence interval [0%, 0.37%]). This does not establish a universal synthesis rate.";
+export const lastUpdated = "August 7, 2026";
 
 export const onChainBurstNote =
   "Devnet Anchor counts include documented red-team artifacts alongside team and pilot captures. The public stats page reads the on-chain aggregate and does not classify wallet owners.";

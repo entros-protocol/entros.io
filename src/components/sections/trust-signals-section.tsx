@@ -6,7 +6,9 @@ import { getIcon } from "@/lib/icons";
 /**
  * Status / Trust Signals—flat 2×2 hairline grid. Each cell carries
  * an icon, the signal name, the operational state, a short detail,
- * and an arrow indicator that links to the relevant page.
+ * and an arrow indicator that links to the relevant page. Hover lights
+ * only the arrow: the hairlines are the grid's ground showing between
+ * opaque cells, so a translucent cell fill would turn the cell grey.
  */
 export function TrustSignalsSection() {
   return (
@@ -26,7 +28,7 @@ export function TrustSignalsSection() {
               <>
                 <div className="flex items-start justify-between gap-4">
                   <Icon className="h-10 w-10 text-foreground/80" />
-                  <ArrowUpRight className="h-4 w-4 text-foreground/30 transition-colors group-hover:text-foreground" />
+                  <ArrowUpRight className="h-4 w-4 text-foreground/30 transition-[color,filter] duration-200 ease-out group-hover:text-cyan group-hover:drop-shadow-[0_0_6px_var(--color-cyan)] group-focus-visible:text-cyan group-focus-visible:drop-shadow-[0_0_6px_var(--color-cyan)]" />
                 </div>
 
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground">
@@ -41,8 +43,7 @@ export function TrustSignalsSection() {
               </>
             );
 
-            const cellClass =
-              "group bg-background p-8 transition-colors hover:bg-foreground/[0.015]";
+            const cellClass = "group bg-background p-8";
 
             return isExternal ? (
               <a

@@ -3,14 +3,12 @@ import { ArrowRight } from "lucide-react";
 import { DriftWaveform } from "@/components/ui/drift-waveform";
 
 /**
- * Homepage hero—copy stacked at the top, the bounded-drift waveform
- * running edge to edge along the bottom. The wave bleeds the container
- * padding on both sides so it meets the skeleton rails, and `mt-auto`
- * pins it to the floor of the viewport-height section.
+ * Homepage hero—copy stacked at the top of the viewport-height section,
+ * the drift waveform filling the rest of it.
  */
 export function HeroSection() {
   return (
-    <section className="relative mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pt-28 pb-0 md:pt-32 lg:min-h-[calc(100vh-4rem)] lg:pt-28">
+    <section className="relative mx-auto flex min-h-svh w-full max-w-7xl flex-col px-6 pt-28 pb-0 md:pt-32 lg:min-h-[calc(100vh-4rem)] lg:pt-24">
       {/* Copy + CTAs */}
       <div className="relative z-10 flex max-w-2xl flex-col lg:max-w-5xl">
         {/* Each clause is bound with non-breaking spaces, so on narrow
@@ -20,7 +18,11 @@ export function HeroSection() {
           not&nbsp;who&nbsp;you&nbsp;are<span className="text-cyan">.</span>
         </h1>
 
-        <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+        <p className="mt-7 max-w-xl text-balance text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg lg:mt-6 lg:leading-7">
+          Privacy-preserving proof of humanity for the AI era.
+        </p>
+
+        <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center lg:mt-8">
           {/* Primary CTA—solid filled, cyan label */}
           <Link
             href="/verify"
@@ -51,17 +53,14 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Bounded-drift waveform. `-mx-6` cancels the section padding so the
-          wave reaches the rails on both sides; `mt-auto` drops it to the
-          bottom edge, where its gradient dissolves into the section border
-          below. Height is viewport-relative so the copy above always keeps
-          its air on short screens. Growing the phone step past this only
-          pushes the tail below the fold — the narrow geometry closes the
-          gap under the buttons by raising its own baseline instead. */}
-      <DriftWaveform
-        idPrefix="hero"
-        className="-mx-6 mt-auto h-[42svh] min-h-[240px] md:h-[44svh] lg:h-[46svh]"
-      />
+      {/* `-mx-6` cancels the section padding so the canvas spans rail to
+          rail. `flex-1` hands the wave all the height left under the
+          buttons. On laptops the copy's spacing is tightened to keep that
+          height at 483 px on a 1512 x 855 screen, the size the head is
+          drawn for. The head keeps one shape at every size: it lies on the
+          section's floor, or, where the band is tall and narrow, near its
+          top over the underlay picked here. */}
+      <DriftWaveform className="-mx-6 mt-12 min-h-[220px] flex-1 lg:mt-5" underlay="reflection" />
     </section>
   );
 }

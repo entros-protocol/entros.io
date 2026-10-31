@@ -59,7 +59,9 @@ export function HeroSection() {
           height at 483 px on a 1512 x 855 screen, the size the head is
           drawn for. The head keeps one shape at every size: it lies on the
           section's floor, or, where the band is tall and narrow, near its
-          top over the underlay picked here. */}
+          top, over the underlay picked here. Under a lying head the
+          reflection hangs past the floor into the next section, without
+          taking any of its space. */}
       <DriftWaveform className="-mx-6 mt-12 min-h-[220px] flex-1 lg:mt-5" underlay="reflection" />
     </section>
   );

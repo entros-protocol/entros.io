@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   DEPTH,
+  FLOOR_DROP,
+  FLOOR_REACH,
   LENGTH,
   PEAK,
   REST,
@@ -199,8 +201,51 @@ describe("extrusionLines", () => {
 });
 
 describe("reflectionCells", () => {
-  it.each(WIDE)("leaves a wide band without a reflection (%s)", (_, width, height) => {
-    expect(reflectionCells(layoutHead(width, height), width, height, CELL_W, ROW_H).count).toBe(0);
+  it.each(WIDE)("hangs a lying head's reflection below the band, within its reach (%s)", (_, width, height) => {
+    const head = layoutHead(width, height);
+    const cells = headCells(head, width, CELL_W, ROW_H);
+    const mirror = reflectionCells(head, width, height, CELL_W, ROW_H);
+    expect(mirror.count).toBeGreaterThan(100);
+    expect(mirror.stretch).toBeGreaterThan(0);
+    expect(mirror.stretch).toBeLessThanOrEqual(1);
+    let deepest = 0;
+    let under = 0;
+    for (let i = 0; i < mirror.count; i++) {
+      const x = mirror.x[i]!;
+      const v = mirror.y[i]! - head.floor - FLOOR_DROP;
+      // Wholly past the band's bottom edge, and no deeper than its reach,
+      // to the precision of the Float32 centres.
+      expect(mirror.y[i]! - ROW_H / 2).toBeGreaterThanOrEqual(height - 1e-3);
+      expect(mirror.y[i]! - head.floor + ROW_H / 2).toBeLessThanOrEqual(FLOOR_REACH + 1e-3);
+      // On the head's grid, even where the bars run on past its digits.
+      const lane = (x - cells.x[0]!) / CELL_W;
+      expect(Math.abs(lane - Math.round(lane))).toBeLessThan(1e-3);
+      expect(mirror.d[i]).toBeCloseTo((x - head.crown) / head.along, 3);
+      expect(mirror.h[i]! * head.out * mirror.stretch).toBeCloseTo(v, 3);
+      if (i > 0 && mirror.x[i - 1] === x) expect(mirror.fade[i]).toBeLessThan(mirror.fade[i - 1]!);
+      if (v > deepest) {
+        deepest = v;
+        under = mirror.d[i]!;
+      }
+    }
+    const bars = [...new Set(mirror.x)].sort((a, b) => a - b);
+    for (let j = 1; j < bars.length; j++) expect(bars[j]! - bars[j - 1]!).toBeGreaterThan(CELL_W * 1.5);
+    // Its chin ends where the head's line meets the floor, within a column.
+    const foot = head.crown + LENGTH * head.along;
+    expect(Math.abs(bars[bars.length - 1]! + CELL_W / 2 - foot)).toBeLessThan(CELL_W);
+    // The first row's centre sits a little further below the divider, a
+    // pixel under the floor, than the head's last row's centre sits above
+    // it, since a digit's ink sits high in its row.
+    const below = Math.min(...mirror.y) - (head.floor + 2);
+    const above = head.floor + 1 - Math.max(...cells.y);
+    expect(below).toBeGreaterThan(above);
+    expect(below - above).toBeLessThan(ROW_H / 2);
+    // Deepest under the nose, as deep as the head stands up to its reach.
+    expect(Math.abs(under - 109.5)).toBeLessThan(8);
+    let top = 0;
+    for (let i = 0; i < cells.count; i++) top = Math.max(top, head.floor - cells.y[i]!);
+    expect(deepest).toBeGreaterThan(Math.min(FLOOR_REACH - FLOOR_DROP, top) - 2 * ROW_H);
+    expect(Math.min(...mirror.fade)).toBeLessThan(0.05);
   });
 
   it.each(STACKED)("mirrors the head in bars every other column, fading out inside the band (%s)", (_, width, height) => {

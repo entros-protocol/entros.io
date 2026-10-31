@@ -37,7 +37,10 @@ import {
  * A wide band lays the head on its floor line. A tall one, as on a phone,
  * shows the whole head near the top and fills the space under it with the
  * `underlay`: the head's reflection in bars of digits, its profile extruded
- * into depth, or a stack of its fading echoes. See `layoutHead`.
+ * into depth, or a stack of its fading echoes. Under a lying head the
+ * reflection hangs past the band's bottom edge into whatever follows it; the
+ * canvas runs on below the band for it without taking any space. See
+ * `layoutHead`.
  */
 
 /** The 3D shading, rendered offline from a CC0 head model. */
@@ -118,7 +121,7 @@ export function DriftWaveform({
   underlay,
 }: {
   className?: string;
-  /** What fills the space under the head in a tall band, as on a phone. */
+  /** What lies under the head. See `Underlay`. */
   underlay: Underlay;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -127,14 +130,18 @@ export function DriftWaveform({
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
+    /** The band the head is laid out in. The canvas may run on below it. */
+    const box = canvas?.parentElement;
     // The underlay and digits are painted once into this layer and copied in
     // whole each frame; a frame repaints only the digits that change.
     const layer = document.createElement("canvas");
     const lctx = layer.getContext("2d");
-    if (!canvas || !ctx || !lctx) return;
+    if (!canvas || !ctx || !box || !lctx) return;
 
     let width = 0;
     let height = 0;
+    /** The canvas's height: the band's, or more where a reflection hangs below it. */
+    let bottom = 0;
     let dpr = 1;
     let font = "";
     let rowPx = ROW_PX;
@@ -277,13 +284,11 @@ export function DriftWaveform({
     };
 
     const layout = () => {
-      const rect = canvas.getBoundingClientRect();
+      const rect = box.getBoundingClientRect();
       width = rect.width;
       height = rect.height;
       if (!width || !height) return;
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
       const h = layoutHead(width, height);
       head = h;
       const small = h.mode === "stack" && width < SMALL_BELOW;
@@ -295,6 +300,12 @@ export function DriftWaveform({
       cells = headCells(h, width, cellW, rowPx);
       mirror = underlay === "reflection" ? reflectionCells(h, width, height, cellW, rowPx) : null;
       lines = underlay === "echoes" ? echoLines(h, height) : underlay === "extrusion" ? extrusionLines(h, height) : [];
+      let deepest = 0;
+      if (mirror) for (let i = 0; i < mirror.count; i++) deepest = Math.max(deepest, mirror.y[i]! + rowPx / 2);
+      bottom = deepest > height ? Math.ceil(deepest) : height;
+      canvas.style.height = bottom > height ? `${bottom}px` : "";
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(bottom * dpr);
       const total = cells.count + (mirror?.count ?? 0);
       xs = new Float32Array(total);
       ys = new Float32Array(total);
@@ -333,7 +344,7 @@ export function DriftWaveform({
 
       // As the hero fades in, the underlay is uncovered from the top down.
       if ((lines.length || mirror?.count) && fade < 1) {
-        const front = head.floor + (height - head.floor + REVEAL_PX) * (1 - (1 - fade) ** 3);
+        const front = head.floor + (bottom - head.floor + REVEAL_PX) * (1 - (1 - fade) ** 3);
         const veil = ctx.createLinearGradient(0, front - REVEAL_PX, 0, front);
         veil.addColorStop(0, "rgba(0, 0, 0, 0)");
         veil.addColorStop(1, "rgba(0, 0, 0, 1)");
@@ -342,7 +353,7 @@ export function DriftWaveform({
         ctx.fillStyle = veil;
         // Only below the floor, so the reveal never dims the head itself.
         const top = Math.max(head.floor, front - REVEAL_PX);
-        ctx.fillRect(0, top, width, height - top);
+        ctx.fillRect(0, top, width, bottom - top);
         ctx.globalCompositeOperation = "source-over";
       }
 
@@ -381,7 +392,7 @@ export function DriftWaveform({
         ctx.globalCompositeOperation = "destination-out";
         ctx.globalAlpha = Math.min(1, edge / 24);
         ctx.fillStyle = fadeMask;
-        ctx.fillRect(0, 0, head.fade, height);
+        ctx.fillRect(0, 0, head.fade, bottom);
         ctx.globalCompositeOperation = "source-over";
       }
       ctx.globalAlpha = 1;
@@ -420,11 +431,12 @@ export function DriftWaveform({
       layout();
       draw(elapsed, fade);
     });
+    // The band, not the canvas: the canvas's own height follows the layout.
     const resize = new ResizeObserver(() => {
       layout();
       draw(elapsed, fade);
     });
-    resize.observe(canvas);
+    resize.observe(box);
     const theme = new MutationObserver(() => {
       readColors();
       draw(elapsed, fade);
@@ -487,7 +499,7 @@ export function DriftWaveform({
 
   return (
     <div aria-hidden className={cn("pointer-events-none relative", className)}>
-      <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full select-none font-mono" />
+      <canvas ref={canvasRef} className="absolute inset-x-0 top-0 block h-full w-full select-none font-mono" />
     </div>
   );
 }

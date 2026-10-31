@@ -1,9 +1,8 @@
 /**
  * Geometry for the home hero's head: the outline it is drawn from, where it
  * sits in a band of a given size, the grid of digit cells that fills it, what
- * fills a tall band under it, and reads of the shading map that lights those
- * cells. Nothing here touches a canvas, so the layout can be tested on its
- * own.
+ * lies under it, and reads of the shading map that lights those cells.
+ * Nothing here touches a canvas, so the layout can be tested on its own.
  */
 
 /**
@@ -198,11 +197,12 @@ export function riseAt(layout: HeadLayout, c: Curve, x: number): number {
 }
 
 /**
- * What fills a tall band under its head. "reflection": the head mirrored
- * below its floor in bars of digits, one every other column. "extrusion":
- * the head's line repeated below it, each slice standing taller and fainter,
- * as if the profile ran back into depth. "echoes": the line repeated lower,
- * each copy flatter and fainter, like earlier sessions settling.
+ * What lies under the head. "reflection": the head mirrored below its floor
+ * in bars of digits, one every other column, in a tall band or hanging below
+ * a wide one. In a tall band only, "extrusion": the head's line repeated
+ * below it, each slice standing taller and fainter, as if the profile ran
+ * back into depth; or "echoes": the line repeated lower, each copy flatter
+ * and fainter, like earlier sessions settling.
  */
 export type Underlay = "reflection" | "extrusion" | "echoes";
 
@@ -344,8 +344,23 @@ export function headCells(layout: HeadLayout, width: number, cellW: number, rowH
 
 /** Share of the space under a stack's head that the reflection reaches into. */
 const MIRROR_FILL = 0.85;
-/** The reflection runs at most this many times deeper than the head stands. */
+/** A stack's reflection runs at most this many times deeper than the head stands. */
 const MIRROR_STRETCH = 2;
+/**
+ * How far past its floor a lying head's reflection may reach, in pixels. The
+ * section under the hero sets its title about 210 px down and its first rule
+ * about 420 px down, so the reflection hangs beside the title and stops short
+ * of the rule.
+ */
+export const FLOOR_REACH = 385;
+/**
+ * How much lower than a plain mirror a lying head's reflection starts, in
+ * pixels. The divider under the band runs a pixel below the floor, and a
+ * digit's ink sits high in its row, so a plain mirror would set the
+ * reflection's first row on the divider while the head's last row clears it
+ * by about 4 px.
+ */
+export const FLOOR_DROP = 5;
 /** How fast the reflection fades with depth. */
 const MIRROR_FADE = 1.2;
 
@@ -364,12 +379,17 @@ export interface MirrorCells {
 }
 
 /**
- * The head's reflection under it in a tall band, in bars of digits: every
- * other column of the head's grid runs on below the floor, mirroring the
- * column above it. The reflection is stretched to fill most of the space
- * under the head, up to twice the head's height, and fades as it deepens,
- * so its deepest bar, under the nose, dies out before the band's bottom
- * edge. Each cell takes the shading of the point of the head it mirrors.
+ * The head's reflection, in bars of digits: every other column of the head's
+ * grid runs on below the floor, mirroring the column above it. Under a
+ * stack's head it is stretched to fill most of the band's space below, up to
+ * twice the head's height. Under a lying head it falls past the band's
+ * bottom edge, as deep as the head stands or `FLOOR_REACH`, whichever is
+ * less, starting `FLOOR_DROP` lower so it clears the divider; and its bars
+ * run on past the head's last column of digits, under the line's turn down
+ * to the floor at the chin, so the reflection ends where the head does.
+ * Either way it fades as it deepens, so its deepest bar, under the nose,
+ * dies out at its tip. Each cell takes the shading of the point of the head
+ * it mirrors.
  */
 export function reflectionCells(
   layout: HeadLayout,
@@ -379,18 +399,37 @@ export function reflectionCells(
   rowH: number,
 ): MirrorCells {
   const { start, heights } = columns(layout, width, cellW, rowH);
-  const tallest = heights.reduce((top, n) => Math.max(top, n), 0);
-  const space = height - layout.floor;
-  const stretch =
-    layout.mode === "stack" && tallest > 0 && space > 0
-      ? Math.min(MIRROR_STRETCH, (space * MIRROR_FILL) / (tallest * rowH))
-      : 0;
+  const tallest = heights.reduce((top, n) => Math.max(top, n), 0) * rowH;
+  const stack = layout.mode === "stack";
+  const drop = stack ? 0 : FLOOR_DROP;
+  const reach = stack ? height - layout.floor : FLOOR_REACH - drop;
+  let stretch = 0;
+  if (tallest > 0 && reach > 0) {
+    stretch = stack ? Math.min(MIRROR_STRETCH, (reach * MIRROR_FILL) / tallest) : Math.min(1, reach / tallest);
+  }
   const depths = Array.from(heights, (n, j) => {
     if (j % 2) return 0;
     let m = Math.round(n * stretch);
-    while (m > 0 && rowAt(rowH, m - 1) + rowH / 2 > space) m--;
+    while (m > 0 && rowAt(rowH, m - 1) + rowH / 2 > reach) m--;
     return m;
   });
+  if (!stack) {
+    // The chin turns down so steeply that the line still stands clear of the
+    // floor past the last column of digits. The bars run on under it to the
+    // foot, each holding the rows whose centres the line stands over.
+    let last = heights.length - 1;
+    while (last >= 0 && !heights[last]) last--;
+    const foot = layout.crown + LENGTH * layout.along;
+    for (let j = last + 1; last >= 0 && j < heights.length && start + j * cellW < foot; j++) {
+      if (j % 2) continue;
+      const x0 = start + j * cellW;
+      const rise = Math.max(riseAt(layout, REST, x0), riseAt(layout, REST, x0 + cellW / 2), riseAt(layout, REST, x0 + cellW));
+      const deep = Math.min(rise * stretch, reach - rowH / 2);
+      let m = 0;
+      while (rowAt(rowH, m) <= deep) m++;
+      depths[j] = m;
+    }
+  }
   const count = depths.reduce((sum, m) => sum + m, 0);
   const deepest = rowAt(rowH, depths.reduce((top, m) => Math.max(top, m), 0) - 1) + rowH / 2;
   const cells: MirrorCells = {
@@ -408,7 +447,7 @@ export function reflectionCells(
     for (let k = 0; k < m; k++) {
       const v = rowAt(rowH, k);
       cells.x[i] = x;
-      cells.y[i] = layout.floor + v;
+      cells.y[i] = layout.floor + drop + v;
       cells.d[i] = (x - layout.crown) / layout.along;
       cells.h[i] = v / stretch / layout.out;
       cells.fade[i] = (1 - v / deepest) ** MIRROR_FADE;

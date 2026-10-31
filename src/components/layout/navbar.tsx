@@ -150,7 +150,7 @@ export function Navbar() {
         <Link
           href="/verify"
           className="
-            hidden h-[46px] items-center gap-2 border border-foreground/25
+            hidden h-[46px] items-center gap-2 border border-cyan
             bg-background px-4 text-sm font-medium text-foreground
             dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]
             transition-colors hover:bg-surface navbar:inline-flex

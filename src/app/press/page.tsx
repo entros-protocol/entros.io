@@ -22,7 +22,7 @@ const assets = [
     name: "Primary mark",
     file: "/logos/Entros.png",
     format: "PNG · 500 × 500",
-    note: "The social card and favicon source. Solid background versions for light and dark in the same file.",
+    note: "The mark on its black tile, as used for the favicon and the share image.",
     previewClass: "bg-foreground/[0.04]",
   },
   {
@@ -212,6 +212,8 @@ export default function Press() {
                     alt={asset.name}
                     width={140}
                     height={140}
+                    // Each file is 2 KB or less, smaller than a resized copy would be.
+                    unoptimized
                     className="max-h-[60%] max-w-[60%] object-contain"
                   />
                 </div>

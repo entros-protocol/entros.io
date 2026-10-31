@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { EntrosMark } from "./entros-mark";
 
 const TARGET = "Entros";
 const HASH_CHARS = "0123456789abcdef";
@@ -64,6 +65,10 @@ export function NavbarWordmark() {
       className="inline-flex items-baseline text-xl tracking-tight text-foreground"
       aria-label="Entros home"
     >
+      {/* 0.75em is 18 px at the navbar's type size: the capitals' height,
+          and the size the mark's grid is drawn for. Like a letter, it
+          stands on the baseline. */}
+      <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
       <span aria-hidden>{display}</span>
       <span
         aria-hidden

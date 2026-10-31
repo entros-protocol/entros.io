@@ -24,9 +24,9 @@ export function PopupShell({ children }: { children: ReactNode }) {
           href="/"
           style={{ fontFamily: "var(--font-wordmark)" }}
           className="inline-flex items-baseline text-3xl tracking-tight text-foreground transition-opacity hover:opacity-80"
-          aria-label="entros — home"
+          aria-label="Entros home"
         >
-          <span aria-hidden>entros</span>
+          <span aria-hidden>Entros</span>
           <span
             aria-hidden
             className="ml-1 inline-block size-[4px] bg-cyan"

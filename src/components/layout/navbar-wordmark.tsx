@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const TARGET = "entros";
+const TARGET = "Entros";
 const HASH_CHARS = "0123456789abcdef";
 
 function randomChar() {
@@ -56,7 +56,7 @@ export function NavbarWordmark() {
         fontFamily: "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
       }}
       className="inline-flex items-baseline text-xl tracking-tight text-foreground"
-      aria-label="entros — home"
+      aria-label="Entros home"
     >
       <span aria-hidden>{display}</span>
       <span

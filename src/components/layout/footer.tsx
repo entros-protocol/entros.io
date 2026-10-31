@@ -43,14 +43,14 @@ export function Footer() {
           <div className="lg:col-span-4">
             <Link
               href="/"
-              aria-label="entros home"
+              aria-label="Entros home"
               style={{
                 fontFamily:
                   "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
               }}
               className="inline-flex items-baseline text-xl tracking-tight text-foreground"
             >
-              <span aria-hidden>entros</span>
+              <span aria-hidden>Entros</span>
               <span aria-hidden className="ml-1 inline-block size-[4px] bg-cyan" />
             </Link>
             <p className="mt-3 text-sm text-foreground/60">

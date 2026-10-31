@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { GITHUB_URL, TWITTER_URL } from "@/lib/site";
+import { EntrosMark } from "./entros-mark";
 import { GithubMark } from "./github-mark";
 import { NavThemeSquare } from "./nav-theme-square";
 import { DiscordMark, XMark } from "./social-marks";
@@ -48,13 +49,15 @@ export function Footer() {
                 fontFamily:
                   "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
               }}
-              className="inline-flex items-baseline text-xl tracking-tight text-foreground"
+              className="inline-flex items-baseline text-2xl tracking-tight text-foreground"
             >
+              {/* The navbar's lockup and type size, at which the mark's
+                  grid lands on whole pixels. */}
+              <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
               <span aria-hidden>Entros</span>
-              <span aria-hidden className="ml-1 inline-block size-[4px] bg-cyan" />
             </Link>
             <p className="mt-3 text-sm text-foreground/60">
-              Private human verification.
+              Private human verification
             </p>
 
             <ul className="mt-8 flex items-center gap-2">

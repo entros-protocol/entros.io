@@ -70,10 +70,6 @@ export function NavbarWordmark() {
           stands on the baseline. */}
       <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
       <span aria-hidden>{display}</span>
-      <span
-        aria-hidden
-        className="ml-1 inline-block size-[4px] bg-cyan"
-      />
     </Link>
   );
 }

@@ -49,7 +49,9 @@ export function ProblemSection() {
                 key={signal.label}
                 className="grid grid-cols-[2.5rem_1fr] items-baseline gap-x-4 gap-y-1 py-6 text-base leading-relaxed first:pt-1 last:pb-0 md:grid-cols-[3rem_8rem_1fr] md:gap-x-6"
               >
-                <signal.Icon className="h-6 w-6 translate-y-0.5 self-start text-foreground" />
+                {/* The negative margins centre the glyph on the label's
+                    capitals and keep it from growing the row. */}
+                <signal.Icon className="-my-1 h-8 w-8 self-start text-foreground" />
                 <span className="font-medium text-foreground">
                   {signal.label}
                 </span>

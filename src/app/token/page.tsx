@@ -49,11 +49,8 @@ export default function Token() {
           <TokenLaunchCard />
         </div>
 
-        <div className="flex h-[225px] items-start justify-center pb-4 sm:h-[270px] md:h-[300px] md:pb-6 lg:h-[330px] xl:h-[360px]">
-          <AsciiFlow
-            brand="$ENTROS"
-            className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] xl:text-[9px]"
-          />
+        <div className="mx-auto mt-6 h-[220px] max-w-7xl sm:h-[270px] md:h-[320px] lg:h-[360px] xl:h-[400px]">
+          <AsciiFlow brand="$ENTROS" />
         </div>
       </section>
 

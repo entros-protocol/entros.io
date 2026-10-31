@@ -18,6 +18,10 @@ function randomChar() {
  * get stranded mid-decrypt: cleanup clears the interval on any path
  * change, and the rendered string is computed from pathname rather
  * than imperatively reset.
+ *
+ * The reveal counts as played once it finishes, not when it starts. In
+ * development React's Strict Mode runs each new effect, cleans it up and
+ * runs it again, so a flag set when the reveal starts would skip it there.
  */
 export function NavbarWordmark() {
   const pathname = usePathname();
@@ -26,7 +30,6 @@ export function NavbarWordmark() {
 
   useEffect(() => {
     if (pathname !== "/" || playedRef.current) return;
-    playedRef.current = true;
 
     const TOTAL_FRAMES = 36;
     const FRAME_MS = 38;
@@ -41,7 +44,10 @@ export function NavbarWordmark() {
         next += frame >= settleAt(i) ? TARGET[i] : randomChar();
       }
       setAnimFrame(next);
-      if (frame >= TOTAL_FRAMES) window.clearInterval(id);
+      if (frame >= TOTAL_FRAMES) {
+        window.clearInterval(id);
+        playedRef.current = true;
+      }
     }, FRAME_MS);
 
     return () => window.clearInterval(id);

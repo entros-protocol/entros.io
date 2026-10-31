@@ -1,15 +1,18 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 /**
  * Animated agent network for the agents page.
- * A 3D sphere of interconnected nodes with signal propagation.
- * Pure SVG, no external dependencies.
+ * A 3D sphere of interconnected nodes with signal propagation, drawn in
+ * SVG over a canvas that sets the sphere's surface in ascii. The surface
+ * turns with the network, dims on the far side, and wakes into hex around
+ * any node a signal has just reached.
  */
 
 // The sphere's widest silhouette spans ~347 units: 2·RADIUS, plus the ~5%
-// perspective gain on a rim node, plus drift, plus the 2.5x glow halo of an
+// perspective gain on a rim node, plus drift, plus the frame around an
 // energised one. A 390 viewBox leaves that margin and no more, so the sphere
 // fills the element it is given instead of sitting in its own padding.
 const VB = 390;
@@ -23,15 +26,23 @@ const RADIUS = 155;
 const ROTATION_SPEED = 0.06;
 const TILT = 0.22;
 const DRIFT_AMP = 0.025;
-const NODE_R_MIN = 2;
-const NODE_R_MAX = 4;
+const NODE_R_MIN = 1;
+const NODE_R_MAX = 1.9;
 
 const BROADCAST_INTERVAL = 2.5;
 const SIGNAL_DURATION = 0.6;
-const SIGNAL_R = 2;
+const SIGNAL_R = 1.2;
 const ENERGY_DECAY = 0.98;
 
 const FADE_IN_DURATION = 1.5;
+
+const SURFACE_COUNT = 2600;
+const SURFACE_INSET = 0.965;
+const SURFACE_FONT = 8;
+const WAKE_DOT = 0.965;
+const HEX = "0123456789abcdef";
+const SHADES = ".·:+*";
+const LEVELS = 8;
 
 interface Vec3 { x: number; y: number; z: number }
 interface Edge { a: number; b: number }
@@ -82,10 +93,34 @@ function buildAdjacency(edges: Edge[], n: number): number[][] {
 
 export function AgentNetworkAnimation({ className }: { className?: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const svg = svgRef.current;
-    if (!svg) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!svg || !canvas || !ctx) return;
+
+    let px = 1;
+    const sizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      px = rect.width / VB;
+      ctx.setTransform(dpr * px, 0, 0, dpr * px, 0, 0);
+      ctx.font = `${SURFACE_FONT / px}px ${getComputedStyle(canvas).fontFamily}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+    };
+    sizeCanvas();
+    const resize = new ResizeObserver(sizeCanvas);
+    resize.observe(canvas);
+
+    const surface = fibonacciSphere(SURFACE_COUNT);
+    const surfaceSeed = surface.map((_, i) => (Math.imul(i + 1, 2654435761) >>> 0) % 997);
+    const buckets = Array.from({ length: LEVELS * 2 }, () => ({ chars: [] as string[], pos: [] as number[] }));
 
     let raf = 0;
     const startTime = performance.now();
@@ -96,6 +131,7 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
     const cyanRGB = rawCyan.startsWith("#")
       ? `${parseInt(rawCyan.slice(1, 3), 16)}, ${parseInt(rawCyan.slice(3, 5), 16)}, ${parseInt(rawCyan.slice(5, 7), 16)}`
       : "34, 211, 230";
+    const hotColor = getComputedStyle(document.documentElement).getPropertyValue("--color-foreground").trim() || "#fff";
 
     const positions = fibonacciSphere(NODE_COUNT);
     const edges = buildEdges(positions);
@@ -136,6 +172,62 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
         scale,
       };
     }
+
+    const cosTilt = Math.cos(TILT);
+    const sinTilt = Math.sin(TILT);
+    const drawSurface = (t: number, fadeIn: number) => {
+      ctx.clearRect(0, 0, VB, VB);
+      for (const b of buckets) {
+        b.chars.length = 0;
+        b.pos.length = 0;
+      }
+      const awake: number[] = [];
+      for (let i = 0; i < NODE_COUNT; i++) if ((energy[i] ?? 0) > 0.12) awake.push(i);
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
+      const flick = Math.floor(t * 8);
+      for (let s = 0; s < SURFACE_COUNT; s++) {
+        const p = surface[s]!;
+        let wake = 0;
+        for (const n of awake) {
+          const q = positions[n]!;
+          const dot = p.x * q.x + p.y * q.y + p.z * q.z;
+          if (dot > WAKE_DOT) wake = Math.max(wake, (energy[n] ?? 0) * ((dot - WAKE_DOT) / (1 - WAKE_DOT)));
+        }
+        const y1 = p.y * cosTilt - p.z * sinTilt;
+        const z1 = p.y * sinTilt + p.z * cosTilt;
+        const x2 = p.x * cosA - z1 * sinA;
+        const z2 = p.x * sinA + z1 * cosA;
+        const r = RADIUS * SURFACE_INSET;
+        const scale = FOV / (FOV + z2 * r);
+        const x = CX + x2 * r * scale;
+        const y = CY + y1 * r * scale;
+        const depth = (1 + z2) / 2;
+        // A slow band of light runs round the sphere so the surface reads
+        // as turning even between broadcasts.
+        const band = 0.5 + 0.5 * Math.sin(p.y * 5 + p.x * 2 - t * 0.9);
+        let a = (0.12 + 0.62 * depth * depth + 0.2 * band * depth) * fadeIn;
+        let ch = SHADES[Math.min(SHADES.length - 1, Math.floor(depth * depth * SHADES.length))]!;
+        let hot = false;
+        if (wake > 0.05) {
+          ch = HEX[(surfaceSeed[s]! + flick) % 16]!;
+          a = Math.min(1, a + wake * 0.9);
+          hot = wake > 0.55 && depth > 0.5;
+        }
+        if (a < 0.04) continue;
+        const b = buckets[(hot ? LEVELS : 0) + Math.min(LEVELS - 1, Math.floor(a * LEVELS))]!;
+        b.chars.push(ch);
+        b.pos.push(x, y);
+      }
+      for (let k = 0; k < buckets.length; k++) {
+        const b = buckets[k]!;
+        if (!b.chars.length) continue;
+        ctx.fillStyle = k >= LEVELS ? hotColor : `rgb(${cyanRGB})`;
+        ctx.globalAlpha = Math.min(1, ((k % LEVELS) + 0.5) / LEVELS);
+        for (let j = 0; j < b.chars.length; j++) ctx.fillText(b.chars[j]!, b.pos[2 * j]!, b.pos[2 * j + 1]!);
+      }
+      ctx.globalAlpha = 1;
+    };
 
     // An arrow bound after the `svg` null-check, rather than a hoisted
     // declaration, so the narrowing reaches the innerHTML write below.
@@ -212,38 +304,43 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
         const sx = pa.x + (pb.x - pa.x) * progress;
         const sy = pa.y + (pb.y - pa.y) * progress;
         const so = (0.9 * (1 - progress)) * fadeIn;
-        html += `<circle cx="${sx}" cy="${sy}" r="${SIGNAL_R}" fill="rgba(${cyanRGB},${so})"/>`;
+        html += `<rect x="${sx - SIGNAL_R}" y="${sy - SIGNAL_R}" width="${2 * SIGNAL_R}" height="${2 * SIGNAL_R}" fill="rgba(${cyanRGB},${so})"/>`;
       }
 
-      // Nodes
+      // Nodes: small squares that sit in the ascii surface. Near nodes are
+      // solid, far ones an outline, and a node a signal has just reached
+      // grows a little and gains a hairline frame.
       for (const { x, y, z, scale, i } of sorted) {
         const e = energy[i] ?? 0;
-        const r = (NODE_R_MIN + (NODE_R_MAX - NODE_R_MIN) * scale) * (1 + e * 0.6);
+        const r = (NODE_R_MIN + (NODE_R_MAX - NODE_R_MIN) * scale) * (1 + e * 0.5);
         const depth = (1 + z) / 2;
-        const alpha = (0.35 + 0.65 * depth) * fadeIn;
-        const glow = e > 0.1 ? e * 0.4 : 0;
-
-        if (glow > 0) {
-          html += `<circle cx="${x}" cy="${y}" r="${r * 2.5}" fill="rgba(${cyanRGB},${glow * 0.12 * fadeIn})" />`;
+        const alpha = (0.3 + 0.6 * depth) * fadeIn;
+        if (depth > 0.45) {
+          html += `<rect x="${x - r}" y="${y - r}" width="${2 * r}" height="${2 * r}" fill="rgba(${cyanRGB},${alpha})" />`;
+        } else {
+          html += `<rect x="${x - r}" y="${y - r}" width="${2 * r}" height="${2 * r}" fill="none" stroke="rgba(${cyanRGB},${alpha})" stroke-width="0.5" />`;
         }
-        html += `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(${cyanRGB},${alpha})" />`;
+        if (e > 0.15) {
+          const f = r + 2.5;
+          html += `<rect x="${x - f}" y="${y - f}" width="${2 * f}" height="${2 * f}" fill="none" stroke="rgba(${cyanRGB},${e * 0.6 * fadeIn})" stroke-width="0.4" />`;
+        }
       }
-
       svg.innerHTML = html;
+      drawSurface(t, fadeIn);
       raf = requestAnimationFrame(tick);
     };
 
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      resize.disconnect();
+    };
   }, []);
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox={`0 0 ${VB} ${VB}`}
-      className={className}
-      aria-hidden="true"
-      style={{ pointerEvents: "none" }}
-    />
+    <div className={cn("relative", className)} aria-hidden="true" style={{ pointerEvents: "none" }}>
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full select-none font-mono" />
+      <svg ref={svgRef} viewBox={`0 0 ${VB} ${VB}`} className="absolute inset-0 h-full w-full" />
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { GITHUB_URL, TWITTER_URL } from "@/lib/site";
+import { EntrosMark } from "./entros-mark";
 import { GithubMark } from "./github-mark";
 import { NavThemeSquare } from "./nav-theme-square";
 import { DiscordMark, XMark } from "./social-marks";
@@ -38,23 +39,25 @@ const SOCIAL = [
 export function Footer() {
   return (
     <footer className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-6 pt-16 pb-10 md:pt-20">
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-16 md:pt-20">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
             <Link
               href="/"
-              aria-label="entros home"
+              aria-label="Entros home"
               style={{
                 fontFamily:
                   "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
               }}
-              className="inline-flex items-baseline text-xl tracking-tight text-foreground"
+              className="inline-flex items-baseline text-2xl tracking-tight text-foreground"
             >
-              <span aria-hidden>entros</span>
-              <span aria-hidden className="ml-1 inline-block size-[4px] bg-cyan" />
+              {/* The navbar's lockup and type size, at which the mark's
+                  grid lands on whole pixels. */}
+              <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
+              <span aria-hidden>Entros</span>
             </Link>
             <p className="mt-3 text-sm text-foreground/60">
-              Private human verification.
+              Private human verification
             </p>
 
             <ul className="mt-8 flex items-center gap-2">
@@ -86,26 +89,27 @@ export function Footer() {
               <FooterLink href="/verify">Verify</FooterLink>
               <FooterLink href="/dashboard">Dashboard</FooterLink>
               <FooterLink href="/solutions">Solutions</FooterLink>
-              <FooterLink href="/stats">Stats</FooterLink>
               <FooterLink href="/token">Token</FooterLink>
             </FooterColumn>
             <FooterColumn title="Build">
               <FooterLink href="/docs">Docs</FooterLink>
               <FooterLink href="/integrate">Integrate</FooterLink>
               <FooterLink href="/technology">Technology</FooterLink>
-              <FooterLink href="/paper">Paper</FooterLink>
               <FooterLink href="/security">Security</FooterLink>
             </FooterColumn>
             <FooterColumn title="About">
               <FooterLink href="/manifesto">Manifesto</FooterLink>
+              <FooterLink href="/paper">Paper</FooterLink>
               <FooterLink href="/roadmap">Roadmap</FooterLink>
               <FooterLink href="/press">Press</FooterLink>
               <FooterLink href="/privacy">Privacy</FooterLink>
             </FooterColumn>
           </nav>
         </div>
+      </div>
 
-        <div className="mt-16 flex items-center justify-between gap-4 border-t border-border pt-6">
+      <div className="border-t border-border">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 pt-6 pb-10">
           <p className="text-xs text-foreground/50">&copy; 2026 Entros Protocol</p>
           <NavThemeSquare variant="footer" />
         </div>

@@ -24,11 +24,10 @@ const sections = [
     heading: "Solutions",
     items: [
       { label: "Use Cases", href: "/solutions" },
+      { label: "Integrate", href: "/integrate" },
       { label: "Agent Permits", href: "/agents" },
       { label: "Governance", href: "/governance" },
       { label: "Realms Case Study", href: "/case-studies/realms" },
-      { label: "Integrate", href: "/integrate" },
-      { label: "Stats", href: "/stats" },
     ],
   },
   {
@@ -89,7 +88,7 @@ export function MobileNav() {
                         : undefined
                     }
                   >
-                    <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-background/40">
+                    <span className="block text-xs font-medium text-background/45">
                       {section.heading}
                     </span>
                     {/* Two columns keeps the whole tree on one screen.

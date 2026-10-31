@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/logos/wordmark.svg" alt="entros" height="72" />
+<img src="public/logos/wordmark.svg" alt="Entros" height="72" />
 
 **Behavioral proof-of-personhood research and infrastructure on Solana.**
 

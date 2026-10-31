@@ -1,5 +1,6 @@
 "use client";
 
+import { StepNumber } from "@/components/ui/step-number";
 import { useState } from "react";
 import {
   hasStudyConsentAcknowledgement,
@@ -58,9 +59,7 @@ export function StudyConsent({
       <div className="space-y-3 border-y border-foreground/[0.08] py-5 text-[13px] leading-relaxed text-foreground/60">
         {studyConsentParagraphs(definition).map((paragraph, index) => (
           <p key={paragraph} className="grid grid-cols-[1.75rem_1fr]">
-            <span className="font-mono text-[10px] leading-[1.6rem] text-foreground/35">
-              {String(index + 1).padStart(2, "0")}
-            </span>
+            <StepNumber n={index + 1} className="text-[13px] leading-[1.6rem] md:text-[13px]" />
             <span>{paragraph}</span>
           </p>
         ))}

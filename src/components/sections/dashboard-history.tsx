@@ -162,7 +162,7 @@ export function DashboardHistory() {
                     Behavioral consistency confirmed within threshold
                   </p>
                 </div>
-                <p className="shrink-0 font-mono text-xs text-foreground/55">
+                <p className="shrink-0 text-xs tabular-nums text-foreground/55">
                   {formatTimestamp(ts)}
                 </p>
               </div>
@@ -179,7 +179,7 @@ export function DashboardHistory() {
                     Fingerprint re-enrolled from this device
                   </p>
                 </div>
-                <p className="shrink-0 font-mono text-xs text-foreground/55">
+                <p className="shrink-0 text-xs tabular-nums text-foreground/55">
                   {formatTimestamp(lastResetTimestamp)}
                 </p>
               </div>
@@ -197,7 +197,7 @@ export function DashboardHistory() {
                     : "Behavioral baseline established"}
                 </p>
               </div>
-              <p className="shrink-0 font-mono text-xs text-foreground/55">
+              <p className="shrink-0 text-xs tabular-nums text-foreground/55">
                 {formatTimestamp(mintTimestamp)}
               </p>
             </div>

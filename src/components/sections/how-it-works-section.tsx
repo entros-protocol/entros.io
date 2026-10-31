@@ -1,3 +1,4 @@
+import { StepNumber } from "@/components/ui/step-number";
 import { features } from "@/data/features";
 import { getIcon } from "@/lib/icons";
 
@@ -22,9 +23,7 @@ export function HowItWorksSection() {
                 {/* Index rule—step number, hairline span, mini icon.
                     Mirrors the integration cards on the Realms case study. */}
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-base tracking-[0.2em] text-cyan">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
+                  <StepNumber n={i + 1} />
                   <span className="h-px flex-1 bg-border" />
                   <Icon className="h-10 w-10 text-foreground/80" />
                 </div>

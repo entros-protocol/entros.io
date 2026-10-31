@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { EntrosMark } from "./entros-mark";
 
-const TARGET = "entros";
+const TARGET = "Entros";
 const HASH_CHARS = "0123456789abcdef";
 
 function randomChar() {
@@ -18,6 +19,10 @@ function randomChar() {
  * get stranded mid-decrypt: cleanup clears the interval on any path
  * change, and the rendered string is computed from pathname rather
  * than imperatively reset.
+ *
+ * The reveal counts as played once it finishes, not when it starts. In
+ * development React's Strict Mode runs each new effect, cleans it up and
+ * runs it again, so a flag set when the reveal starts would skip it there.
  */
 export function NavbarWordmark() {
   const pathname = usePathname();
@@ -26,7 +31,6 @@ export function NavbarWordmark() {
 
   useEffect(() => {
     if (pathname !== "/" || playedRef.current) return;
-    playedRef.current = true;
 
     const TOTAL_FRAMES = 36;
     const FRAME_MS = 38;
@@ -41,7 +45,10 @@ export function NavbarWordmark() {
         next += frame >= settleAt(i) ? TARGET[i] : randomChar();
       }
       setAnimFrame(next);
-      if (frame >= TOTAL_FRAMES) window.clearInterval(id);
+      if (frame >= TOTAL_FRAMES) {
+        window.clearInterval(id);
+        playedRef.current = true;
+      }
     }, FRAME_MS);
 
     return () => window.clearInterval(id);
@@ -56,13 +63,13 @@ export function NavbarWordmark() {
         fontFamily: "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
       }}
       className="inline-flex items-baseline text-xl tracking-tight text-foreground"
-      aria-label="entros — home"
+      aria-label="Entros home"
     >
+      {/* 0.75em is 18 px at the navbar's type size: the capitals' height,
+          and the size the mark's grid is drawn for. Like a letter, it
+          stands on the baseline. */}
+      <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
       <span aria-hidden>{display}</span>
-      <span
-        aria-hidden
-        className="ml-1 inline-block size-[4px] bg-cyan"
-      />
     </Link>
   );
 }

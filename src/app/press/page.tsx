@@ -22,7 +22,7 @@ const assets = [
     name: "Primary mark",
     file: "/logos/Entros.png",
     format: "PNG · 500 × 500",
-    note: "The social card and favicon source. Solid background versions for light and dark in the same file.",
+    note: "The mark on its black tile, as used for the favicon and the share image.",
     previewClass: "bg-foreground/[0.04]",
   },
   {
@@ -74,11 +74,6 @@ const artifacts = [
     label: "Devnet pilot",
     value: "entros.io/verify",
     href: "/verify",
-  },
-  {
-    label: "Live protocol stats",
-    value: "entros.io/stats",
-    href: "/stats",
   },
   {
     label: "Security program",
@@ -217,6 +212,8 @@ export default function Press() {
                     alt={asset.name}
                     width={140}
                     height={140}
+                    // Each file is 2 KB or less, smaller than a resized copy would be.
+                    unoptimized
                     className="max-h-[60%] max-w-[60%] object-contain"
                   />
                 </div>
@@ -366,18 +363,6 @@ export default function Press() {
               "
             >
               Try the demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              href="/stats"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              Live protocol stats
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>

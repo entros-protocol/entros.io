@@ -49,11 +49,8 @@ export default function Token() {
           <TokenLaunchCard />
         </div>
 
-        <div className="flex h-[225px] items-start justify-center pb-4 sm:h-[270px] md:h-[300px] md:pb-6 lg:h-[330px] xl:h-[360px]">
-          <AsciiFlow
-            brand="$ENTROS"
-            className="text-[5px] sm:text-[6px] md:text-[7px] lg:text-[8px] xl:text-[9px]"
-          />
+        <div className="mx-auto mt-6 h-[220px] max-w-7xl sm:h-[270px] md:h-[320px] lg:h-[360px] xl:h-[400px]">
+          <AsciiFlow brand="$ENTROS" />
         </div>
       </section>
 
@@ -78,18 +75,6 @@ export default function Token() {
               "
             >
               Try the demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              href="/stats"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              See live stats
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>

@@ -23,7 +23,7 @@ const KEYWORDS = new Set([
   "interface",
 ]);
 
-function tokenizeLine(line: string): React.ReactNode[] {
+export function tokenizeLine(line: string): React.ReactNode[] {
   const tokens: React.ReactNode[] = [];
   let i = 0;
 

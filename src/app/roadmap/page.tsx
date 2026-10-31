@@ -1,3 +1,4 @@
+import { StepNumber } from "@/components/ui/step-number";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { GaugeGlyph, KeyGlyph, ShieldGlyph, ToolGlyph } from "@/components/icons/glyphs";
@@ -312,8 +313,8 @@ export default function Roadmap() {
                       i < flipCriteria.length - 1 ? "border-b border-border" : ""
                     }`}
                   >
-                    <span className="mt-1 font-mono text-xs tracking-[0.2em] text-cyan">
-                      {String(i + 1).padStart(2, "0")}
+                    <span className="flex h-[1.625rem] w-9 shrink-0 items-center md:h-[1.828rem]">
+                      <StepNumber n={i + 1} />
                     </span>
                     <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
                       {item}

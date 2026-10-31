@@ -266,7 +266,7 @@ export function DashboardAnchorView() {
                 <p className="text-sm font-medium text-foreground/60">
                   Anchor created
                 </p>
-                <p className="mt-2 font-mono text-sm text-foreground">
+                <p className="mt-2 text-sm tabular-nums text-foreground">
                   {formatDate(identity.creationTimestamp)}
                 </p>
               </div>

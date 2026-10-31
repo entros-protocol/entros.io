@@ -5,6 +5,7 @@ import {
   AsciiShieldScene,
   AsciiTriadScene,
 } from "@/components/ui/ascii-scenes";
+import { StepNumber } from "@/components/ui/step-number";
 import { protocolComponents } from "@/data/protocol-components";
 
 const SCENES = [
@@ -30,7 +31,6 @@ export function ProtocolComponentsSection() {
 
         <div className="mt-20 flex flex-col gap-20 md:gap-28">
           {protocolComponents.map((component, idx) => {
-            const number = String(idx + 1).padStart(2, "0");
             const reverse = idx % 2 === 1;
             const Scene = SCENES[idx] ?? AsciiSDKScene;
             return (
@@ -47,10 +47,8 @@ export function ProtocolComponentsSection() {
 
                 {/* Copy side */}
                 <div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs tracking-[0.2em] text-cyan">
-                      {number}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <StepNumber n={idx + 1} />
                     <span className="h-px flex-1 bg-border" />
                   </div>
 

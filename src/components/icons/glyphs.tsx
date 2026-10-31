@@ -191,6 +191,18 @@ export function AgentGlyph(props: GlyphProps) {
   );
 }
 
+/** A wallet, with the dot as its clasp. */
+export function WalletGlyph(props: GlyphProps) {
+  return (
+    <Glyph {...props}>
+      <path d="M5.5 7.5l11-3.5v3.5" />
+      <rect x="3.5" y="7.5" width="17" height="12" />
+      <path d="M20.5 11.5h-5v4h5" />
+      <Dot cx={17.5} cy={13.5} r={1.1} />
+    </Glyph>
+  );
+}
+
 export function GameGlyph(props: GlyphProps) {
   return (
     <Glyph {...props}>

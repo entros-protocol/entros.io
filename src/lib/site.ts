@@ -14,6 +14,7 @@ export const GITHUB_URL = "https://github.com/entros-protocol";
 // Square (500×500) logo image. Used as the og:image and twitter:image
 // across every path on the site. Twitter renders this in the "summary"
 // (small-square) card layout — same compact card whether the link is to
-// /, /verify, /docs, /paper, etc.
-export const OG_IMAGE_PATH = "/logos/Entros.png";
+// /, /verify, /docs, /paper, etc. Share sites cache a card's image by its
+// URL, so the query changes whenever the image does.
+export const OG_IMAGE_PATH = "/logos/Entros.png?v=2";
 export const OG_LOGO_PATH = "/logos/Entros.png";

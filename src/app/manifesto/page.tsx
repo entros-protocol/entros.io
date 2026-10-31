@@ -119,7 +119,7 @@ export default function Manifesto() {
             Verify your wallet
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
-          <p className="mt-10 font-mono text-xs text-foreground/50">Entros Protocol, October 2026</p>
+          <p className="mt-10 text-sm text-foreground/50">Entros Protocol, October 2026</p>
         </div>
       </section>
     </>

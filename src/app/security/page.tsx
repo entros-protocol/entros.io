@@ -43,7 +43,7 @@ export default function Security() {
       {/* Hero: copy left, the published attempt count and the campaign
           ladder right. */}
       <section>
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-16">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:min-h-[calc(100svh-4rem)] lg:grid-cols-9 lg:content-center lg:items-center lg:gap-16 lg:pt-24 lg:pb-24">
           <div className="lg:col-span-5">
             <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
               Continuous adversarial
@@ -113,7 +113,7 @@ export default function Security() {
                   </span>
                   <span
                     className={cn(
-                      "font-mono text-[10px] tracking-[0.05em] sm:text-[11px]",
+                      "font-display text-xs tabular-nums sm:text-sm",
                       rung.state === "planned" ? "text-foreground/35" : "text-foreground/70",
                     )}
                   >
@@ -138,7 +138,8 @@ export default function Security() {
                 Planned
               </li>
             </ul>
-          </div>        </div>
+          </div>
+        </div>
       </section>
 
       <ThreatModel />
@@ -153,9 +154,7 @@ export default function Security() {
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-            Methodology public.
-            <br />
-            Defenses private<span className="text-cyan">.</span>
+            Built to keep pace with AI<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

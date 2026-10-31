@@ -54,7 +54,7 @@ export function RedTeamProgram() {
             <tbody>
               {taxonomy.map((row) => (
                 <tr key={row.tier} className="border-b border-border last:border-b-0">
-                  <td className="py-4 pl-2 pr-6 font-mono text-cyan">
+                  <td className="whitespace-nowrap py-4 pl-2 pr-6 font-display text-lg font-light tabular-nums tracking-tight text-foreground/55">
                     {row.tier}
                   </td>
                   <td className="py-4 pr-6 text-foreground/80">

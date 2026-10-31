@@ -34,7 +34,7 @@ export function TokenLaunchCard() {
   return (
     <div className="mx-auto mt-10 w-full max-w-xl">
       {/* Collaboration lockup. EasyA's mark and wordmark treatment match
-          their own header (#52FFA1 tile, bold tracking-tight); the entros
+          their own header (#52FFA1 tile, bold tracking-tight); the Entros
           side mirrors the navbar wordmark, cyan square included. */}
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 sm:gap-x-5">
         <span className="flex items-center gap-2.5">
@@ -66,7 +66,7 @@ export function TokenLaunchCard() {
           }}
           className="inline-flex items-baseline text-lg tracking-tight text-foreground sm:text-xl"
         >
-          entros
+          Entros
           <span aria-hidden className="ml-1 inline-block size-[4px] bg-cyan" />
         </span>
       </div>

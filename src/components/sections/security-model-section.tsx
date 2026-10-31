@@ -1,46 +1,46 @@
+import { StepNumber } from "@/components/ui/step-number";
+
 const DEFENSES = [
   {
-    title: "Minimum Distance Constraint",
+    title: "Fresh challenges",
     description:
-      "Re-verification proves committed fingerprints sit inside the circuit's minimum and maximum Hamming-distance bounds. The circuit rejects identical committed fingerprints.",
+      "The server issues a new word and path for every round, then checks the transcript against the issued words before settlement.",
   },
   {
-    title: "Server-Side Feature Validation",
+    title: "Feature validation",
     description:
-      "The validation service checks the 308-feature summary before accepting the on-chain proof: acoustic artifacts, submitted-signal statistics, duplicate fingerprints. Detection logic and thresholds stay private as calibration material.",
+      "The private service checks the 308 features for acoustic artifacts, unusual signal statistics and duplicate fingerprints. Its thresholds stay private.",
   },
   {
-    title: "Progressive Trust Score",
+    title: "Cross-wallet registry",
     description:
-      "Trust Score counts active weekly verification bins and account age. A repeat inside one weekly bin adds no active bin.",
+      "The service compares each new fingerprint with recent fingerprints from other wallets. Population-scale performance is still under evaluation.",
   },
   {
-    title: "Per-Session Randomness",
+    title: "Distance bounds",
     description:
-      "The server issues fresh words and paths, one pair per round. It checks the transcript against the issued words before settlement.",
+      "Each re-verification proves the new fingerprint sits within the circuit's minimum and maximum distance from the last one. An identical fingerprint fails.",
   },
   {
-    title: "Multi-Modal Capture",
+    title: "Several signals",
     description:
-      "The client captures microphone, pointer or touch, and available motion. Entros is measuring which combinations add reliable separation across people, devices, and synthesis methods.",
+      "Voice, touch or pointer, and motion where available. Entros is measuring which combinations separate people, devices and synthesis methods.",
   },
   {
-    title: "Cross-Wallet Fingerprint Registry",
+    title: "Trust over time",
     description:
-      "The private service keeps a bounded registry of recent fingerprints and compares new submissions with other wallets; population-scale performance remains under evaluation.",
+      "Trust Score counts active weekly verification bins and account age. A second verification in the same week adds no bin.",
   },
   {
-    title: "Economic Disincentives",
+    title: "Fees and rate limits",
     description:
-      "The configured fee and rate limits bound request volume. They do not decide whether a capture passes. The private validation policy makes that decision.",
+      "Fees and rate limits bound how many attempts reach the service. The validation policy decides whether a capture passes.",
   },
 ];
 
 /**
- * Security Model—vertical numbered list. Each defense is a full-width
- * row: number on the left rail, title + body on the right. Removes the
- * orphan-cell problem that a 7-item grid creates and gives the section
- * a different geometry from grid-based sections elsewhere on the page.
+ * Security Model: a vertical numbered list. Each defense is a full-width
+ * row with the number and title on the left and the body on the right.
  */
 export function SecurityModelSection() {
   return (
@@ -51,21 +51,18 @@ export function SecurityModelSection() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          The private service evaluates each capture before settlement.
-          Detection logic stays private. Published results state their tested
-          attack class and denominator.
+          A private service checks each capture before it settles. Published
+          results name the attack class tested and the sample size.
         </p>
 
         <div className="mt-16 border-t border-border">
           {DEFENSES.map((d, idx) => (
             <div
               key={d.title}
-              className="grid grid-cols-1 gap-y-4 border-b border-border py-8 md:grid-cols-[1fr_1.4fr] md:gap-x-12 md:gap-y-0 md:py-10"
+              className="grid grid-cols-1 gap-y-3 border-b border-border py-7 md:grid-cols-[1fr_1.4fr] md:gap-x-12 md:gap-y-0 md:py-9"
             >
-              <div className="flex items-center gap-5">
-                <span className="shrink-0 font-mono text-xs tracking-[0.2em] text-cyan">
-                  {String(idx + 1).padStart(2, "0")}
-                </span>
+              <div className="flex items-baseline gap-5">
+                <StepNumber n={idx + 1} className="w-9 shrink-0 md:w-11" />
                 <h3 className="font-display text-xl font-medium tracking-tight text-foreground md:text-2xl md:leading-[1.15]">
                   {d.title}
                 </h3>

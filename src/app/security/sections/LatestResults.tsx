@@ -1,19 +1,41 @@
-import { Fragment } from "react";
+import { StepNumber } from "@/components/ui/step-number";
 import {
-  AsciiFrontierScene,
-  AsciiSolvedScene,
-} from "@/components/ui/ascii-scenes";
-import {
-  campaignResults,
+  campaigns,
   lastUpdated,
-  t4aNote,
   onChainBurstNote,
+  plannedCampaigns,
+  type Campaign,
 } from "@/data/security-metrics";
+import { cn } from "@/lib/utils";
+
+function Waves({ waves }: { waves: NonNullable<Campaign["waves"]> }) {
+  return (
+    <ol className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+      {waves.map((wave) => (
+        <li key={wave.label}>
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="whitespace-nowrap text-sm text-foreground/55">{wave.label}</span>
+            <span className="font-display text-lg font-light tabular-nums tracking-tight text-foreground">
+              {wave.passRate}
+            </span>
+          </div>
+          <div aria-hidden className="mt-2 h-1 bg-foreground/10">
+            <div className="h-full bg-cyan" style={{ width: `${wave.percent}%` }} />
+          </div>
+          <p className="mt-2 text-xs leading-snug text-foreground/55">
+            {wave.condition}
+            <span className="text-foreground/35"> · {wave.attempts} runs</span>
+          </p>
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 /**
- * Latest Results—the centerpiece data moment of the page. ASCII
- * scenes flanking the campaign table: monospace numbers, hairline
- * rows, cyan tier labels.
+ * Current measurements: one row per published campaign with its pass rate
+ * set large on the right, the T4a waves as a small bar sequence, then the
+ * campaigns still to run.
  */
 export function LatestResults() {
   return (
@@ -24,129 +46,73 @@ export function LatestResults() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Pass rate is the share of attempts that satisfied the checks
-          enabled for that row. Each result applies to its named generator,
-          sample size, and configuration.
+          A pass is an attempt that cleared every check enabled for its
+          campaign. Each result covers its named attack, sample size and
+          configuration.
         </p>
 
-        {/* Mobile-only: SOLVED scene slotted directly below the
-            subheading. On desktop the same scene lives in the
-            side-by-side grid below. */}
-        <div className="mt-10 lg:hidden">
-          <AsciiSolvedScene aspect="4/5" />
+        <ol className="mt-16 border-t border-border">
+          {campaigns.map((c) => (
+            <li
+              key={c.tier}
+              className="grid grid-cols-1 gap-y-4 border-b border-border py-9 md:grid-cols-[6rem_1fr_13rem] md:gap-x-10 md:gap-y-5 md:py-11"
+            >
+              <StepNumber n={c.tier} className="pt-1 text-foreground/50" />
+
+              <div className="min-w-0">
+                <h3 className="font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+                  {c.name}
+                </h3>
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-foreground/60 md:text-base">
+                  {c.description}
+                </p>
+                {c.waves && <Waves waves={c.waves} />}
+                {c.note && (
+                  <p className="mt-5 max-w-xl text-sm leading-relaxed text-foreground/45">
+                    {c.note}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-baseline gap-4 md:col-start-3 md:row-start-1 md:flex-col md:items-end md:gap-1 md:text-right">
+                <p className="font-display text-4xl font-light tabular-nums tracking-tight text-foreground md:text-5xl">
+                  {c.passRate}
+                </p>
+                <div className="text-sm text-foreground/55">
+                  <p className="tabular-nums">{c.caption}</p>
+                  {c.date && <p className="text-foreground/40">{c.date}</p>}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <div className="mt-20">
+          <h3 className="font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+            Still to run
+          </h3>
+          <ul className="mt-6 grid grid-cols-1 gap-px border-y border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+            {plannedCampaigns.map((p) => (
+              <li key={p.tier} className="bg-background p-6">
+                <StepNumber n={p.tier} className="text-xl md:text-2xl" />
+                <p className="mt-4 text-base text-foreground">{p.name}</p>
+                <p
+                  className={cn(
+                    "mt-1 inline-flex items-center gap-2 text-sm",
+                    p.active ? "text-cyan" : "text-foreground/50",
+                  )}
+                >
+                  {p.active && <span aria-hidden className="size-1.5 bg-cyan" />}
+                  {p.status}
+                </p>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-3 lg:items-stretch lg:gap-16">
-          {/* Desktop-only: stacked scene column. Stretches to match the
-              right column's full height (table + footer). lg:pt offsets
-              past the thead so SLOT 1 starts at the first data row;
-              lg:pb offsets past the "Last updated" footer so SLOT 2
-              ends at the last data row. */}
-          <div className="hidden lg:col-span-1 lg:flex lg:flex-col lg:gap-8 lg:pt-[3.25rem] lg:pb-[2.5rem]">
-            <AsciiSolvedScene fill className="flex-1" />
-            <AsciiFrontierScene fill className="flex-1" />
-          </div>
-
-          <div className="lg:col-span-2">
-            <div tabIndex={0} className="overflow-x-auto border-y border-border">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th
-                      scope="col"
-                      className="text-sm font-medium py-4 pl-2 pr-4 text-left text-foreground/65"
-                    >
-                      Tier
-                    </th>
-                    <th
-                      scope="col"
-                      className="text-sm font-medium py-4 pr-4 text-left text-foreground/65"
-                    >
-                      Description
-                    </th>
-                    <th
-                      scope="col"
-                      className="text-sm font-medium py-4 pr-4 text-right text-foreground/65"
-                    >
-                      Attempts
-                    </th>
-                    <th
-                      scope="col"
-                      className="text-sm font-medium py-4 pr-4 text-right text-foreground/65"
-                    >
-                      Pass
-                    </th>
-                    <th
-                      scope="col"
-                      className="text-sm font-medium py-4 pr-2 text-left text-foreground/65"
-                    >
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {campaignResults.map((row) => (
-                    <Fragment key={row.tier}>
-                      <tr className="border-b border-border last:border-b-0">
-                        <td className="whitespace-nowrap py-3 pl-2 pr-4 font-mono text-cyan">
-                          {row.tier}
-                        </td>
-                        <td className="py-3 pr-4 text-foreground/80">
-                          {row.description}
-                        </td>
-                        <td className="py-3 pr-4 text-right font-mono text-foreground/70">
-                          {row.attempts}
-                        </td>
-                        <td className="py-3 pr-4 text-right font-mono text-foreground">
-                          {row.passRate}
-                        </td>
-                        <td className="py-3 pr-2 text-foreground/55">
-                          {row.status}
-                        </td>
-                      </tr>
-                      {row.note && (
-                        <tr className="border-b border-border/40">
-                          <td colSpan={5} className="py-3 pr-4 pl-2 text-xs leading-relaxed text-foreground/50">
-                            {row.note}
-                          </td>
-                        </tr>
-                      )}
-                      {/* Mobile-only: FRONTIER scene marks the seam
-                          between the closed studies (T4a Waves 1–4, T4b)
-                          and the next-phase queued tiers starting at T5.
-                          Hidden on desktop where the same scene lives
-                          stacked beside the table. */}
-                      {row.tier === "T4b" && (
-                        <tr className="lg:hidden">
-                          <td colSpan={5} className="py-6">
-                            <AsciiFrontierScene aspect="4/5" />
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <p className="text-sm font-medium mt-4 text-foreground/60">
-              Last updated: {lastUpdated}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-16 grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-2">
-          <div className="bg-background p-8">
-            <p className="text-sm leading-relaxed text-foreground/70">
-              {t4aNote}
-            </p>
-          </div>
-
-          <div className="bg-background p-8">
-            <p className="text-sm leading-relaxed text-foreground/70">
-              {onChainBurstNote}
-            </p>
-          </div>
+        <div className="mt-10 flex flex-col gap-3 text-sm leading-relaxed text-foreground/45 md:flex-row md:justify-between md:gap-12">
+          <p className="max-w-2xl">{onChainBurstNote}</p>
+          <p className="shrink-0">Last updated {lastUpdated}</p>
         </div>
       </div>
     </section>

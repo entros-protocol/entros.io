@@ -23,9 +23,9 @@ export default function Agents() {
           <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 pt-28 pb-16 md:pt-36 md:pb-20 lg:flex-row lg:items-center lg:gap-16 lg:py-32">
             <div className="relative z-10 flex flex-col lg:w-1/2 lg:max-w-2xl">
               <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-                Your agent gets in
+                Your agent acts<span className="text-cyan">.</span>
                 <br />
-                when you sign off<span className="text-cyan">.</span>
+                You approve<span className="text-cyan">.</span>
               </h1>
 
               <p className="mt-7 max-w-xl text-balance text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">

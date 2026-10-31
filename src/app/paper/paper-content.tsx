@@ -32,7 +32,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
             href="https://doi.org/10.5281/zenodo.19517441"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border border-border px-4 py-1.5 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className="inline-flex items-center gap-2 border border-border px-4 py-1.5 text-sm text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
           >
             Zenodo
             <span aria-hidden="true">↗</span>
@@ -40,7 +40,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
           <a
             href="/entros-protocol-2026.pdf"
             download
-            className="inline-flex items-center gap-2 border border-border px-4 py-1.5 font-mono text-xs text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className="inline-flex items-center gap-2 border border-border px-4 py-1.5 text-sm text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
           >
             PDF
             <span aria-hidden="true">↓</span>

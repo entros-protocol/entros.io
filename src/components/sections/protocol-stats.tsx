@@ -243,7 +243,7 @@ export function ProtocolStats() {
                   <p className="mt-4 font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
                     {formatTimestamp(stats.mostRecentTimestamp)}
                   </p>
-                  <p className="mt-2 font-mono text-xs text-foreground/50">
+                  <p className="mt-2 text-xs tabular-nums text-foreground/50">
                     {timeAgo(stats.mostRecentTimestamp)}
                   </p>
                 </>
@@ -258,7 +258,7 @@ export function ProtocolStats() {
             <div className="mt-6 flex flex-col items-start justify-between gap-3 border border-border p-5 md:flex-row md:items-center">
               <div className="flex items-center gap-3">
                 <span className="h-1.5 w-1.5 shrink-0 bg-cyan" aria-hidden />
-                <p className="font-mono text-[11px] text-foreground/50">
+                <p className="text-xs text-foreground/50">
                   Live read from{" "}
                   <a
                     href={`https://explorer.solana.com/address/${PROGRAM_IDS.entrosAnchor}?cluster=devnet`}

@@ -14,10 +14,9 @@ export function VerificationModesSection() {
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          A captcha answers &ldquo;is this session human?&rdquo; Entros is
-          designed to measure whether a returning human operates the wallet
-          over time. The protocol provides the state; the integrator sets the
-          policy.
+          A captcha checks one session. Entros is designed to show that a
+          returning person keeps operating the same wallet. Apps read the
+          state and set their own policy.
         </p>
 
         <div className="mt-16 grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-10">
@@ -28,10 +27,9 @@ export function VerificationModesSection() {
               Wallet-connected verification
             </h3>
             <p className="mt-5 text-base leading-relaxed text-foreground/65">
-              Connect a Solana wallet. Its Entros Anchor is a non-transferable
-              Token-2022 account. Commitments, Trust Score, and protocol state
-              stay readable on-chain; the wallet pays fees and rent for its
-              Anchor.
+              Your wallet holds a non-transferable Entros Anchor, a Token-2022
+              account. Its commitment, Trust Score and history stay readable
+              on chain. The wallet pays the fee and the Anchor&apos;s rent.
             </p>
           </div>
         </div>

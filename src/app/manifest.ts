@@ -26,6 +26,14 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
         purpose: "any",
       },
+      // The mark sits inside the central safe circle on a full-bleed
+      // tile, so the same file can be cropped to any launcher shape.
+      {
+        src: "/favicons/icon-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
       {
         src: "/favicons/apple-touch-icon.png",
         sizes: "180x180",

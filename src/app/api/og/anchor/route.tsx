@@ -81,7 +81,7 @@ export async function GET(request: Request) {
             color: "#E8E6E0",
           }}
         >
-          <span>entros</span>
+          <span>Entros</span>
           <span
             style={{
               display: "flex",

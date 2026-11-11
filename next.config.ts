@@ -124,14 +124,6 @@ const nextConfig: NextConfig = {
   // request — cf. /embed/verify-popup, the only ƒ route in this build.
   outputFileTracingIncludes: {
     "/**/*": ["./public/logos/Entros.png"],
-    // The dynamic OG image route at /api/og/anchor fetches its TTF font
-    // files via `fetch(new URL("./_fonts/...", import.meta.url))`. Vercel's
-    // route-asset tracer drops these unless we pin them explicitly — same
-    // trap as the logos PNG above.
-    "/api/og/anchor": [
-      "./src/app/api/og/anchor/_fonts/Geist-Regular.ttf",
-      "./src/app/api/og/anchor/_fonts/JetBrainsMono-Regular.ttf",
-    ],
   },
   turbopack: {
     resolveAlias: {
@@ -164,6 +156,18 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: SECURITY_HEADERS,
+      },
+      {
+        // The verify popup reports its result through `window.opener`, so it
+        // stays outside this rule. `same-origin` would also cut the opener of
+        // wallet popups the site opens.
+        source: "/((?!embed/verify-popup).*)",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
+        ],
       },
     ];
   },

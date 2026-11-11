@@ -1,4 +1,7 @@
 import { ImageResponse } from "next/og";
+import { Connection } from "@solana/web3.js";
+import { fetchIdentityState } from "@entros/pulse-sdk";
+import { solanaRpcEndpoint } from "@/lib/solana-rpc";
 
 // Node runtime, not Edge: this route bundles next/og's rendering WASM (~1 MB)
 // plus the fonts, which exceeds Vercel's 1 MB Edge Function size cap (deploy
@@ -12,18 +15,14 @@ export const runtime = "nodejs";
 const WIDTH = 1200;
 const HEIGHT = 630;
 const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+const IDENTITY_READ_TIMEOUT_MS = 4_000;
+const VERIFIED_CACHE_CONTROL = "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800";
+// A missing identity and a failed read look the same, so the neutral image expires soon.
+const NEUTRAL_CACHE_CONTROL = "public, max-age=300, s-maxage=300";
 
 function truncateWallet(pubkey: string): string {
   if (pubkey.length <= 12) return pubkey;
   return `${pubkey.slice(0, 4)}…${pubkey.slice(-4)}`;
-}
-
-function parseScore(raw: string | null): number | null {
-  if (raw == null) return null;
-  const n = Number.parseInt(raw, 10);
-  if (!Number.isFinite(n)) return null;
-  if (n < 0 || n > 65535) return null;
-  return n;
 }
 
 function parseWallet(raw: string | null): string | null {
@@ -32,15 +31,43 @@ function parseWallet(raw: string | null): string | null {
   return raw;
 }
 
+/**
+ * The wallet's on-chain Trust Score, or null when the wallet has no identity
+ * account or the read fails. The image claims nothing it did not read from chain.
+ */
+async function readTrustScore(wallet: string): Promise<number | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), IDENTITY_READ_TIMEOUT_MS);
+  });
+  try {
+    const identity = await Promise.race([
+      fetchIdentityState(wallet, new Connection(solanaRpcEndpoint(), "confirmed")),
+      timeout,
+    ]);
+    return identity && identity.owner === wallet ? identity.trustScore : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchFont(url: string): Promise<ArrayBuffer> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Font request failed with ${response.status}`);
+  return response.arrayBuffer();
+}
+
 // Fetched once and cached so warm instances don't refetch. Loaded lazily
 // inside the handler (not at module scope) so nothing runs during build-time
-// page-data collection.
+// page-data collection. A failed fetch throws and leaves the cache empty.
 let cachedFonts: [ArrayBuffer, ArrayBuffer] | null = null;
 async function loadFonts(origin: string): Promise<[ArrayBuffer, ArrayBuffer]> {
   if (cachedFonts) return cachedFonts;
   const [geist, mono] = await Promise.all([
-    fetch(`${origin}/fonts/Geist-Regular.ttf`).then((r) => r.arrayBuffer()),
-    fetch(`${origin}/fonts/JetBrainsMono-Regular.ttf`).then((r) => r.arrayBuffer()),
+    fetchFont(`${origin}/fonts/Geist-Regular.ttf`),
+    fetchFont(`${origin}/fonts/JetBrainsMono-Regular.ttf`),
   ]);
   cachedFonts = [geist, mono];
   return cachedFonts;
@@ -48,12 +75,15 @@ async function loadFonts(origin: string): Promise<[ArrayBuffer, ArrayBuffer]> {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const wallet = parseWallet(url.searchParams.get("wallet"));
-  const score = parseScore(url.searchParams.get("score"));
+  const requested = parseWallet(url.searchParams.get("wallet"));
 
-  const [geistRegular, jetbrainsMono] = await loadFonts(url.origin);
+  const [[geistRegular, jetbrainsMono], score] = await Promise.all([
+    loadFonts(url.origin),
+    requested ? readTrustScore(requested) : null,
+  ]);
 
-  const showScore = score != null && score > 0;
+  const wallet = score === null ? null : requested;
+  const showScore = score !== null && score > 0;
   const walletDisplay = wallet ? truncateWallet(wallet) : null;
 
   return new ImageResponse(
@@ -106,17 +136,19 @@ export async function GET(request: Request) {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                fontFamily: "JetBrainsMono",
-                fontSize: 18,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: "rgba(232,230,224,0.4)",
-              }}
-            >
-              Verified human
-            </div>
+            {walletDisplay && (
+              <div
+                style={{
+                  fontFamily: "JetBrainsMono",
+                  fontSize: 18,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "rgba(232,230,224,0.4)",
+                }}
+              >
+                Verified human
+              </div>
+            )}
             <div
               style={{
                 fontFamily: "Geist",
@@ -211,8 +243,7 @@ export async function GET(request: Request) {
         },
       ],
       headers: {
-        "Cache-Control":
-          "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+        "Cache-Control": wallet ? VERIFIED_CACHE_CONTROL : NEUTRAL_CACHE_CONTROL,
       },
     }
   );

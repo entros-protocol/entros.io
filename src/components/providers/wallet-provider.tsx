@@ -19,11 +19,9 @@ import {
   createDefaultWalletNotFoundHandler,
 } from "@solana-mobile/wallet-adapter-mobile";
 import type { WalletError } from "@solana/wallet-adapter-base";
-import { clusterApiUrl } from "@solana/web3.js";
+import { solanaRpcEndpoint } from "@/lib/solana-rpc";
 
 import "@/styles/wallet-adapter.css";
-
-const NETWORK = "devnet" as const;
 
 // Storage key written by `@solana-mobile/wallet-standard-mobile`'s default
 // authorization cache (verified against
@@ -58,10 +56,7 @@ export function useWalletError(): WalletErrorContextValue {
 }
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const endpoint = useMemo(
-    () => process.env.NEXT_PUBLIC_SOLANA_RPC ?? clusterApiUrl(NETWORK),
-    [],
-  );
+  const endpoint = useMemo(() => solanaRpcEndpoint(), []);
 
   // Wallet error surface. SolanaWalletProvider's onError prop fires on every
   // adapter error (autoconnect failure, user dismissed wallet popup, devnet/

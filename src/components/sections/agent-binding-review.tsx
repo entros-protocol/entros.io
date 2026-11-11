@@ -23,7 +23,11 @@ export function AgentBindingReview({ binding }: { binding: AgentWalletBindingReq
   const wallet = connected ? (publicKey?.toBase58() ?? null) : null;
   const [round, setRound] = useState(0);
   const reviewKey = wallet ? `${connection.rpcEndpoint}:${wallet}:${round}` : null;
-  const [review, setReview] = useState<{ key: string; value: BindingReview } | null>(null);
+  const [review, setReview] = useState<{
+    key: string;
+    binding: AgentWalletBindingRequest;
+    value: BindingReview;
+  } | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -33,7 +37,7 @@ export function AgentBindingReview({ binding }: { binding: AgentWalletBindingReq
     let cancelled = false;
     void reviewBindingRequest({ binding, wallet, connection, nowSeconds }).then(
       (value) => {
-        if (!cancelled) setReview({ key: reviewKey, value });
+        if (!cancelled) setReview({ key: reviewKey, binding, value });
       },
       () => {
         if (!cancelled) setError("Could not read devnet. Reload the page to try again.");
@@ -44,14 +48,17 @@ export function AgentBindingReview({ binding }: { binding: AgentWalletBindingReq
     };
   }, [binding, connection, reviewKey, wallet]);
 
-  const current = review?.key === reviewKey ? review.value : null;
+  // A review counts only for the exact binding on screen. The transaction uses the reviewed copy.
+  const reviewed = review?.key === reviewKey && review.binding === binding ? review : null;
+  const current = reviewed?.value ?? null;
 
   async function send() {
-    if (!current?.canSend || !publicKey) return;
+    if (!reviewed || !current?.canSend || !publicKey) return;
+    const sentBinding = reviewed.binding;
     setError(null);
     setSending(true);
     try {
-      const transaction = new Transaction().add(...(await buildSetAgentWalletInstructions(binding)));
+      const transaction = new Transaction().add(...(await buildSetAgentWalletInstructions(sentBinding)));
       const latest = await connection.getLatestBlockhash("confirmed");
       transaction.feePayer = publicKey;
       transaction.recentBlockhash = latest.blockhash;

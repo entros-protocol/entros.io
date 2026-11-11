@@ -90,11 +90,17 @@ export function bucketForResult(result: VerificationResult): EmbedErrorReason | 
  *
  * Every reason here is client-origin, because no verdict exists yet, so the
  * SDK's client-origin predicate cannot separate them. Only an unreachable
- * service and an expired round get their own bucket.
+ * service, an expired round and a refused wallet authorization get their own
+ * bucket. A refused authorization judged nothing, and a new attempt can pass.
  */
 export function bucketForCaptureFailure(reason: string | undefined): EmbedErrorReason {
   if (reason === "round_expired" || reason === "session_expired") return "timeout";
-  if (reason === "validation_unavailable" || reason === "validation_timeout") {
+  if (
+    reason === "validation_unavailable" ||
+    reason === "validation_timeout" ||
+    reason === "authorization_required" ||
+    reason === "authorization_invalid"
+  ) {
     return "network_error";
   }
   return "validation_failed";

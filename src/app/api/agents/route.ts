@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { readBoundedJsonResponse } from "@/lib/bounded-json";
 
 const cluster =
   (process.env.NEXT_PUBLIC_SOLANA_CLUSTER as
@@ -14,6 +15,34 @@ const INDEXER_BASE =
 
 // Solana base58 pubkey: 32-44 chars, base58 alphabet only.
 const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+const MAX_AGENTS = 100;
+// Text the page shows or links. A field past its limit marks the row malformed.
+const MAX_URI_LENGTH = 2_048;
+const MAX_NAME_LENGTH = 128;
+// The request selects these columns alone, so the cap bounds only what the page uses.
+const COLUMNS = "asset,agent_uri,nft_name";
+// A full page of rows with each field at its limit, with room to spare.
+const MAX_RESPONSE_BYTES = MAX_AGENTS * 4_096;
+
+interface AgentRow {
+  asset: string;
+  // An agent registered without a URI has none.
+  agent_uri: string | null;
+  nft_name: string | null;
+}
+
+const isBoundedText = (value: unknown, limit: number): value is string | null =>
+  value === null || (typeof value === "string" && value.length <= limit);
+
+function parseAgentRow(value: unknown): AgentRow | null {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const { asset, agent_uri: agentUri, nft_name: nftName } = row;
+  if (typeof asset !== "string" || !PUBKEY_REGEX.test(asset)) return null;
+  if (!isBoundedText(agentUri, MAX_URI_LENGTH)) return null;
+  if (!isBoundedText(nftName, MAX_NAME_LENGTH)) return null;
+  return { asset, agent_uri: agentUri, nft_name: nftName };
+}
 
 /**
  * Server-side proxy to the 8004 agent indexer.
@@ -35,7 +64,7 @@ export async function GET(request: Request) {
   const timer = setTimeout(() => controller.abort(), 5_000);
 
   try {
-    const upstream = `${INDEXER_BASE}/agents?owner=eq.${owner}&limit=100`;
+    const upstream = `${INDEXER_BASE}/agents?select=${COLUMNS}&owner=eq.${owner}&limit=${MAX_AGENTS}`;
     const res = await fetch(upstream, { signal: controller.signal });
 
     if (!res.ok) {
@@ -45,8 +74,33 @@ export async function GET(request: Request) {
       );
     }
 
-    const data = await res.json();
-    return NextResponse.json(data, {
+    // The indexer is a third party. Read no more than a page can hold, and pass on only
+    // well-formed rows, no more than the page asked for.
+    let data: unknown;
+    try {
+      data = await readBoundedJsonResponse(res, MAX_RESPONSE_BYTES);
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error:
+            error instanceof RangeError
+              ? "Indexer response too large"
+              : "Indexer returned an invalid response",
+        },
+        { status: 502 },
+      );
+    }
+    if (!Array.isArray(data)) {
+      return NextResponse.json(
+        { error: "Indexer returned an invalid response" },
+        { status: 502 },
+      );
+    }
+    const agents = data
+      .slice(0, MAX_AGENTS)
+      .map(parseAgentRow)
+      .filter((row): row is AgentRow => row !== null);
+    return NextResponse.json(agents, {
       headers: {
         "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
       },

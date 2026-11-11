@@ -150,6 +150,18 @@ describe("VerifyFlow with study intake closed", () => {
     ).not.toBeNull();
   });
 
+  it("never requests the study definition", async () => {
+    await act(async () => root.render(<VerifyFlow />));
+    await settle();
+
+    const requested = vi
+      .mocked(fetch)
+      .mock.calls.map(([input]) => String(input));
+    expect(requested.some((url) => url.endsWith("/api/study/definition"))).toBe(
+      false,
+    );
+  });
+
   it("hands the verification flow neutral study props", async () => {
     await act(async () => root.render(<VerifyFlow />));
     await settle();

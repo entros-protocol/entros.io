@@ -12,6 +12,7 @@ import {
   type StudyDefinition,
 } from "@/lib/population-study";
 import { readBoundedJson } from "@/lib/server/read-bounded-json";
+import { STUDY_INTAKE_OPEN } from "@/lib/study-intake";
 
 const MAX_BODY_BYTES = 1_024;
 const NO_STORE_HEADERS = { "Cache-Control": "no-store" } as const;
@@ -21,6 +22,7 @@ function noStoreJson(body: unknown, status = 200) {
 }
 
 export async function POST(request: Request) {
+  if (!STUDY_INTAKE_OPEN) return noStoreJson({ error: "Not found" }, 404);
   let body: Record<string, unknown> | null;
   try {
     body = (await readBoundedJson(request, MAX_BODY_BYTES)) as Record<

@@ -45,6 +45,10 @@ import {
   type RailState,
 } from "@/components/verify/console";
 import { ResetBaselineDialog } from "@/components/verify/reset-baseline-dialog";
+import {
+  pairedStartLabel,
+  usePairedAuthorization,
+} from "@/components/verify/use-paired-authorization";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { useWalletError } from "@/components/providers/wallet-provider";
 import { ArrowRight, Wallet, X } from "lucide-react";
@@ -66,6 +70,7 @@ function commitmentToHex(bytes: Uint8Array): string {
 }
 
 import { evaluateResetCooldown } from "@/lib/cooldown";
+import { storeLastVerification } from "@/lib/last-verification";
 import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 import { useMotionCapability } from "@/hooks/use-motion-capability";
 
@@ -342,6 +347,10 @@ export function VerifyWalletConnected({
     "Extracting features...",
   );
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  // The reset dialog is a view of its own, so its error and the failure view's stay apart.
+  const authorization = usePairedAuthorization(
+    resetDialogOpen ? "reset-dialog" : state.step,
+  );
   const signingDiagnosticActive = useSyncExternalStore(
     subscribeToStaticCapability,
     readSigningDiagnosticCapability,
@@ -553,9 +562,12 @@ export function VerifyWalletConnected({
   /**
    * Starts a paired session from the user's tap. The session asks for motion
    * permission, which needs that gesture, so nothing awaits before it starts.
+   * A wallet that has not authorized paired sessions signs in this tap, and the
+   * capture starts on the next one.
    */
   function handleStartPaired(intent: CaptureIntent) {
     if (studyCaptureBlocked || !pairedCapture || !publicKey) return;
+    if (!authorization.ensure()) return;
     // Verify and reset keep separate retry budgets.
     if (intentRef.current !== intent || budgetWalletRef.current !== connectedWallet) {
       retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
@@ -622,6 +634,8 @@ export function VerifyWalletConnected({
   }
 
   async function handleResetBaselineConfirm() {
+    // The dialog stays open while the wallet signs, so the next tap starts the reset.
+    if (!authorization.ensure()) return;
     setResetDialogOpen(false);
     // The state machine allows START_CAPTURE from failed (see reducer). The
     // paired capture finalizes as a reset because intentRef is now "reset".
@@ -691,6 +705,9 @@ export function VerifyWalletConnected({
         }
         if (result.success) {
           retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
+          if (connectedWallet && result.txSignature) {
+            storeLastVerification(connectedWallet, result.txSignature);
+          }
           dispatch({
             type: "VERIFICATION_SUCCESS",
             commitment: commitmentToHex(result.commitment),
@@ -700,6 +717,7 @@ export function VerifyWalletConnected({
           return;
         }
         const reason = result.reason;
+        authorization.reportRefusal(reason);
 
         // Charge the attempt here, on a verdict, rather than at capture
         // start. The counter used to increment before the microphone even
@@ -816,6 +834,12 @@ export function VerifyWalletConnected({
       />
     ) : null;
 
+  /** The capture's own failures, such as a refused session open, pass through here. */
+  function dispatchCapture(action: VerifyAction) {
+    if (action.type === "VERIFICATION_FAILED") authorization.reportRefusal(action.reason);
+    dispatch(action);
+  }
+
   // Mounted ahead of the capture step at one place in the tree, so the session
   // a start tap opens survives the move into the rounds.
   const pairedHost = (
@@ -824,7 +848,7 @@ export function VerifyWalletConnected({
       wallet={connectedWallet}
       connection={connection}
       hasMotion={hasMotion}
-      dispatch={dispatch}
+      dispatch={dispatchCapture}
       onHandle={setPairedCapture}
       onCommitted={completePairedSession}
     />
@@ -1032,16 +1056,22 @@ export function VerifyWalletConnected({
             disabled={
               micPermissionState === "denied" ||
               studyCaptureBlocked ||
-              !pairedCapture
+              !pairedCapture ||
+              authorization.pending
             }
             className={primaryVerificationActionClass}
           >
             {studyCaptureBlocked
               ? "Preparing next research trial..."
-              : "Start Verification"}
+              : pairedStartLabel(authorization, "Start Verification")}
             {!studyCaptureBlocked && <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden />}
           </button>
         </div>
+        {authorization.error && (
+          <ToneText tone="danger" alert>
+            {authorization.error}
+          </ToneText>
+        )}
         {signingDiagnosticActive && <SigningDiagnosticNotice />}
       </div>,
       idleFooter,
@@ -1101,8 +1131,9 @@ export function VerifyWalletConnected({
             : () => handleStartPaired(state.intent)
         }
         onCancel={handleResultCancel}
-        tryAgainLabel={studyResultActionLabel ?? "Try again"}
-        actionPending={studyNextTrialPending}
+        tryAgainLabel={studyResultActionLabel ?? pairedStartLabel(authorization, "Try again")}
+        actionPending={studyNextTrialPending || authorization.pending}
+        actionError={authorization.error}
       />,
     );
   }
@@ -1172,6 +1203,9 @@ export function VerifyWalletConnected({
           open={resetDialogOpen}
           onCancel={() => setResetDialogOpen(false)}
           onConfirm={handleResetBaselineConfirm}
+          confirmLabel={pairedStartLabel(authorization, "Reset baseline")}
+          confirmPending={authorization.pending}
+          confirmError={authorization.error}
         />
         {diagnosticPanel}
       </>,

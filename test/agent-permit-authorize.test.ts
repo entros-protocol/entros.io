@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { utils } from "@coral-xyz/anchor";
-import { Connection, Keypair } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import {
   AGENT_PERMIT_NETWORK,
   createAgentPermitRequest,
@@ -13,6 +13,7 @@ import type { AgentStateEvidence, AgentStateReadResult } from "@entros/pulse-sdk
 
 const mocks = vi.hoisted(() => ({
   readAgentState: vi.fn(),
+  fetchIdentityState: vi.fn(),
   findLatestVerificationTransaction: vi.fn(),
   readIntegratorEvidence: vi.fn(),
   verifyAgentWalletBindingRequest: vi.fn(),
@@ -28,7 +29,7 @@ import {
   reviewBindingRequest,
   reviewPermitRequest,
 } from "../src/lib/agent-permit-authorize";
-import { encodeAgentWalletBindingFragment } from "@entros/pulse-sdk";
+import { encodeAgentWalletBindingFragment, PROGRAM_IDS } from "@entros/pulse-sdk";
 
 const now = 1_800_000_000;
 const clock = () => now;
@@ -39,6 +40,9 @@ const agent = Keypair.generate().publicKey.toBase58();
 const transaction = utils.bytes.bs58.encode(new Uint8Array(64).fill(3));
 const connection = new Connection("http://127.0.0.1:8899");
 vi.spyOn(connection, "getGenesisHash").mockResolvedValue(AGENT_PERMIT_NETWORK.genesisHash);
+const identityAccount = { data: new Uint8Array(8), executable: false, lamports: 1, owner: PublicKey.default };
+// Never reaches a cluster. Each test that reads the identity sets its own answer.
+const getAccountInfo = vi.spyOn(connection, "getAccountInfo").mockResolvedValue(identityAccount);
 
 const request = createAgentPermitRequest({
   agent,
@@ -109,8 +113,13 @@ function evidence(trustScore = 250, age = 10): { status: "available"; evidence: 
   };
 }
 
+const VERIFIED_AT = now - 60;
+
 function ready() {
+  getAccountInfo.mockReset();
+  getAccountInfo.mockResolvedValue(identityAccount);
   mocks.readAgentState.mockResolvedValue(state());
+  mocks.fetchIdentityState.mockResolvedValue({ lastVerificationTimestamp: VERIFIED_AT });
   mocks.findLatestVerificationTransaction.mockResolvedValue({ status: "found", signature: transaction });
   mocks.readIntegratorEvidence.mockResolvedValue(evidence());
 }
@@ -210,6 +219,104 @@ describe("permit request review", () => {
     expect((await review()).needsVerification).toBe(false);
   });
 
+  // Any party can send transactions that name the owner's identity account. The search
+  // starts from the identity's own verification time, so they cannot bury the verification.
+  it("searches from the verification time the identity account holds", async () => {
+    ready();
+    await reviewPermitRequest({ request, wallet: operator, connection, nowSeconds: clock });
+    expect(mocks.fetchIdentityState).toHaveBeenCalledTimes(1);
+    expect(mocks.fetchIdentityState.mock.calls[0]?.[0]).toBe(operator);
+    expect(mocks.findLatestVerificationTransaction).toHaveBeenCalledWith({
+      walletPubkey: operator,
+      connection,
+      verifiedAt: VERIFIED_AT,
+    });
+  });
+
+  it("offers the transaction this browser remembers before the search", async () => {
+    ready();
+    await reviewPermitRequest({
+      request,
+      wallet: operator,
+      connection,
+      nowSeconds: clock,
+      candidateSignatures: [transaction],
+    });
+    expect(mocks.findLatestVerificationTransaction).toHaveBeenCalledWith({
+      walletPubkey: operator,
+      connection,
+      verifiedAt: VERIFIED_AT,
+      candidateSignatures: [transaction],
+    });
+  });
+
+  it("offers no remembered transaction without a verification time to check it against", async () => {
+    ready();
+    mocks.fetchIdentityState.mockResolvedValueOnce(null);
+    await reviewPermitRequest({
+      request,
+      wallet: operator,
+      connection,
+      nowSeconds: clock,
+      candidateSignatures: [transaction],
+    });
+    expect(mocks.findLatestVerificationTransaction).toHaveBeenCalledWith({
+      walletPubkey: operator,
+      connection,
+    });
+  });
+
+  it("reads the identity account once, at the address the SDK derives", async () => {
+    ready();
+    await reviewPermitRequest({ request, wallet: operator, connection, nowSeconds: clock });
+    const [identityPda] = PublicKey.findProgramAddressSync(
+      [new TextEncoder().encode("identity"), new PublicKey(operator).toBuffer()],
+      new PublicKey(PROGRAM_IDS.entrosAnchor),
+    );
+    expect(getAccountInfo).toHaveBeenCalledTimes(1);
+    expect(getAccountInfo.mock.calls[0]?.[0]).toEqual(identityPda);
+    // The SDK decodes the account already read, without a second request.
+    const reader = mocks.fetchIdentityState.mock.calls[0]?.[1] as Connection;
+    await expect(reader.getAccountInfo(identityPda)).resolves.toBe(identityAccount);
+    expect(getAccountInfo).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports a failed identity read as unavailable and runs no search", async () => {
+    ready();
+    getAccountInfo.mockRejectedValueOnce(new Error("429 Too Many Requests"));
+    const result = await reviewPermitRequest({ request, wallet: operator, connection, nowSeconds: clock });
+    expect(mocks.findLatestVerificationTransaction).not.toHaveBeenCalled();
+    expect(mocks.fetchIdentityState).not.toHaveBeenCalled();
+    expect(result.checks.at(-1)?.detail).toBe(
+      "Your Entros verification could not be read from devnet. Reload the page to try again.",
+    );
+    expect(result.needsVerification).toBe(false);
+    expect(result.canSign).toBe(false);
+  });
+
+  it("searches the newest transactions for a wallet without an identity", async () => {
+    ready();
+    getAccountInfo.mockResolvedValueOnce(null);
+    mocks.findLatestVerificationTransaction.mockResolvedValueOnce({ status: "none" });
+    const result = await reviewPermitRequest({ request, wallet: operator, connection, nowSeconds: clock });
+    expect(mocks.findLatestVerificationTransaction).toHaveBeenCalledWith({ walletPubkey: operator, connection });
+    expect(result.checks.at(-1)?.detail).toContain("No recent Entros verification");
+    expect(result.needsVerification).toBe(true);
+  });
+
+  it("searches the newest transactions when the identity account cannot be read", async () => {
+    ready();
+    for (const unreadable of [null, { lastVerificationTimestamp: 0 }]) {
+      mocks.findLatestVerificationTransaction.mockClear();
+      mocks.fetchIdentityState.mockResolvedValueOnce(unreadable);
+      await reviewPermitRequest({ request, wallet: operator, connection, nowSeconds: clock });
+      expect(mocks.findLatestVerificationTransaction).toHaveBeenCalledWith({
+        walletPubkey: operator,
+        connection,
+      });
+    }
+  });
+
   it("treats a failed search as a read error, not a missing verification", async () => {
     ready();
     mocks.findLatestVerificationTransaction.mockResolvedValueOnce({ status: "unavailable" });
@@ -223,6 +330,7 @@ describe("permit request review", () => {
     ready();
     const elsewhere = new Connection("http://127.0.0.1:8899");
     vi.spyOn(elsewhere, "getGenesisHash").mockResolvedValue("5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d");
+    vi.spyOn(elsewhere, "getAccountInfo").mockResolvedValue(identityAccount);
     expect(failing(await reviewPermitRequest({ request, wallet: operator, connection: elsewhere, nowSeconds: clock }))).toEqual([
       "network",
     ]);

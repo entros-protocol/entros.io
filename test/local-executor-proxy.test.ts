@@ -183,3 +183,71 @@ describe("development-only executor proxy", () => {
     await expect(response.json()).resolves.toEqual({ error: "Executor returned 422" });
   });
 });
+
+describe("development-only executor proxy for the authorization grant", () => {
+  const WALLET = "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB";
+  const route = {
+    path: "/paired/authorization",
+    method: "GET",
+    timeoutMs: 100,
+    query: { wallet: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/ },
+  } as const;
+
+  it("forwards the wallet alone, with the server key and no body", async () => {
+    const fetchImpl = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      expect(String(input)).toBe(`https://executor.example/paired/authorization?wallet=${WALLET}`);
+      expect(init?.method).toBe("GET");
+      expect(init?.body).toBeUndefined();
+      expect(init?.headers).toEqual({ Accept: "application/json", "X-API-Key": "server-secret" });
+      return Response.json({ challenge: "22".repeat(32) });
+    });
+    const response = await proxyExecutorRequest(
+      new Request(`http://localhost:3010/paired/authorization?wallet=${WALLET}&next=https://other.example`, {
+        headers: { Authorization: "must-not-forward" },
+      }),
+      route,
+      { ...runtime, fetchImpl },
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toEqual({ challenge: "22".repeat(32) });
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
+  it("refuses a missing or malformed wallet before it contacts the executor", async () => {
+    const fetchImpl = vi.fn();
+    for (const query of ["", "?wallet=", "?wallet=not-a-wallet", `?wallet=${WALLET}%26extra%3D1`, "?other=1"]) {
+      const response = await proxyExecutorRequest(
+        new Request(`http://localhost:3010/paired/authorization${query}`),
+        route,
+        { ...runtime, fetchImpl },
+      );
+      expect(response.status, query).toBe(400);
+    }
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("fails closed outside development and refuses another method", async () => {
+    const fetchImpl = vi.fn();
+    const request = () => new Request(`http://localhost:3010/paired/authorization?wallet=${WALLET}`);
+    expect(
+      (await proxyExecutorRequest(request(), route, { ...runtime, enabled: false, fetchImpl })).status,
+    ).toBe(404);
+    const posted = new Request(`http://localhost:3010/paired/authorization?wallet=${WALLET}`, { method: "POST" });
+    expect((await proxyExecutorRequest(posted, route, { ...runtime, fetchImpl })).status).toBe(405);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("passes the executor's refusal through", async () => {
+    const fetchImpl = vi.fn(async () =>
+      Response.json({ reason: "ip_rate_limited", retry_after: 4 }, { status: 429 }),
+    );
+    const response = await proxyExecutorRequest(
+      new Request(`http://localhost:3010/paired/authorization?wallet=${WALLET}`),
+      route,
+      { ...runtime, fetchImpl },
+    );
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ reason: "ip_rate_limited", retry_after: 4 });
+  });
+});

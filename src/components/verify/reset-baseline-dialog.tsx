@@ -27,10 +27,17 @@ export function ResetBaselineDialog({
   open,
   onCancel,
   onConfirm,
+  confirmLabel = "Reset baseline",
+  confirmPending = false,
+  confirmError = null,
 }: {
   open: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  confirmLabel?: string;
+  confirmPending?: boolean;
+  /** Why the confirm control could not start, such as a wallet that did not sign. */
+  confirmError?: string | null;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
@@ -108,6 +115,12 @@ export function ResetBaselineDialog({
           ))}
         </ol>
 
+        {confirmError && (
+          <p role="alert" className="mt-4 text-sm leading-relaxed text-danger">
+            {confirmError}
+          </p>
+        )}
+
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             ref={cancelRef}
@@ -120,9 +133,10 @@ export function ResetBaselineDialog({
           <button
             type="button"
             onClick={onConfirm}
+            disabled={confirmPending}
             className={dangerVerificationActionClass}
           >
-            Reset baseline
+            {confirmLabel}
           </button>
         </div>
       </div>

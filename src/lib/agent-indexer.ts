@@ -5,13 +5,13 @@
 
 export interface OwnedAgent {
   asset: string;
-  agentUri: string;
+  agentUri: string | null;
   nftName: string | null;
 }
 
 interface IndexerAgentRow {
   asset: string;
-  agent_uri: string;
+  agent_uri: string | null;
   nft_name: string | null;
 }
 

@@ -15,7 +15,7 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@entros/pulse-sdk": "4.17.0",
-    "@entros/verify": "0.4.1",
+    "@entros/verify": "0.5.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@solana-mobile/wallet-adapter-mobile": "^2.2.8",
     "@solana/wallet-adapter-react": "^0.15.39",

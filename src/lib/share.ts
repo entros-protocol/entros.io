@@ -4,15 +4,12 @@ export type ShareSource = "share" | "twitter" | "copy";
 
 const TWITTER_HANDLE_PLAIN = TWITTER_HANDLE.replace(/^@/, "");
 
-export function buildShareUrl(
-  wallet: string,
-  score: number | null | undefined,
-  source: ShareSource = "share"
-): string {
+/**
+ * The link a person shares. It names the wallet alone. The share image reads
+ * the Trust Score from chain, so the link carries no score to trust.
+ */
+export function buildShareUrl(wallet: string, source: ShareSource = "share"): string {
   const params = new URLSearchParams({ w: wallet });
-  if (typeof score === "number" && score > 0) {
-    params.set("s", String(score));
-  }
   // utm_source is only useful for attribution we can't get otherwise. X
   // already exposes referrer = twitter.com so adding utm_source there is
   // both redundant and noisy in the visible tweet URL. Keep it for the
@@ -37,7 +34,7 @@ export function buildTwitterIntent(
   wallet: string,
   score: number | null | undefined
 ): string {
-  const shareUrl = buildShareUrl(wallet, score, "twitter");
+  const shareUrl = buildShareUrl(wallet, "twitter");
   const params = new URLSearchParams({
     text: buildTweetText(score),
     url: shareUrl,

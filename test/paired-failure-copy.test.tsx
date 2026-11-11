@@ -163,6 +163,12 @@ describe("paired failure copy", () => {
     );
     expect(surfaceOf("anchor_retry")).toBe("baseline-quality");
     expect(surfaceOf("paired_required")).toBe("session-broken");
+    for (const reason of ["authorization_required", "authorization_invalid"]) {
+      expect(softHint(reason)).toBe(
+        "Your wallet authorization ended. Start a new verification and authorize your wallet again.",
+      );
+      expect(surfaceOf(reason)).toBe("session-restart");
+    }
   });
 
   it("asks for the shown word", () => {

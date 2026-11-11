@@ -11,6 +11,7 @@ import { AuthorizeCheckList } from "@/components/ui/authorize-check-list";
 import { CopyBlock } from "@/components/ui/copy-block";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { buildApproval, reviewPermitRequest, type PermitReview } from "@/lib/agent-permit-authorize";
+import { readLastVerification } from "@/lib/last-verification";
 
 const nowSeconds = () => Math.floor(Date.now() / 1000);
 
@@ -25,7 +26,12 @@ export function AgentPermitReview({
   const { connection } = useConnection();
   const wallet = connected ? (publicKey?.toBase58() ?? null) : null;
   const reviewKey = wallet ? `${connection.rpcEndpoint}:${wallet}:${request.nonce}` : null;
-  const [review, setReview] = useState<{ key: string; value: PermitReview } | null>(null);
+  const [review, setReview] = useState<{
+    key: string;
+    request: AgentPermitRequest;
+    message: string;
+    value: PermitReview;
+  } | null>(null);
   const [approval, setApproval] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [signing, setSigning] = useState(false);
@@ -33,9 +39,16 @@ export function AgentPermitReview({
   useEffect(() => {
     if (!wallet || !reviewKey) return;
     let cancelled = false;
-    void reviewPermitRequest({ request, wallet, connection, nowSeconds }).then(
+    const remembered = readLastVerification(wallet);
+    void reviewPermitRequest({
+      request,
+      wallet,
+      connection,
+      nowSeconds,
+      ...(remembered ? { candidateSignatures: [remembered] } : {}),
+    }).then(
       (value) => {
-        if (!cancelled) setReview({ key: reviewKey, value });
+        if (!cancelled) setReview({ key: reviewKey, request, message, value });
       },
       () => {
         if (!cancelled) setError("Could not read devnet. Reload the page to try again.");
@@ -44,21 +57,25 @@ export function AgentPermitReview({
     return () => {
       cancelled = true;
     };
-  }, [connection, request, reviewKey, wallet]);
+  }, [connection, message, request, reviewKey, wallet]);
 
-  const current = review?.key === reviewKey ? review.value : null;
+  // A review counts only for the exact request and text on screen. Signing uses the reviewed copy.
+  const reviewed =
+    review?.key === reviewKey && review.request === request && review.message === message ? review : null;
+  const current = reviewed?.value ?? null;
 
   async function sign() {
-    if (!current?.canSign || !current.verifiedTransaction || !signMessage) return;
-    if (nowSeconds() >= request.expiresAt) {
+    if (!reviewed || !current?.canSign || !current.verifiedTransaction || !signMessage) return;
+    const { request: signedRequest, message: signedMessage } = reviewed;
+    if (nowSeconds() >= signedRequest.expiresAt) {
       setError("The request expired while this page was open. Ask the agent for a new one.");
       return;
     }
     setError(null);
     setSigning(true);
     try {
-      const signature = await signMessage(new TextEncoder().encode(message));
-      setApproval(buildApproval({ request, signature, verifiedTransaction: current.verifiedTransaction }));
+      const signature = await signMessage(new TextEncoder().encode(signedMessage));
+      setApproval(buildApproval({ request: signedRequest, signature, verifiedTransaction: current.verifiedTransaction }));
     } catch (cause: unknown) {
       setError(
         isUserRejection(cause)

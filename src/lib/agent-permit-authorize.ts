@@ -1,5 +1,7 @@
-import type { Connection } from "@solana/web3.js";
+import { PublicKey, type AccountInfo, type Connection } from "@solana/web3.js";
 import {
+  PROGRAM_IDS,
+  fetchIdentityState,
   findLatestVerificationTransaction,
   parseAgentWalletBindingFragment,
   readAgentState,
@@ -55,10 +57,46 @@ type ReviewConnection = Pick<
   | "getSignatureStatuses"
   | "getParsedTransaction"
   | "getAccountInfoAndContext"
+  | "getAccountInfo"
   | "getSignaturesForAddress"
 >;
 
 const MAX_BINDING_WINDOW_SECONDS = 300;
+
+type IdentityRead =
+  | { status: "unavailable" }
+  | { status: "absent" }
+  | { status: "present"; verifiedAt: number | undefined };
+
+/**
+ * Reads the owner's identity account once. A failed read is told apart from an
+ * absent account, so an RPC error never passes for a wallet without an identity.
+ * An account that exists goes to the SDK's decoder, which receives the account
+ * already read instead of requesting it again.
+ */
+async function readIdentity(wallet: string, connection: ReviewConnection): Promise<IdentityRead> {
+  let identityPda: PublicKey;
+  let account: AccountInfo<Buffer> | null;
+  try {
+    // The address `fetchIdentityState` derives for the default deployment.
+    [identityPda] = PublicKey.findProgramAddressSync(
+      [new TextEncoder().encode("identity"), new PublicKey(wallet).toBuffer()],
+      new PublicKey(PROGRAM_IDS.entrosAnchor),
+    );
+    account = await connection.getAccountInfo(identityPda);
+  } catch {
+    return { status: "unavailable" };
+  }
+  if (!account) return { status: "absent" };
+  const read = account;
+  const identity = await fetchIdentityState(wallet, {
+    getAccountInfo: async (address: PublicKey) => {
+      if (!address.equals(identityPda)) throw new Error("Unexpected account request");
+      return read;
+    },
+  });
+  return { status: "present", verifiedAt: identity?.lastVerificationTimestamp };
+}
 
 /**
  * Reads a permit or binding request from the page fragment. Any other fragment, such as a
@@ -169,8 +207,13 @@ export async function reviewPermitRequest(input: {
   connection: ReviewConnection;
   /** Sampled again after each network wait. */
   nowSeconds: () => number;
+  /**
+   * Verification transactions to check before the search, such as the one this
+   * browser submitted. Each is checked on chain like a transaction the search finds.
+   */
+  candidateSignatures?: readonly string[];
 }): Promise<PermitReview> {
-  const { request, wallet, connection, nowSeconds } = input;
+  const { request, wallet, connection, nowSeconds, candidateSignatures } = input;
   const checks: AuthorizeCheck[] = [
     nowSeconds() < request.expiresAt
       ? { id: "expiry", label: "The request is current", status: "pass", detail: `Expires ${formatTime(request.expiresAt)}.` }
@@ -229,7 +272,26 @@ export async function reviewPermitRequest(input: {
   let policy: PolicyResult | null = null;
   let needsVerification = false;
   if (wallet === request.operator) {
-    const found = await findLatestVerificationTransaction({ walletPubkey: wallet, connection });
+    // The identity account holds the time of the owner's last verification. The search
+    // pages back to that time, so later transactions that name the account cannot hide
+    // the verification. Without the time, the search reads the newest signatures alone.
+    // A known signature is checked first, because enough later transactions can still
+    // push the verification past the search's bounds.
+    const identity = await readIdentity(wallet, connection);
+    const verifiedAt = identity.status === "present" ? identity.verifiedAt : undefined;
+    const found: VerificationTransactionSearchResult =
+      identity.status === "unavailable"
+        ? { status: "unavailable" }
+        : await findLatestVerificationTransaction(
+            verifiedAt !== undefined && verifiedAt > 0
+              ? {
+                  walletPubkey: wallet,
+                  connection,
+                  verifiedAt,
+                  ...(candidateSignatures?.length ? { candidateSignatures } : {}),
+                }
+              : { walletPubkey: wallet, connection },
+          );
     if (found.status === "found") {
       verifiedTransaction = found.signature;
       const read = await readIntegratorEvidence({

@@ -70,6 +70,7 @@ const onChain = [
 
 const browser = [
   "Your baseline (fingerprint, salt, commitment and time), encrypted with a key held in your browser. If the browser cannot encrypt it, it is stored unencrypted.",
+  "The transaction ID of your latest verification, so this site can find it again.",
   "Your theme choice and, on mobile, your wallet app's authorization.",
   "A note that you answered the study consent screen.",
 ];

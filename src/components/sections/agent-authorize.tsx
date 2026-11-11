@@ -36,6 +36,7 @@ export function AgentAuthorize({ children }: { children: ReactNode }) {
   if (fragment.kind === "none") return children;
   const copy = COPY[fragment.kind];
 
+  // Each review is keyed on the fragment, so a changed link discards the previous review state.
   return (
     <section>
       <div className="mx-auto max-w-3xl px-6 pt-32 pb-24 md:pt-40 md:pb-32">
@@ -46,12 +47,12 @@ export function AgentAuthorize({ children }: { children: ReactNode }) {
         <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">{copy.body}</p>
         {fragment.kind === "request" && (
           <div className="mt-12">
-            <AgentPermitReview request={fragment.request} message={fragment.message} />
+            <AgentPermitReview key={hash} request={fragment.request} message={fragment.message} />
           </div>
         )}
         {fragment.kind === "bind" && (
           <div className="mt-12">
-            <AgentBindingReview binding={fragment.binding} />
+            <AgentBindingReview key={hash} binding={fragment.binding} />
           </div>
         )}
       </div>

@@ -26,6 +26,7 @@ import {
   initialStudyFlowState,
   studyFlowReducer,
 } from "@/components/verify/study-flow-state";
+import { STUDY_INTAKE_OPEN } from "@/lib/study-intake";
 
 // The public route exposes wallet-connected validation only. The walletless
 // scaffolding remains unavailable until it supports real validation.
@@ -62,12 +63,6 @@ class VerifyErrorBoundary extends Component<
   }
 }
 
-// Web study intake is closed (owner decision, 2026-10-06): the consent card
-// and the trial-progress strip can no longer render, and the verification
-// flow receives neutral study props so no study UI or routing engages. The
-// study machinery stays in place, inert, behind this single switch.
-const STUDY_INTAKE_OPEN: boolean = false;
-
 export function VerifyFlow() {
   const { connected, publicKey, signMessage } = useWallet();
   const walletAddress = connected && publicKey ? publicKey.toBase58() : null;
@@ -82,6 +77,7 @@ export function VerifyFlow() {
   const studyRequestDefinitionRef = useRef<typeof study.definition>(null);
 
   useEffect(() => {
+    if (!STUDY_INTAKE_OPEN) return;
     const controller = new AbortController();
     fetchStudyDefinition(controller.signal)
       .then((definition) => {

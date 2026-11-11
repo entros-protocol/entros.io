@@ -296,6 +296,8 @@ const REASON_SURFACE = {
   session_not_ready: "session-restart",
   round_not_outstanding: "session-restart",
   session_busy: "session-restart",
+  authorization_required: "session-restart",
+  authorization_invalid: "session-restart",
   finalize_in_progress: "session-wait",
   session_active: "session-wait",
   session_budget_exhausted: "session-wait",

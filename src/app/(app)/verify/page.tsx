@@ -19,23 +19,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const params = await searchParams;
   const walletParam = params.w;
-  const scoreParam = params.s;
   const wallet =
     typeof walletParam === "string" && PUBKEY_REGEX.test(walletParam)
       ? walletParam
       : null;
   if (!wallet) return baseMetadata;
 
-  const scoreNum =
-    typeof scoreParam === "string" ? Number.parseInt(scoreParam, 10) : NaN;
-  const score =
-    Number.isFinite(scoreNum) && scoreNum >= 0 && scoreNum <= 65535
-      ? scoreNum
-      : null;
-
-  const ogParams = new URLSearchParams({ wallet });
-  if (score != null && score > 0) ogParams.set("score", String(score));
-  const ogImageUrl = `${SITE_URL}/api/og/anchor?${ogParams.toString()}`;
+  // The image route reads the Trust Score from chain. The link supplies the wallet alone.
+  const ogImageUrl = `${SITE_URL}/api/og/anchor?${new URLSearchParams({ wallet }).toString()}`;
   // Share-variant title sits below the unfurled image on Twitter / Slack /
   // Discord. Generic "Verify | Entros Protocol" would repeat the cold
   // landing-page framing; "Verified human..." is the right framing for a

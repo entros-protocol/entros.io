@@ -22,6 +22,7 @@ import type { EmbedErrorReason, VerifiedPayload } from "@/lib/embed/types";
 import { evaluatePopupPolicy } from "@/lib/embed/evaluate-popup-policy";
 import { policyResultToWire, type PolicyReason } from "@entros/verify/policy";
 import { useMotionCapability } from "@/hooks/use-motion-capability";
+import { storeLastVerification } from "@/lib/last-verification";
 
 import { ProofPipeline } from "@/components/verify/step-views";
 import {
@@ -35,6 +36,10 @@ import {
   type RailState,
 } from "@/components/verify/console";
 import { primaryVerificationActionClass } from "@/components/verify/verification-styles";
+import {
+  pairedStartLabel,
+  usePairedAuthorization,
+} from "@/components/verify/use-paired-authorization";
 import type {
   PairedCaptureHandle,
   PairedFinish,
@@ -108,6 +113,8 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
   const { connection } = useConnection();
 
   const [state, setState] = useState<State>({ step: "idle" });
+  const authorization = usePairedAuthorization(state.step);
+  const { reportRefusal } = authorization;
   const hasMotion = useMotionCapability();
   const [processingStage, setProcessingStage] = useState(
     "Extracting features...",
@@ -155,6 +162,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           setState({ step: "capturing" });
           return;
         case "VERIFICATION_FAILED":
+          reportRefusal(action.reason);
           fail(bucketForCaptureFailure(action.reason), undefined, 1);
           return;
         case "RESET":
@@ -165,11 +173,13 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           return;
       }
     },
-    [ctx, fail],
+    [ctx, fail, reportRefusal],
   );
 
   function handleStart() {
     if (!pairedCapture || !publicKey) return;
+    // The wallet signs in a tap of its own. The capture starts on the next one.
+    if (!authorization.ensure()) return;
     attemptRef.current++;
     submittingEmittedRef.current = false;
     // Starts inside the tap, because motion permission needs that gesture.
@@ -211,12 +221,14 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
 
     Promise.race([proofPromise, timeoutPromise])
       .then(async (result) => {
-        if (!active()) return;        if (result.compositeRiskScore !== undefined) {
+        if (!active()) return;
+        if (result.compositeRiskScore !== undefined) {
           console.log(
             `[Entros] Embed popup verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`,
           );
         }
         if (!result.success) {
+          reportRefusal(result.reason);
           // `validation_unavailable` is the SDK's signal for an unreachable
           // validator — surfaces as network_error. Other reason codes are
           // validator soft-rejects (variance_floor, entropy_bounds, etc.)
@@ -265,11 +277,12 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           return;
         }
 
+        const walletPubkey = publicKey.toBase58();
+        storeLastVerification(walletPubkey, result.txSignature);
         emitHeartbeat(ctx, "attesting");
 
         setProcessingStage("Checking app requirements...");
         setState({ step: "processing" });
-        const walletPubkey = publicKey.toBase58();
         const policy = await evaluatePopupPolicy(
           params,
           walletPubkey,
@@ -432,20 +445,25 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           Verify with Entros
         </h1>
         <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-foreground/65">
-          Three short rounds, then one signature in your wallet.
+          Authorize your wallet, complete three short rounds, then approve one transaction.
         </p>
       </div>
       <div className="flex justify-center">
         <button
           type="button"
           onClick={handleStart}
-          disabled={!pairedCapture}
+          disabled={!pairedCapture || authorization.pending}
           className={primaryVerificationActionClass}
         >
-          Start Verification
+          {pairedStartLabel(authorization, "Start Verification")}
           <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden />
         </button>
       </div>
+      {authorization.error && (
+        <p className="mx-auto max-w-sm text-sm text-danger" role="alert">
+          {authorization.error}
+        </p>
+      )}
     </div>,
     <PrivacyFooter lines={PRIVACY_LINES} />,
   );

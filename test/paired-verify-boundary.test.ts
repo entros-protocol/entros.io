@@ -3,6 +3,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath, URL } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { POST as openProxy } from "@/app/challenge/paired/route";
+import { GET as authorizationProxy } from "@/app/paired/authorization/route";
 import { POST as cueProxy } from "@/app/paired/cue/route";
 import { POST as commitProxy } from "@/app/paired/commit/route";
 import { POST as finalizeProxy } from "@/app/validate-session/route";
@@ -104,6 +105,7 @@ describe("paired verify boundary", () => {
     }
     for (const path of [
       "app/challenge/paired/route.ts",
+      "app/paired/authorization/route.ts",
       "app/paired/commit/route.ts",
       "app/paired/cue/route.ts",
       "app/validate-session/route.ts",
@@ -200,8 +202,15 @@ describe("paired verify boundary", () => {
     expect(cue.status).toBe(404);
     const commit = await commitProxy(post("/paired/commit", {}));
     const finalize = await finalizeProxy(post("/validate-session", {}));
+    const authorization = await authorizationProxy(
+      new Request(
+        "http://localhost:3010/paired/authorization?wallet=11111111111111111111111111111111",
+      ),
+    );
 
-    expect([open.status, commit.status, finalize.status]).toEqual([404, 404, 404]);
+    expect([open.status, commit.status, finalize.status, authorization.status]).toEqual([
+      404, 404, 404, 404,
+    ]);
     expect(upstream).not.toHaveBeenCalled();
   });
 

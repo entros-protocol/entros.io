@@ -26,6 +26,7 @@ import {
   STATE_ICON_CLASS,
   STATE_ICON_STROKE,
   StateIcon,
+  ToneText,
   type StateTone,
 } from "./console";
 import { MAX_CAPTURE_ATTEMPTS } from "./retry-budget";
@@ -402,7 +403,7 @@ export function VerifiedView({
 
   function handleCopyLink() {
     if (!walletPubkey) return;
-    const url = buildShareUrl(walletPubkey, trustScore ?? null, "copy");
+    const url = buildShareUrl(walletPubkey, "copy");
     navigator.clipboard
       .writeText(url)
       .then(() => {
@@ -555,6 +556,10 @@ const SOFT_HINT: Record<RetryableReason, string> = {
     "The service expected a different round. Start a new verification.",
   session_busy:
     "The verification service was busy. Start a new verification.",
+  authorization_required:
+    "Your wallet authorization ended. Start a new verification and authorize your wallet again.",
+  authorization_invalid:
+    "Your wallet authorization ended. Start a new verification and authorize your wallet again.",
 };
 
 const SOFT_HINT_FALLBACK =
@@ -583,6 +588,7 @@ export function SoftFailedView({
   onCancel,
   tryAgainLabel = "Try again",
   actionPending = false,
+  actionError = null,
 }: {
   reason: string;
   attemptsRemaining: number;
@@ -590,6 +596,8 @@ export function SoftFailedView({
   onCancel: () => void;
   tryAgainLabel?: string;
   actionPending?: boolean;
+  /** Why the try-again control could not start, such as a wallet that did not sign. */
+  actionError?: string | null;
 }) {
   // Widened for the lookup because `reason` arrives from the server as a
   // plain string. The exhaustiveness that matters is on the table's
@@ -650,6 +658,11 @@ export function SoftFailedView({
           {tryAgainLabel}
         </button>
       </div>
+      {actionError && (
+        <ToneText tone="danger" alert>
+          {actionError}
+        </ToneText>
+      )}
     </div>
   );
 }

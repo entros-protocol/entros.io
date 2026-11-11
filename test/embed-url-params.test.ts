@@ -90,4 +90,35 @@ describe("parseEmbedParams", () => {
       expect(parseEmbedParams(input).ok).toBe(false);
     }
   });
+
+  it.each([
+    "https://example.com",
+    "http://localhost:3000",
+    "https://partner.example:8443",
+  ])("accepts the exact origin %s", (origin) => {
+    const input = params("devnet");
+    input.set("parent_origin", origin);
+    const parsed = parseEmbedParams(input);
+    expect(parsed.ok && parsed.params.parentOrigin).toBe(origin);
+  });
+
+  it.each([
+    "https://user:secret@example.com",
+    "https://user@example.com",
+    "https://example.com?next=1",
+    "https://example.com#fragment",
+    "https://example.com:443",
+    "https://Example.com",
+    "https://exa mple.com",
+    "https://example.com/",
+    "https://example.com\\path",
+    "javascript://example.com",
+    "ftp://example.com",
+    "https://",
+    "example.com",
+  ])("rejects %s, which is not an origin as a browser reports one", (origin) => {
+    const input = params("devnet");
+    input.set("parent_origin", origin);
+    expect(parseEmbedParams(input)).toEqual({ ok: false, reason: "origin_invalid" });
+  });
 });

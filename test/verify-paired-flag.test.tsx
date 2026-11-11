@@ -30,6 +30,14 @@ const harness = vi.hoisted(() => ({
   startOutcome: (): Promise<void> => Promise.resolve(),
   /** Moves the latest paired session to a phase, as the SDK does before `onPhase`. */
   setPhase: (() => undefined) as (phase: string) => void,
+  /** The paired authorization the SDK holds, or null until the wallet signs. */
+  authorization: null as unknown,
+  authorizeCalls: 0,
+  /** How the next wallet prompt settles. */
+  authorizeOutcome: (): Promise<void> => Promise.resolve(),
+  prepareCalls: 0,
+  /** How the next grant request settles. */
+  prepareOutcome: (): Promise<void> => Promise.resolve(),
 }));
 
 // jsdom's typed arrays come from another realm, which breaks the real PDA
@@ -62,6 +70,7 @@ vi.mock("@solana/wallet-adapter-react", () => ({
     connected: harness.publicKey !== null,
     publicKey: harness.publicKey,
     wallet: { adapter: {} },
+    signMessage: async () => new Uint8Array(64),
   }),
   useConnection: () => ({ connection }),
 }));
@@ -82,8 +91,20 @@ vi.mock("@/hooks/use-motion-capability", () => ({
   useMotionCapability: () => false,
 }));
 
-vi.mock("@/components/providers/pulse-provider", () => ({
-  usePulse: () => ({
+vi.mock("@/components/providers/pulse-provider", () => {
+  // One instance for every render, as the provider gives.
+  const pulse = {
+    pairedAuthorization: () => harness.authorization,
+    preparePairedAuthorization: async () => {
+      harness.prepareCalls += 1;
+      await harness.prepareOutcome();
+    },
+    authorizePairedSession: async () => {
+      harness.authorizeCalls += 1;
+      await harness.authorizeOutcome();
+      harness.authorization = { expiresAtMs: performance.now() + 900_000 };
+      return harness.authorization;
+    },
     createSession: () => {
       harness.singleSessions += 1;
       return {
@@ -127,10 +148,12 @@ vi.mock("@/components/providers/pulse-provider", () => ({
         },
       };
     },
-  }),
-}));
+  };
+  return { usePulse: () => pulse };
+});
 
 import { VerifyWalletConnected } from "../src/components/sections/verify-wallet-connected";
+import { readLastVerification } from "../src/lib/last-verification";
 import {
   initialState,
   verifyReducer,
@@ -264,6 +287,13 @@ beforeEach(() => {
   harness.completes = 0;
   harness.resets = 0;
   harness.startOutcome = () => Promise.resolve();
+  // The wallet has signed already, as it has on every tap after the first of a visit.
+  harness.authorization = { expiresAtMs: performance.now() + 900_000 };
+  harness.authorizeCalls = 0;
+  harness.authorizeOutcome = () => Promise.resolve();
+  harness.prepareCalls = 0;
+  harness.prepareOutcome = () => Promise.resolve();
+  window.localStorage.clear();
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
@@ -492,6 +522,64 @@ describe("paired-only verify flow", () => {
     expect(harness.singleSessions).toBe(0);
   });
 
+  // A session starts inside one tap, because the microphone and motion permissions need
+  // that gesture. The wallet prompt therefore takes a tap of its own, before it.
+  it("has the wallet sign in one tap and starts the capture on the next", async () => {
+    harness.authorization = null;
+    await renderPaired();
+    expect(startButton()).toBeUndefined();
+
+    await clickAction("Authorize Wallet");
+    expect(harness.authorizeCalls).toBe(1);
+    expect(harness.pairedOptions).toHaveLength(0);
+    expect(step()).not.toBe("capturing");
+
+    await clickStart();
+    expect(harness.authorizeCalls).toBe(1);
+    expect(harness.pairedOptions).toHaveLength(1);
+    expect(step()).toBe("capturing");
+  });
+
+  it("starts at once while the wallet's signature still holds", async () => {
+    await renderPaired();
+    await clickStart();
+    expect(harness.authorizeCalls).toBe(0);
+    expect(harness.startCalls).toHaveLength(1);
+  });
+
+  it("says why the wallet did not authorize and lets the person try again", async () => {
+    harness.authorization = null;
+    harness.authorizeOutcome = () => Promise.reject(new Error("User rejected the request."));
+    await renderPaired();
+    await clickAction("Authorize Wallet");
+    expect(container.textContent).toContain("The wallet did not sign. Try again.");
+    expect(harness.pairedOptions).toHaveLength(0);
+
+    harness.authorizeOutcome = () => Promise.resolve();
+    await clickAction("Authorize Wallet");
+    expect(container.textContent).not.toContain("The wallet did not sign.");
+    expect(startButton()).toBeDefined();
+  });
+
+  it("keeps the reset dialog open while the wallet signs", async () => {
+    harness.authorization = null;
+    harness.completeResults = [qualityFailure()];
+    await render(<Harness startState={{ step: "failed", error: "Your baseline is missing.", failedAt: "baseline" }} />);
+    await flush();
+    await clickAction("Reset baseline");
+    const dialog = () => container.querySelector('[role="dialog"]');
+    expect(dialog()).not.toBeNull();
+
+    await clickAction("Authorize Wallet", dialog()!);
+    expect(harness.authorizeCalls).toBe(1);
+    expect(harness.pairedOptions).toHaveLength(0);
+    expect(dialog()).not.toBeNull();
+
+    await clickAction("Reset baseline", dialog()!);
+    expect(dialog()).toBeNull();
+    expect(harness.pairedOptions).toHaveLength(1);
+  });
+
   it("clears the quality budget on Cancel", async () => {
     harness.completeResults = [qualityFailure(), qualityFailure()];
     await renderPaired();
@@ -652,3 +740,202 @@ describe("paired-only verify flow", () => {
     expect(word().style.textShadow).toBe("none");
   });
 });
+
+describe("paired verify flow wallet authorization", () => {
+  const SIGNATURE = "5".repeat(87);
+  const unsupported = () => Promise.reject(new PairedProtocolError("unsupported_session", 404));
+
+  // The microphone and motion permissions need the tap's gesture, so nothing may
+  // be awaited between the tap and the session start.
+  it("starts the capture before the tap's handler returns", async () => {
+    await renderPaired();
+    const button = startButton()!;
+    let startedInTap = -1;
+    act(() => {
+      button.click();
+      startedInTap = harness.startCalls.length;
+    });
+    expect(startedInTap).toBe(1);
+    await flush();
+  });
+
+  it("starts a reset before the tap's handler returns", async () => {
+    await render(<Harness startState={{ step: "failed", error: "Your baseline is missing.", failedAt: "baseline" }} />);
+    await flush();
+    await clickAction("Reset baseline");
+    const confirm = [...container.querySelector('[role="dialog"]')!.querySelectorAll("button")].find(
+      (node) => node.textContent === "Reset baseline",
+    )!;
+    let startedInTap = -1;
+    act(() => {
+      confirm.click();
+      startedInTap = harness.startCalls.length;
+    });
+    expect(startedInTap).toBe(1);
+    await flush();
+  });
+
+  it("says why the wallet did not authorize on the retry screen", async () => {
+    harness.completeResults = [qualityFailure()];
+    await renderPaired();
+    await clickStart();
+    await finishLatestRounds();
+    expect(step()).toBe("soft_failed");
+
+    harness.authorization = null;
+    harness.authorizeOutcome = () => Promise.reject(new Error("User rejected the request."));
+    await clickAction("Try again");
+    expect(step()).toBe("soft_failed");
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+      "The wallet did not sign. Try again.",
+    );
+    expect(harness.pairedOptions).toHaveLength(1);
+  });
+
+  it("says why the wallet did not authorize in the reset dialog", async () => {
+    harness.authorization = null;
+    harness.authorizeOutcome = () => Promise.reject(new Error("User rejected the request."));
+    await render(<Harness startState={{ step: "failed", error: "Your baseline is missing.", failedAt: "baseline" }} />);
+    await flush();
+    await clickAction("Reset baseline");
+    const dialog = () => container.querySelector('[role="dialog"]');
+    await clickAction("Authorize Wallet", dialog()!);
+    expect(dialog()?.querySelector('[role="alert"]')?.textContent).toBe(
+      "The wallet did not sign. Try again.",
+    );
+    expect(harness.pairedOptions).toHaveLength(0);
+  });
+
+  it("asks the wallet again after a session is refused for want of an authorization", async () => {
+    harness.authorization = null;
+    harness.prepareOutcome = unsupported;
+    await renderPaired();
+    // The relayer had no authorization route, so the capture starts without one.
+    await clickStart();
+    const prepared = harness.prepareCalls;
+
+    harness.prepareOutcome = () => Promise.resolve();
+    await act(async () => {
+      latestOptions().onFailure?.(new PairedProtocolError("authorization_required", 401));
+      await Promise.resolve();
+    });
+    await flush();
+    expect(step()).toBe("failed");
+    expect(harness.prepareCalls).toBe(prepared + 1);
+
+    await clickAction("Try again");
+    expect(step()).toBe("idle");
+    expect(startButton()).toBeUndefined();
+    expect(container.textContent).toContain("Authorize Wallet");
+  });
+
+  it("asks the wallet again after a verification is refused for want of an authorization", async () => {
+    harness.authorization = null;
+    harness.prepareOutcome = unsupported;
+    harness.completeResults = [
+      {
+        success: false,
+        commitment: new Uint8Array(32),
+        isFirstVerification: false,
+        error: "refused",
+        reason: "authorization_invalid",
+        failedAt: "validation",
+      },
+    ];
+    await renderPaired();
+    await clickStart();
+    harness.prepareOutcome = () => Promise.resolve();
+    await finishLatestRounds();
+    expect(step()).toBe("soft_failed");
+    const retry = [...container.querySelectorAll("button")].map((node) => node.textContent);
+    expect(retry).toContain("Authorize Wallet");
+  });
+
+  it("remembers the transaction of a successful verification for its wallet", async () => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: true,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+    harness.completeResults = [
+      { success: true, commitment: new Uint8Array(32), isFirstVerification: false, txSignature: SIGNATURE },
+    ];
+    await renderPaired();
+    await clickStart();
+    await finishLatestRounds();
+    await flush();
+    expect(step()).toBe("verified");
+    expect(readLastVerification(WALLET.toBase58())).toBe(SIGNATURE);
+    expect(readLastVerification(OTHER_WALLET.toBase58())).toBeNull();
+  });
+
+  it("clears the reset dialog's error when the dialog closes", async () => {
+    harness.authorization = null;
+    harness.authorizeOutcome = () => Promise.reject(new Error("User rejected the request."));
+    await render(<Harness startState={{ step: "failed", error: "Your baseline is missing.", failedAt: "baseline" }} />);
+    await flush();
+    await clickAction("Reset baseline");
+    const dialog = () => container.querySelector('[role="dialog"]');
+    await clickAction("Authorize Wallet", dialog()!);
+    expect(dialog()?.querySelector('[role="alert"]')).not.toBeNull();
+
+    await clickAction("Cancel", dialog()!);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    await clickAction("Reset baseline");
+    expect(dialog()?.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it("drops the retry screen's error once the flow leaves it", async () => {
+    harness.completeResults = [qualityFailure()];
+    await renderPaired();
+    await clickStart();
+    await finishLatestRounds();
+    harness.authorization = null;
+    harness.authorizeOutcome = () => Promise.reject(new Error("User rejected the request."));
+    await clickAction("Try again");
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+      "The wallet did not sign. Try again.",
+    );
+
+    await clickAction("Cancel");
+    expect(step()).toBe("idle");
+    expect(container.textContent).not.toContain("The wallet did not sign.");
+  });
+
+  it("does not carry a declined prompt from the retry screen into a later reset dialog", async () => {
+    harness.completeResults = [
+      qualityFailure(),
+      {
+        success: false,
+        commitment: new Uint8Array(32),
+        isFirstVerification: false,
+        error: "Your baseline is missing.",
+        failedAt: "baseline",
+      },
+    ];
+    await renderPaired();
+    await clickStart();
+    await finishLatestRounds();
+    expect(step()).toBe("soft_failed");
+
+    const signed = harness.authorization;
+    harness.authorization = null;
+    harness.authorizeOutcome = () => Promise.reject(new Error("User rejected the request."));
+    await clickAction("Try again");
+    expect(container.textContent).toContain("The wallet did not sign. Try again.");
+
+    // The wallet signs elsewhere, and the next tap starts a capture that ends in a baseline failure.
+    harness.authorization = signed;
+    await clickAction("Authorize Wallet");
+    // Speech was heard, so the result keeps its own message.
+    latestOptions().onLevel?.(0.1, true);
+    await finishLatestRounds();
+    expect(step()).toBe("failed");
+
+    await clickAction("Reset baseline");
+    const dialog = container.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    expect(dialog!.textContent).not.toContain("The wallet did not sign.");
+  });
+});
+

@@ -153,6 +153,11 @@ describe("bucketForCaptureFailure", () => {
     expect(bucketForCaptureFailure("session_expired")).toBe("timeout");
   });
 
+  it("names a refused wallet authorization as transient, never as a failed validation", () => {
+    expect(bucketForCaptureFailure("authorization_required")).toBe("network_error");
+    expect(bucketForCaptureFailure("authorization_invalid")).toBe("network_error");
+  });
+
   it("keeps every other capture failure opaque", () => {
     expect(bucketForCaptureFailure(undefined)).toBe("validation_failed");
     expect(bucketForCaptureFailure("technical_failure")).toBe("validation_failed");

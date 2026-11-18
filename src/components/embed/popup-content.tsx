@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { ArrowRight, Wallet } from "lucide-react";
@@ -20,7 +20,12 @@ import {
 } from "@/lib/embed/post-message";
 import type { EmbedErrorReason, VerifiedPayload } from "@/lib/embed/types";
 import { evaluatePopupPolicy } from "@/lib/embed/evaluate-popup-policy";
-import { policyResultToWire, type PolicyReason } from "@entros/verify/policy";
+import { checkWarmPopupPolicy } from "@/lib/embed/warm-popup-policy";
+import {
+  policyResultToWire,
+  type PolicyReason,
+  type PolicyRequest,
+} from "@entros/verify/policy";
 import { useMotionCapability } from "@/hooks/use-motion-capability";
 import { storeLastVerification } from "@/lib/last-verification";
 
@@ -71,7 +76,7 @@ type State =
   | { step: "capturing" }
   | { step: "processing" }
   | { step: "signing" }
-  | { step: "verified" }
+  | { step: "verified"; reused?: boolean }
   | {
       step: "failed";
       reason: EmbedErrorReason;
@@ -126,6 +131,37 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
   // session changes nothing.
   const attemptRef = useRef(0);
   const submittingEmittedRef = useRef(false);
+  const warmAbortRef = useRef<AbortController | null>(null);
+  const verifiedRequestRef = useRef<string | null>(null);
+
+  const walletAddress = connected && publicKey ? publicKey.toBase58() : null;
+  const policyJson = params.policy ? JSON.stringify(params.policy) : "";
+  const stableParams = useMemo<ParsedEmbedParams>(
+    () => ({
+      integratorKey: params.integratorKey,
+      parentOrigin: params.parentOrigin,
+      cluster: params.cluster,
+      requestId: params.requestId,
+      minTrustScore: params.minTrustScore,
+      ...(policyJson ? { policy: JSON.parse(policyJson) as PolicyRequest } : {}),
+      diagnosticsEnabled: params.diagnosticsEnabled,
+    }),
+    [
+      params.integratorKey,
+      params.parentOrigin,
+      params.cluster,
+      params.requestId,
+      params.minTrustScore,
+      policyJson,
+      params.diagnosticsEnabled,
+    ],
+  );
+  const warmKey =
+    walletAddress && state.step === "idle"
+      ? `${walletAddress}:${stableParams.requestId}:${stableParams.minTrustScore ?? ""}:${policyJson}`
+      : null;
+  const [warmSettledKey, setWarmSettledKey] = useState<string | null>(null);
+  const checkingWarm = warmKey !== null && warmSettledKey !== warmKey;
 
   const ctx = useMemo<EmbedContext>(
     () => ({
@@ -134,6 +170,53 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     }),
     [params.parentOrigin, params.requestId],
   );
+
+  useEffect(() => {
+    if (!walletAddress || !warmKey || state.step !== "idle") return;
+    let cancelled = false;
+    const controller = new AbortController();
+    warmAbortRef.current = controller;
+    const attempt = attemptRef.current;
+
+    void checkWarmPopupPolicy(
+      stableParams,
+      walletAddress,
+      connection,
+      stableParams.diagnosticsEnabled
+        ? (diagnostic) => emitPolicyDiagnostic(ctx, diagnostic)
+        : undefined,
+      { signal: controller.signal },
+    ).then((result) => {
+      if (cancelled || controller.signal.aborted || attemptRef.current !== attempt) {
+        return;
+      }
+      if (result.status === "reused") {
+        if (verifiedRequestRef.current === ctx.requestId) return;
+        verifiedRequestRef.current = ctx.requestId;
+        const payload: VerifiedPayload = {
+          wallet_pubkey: walletAddress,
+          attestation_pda: result.attestationPda,
+          tx_sig: result.txSignature,
+          trust_score: result.policy.evidence.identity.trustScore,
+          cluster: "devnet",
+          policy: policyResultToWire(result.policy),
+        };
+        emitVerified(ctx, payload);
+        setWarmSettledKey(warmKey);
+        setState({ step: "verified", reused: true });
+        return;
+      }
+      setWarmSettledKey(warmKey);
+    });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      if (warmAbortRef.current === controller) {
+        warmAbortRef.current = null;
+      }
+    };
+  }, [walletAddress, warmKey, state.step, stableParams, connection, ctx]);
 
   const fail = useCallback(
     (reason: EmbedErrorReason, policyReason?: PolicyReason, railStep?: number) => {
@@ -178,9 +261,11 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
 
   function handleStart() {
     if (!pairedCapture || !publicKey) return;
+    warmAbortRef.current?.abort();
+    attemptRef.current++;
+    if (warmKey) setWarmSettledKey(warmKey);
     // The wallet signs in a tap of its own. The capture starts on the next one.
     if (!authorization.ensure()) return;
-    attemptRef.current++;
     submittingEmittedRef.current = false;
     // Starts inside the tap, because motion permission needs that gesture.
     pairedCapture.start("verify");
@@ -290,6 +375,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           connection,
           params.diagnosticsEnabled ? diagnostic => emitPolicyDiagnostic(ctx, diagnostic) : undefined,
         );
+        if (!active()) return;
         if (policy.decision !== "allow" || !policy.evidence) {
           fail(
             policy.decision === "unavailable" ? "network_error" : "validation_failed",
@@ -306,6 +392,8 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           fail("validation_failed", "attestation_required", 4);
           return;
         }
+        if (verifiedRequestRef.current === ctx.requestId) return;
+        verifiedRequestRef.current = ctx.requestId;
         const payload: VerifiedPayload = {
           wallet_pubkey: walletPubkey,
           attestation_pda: attestationPda,
@@ -365,7 +453,18 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
   );
 
   if (state.step === "verified") {
-    return frame({ current: 4, status: "complete" }, "Verified", "verified", <PopupSuccess />);
+    return frame(
+      { current: 4, status: "complete" },
+      "Verified",
+      "verified",
+      <PopupSuccess
+        detail={
+          state.reused
+            ? "Existing verification meets this policy. No transaction needed."
+            : undefined
+        }
+      />,
+    );
   }
   if (state.step === "failed") {
     return frame(
@@ -448,7 +547,7 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           Authorize your wallet, complete three short rounds, then approve one transaction.
         </p>
       </div>
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center gap-3">
         <button
           type="button"
           onClick={handleStart}
@@ -458,6 +557,11 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
           {pairedStartLabel(authorization, "Start Verification")}
           <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden />
         </button>
+        {checkingWarm && (
+          <p className="font-mono text-[11px] text-foreground/45" role="status">
+            Checking existing verification...
+          </p>
+        )}
       </div>
       {authorization.error && (
         <p className="mx-auto max-w-sm text-sm text-danger" role="alert">

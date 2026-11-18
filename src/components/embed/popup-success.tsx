@@ -24,8 +24,10 @@ const closePopupWindow = () => {
  * parent re-renders. Tests can pass a stub.
  */
 export function PopupSuccess({
+  detail,
   onClose = closePopupWindow,
 }: {
+  detail?: string;
   onClose?: () => void;
 }) {
   useEffect(() => {
@@ -44,6 +46,11 @@ export function PopupSuccess({
         <h1 className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground">
           Verified.
         </h1>
+        {detail && (
+          <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-foreground/75">
+            {detail}
+          </p>
+        )}
         <p className="mt-3 text-sm text-foreground/60">
           Returning you to the integrator...
         </p>

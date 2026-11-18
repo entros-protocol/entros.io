@@ -28,6 +28,10 @@ const harness = vi.hoisted(() => ({
   prepareCalls: 0,
   /** How the next grant request settles. */
   prepareOutcome: (): Promise<void> => Promise.resolve(),
+  /** Optional warm-policy check override; null exercises the real module. */
+  warmCheck: null as ((...args: unknown[]) => Promise<unknown>) | null,
+  /** When true, forward to the real policyResultToWire encoder. */
+  realPolicyWire: false,
 }));
 
 vi.mock("@solana/web3.js", () => ({
@@ -78,10 +82,25 @@ vi.mock("@/lib/embed/evaluate-popup-policy", () => ({
   }),
 }));
 
-vi.mock("@entros/verify/policy", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@entros/verify/policy")>()),
-  policyResultToWire: () => ({ decision: "allow" }),
-}));
+vi.mock("@/lib/embed/warm-popup-policy", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/embed/warm-popup-policy")>();
+  return {
+    ...actual,
+    checkWarmPopupPolicy: (...args: Parameters<typeof actual.checkWarmPopupPolicy>) =>
+      harness.warmCheck
+        ? (harness.warmCheck(...args) as ReturnType<typeof actual.checkWarmPopupPolicy>)
+        : actual.checkWarmPopupPolicy(...args),
+  };
+});
+
+vi.mock("@entros/verify/policy", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@entros/verify/policy")>();
+  return {
+    ...actual,
+    policyResultToWire: (result: Parameters<typeof actual.policyResultToWire>[0]) =>
+      harness.realPolicyWire ? actual.policyResultToWire(result) : { decision: "allow" },
+  };
+});
 
 vi.mock("@/components/providers/pulse-provider", () => {
   // One instance for every render, as the provider gives.
@@ -130,8 +149,15 @@ vi.mock("@/components/providers/pulse-provider", () => {
   return { usePulse: () => pulse };
 });
 
+import {
+  evaluatePolicy,
+  normalizePolicyRequest,
+  POLICY_NETWORK,
+  type PolicyEvidence,
+} from "@entros/verify/policy";
 import { PopupContent } from "../src/components/embed/popup-content";
 import { readLastVerification } from "../src/lib/last-verification";
+import type { CheckWarmPopupPolicyOptions, WarmPopupPolicyResult } from "../src/lib/embed/warm-popup-policy";
 
 const WALLET = { toBase58: () => "11111111111111111111111111111112" };
 const PARAMS = {
@@ -198,6 +224,8 @@ beforeEach(() => {
   harness.authorizeOutcome = () => Promise.resolve();
   harness.prepareCalls = 0;
   harness.prepareOutcome = () => Promise.resolve();
+  harness.warmCheck = null;
+  harness.realPolicyWire = false;
   window.localStorage.clear();
   container = document.createElement("div");
   document.body.append(container);
@@ -399,5 +427,261 @@ describe("embed popup capture start and authorization refusals", () => {
     await clickStart();
     await commitRounds();
     expect(readLastVerification(WALLET.toBase58())).toBe(SIGNATURE);
+  });
+});
+
+describe("embed popup warm policy reuse", () => {
+  const WALLET_2 = { toBase58: () => "11111111111111111111111111111113" };
+  const WARM_NOW = 1_800_000_000;
+  const ORIGINAL_VERIFIED_AT = WARM_NOW - 300;
+  const WARM_TX = "1".repeat(64);
+  const ATTESTATION_PDA = POLICY_NETWORK.programIds.sas;
+
+  function makeWarmReuseResult(
+    walletPubkey: string,
+    includeAttestation: boolean,
+  ): Extract<WarmPopupPolicyResult, { status: "reused" }> {
+    const request = normalizePolicyRequest({
+      id: "warm-test",
+      version: 1,
+      minTrustScore: 50,
+      maxVerificationAgeSeconds: 3_600,
+      requiredAssurance: "browser_unattested",
+      uniquenessRequirement: "allow_unmeasured",
+      requireAttestation: includeAttestation,
+      cluster: "devnet",
+    });
+    const evidence: PolicyEvidence = {
+      cluster: "devnet",
+      genesisHash: POLICY_NETWORK.genesisHash,
+      programIds: { ...POLICY_NETWORK.programIds },
+      assuranceTier: "browser_unattested",
+      uniquenessStatus: "unmeasured",
+      readContextSlot: 42,
+      identity: {
+        walletPubkey,
+        identityPda: POLICY_NETWORK.programIds.anchor,
+        mint: POLICY_NETWORK.programIds.verifier,
+        creationTimestamp: ORIGINAL_VERIFIED_AT - 86_400,
+        lastVerificationTimestamp: ORIGINAL_VERIFIED_AT,
+        verificationCount: 5,
+        trustScore: 185,
+        currentCommitment: "02".repeat(32),
+        projectionVersion: 1,
+        lastResetTimestamp: 0,
+        lastRebaselineTimestamp: 0,
+      },
+      transaction: {
+        signature: WARM_TX,
+        slot: 42,
+        blockTime: ORIGINAL_VERIFIED_AT,
+        commitment: "02".repeat(32),
+        kind: "update",
+      },
+      attestation: includeAttestation
+        ? {
+            status: "present",
+            address: ATTESTATION_PDA,
+            readContextSlot: 42,
+            expiresAt: WARM_NOW + 3_600,
+          }
+        : { status: "missing" },
+    };
+    const evaluated = evaluatePolicy(
+      request,
+      { status: "available", evidence },
+      WARM_NOW,
+    );
+    if (evaluated.decision !== "allow") {
+      throw new Error(`Expected allow policy fixture, got ${evaluated.reason}`);
+    }
+    return {
+      status: "reused",
+      policy: evaluated,
+      attestationPda: includeAttestation ? ATTESTATION_PDA : null,
+      txSignature: WARM_TX,
+    };
+  }
+
+  it("skips authorization and capture on a warm hit and emits the original verifiedAt", async () => {
+    harness.authorization = null;
+    harness.realPolicyWire = true;
+    harness.warmCheck = async () => makeWarmReuseResult(WALLET.toBase58(), false);
+
+    const policy = normalizePolicyRequest({
+      id: "warm-test",
+      version: 1,
+      minTrustScore: 50,
+      maxVerificationAgeSeconds: 3_600,
+      requiredAssurance: "browser_unattested",
+      uniquenessRequirement: "allow_unmeasured",
+      requireAttestation: false,
+      cluster: "devnet",
+    });
+
+    await act(async () => root.render(<PopupContent params={{ ...PARAMS, policy }} />));
+    await flush();
+
+    expect(harness.authorizeCalls).toBe(0);
+    expect(harness.starts).toBe(0);
+    expect(harness.completes).toBe(0);
+    expect(harness.pairedOptions).toHaveLength(0);
+    expect(harness.emitted).toHaveLength(1);
+    expect(harness.emitted[0]).toMatchObject({
+      type: "verified",
+      value: {
+        wallet_pubkey: WALLET.toBase58(),
+        attestation_pda: null,
+        tx_sig: WARM_TX,
+        trust_score: 185,
+        cluster: "devnet",
+        policy: {
+          decision: "allow",
+          reason: "accepted",
+          verification_timestamp: ORIGINAL_VERIFIED_AT,
+          evidence_timestamp: ORIGINAL_VERIFIED_AT,
+          evaluated_at: WARM_NOW,
+          evaluated_age_seconds: 300,
+        },
+      },
+    });
+    expect(container.textContent).toContain("Verified.");
+    expect(container.textContent).toContain(
+      "Existing verification meets this policy. No transaction needed.",
+    );
+  });
+
+  it("falls back to capture when warm reuse declines", async () => {
+    harness.warmCheck = async () => ({ status: "needs_capture" });
+    await renderPopup();
+
+    expect(harness.emitted).toEqual([]);
+    expect(container.textContent).toContain("Start Verification");
+    await clickStart();
+    expect(harness.starts).toBe(1);
+    expect(harness.emitted).toEqual([{ type: "heartbeat", value: "capturing" }]);
+  });
+
+  it("cancels an in-flight warm check when the user starts capture immediately", async () => {
+    let resolveWarm!: (value: WarmPopupPolicyResult) => void;
+    let capturedSignal: AbortSignal | undefined;
+    harness.warmCheck = (
+      _params,
+      _wallet,
+      _connection,
+      _onDiagnostic,
+      options,
+    ) => {
+      capturedSignal = (options as CheckWarmPopupPolicyOptions | undefined)?.signal;
+      return new Promise<WarmPopupPolicyResult>((resolve) => {
+        resolveWarm = resolve;
+      });
+    };
+
+    await renderPopup();
+    expect(container.textContent).toContain("Checking existing verification...");
+
+    const button = [...container.querySelectorAll("button")].find(
+      (node) => node.textContent === "Start Verification",
+    )!;
+    let startedInTap = -1;
+    act(() => {
+      button.click();
+      startedInTap = harness.starts;
+    });
+    expect(startedInTap).toBe(1);
+    expect(capturedSignal?.aborted).toBe(true);
+
+    // A late warm resolution must neither emit verified nor leave capturing.
+    resolveWarm(makeWarmReuseResult(WALLET.toBase58(), true));
+    await flush();
+    expect(harness.emitted).toEqual([{ type: "heartbeat", value: "capturing" }]);
+    expect(container.querySelector('[data-testid="paired-trace-surface"]')).not.toBeNull();
+  });
+
+  it("cancels a pending warm check on wallet switch and checks the new wallet", async () => {
+    const calls: {
+      wallet: string;
+      signal: AbortSignal | undefined;
+      resolve: (value: WarmPopupPolicyResult) => void;
+    }[] = [];
+    harness.warmCheck = (_params, wallet, _connection, _onDiagnostic, options) =>
+      new Promise<WarmPopupPolicyResult>((resolve) => {
+        calls.push({
+          wallet: wallet as string,
+          signal: (options as CheckWarmPopupPolicyOptions | undefined)?.signal,
+          resolve,
+        });
+      });
+
+    await renderPopup();
+    expect(calls).toHaveLength(1);
+    expect(calls[0].wallet).toBe(WALLET.toBase58());
+
+    harness.publicKey = WALLET_2;
+    await renderPopup();
+    expect(calls[0].signal?.aborted).toBe(true);
+    expect(calls).toHaveLength(2);
+    expect(calls[1].wallet).toBe(WALLET_2.toBase58());
+
+    // Late resolution for the first wallet must be ignored.
+    calls[0].resolve(makeWarmReuseResult(WALLET.toBase58(), true));
+    await flush();
+    expect(harness.emitted).toEqual([]);
+
+    // Resolution for the active second wallet succeeds once.
+    harness.realPolicyWire = true;
+    calls[1].resolve(makeWarmReuseResult(WALLET_2.toBase58(), true));
+    await flush();
+    expect(harness.emitted).toHaveLength(1);
+    expect(harness.emitted[0]).toMatchObject({
+      type: "verified",
+      value: {
+        wallet_pubkey: WALLET_2.toBase58(),
+        attestation_pda: ATTESTATION_PDA,
+        tx_sig: WARM_TX,
+      },
+    });
+  });
+
+  it("cancels a pending warm check safely on disconnect", async () => {
+    let resolveWarm!: (value: WarmPopupPolicyResult) => void;
+    let capturedSignal: AbortSignal | undefined;
+    harness.warmCheck = (_params, _wallet, _connection, _onDiagnostic, options) => {
+      capturedSignal = (options as CheckWarmPopupPolicyOptions | undefined)?.signal;
+      return new Promise<WarmPopupPolicyResult>((resolve) => {
+        resolveWarm = resolve;
+      });
+    };
+
+    await renderPopup();
+    harness.publicKey = null;
+    await renderPopup();
+
+    expect(capturedSignal?.aborted).toBe(true);
+    expect(container.textContent).toContain("Connect your Solana wallet to start.");
+
+    resolveWarm(makeWarmReuseResult(WALLET.toBase58(), true));
+    await flush();
+    expect(harness.emitted).toEqual([]);
+  });
+
+  it("cancels a pending warm check safely on unmount", async () => {
+    let resolveWarm!: (value: WarmPopupPolicyResult) => void;
+    let capturedSignal: AbortSignal | undefined;
+    harness.warmCheck = (_params, _wallet, _connection, _onDiagnostic, options) => {
+      capturedSignal = (options as CheckWarmPopupPolicyOptions | undefined)?.signal;
+      return new Promise<WarmPopupPolicyResult>((resolve) => {
+        resolveWarm = resolve;
+      });
+    };
+
+    await renderPopup();
+    await act(async () => root.unmount());
+    expect(capturedSignal?.aborted).toBe(true);
+
+    resolveWarm(makeWarmReuseResult(WALLET.toBase58(), true));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(harness.emitted).toEqual([]);
   });
 });

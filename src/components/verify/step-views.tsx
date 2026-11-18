@@ -968,25 +968,21 @@ export function FailedView({
       break;
     case "drift-too-high":
       title = "Let's try that again";
-      body =
-        "This capture didn't closely match your usual pattern. That often happens after an interrupted or rushed recording. Try again with a steady, uninterrupted capture.";
-      // A reset is offered here because a rushed recording is not the only way
-      // to land on this screen. A change to the feature pipeline moves every
-      // stored baseline into a space the next capture cannot match, and
-      // nothing upstream detects that: the stored commitment still equals the
-      // on-chain one, so every staleness check passes and the divergence
-      // surfaces only as distance. Without a way out the user reads copy
-      // blaming their recording and retries against a baseline that can never
-      // match again. Projection versioning would let the SDK name this case
-      // instead of leaving it to be inferred here.
+      // Keep the reset note in footnote when Reset baseline is wired so the
+      // concatenated paragraph states the 7-day cooldown once, while callers
+      // without a reset handler still display the full guidance.
       if (failure.canReset && onResetBaseline) {
+        body = "This verification did not match your stored baseline. Try another capture.";
         footnote =
-          "If this keeps happening across several clean attempts, your baseline may predate a pipeline update. Resetting re-enrolls you from scratch.";
+          "If this repeats, reset your baseline to enroll again. Baseline resets carry a 7-day cooldown.";
         secondaryAction = {
           label: "Reset baseline",
           onClick: onResetBaseline,
           tone: "danger",
         };
+      } else {
+        body =
+          "This verification did not match your stored baseline. Try another capture, or reset your baseline if this repeats. Baseline resets carry a 7-day cooldown.";
       }
       break;
     case "generic":

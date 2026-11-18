@@ -141,11 +141,13 @@ export function categorizeError(error: string): EmbedErrorReason {  const e = er
   if (e.includes('"custom"') || e.includes("instructionerror")) {
     return "validation_failed";
   }
-  // pulse-sdk 3.7.0 drift-too-high (recoverable capture-quality retry) and the
-  // opaque replay-floor rejection ("Verification rejected"). Both mean the
-  // verification didn't pass, so both map to validation_failed rather than
+  // pulse-sdk drift-too-high (current baseline-mismatch copy plus earlier
+  // 4.x phrasing while older SDK releases remain pinned) and the opaque
+  // replay-floor rejection ("Verification rejected"). Both mean the
+  // verification did not pass, so both map to validation_failed rather than
   // the catch-all unknown.
   if (
+    e.includes("did not match your stored baseline") ||
     e.includes("closely match your usual pattern") ||
     e.includes("verification rejected")
   ) {

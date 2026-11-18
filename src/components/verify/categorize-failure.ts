@@ -116,7 +116,11 @@ function isStaleBaselineMessage(error: string): boolean {
 // paper, so naming the goal reveals nothing an attacker can't already read.
 // Guarded by a pulse-sdk source-string test to prevent silent copy drift.
 function isDriftTooHighError(error: string): boolean {
-  return error.toLowerCase().includes("closely match your usual pattern");
+  const lower = error.toLowerCase();
+  return (
+    lower.includes("did not match your stored baseline") ||
+    lower.includes("closely match your usual pattern")
+  );
 }
 
 // Code 6012 is `ResetCooldownActive` from entros-anchor. The 7-day

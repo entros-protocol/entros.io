@@ -226,4 +226,18 @@ describe("reset CTA", () => {
     ).toBe(false);
     expect(requiresBaselineRecoveryChoice({ kind: "validation-rejected" })).toBe(false);
   });
+
+  it("routes both the new and pinned-4.x drift-too-high strings with reset CTA", () => {
+    for (const msg of [
+      "This verification did not match your stored baseline. Try another capture, or reset your baseline if this repeats. Baseline resets carry a 7-day cooldown.",
+      "This capture didn't closely match your usual pattern. Please try again with a steady, uninterrupted capture.",
+    ]) {
+      expect(
+        categorizeFailure(msg, CAN_RESET, undefined, { failedAt: "proving" }),
+      ).toEqual({ kind: "drift-too-high", canReset: true });
+      expect(
+        categorizeFailure(msg, false, undefined, { failedAt: "proving" }),
+      ).toEqual({ kind: "drift-too-high", canReset: false });
+    }
+  });
 });

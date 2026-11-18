@@ -110,6 +110,9 @@ describe("categorizeError", () => {
 
   it("buckets the opaque rejection and the drift ceiling as validation", () => {
     expect(categorizeError("Verification rejected. Please try again.")).toBe("validation_failed");
+    expect(categorizeError("This verification did not match your stored baseline.")).toBe(
+      "validation_failed",
+    );
     expect(categorizeError("This capture didn't closely match your usual pattern.")).toBe(
       "validation_failed",
     );

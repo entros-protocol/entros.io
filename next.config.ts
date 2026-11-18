@@ -96,6 +96,7 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  agentRules: false,
   // Tree-shake the heavy icon and animation packages so marketing routes
   // only ship the components they actually render. Without this, the
   // entire lucide-react index is bundled even when a page uses three icons.
@@ -104,6 +105,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "motion"],
     optimizeCss: true,
+    agentUpgrade: "security",
   },
   images: {
     // Next 16 allowlists the `quality` prop and silently falls back to 75

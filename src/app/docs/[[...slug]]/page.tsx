@@ -72,11 +72,7 @@ export async function generateMetadata({
   const socialDescription = rawDescription.startsWith(CATEGORY_LINE)
     ? rawDescription
     : `${CATEGORY_LINE} ${rawDescription}`;
-  const ogImageUrl = buildOgImageUrl({
-    title: page.data.title,
-    description: socialDescription,
-    path,
-  });
+  const ogImageUrl = buildOgImageUrl(path);
   const lastModified = toValidDate(page.data.lastModified);
 
   return {

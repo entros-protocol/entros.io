@@ -26,11 +26,7 @@ export function pageMetadata({
   const socialDescription = description.startsWith(CATEGORY_LINE)
     ? description
     : `${CATEGORY_LINE} ${description}`;
-  const ogImageUrl = buildOgImageUrl({
-    title,
-    description: socialDescription,
-    path,
-  });
+  const ogImageUrl = buildOgImageUrl(path);
 
   return {
     title,

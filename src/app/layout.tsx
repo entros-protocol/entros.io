@@ -54,11 +54,7 @@ const ROOT_DESCRIPTION =
   "Private human verification. Verify your wallet in three short rounds. Raw motion and touch stay on your device.";
 const SOCIAL_DESCRIPTION =
   "Private human verification. Three short rounds put an Entros Anchor on your wallet, and any Solana app can read it for free.";
-const ROOT_OG_IMAGE_URL = buildOgImageUrl({
-  title: OG_DEFAULT_TITLE,
-  description: SOCIAL_DESCRIPTION,
-  path: "/",
-});
+const ROOT_OG_IMAGE_URL = buildOgImageUrl("/");
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

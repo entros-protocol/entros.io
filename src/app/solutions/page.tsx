@@ -65,6 +65,37 @@ export default function Solutions() {
       <SolutionCasesSection />
       <PartnersSection />
 
+      {/* Modality comparison cross-link */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+          <div className="flex flex-col items-start justify-between gap-6 border border-border bg-surface p-6 md:flex-row md:items-center md:p-8">
+            <div className="max-w-2xl">
+              <h2 className="font-display text-2xl font-normal tracking-tight text-foreground md:text-3xl">
+                Evaluating verification modalities
+                <span className="text-cyan">?</span>
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-foreground/70 md:text-base">
+                Compare anatomical, credential, KYC, and behavioral evidence
+                across Integrator Policy v1 primitives with dated primary
+                sources and explicit limits.
+              </p>
+            </div>
+            <Link
+              href="/compare"
+              className="
+                group inline-flex shrink-0 items-center justify-center gap-2
+                border border-foreground/20 px-5 py-3
+                text-sm font-medium text-foreground
+                transition-colors hover:border-cyan hover:text-cyan
+              "
+            >
+              Compare modalities
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer CTA */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">

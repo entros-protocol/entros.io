@@ -8,9 +8,26 @@ import {
 } from "fumadocs-ui/page";
 import { source } from "@/lib/source";
 import { getMDXComponents } from "@/components/mdx-components";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import {
+  buildOgImageUrl,
+  OG_CARD_HEIGHT,
+  OG_CARD_WIDTH,
+} from "@/lib/og-card";
+import {
+  CATEGORY_LINE,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  TWITTER_HANDLE,
+} from "@/lib/site";
 
 type Params = { slug?: string[] };
+
+function toValidDate(value: Date | string | number | undefined): Date | undefined {
+  if (value === undefined) return undefined;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
 
 export default async function Page({
   params,
@@ -22,9 +39,10 @@ export default async function Page({
   if (!page) notFound();
 
   const MDX = page.data.body;
+  const lastUpdate = toValidDate(page.data.lastModified);
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage toc={page.data.toc} full={page.data.full} lastUpdate={lastUpdate}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
@@ -50,6 +68,12 @@ export async function generateMetadata({
   const path = slug && slug.length > 0 ? `/docs/${slug.join("/")}` : "/docs";
   const canonicalUrl = `${SITE_URL}${path}`;
   const shareTitle = `${page.data.title} | ${SITE_NAME}`;
+  const rawDescription = page.data.description?.trim() || SITE_DESCRIPTION;
+  const socialDescription = rawDescription.startsWith(CATEGORY_LINE)
+    ? rawDescription
+    : `${CATEGORY_LINE} ${rawDescription}`;
+  const ogImageUrl = buildOgImageUrl(path);
+  const lastModified = toValidDate(page.data.lastModified);
 
   return {
     title: page.data.title,
@@ -57,15 +81,27 @@ export async function generateMetadata({
     alternates: { canonical: path },
     openGraph: {
       title: shareTitle,
-      description: page.data.description,
+      description: socialDescription,
       url: canonicalUrl,
       siteName: SITE_NAME,
       type: "article",
+      ...(lastModified ? { modifiedTime: lastModified.toISOString() } : {}),
+      images: [
+        {
+          url: ogImageUrl,
+          width: OG_CARD_WIDTH,
+          height: OG_CARD_HEIGHT,
+          alt: shareTitle,
+        },
+      ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: shareTitle,
-      description: page.data.description,
+      description: socialDescription,
+      site: TWITTER_HANDLE,
+      creator: TWITTER_HANDLE,
+      images: [ogImageUrl],
     },
   };
 }

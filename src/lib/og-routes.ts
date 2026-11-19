@@ -45,7 +45,7 @@ export const STATIC_OG_ROUTES: Readonly<Record<string, StaticOgRouteEntry>> = {
   "/token": {
     title: "Token",
     description:
-      "Current devnet SOL fees, standard SPL mint details, and the planned $ENTROS utility roadmap.",
+      "Current protocol fees, fair-launch details, and the planned $ENTROS utility roadmap.",
   },
   "/integrate": {
     title: "Integrate",
@@ -55,7 +55,7 @@ export const STATIC_OG_ROUTES: Readonly<Record<string, StaticOgRouteEntry>> = {
   "/verify": {
     title: "Verify",
     description:
-      "Verify your wallet on Solana devnet: three short rounds of voice, touch and motion, then one on-chain transaction.",
+      "Verify your wallet on Solana devnet: three short rounds of voice, touch and motion, then one signature.",
   },
   "/dashboard": {
     title: "Dashboard",

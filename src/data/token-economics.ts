@@ -15,36 +15,36 @@ export interface TokenUtility {
 
 export const protocolFee = {
   amount: "~0.005 SOL",
-  destination: "Protocol treasury PDA (devnet)",
+  destination: "Protocol treasury PDA",
   description:
-    "Every devnet verification deposits a small SOL fee into an on-chain treasury PDA. The admin configures the fee, and anyone can audit it on Solana Explorer.",
+    "Every verification deposits a small fee into an on-chain treasury PDA. The admin configures the fee, and anyone audits it on Solana Explorer.",
 };
 
 export const flywheel: FlyWheelStep[] = [
   {
     step: "Humans verify",
     description:
-      "A wallet completes Entros verification on Solana devnet and pays the configured SOL fee.",
+      "A wallet completes Entros verification and pays the configured SOL fee.",
   },
   {
     step: "Fees accrue",
     description:
-      "The devnet SOL fee lands in an on-chain treasury PDA, auditable on Solana Explorer, with no integrator billing.",
+      "The fee lands in an on-chain treasury PDA, auditable on Solana Explorer, with no integrator billing.",
   },
   {
     step: "Integrators build on it",
     description:
-      "Apps test Entros policy gates on devnet for claims, Realms governance, and agent permits.",
+      "Sybil-sensitive apps gate on Entros for airdrops, governance, and agent checks.",
   },
   {
     step: "$ENTROS utility expands",
     description:
-      "The roadmap evaluates validator staking, capacity tiers, and economic governance after ceremony, audit, and mainnet gates.",
+      "The roadmap adds validator staking, capacity tiers, and economic governance after audit and deployment gates.",
   },
   {
     step: "The network compounds",
     description:
-      "The planned model links external validator demand to token-secured validation after launch.",
+      "The intended model links protocol use to validator security and token utility.",
   },
 ];
 
@@ -80,7 +80,7 @@ export const tokenUtilities: TokenUtility[] = [
   {
     title: "Capacity Tiers",
     description:
-      "Planned capacity tiers can let large integrators stake $ENTROS for reserved throughput after mainnet. Today's devnet integrations use the per-verification SOL fee.",
+      "Planned capacity tiers can let large integrators stake $ENTROS for reserved throughput after mainnet. Today's integrations pay the per-verification fee.",
   },
   {
     title: "Economic Governance",

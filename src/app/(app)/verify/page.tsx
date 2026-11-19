@@ -8,7 +8,7 @@ const PUBKEY_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 const baseMetadata = pageMetadata({
   title: "Verify",
   description:
-    "Verify your wallet on Solana devnet: three short rounds of voice, touch and motion, then one on-chain transaction.",
+    "Verify your wallet on Solana devnet: three short rounds of voice, touch and motion, then one signature.",
   path: "/verify",
 });
 
@@ -72,8 +72,8 @@ export default function Verify() {
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-balance text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
-            Three short rounds, then one on-chain transaction on Solana devnet.
-            Your wallet gets an Entros Anchor and a Trust Score.
+            Three short rounds, then one signature on Solana devnet. Your
+            wallet gets an Entros Anchor and a Trust Score.
           </p>
         </div>
       </section>

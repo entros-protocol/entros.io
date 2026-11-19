@@ -1,13 +1,15 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import ComparePage from "@/app/compare/page";
 import sitemap from "@/app/sitemap";
 import { GET as llmsTxt } from "@/app/llms.txt/route";
 import {
   COMPARISON_EXPLAINERS,
   MODALITY_ROWS,
   POLICY_BOUNDARIES,
-  REGULATORY_DESIGN_CONTEXT,
   VENDOR_SCOPE_ROWS,
 } from "@/data/comparison";
 
@@ -55,7 +57,6 @@ describe("modality comparison page", () => {
       ...POLICY_BOUNDARIES.map((b) => b.id),
       ...VENDOR_SCOPE_ROWS.map((v) => v.id),
       ...COMPARISON_EXPLAINERS.map((e) => e.id),
-      REGULATORY_DESIGN_CONTEXT.id,
     ];
 
     expect(new Set(ids).size).toBe(ids.length);
@@ -75,7 +76,6 @@ describe("modality comparison page", () => {
         "warm-evidence-reuse",
         "agent-operator-permits",
         "device-data-boundaries",
-        "context-anatomical-storage",
       ]),
     );
   });
@@ -126,11 +126,22 @@ describe("modality comparison page", () => {
         (s) => s.href === "https://docs.poh.org/how-it-works.md",
       ),
     ).toBe(true);
+  });
 
-    expect(REGULATORY_DESIGN_CONTEXT.source.href).toBe("https://www.aepd.es");
-    expect(REGULATORY_DESIGN_CONTEXT.checked).toBe("2026-11-13");
-    expect(REGULATORY_DESIGN_CONTEXT.body).toContain("GDPR Article 9");
-    expect(REGULATORY_DESIGN_CONTEXT.disclaimer).toContain("not legal advice");
+  it("omits country-specific regulatory callouts and legal frameworks from /compare", () => {
+    const rendered = renderToStaticMarkup(createElement(ComparePage));
+    const combined = `${PAGE}\n${DATA}\n${rendered}`.toLowerCase();
+
+    for (const forbidden of [
+      "spain",
+      "aepd",
+      "aepd.es",
+      "gdpr",
+      "ccpa",
+      "context-anatomical-storage",
+    ]) {
+      expect(combined).not.toContain(forbidden);
+    }
   });
 
   it("carries zero em dashes, zero accuracy claims, zero internal paths, and zero one-time-check rival framing", () => {

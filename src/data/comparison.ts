@@ -338,18 +338,3 @@ export const COMPARISON_EXPLAINERS: ComparisonExplainer[] = [
     },
   },
 ];
-
-export const REGULATORY_DESIGN_CONTEXT = {
-  id: "context-anatomical-storage",
-  title: "Structural design context on centralized anatomical storage",
-  checked: "2026-11-13",
-  body:
-    "European data-protection guidance from Spain's AEPD regarding GDPR Article 9 highlights the structural risk of centralized anatomical biometric storage. Entros keeps raw motion and full-resolution touch on the device and avoids collecting iris, face, or government-ID records.",
-  disclaimer:
-    "This note provides architectural design context only. It is not legal advice and makes no regulatory compliance or equivalence claim for Entros or any other system.",
-  source: {
-    label: "Spain AEPD guidance",
-    href: "https://www.aepd.es",
-    external: true,
-  } satisfies PrimarySource,
-};

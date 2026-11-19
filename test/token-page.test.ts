@@ -49,27 +49,33 @@ describe("/token and /roadmap copy alignment", () => {
     expect(text).toContain("The economic layer of verified humanity.");
   });
 
-  it("qualifies /token fees as devnet, states SPL authorities and extensions, and decouples verification", () => {
+  it("keeps restored /token copy with a single devnet line and SPL mint details", () => {
     const normalized = visibleText(renderToStaticMarkup(createElement(Token)));
-    const lower = normalized.toLowerCase();
 
-    expect(normalized).toContain("Protocol treasury PDA (devnet)");
-    expect(normalized).toContain("Solana devnet");
-    expect(normalized).toContain("devnet integrations");
+    expect(normalized).toContain(
+      "Protocol fees today. Validator utility after hardening.",
+    );
+    expect(normalized).toContain(
+      "$ENTROS is planned to support staking, capacity, and governance.",
+    );
+    expect(normalized).toContain(
+      "The roadmap connects validator security, capacity, and governance to $ENTROS.",
+    );
+    expect(normalized).toContain("Protocol treasury PDA");
+    expect(normalized).not.toContain("Protocol treasury PDA (devnet)");
+    expect(normalized).toContain(
+      "Users pay the configured fee to write protocol state. Integrators read that state for free. Detection decides whether a verification passes. The fee bounds repeated attempts.",
+    );
     expect(normalized).toContain("6 decimals");
     expect(normalized).toContain("mint and freeze authorities revoked");
     expect(normalized).toContain("zero Token-2022 extensions");
     expect(normalized).toContain("Token-2022 NonTransferable mint");
-    expect(normalized).toContain("The devnet treasury is on-chain");
+    expect(normalized).toContain("The treasury is on-chain");
     expect(normalized).toContain(
-      "zero on-chain coupling to verification today",
+      "Verification runs on Solana devnet today, and $ENTROS utility stays separate from the fee until its mechanisms ship.",
     );
-    expect(normalized).toContain(
-      "Detection decides whether a verification passes. The fee bounds repeated attempts.",
-    );
-    expect(normalized).toContain("Planned utility after mainnet gates.");
-
-    expect(lower).not.toContain("built to secure human verification");
+    expect(normalized).toContain("Built to secure human verification.");
+    expect(normalized.match(/\bdevnet\b/gi)).toHaveLength(1);
     expect(TOKEN_CONTENT_SOURCE).not.toContain("Revenue Flywheel");
   });
 

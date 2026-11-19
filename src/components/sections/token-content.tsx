@@ -41,8 +41,8 @@ export function TokenContent() {
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            The planned roadmap connects validator security, capacity, and
-            governance to $ENTROS after ceremony and audit gates.
+            The roadmap connects validator security, capacity, and governance
+            to $ENTROS.
           </p>
 
           {/* Five square nodes in a row, hairline connectors between them,
@@ -257,7 +257,7 @@ export function TokenContent() {
                   {protocolFee.description}
                 </p>
                 <p className="mt-4 text-base leading-relaxed text-foreground/65 md:text-lg">
-                  Users pay the configured devnet fee to write protocol state.
+                  Users pay the configured fee to write protocol state.
                   Integrators read that state for free. Detection decides
                   whether a verification passes. The fee bounds repeated
                   attempts.
@@ -413,12 +413,12 @@ export function TokenContent() {
                   <TreasuryGlyph className="h-9 w-9 text-foreground/80" />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      The devnet treasury is on-chain
+                      The treasury is on-chain
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      $ENTROS has zero on-chain coupling to verification today.
-                      Any future utility waits on external audit and protocol
-                      hardening.
+                      Verification runs on Solana devnet today, and $ENTROS
+                      utility stays separate from the fee until its mechanisms
+                      ship.
                     </p>
                   </div>
                 </div>

@@ -1,20 +1,16 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { EntrosMark } from "@/components/layout/entros-mark";
+import { verificationFocusRing } from "@/components/verify/verification-styles";
 import { CloseButton } from "./close-button";
 
 /**
  * Layout chrome for popup-host pages under /embed/*.
  *
- * Server component. Wraps the popup content in header + footer with
- * a single client island for the close button. Keeps the popup
- * minimal: small wordmark, a close affordance, the slot, and a
- * tiny "powered by entros.io" footer.
- *
- * The wordmark links to the entros.io home page and matches the
- * canonical typography defined in `layout/navbar-wordmark.tsx`:
- * lowercase glyph, `--font-wordmark` family, square cyan dot scaled
- * to the popup's 20px text size.
+ * Server component. Wraps the popup content in header and footer with
+ * a single client island for the close button. Uses the whole-pixel
+ * EntrosMark lockup at 24px (18px mark) and keeps the footer minimal.
  */
 export function PopupShell({ children }: { children: ReactNode }) {
   return (
@@ -22,15 +18,17 @@ export function PopupShell({ children }: { children: ReactNode }) {
       <header className="flex items-center justify-between border-b border-foreground/[0.07] px-5 py-3">
         <Link
           href="/"
-          style={{ fontFamily: "var(--font-wordmark)" }}
-          className="inline-flex items-baseline text-3xl tracking-tight text-foreground transition-opacity hover:opacity-80"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontFamily:
+              "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
+          }}
+          className={`inline-flex items-baseline text-2xl tracking-tight text-foreground transition-opacity hover:opacity-80 ${verificationFocusRing}`}
           aria-label="Entros home"
         >
+          <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
           <span aria-hidden>Entros</span>
-          <span
-            aria-hidden
-            className="ml-1 inline-block size-[4px] bg-cyan"
-          />
         </Link>
         <CloseButton />
       </header>

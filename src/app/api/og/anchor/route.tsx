@@ -104,25 +104,25 @@ export async function GET(request: Request) {
         <div
           style={{
             display: "flex",
-            alignItems: "baseline",
-            fontFamily: "JetBrainsMono",
-            fontSize: 36,
-            letterSpacing: "-0.02em",
-            color: "#E8E6E0",
+            alignItems: "center",
           }}
         >
-          <span>Entros</span>
+          <svg width="36" height="36" viewBox="0 0 18 18">
+            <path fill="#E8E6E0" d="M0 0h18v4H0zM0 7h12v4H0zM0 14h18v4H0z" />
+            <path fill="#00E7FE" d="M14 7h4v4h-4z" />
+          </svg>
           <span
             style={{
-              display: "flex",
-              width: 8,
-              height: 8,
-              backgroundColor: "#22D3E6",
-              marginLeft: 6,
-              alignSelf: "flex-end",
-              marginBottom: 6,
+              fontFamily: "JetBrainsMono",
+              fontSize: 36,
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+              color: "#E8E6E0",
+              marginLeft: 14,
             }}
-          />
+          >
+            Entros
+          </span>
         </div>
 
         <div

@@ -217,6 +217,16 @@ body {
   outline-offset: 2px;
 }
 
+/* Square, high-contrast keyboard focus fallback for interactive controls
+   without an explicit ring utility. Placed in @layer base so component-level
+   focus-visible utilities override it cleanly. */
+@layer base {
+  :is(a[href], button, input, select, textarea, summary, [role="button"]):focus-visible {
+    outline: 2px solid var(--verification-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
 /* Minimal scrollbars for code blocks and overflow containers */
 *::-webkit-scrollbar {
   height: 6px;

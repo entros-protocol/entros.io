@@ -33,7 +33,7 @@ const FLYWHEEL_GLYPHS = [PersonGlyph, FeeGlyph, BuildGlyph, KeyGlyph, NetworkGly
 export function TokenContent() {
   return (
     <>
-      {/* Revenue Flywheel */}
+      {/* Planned Utility Loop */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-5xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
@@ -41,8 +41,8 @@ export function TokenContent() {
           </h2>
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            The roadmap connects validator security, capacity, and governance
-            to $ENTROS.
+            The planned roadmap connects validator security, capacity, and
+            governance to $ENTROS after ceremony and audit gates.
           </p>
 
           {/* Five square nodes in a row, hairline connectors between them,
@@ -257,7 +257,7 @@ export function TokenContent() {
                   {protocolFee.description}
                 </p>
                 <p className="mt-4 text-base leading-relaxed text-foreground/65 md:text-lg">
-                  Users pay the configured fee to write protocol state.
+                  Users pay the configured devnet fee to write protocol state.
                   Integrators read that state for free. Detection decides
                   whether a verification passes. The fee bounds repeated
                   attempts.
@@ -401,8 +401,10 @@ export function TokenContent() {
                       {launchDetails.standard}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Fixed supply at genesis, launched through the EasyA
-                      Kickstart bonding curve on Solana.
+                      Fixed supply from the EasyA Kickstart launch on Solana,
+                      with 6 decimals, mint and freeze authorities revoked, and
+                      zero Token-2022 extensions. The identity Entros Anchor
+                      uses a separate Token-2022 NonTransferable mint.
                     </p>
                   </div>
                 </div>
@@ -411,11 +413,12 @@ export function TokenContent() {
                   <TreasuryGlyph className="h-9 w-9 text-foreground/80" />
                   <div>
                     <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      The treasury is on-chain
+                      The devnet treasury is on-chain
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      $ENTROS utility stays separate from the fee until its
-                      mechanisms ship.
+                      $ENTROS has zero on-chain coupling to verification today.
+                      Any future utility waits on external audit and protocol
+                      hardening.
                     </p>
                   </div>
                 </div>

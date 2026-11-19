@@ -19,6 +19,7 @@ import {
   createDefaultWalletNotFoundHandler,
 } from "@solana-mobile/wallet-adapter-mobile";
 import type { WalletError } from "@solana/wallet-adapter-base";
+import { sanitizeErrorMessage } from "@/lib/sanitize-error";
 import { solanaRpcEndpoint } from "@/lib/solana-rpc";
 
 import "@/styles/wallet-adapter.css";
@@ -41,11 +42,33 @@ interface WalletErrorContextValue {
 
 const WalletErrorContext = createContext<WalletErrorContextValue | null>(null);
 
+const NOOP_WALLET_ERROR: WalletErrorContextValue = {
+  lastError: null,
+  clearError: () => undefined,
+};
+
+const CLUSTER_MISMATCH_PATTERN =
+  /mainnet|wrong network|unsupported chain|network mismatch|cluster mismatch|solana:devnet|chain .* not supported|switch .* network/i;
+
+/**
+ * Formats wallet-adapter connection errors into plain recovery copy.
+ * Translates cluster mismatch errors into a direct Devnet switch instruction
+ * and strips noisy adapter details from other messages.
+ */
+export function formatWalletConnectionError(error: string): string {
+  const cleaned = sanitizeErrorMessage(error);
+  if (!cleaned) {
+    return "Your wallet did not connect. Check that it is unlocked and set to Solana Devnet, then try again.";
+  }
+  if (CLUSTER_MISMATCH_PATTERN.test(cleaned)) {
+    return "Your wallet is on a different Solana network. Switch your wallet to Solana Devnet, then connect again.";
+  }
+  return cleaned;
+}
+
 /**
  * Subscribe to wallet-adapter errors surfaced by the top-level WalletProvider.
- * Mirrors the shape of `usePulse()` in pulse-provider.tsx — context-or-throw
- * so consumers don't silently get a stale `null` if rendered outside the
- * provider tree.
+ * Throws if rendered outside WalletProvider.
  */
 export function useWalletError(): WalletErrorContextValue {
   const ctx = useContext(WalletErrorContext);
@@ -53,6 +76,14 @@ export function useWalletError(): WalletErrorContextValue {
     throw new Error("useWalletError must be used within WalletProvider");
   }
   return ctx;
+}
+
+/**
+ * Optional subscription to wallet-adapter errors for components that can also
+ * mount inside isolated harnesses without WalletProvider.
+ */
+export function useOptionalWalletError(): WalletErrorContextValue {
+  return useContext(WalletErrorContext) ?? NOOP_WALLET_ERROR;
 }
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {

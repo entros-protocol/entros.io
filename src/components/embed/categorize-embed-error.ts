@@ -66,7 +66,7 @@ const PHASE_BUCKETS: Partial<Record<VerificationPhase, EmbedErrorReason>> = {
 
 export function bucketForResult(result: VerificationResult): EmbedErrorReason | null {
   const phase = result.failedAt;
-  if (!phase) return null;
+  if (!phase) return result.opaque === true ? "validation_failed" : null;
   // An empty wallet reaches the popup through the same phases as a decline,
   // and the integrator bucket for both is `wallet_rejected`. Prose is the only
   // thing that separates them, and here it separates them correctly.
@@ -80,7 +80,7 @@ export function bucketForResult(result: VerificationResult): EmbedErrorReason | 
       return "wallet_rejected";
     }
   }
-  return PHASE_BUCKETS[phase] ?? null;
+  return PHASE_BUCKETS[phase] ?? (result.opaque === true ? "validation_failed" : null);
 }
 
 /**

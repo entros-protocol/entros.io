@@ -1,11 +1,12 @@
 const openSource = [
-  "On-chain programs (entros-anchor, entros-verifier, entros-registry)",
-  "ZK circuit source and verification keys",
-  "Client SDK (pulse-sdk on npm)",
-  "Executor node",
-  "Website and documentation",
-  "Security program page and scoped campaign results",
-  "Baseline adversarial testing (script-kiddie tier in pulse-sdk)",
+  "On-chain programs (protocol-core: entros-anchor, entros-verifier, entros-registry), MIT",
+  "Governance voter-weight plugin (entros-governance-plugin), MIT",
+  "Verification integrator library (@entros/verify), pure MIT using only MIT @noble/curves and @noble/hashes with zero GPL-3.0 dependencies",
+  "Executor gateway (executor-node), MIT",
+  "Website and documentation (entros.io), MIT first-party source",
+  "ZK circuits (circuits): Entros-authored source and keys are MIT, while compiled artifacts include circomlib (GPL-3.0) templates and tooling uses snarkjs and circom (GPL-3.0)",
+  "Client SDK (@entros/pulse-sdk): Entros-authored source is MIT, and dist/ loads snarkjs and pitchfinder (GPL-3.0) via runtime dynamic import() without bundling them",
+  "Security program results and baseline adversarial suite in pulse-sdk",
 ];
 
 const privateComponents = [
@@ -15,9 +16,9 @@ const privateComponents = [
 ];
 
 /**
- * Open Source Posture—two-column comparison: open vs private.
- * Hairline-divided list pairs each item; cyan accent on the open
- * column, neutral on the private column.
+ * Open Source Posture: two-column comparison between public and private
+ * components. Hairline-divided list pairs each item, with cyan accent on
+ * the open column and neutral on the private column.
  */
 export function OpenSourcePosture() {
   return (
@@ -29,14 +30,15 @@ export function OpenSourcePosture() {
         </h2>
 
         <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          The client and on-chain protocol are MIT licensed. The private
-          validation service and red-team harness stay closed.
+          Entros-authored source in our public repositories carries the MIT
+          License. Compiled circuits and runtime SDK dependencies carry GPL-3.0
+          terms. The private validation service and red-team harness stay closed.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-px border border-border bg-border lg:grid-cols-2">
           <div className="bg-background p-8 md:p-10">
             <p className="text-sm font-medium text-foreground">
-              Open source, MIT licensed
+              Open source (MIT first-party source)
             </p>
             <ul className="mt-8 space-y-4 border-t border-border pt-6">
               {openSource.map((item) => (
@@ -69,12 +71,22 @@ export function OpenSourcePosture() {
           </div>
         </div>
 
-        <p className="mt-12 max-w-3xl text-sm leading-relaxed text-foreground/55">
-          On-chain transitions, cryptographic checks, and client computations
-          are public. The private service decides whether submitted evidence
-          satisfies the acceptance policy. Its detectors and thresholds stay
-          private to limit directed calibration.
-        </p>
+        <div className="mt-12 max-w-3xl space-y-4 text-sm leading-relaxed text-foreground/65">
+          <p>
+            Compiled circuits artifacts include circomlib (GPL-3.0) templates.
+            @entros/pulse-sdk loads snarkjs and pitchfinder (GPL-3.0) via
+            runtime dynamic import() without bundling them into dist/.
+            @entros/verify provides a pure-MIT verification surface with zero
+            GPL-3.0 dependencies, using only MIT @noble/curves and
+            @noble/hashes.
+          </p>
+          <p>
+            On-chain transitions, cryptographic checks, and client computations
+            are public. The private service decides whether submitted evidence
+            satisfies the acceptance policy. Its detectors and thresholds stay
+            private to limit directed calibration.
+          </p>
+        </div>
       </div>
     </section>
   );

@@ -31,7 +31,12 @@ export function pageMetadata({
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: path,
+      types: {
+        "text/plain": "/llms.txt",
+      },
+    },
     openGraph: {
       title: shareTitle,
       description: socialDescription,

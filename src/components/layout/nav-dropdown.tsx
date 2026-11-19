@@ -36,6 +36,7 @@ export function NavDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
@@ -83,8 +84,20 @@ export function NavDropdown({
       className="relative"
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
+      onBlur={(e) => {
+        if (ref.current && !ref.current.contains(e.relatedTarget as Node | null)) {
+          setOpen(false);
+        }
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && open) {
+          setOpen(false);
+          triggerRef.current?.focus();
+        }
+      }}
     >
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
@@ -117,18 +130,14 @@ export function NavDropdown({
         />
       </button>
 
-      {/* Panel: a small invisible bridge above the panel keeps hover
-          alive when the cursor crosses the gap from trigger to panel.
-          Open uses a short opacity-only fade (75ms, no slide) so it
-          appears almost in place; close uses duration-0 so a
-          sibling-triggered handoff snaps away the same frame the next
-          panel begins opening—no overlapping animation. */}
+      {/* Panel: invisible when closed so keyboard Tab never enters hidden links. */}
       <div
+        aria-hidden={!open}
         className={cn(
           "absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-opacity",
           open
-            ? "pointer-events-auto opacity-100 duration-75"
-            : "pointer-events-none opacity-0 duration-0"
+            ? "visible pointer-events-auto opacity-100 duration-75"
+            : "invisible pointer-events-none opacity-0 duration-0"
         )}
       >
         <div className="w-[340px] border border-border bg-surface p-1.5 shadow-xl shadow-black/[0.06] dark:shadow-2xl dark:shadow-black/30">
@@ -136,6 +145,7 @@ export function NavDropdown({
             <Link
               key={item.href}
               href={item.href}
+              tabIndex={open ? 0 : -1}
               onClick={() => setOpen(false)}
               className="group block px-3 py-2.5 transition-colors hover:bg-foreground/5"
             >

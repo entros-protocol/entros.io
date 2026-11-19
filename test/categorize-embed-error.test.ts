@@ -75,6 +75,11 @@ describe("bucketForResult", () => {
   it("buckets an on-chain revert and a bounds rejection as validation", () => {
     expect(bucketForResult(failure({ failedAt: "confirmation" }))).toBe("validation_failed");
     expect(bucketForResult(failure({ failedAt: "proving" }))).toBe("validation_failed");
+    expect(
+      bucketForResult(
+        failure({ failedAt: "validation", error: "Verification failed", opaque: true }),
+      ),
+    ).toBe("validation_failed");
   });
 
   it("defers to prose for the phases that decide nothing", () => {

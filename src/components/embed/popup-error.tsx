@@ -2,8 +2,7 @@
  * Opaque error surface for the popup.
  *
  * Server component. Surfaces a single generic message regardless of
- * the underlying rejection reason. Specific reasons stay server-side
- * per the public-copy specificity rule.
+ * the underlying rejection reason. Specific reasons stay server-side.
  */
 export function PopupError() {
   return (
@@ -11,9 +10,9 @@ export function PopupError() {
       <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-danger">
         Error
       </p>
-      <p className="mt-4 text-sm text-foreground/70">
+      <h1 className="mt-4 font-display text-lg font-normal text-foreground/80">
         This integration is not authorized.
-      </p>
+      </h1>
     </div>
   );
 }

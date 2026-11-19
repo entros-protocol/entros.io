@@ -78,7 +78,12 @@ export async function generateMetadata({
   return {
     title: page.data.title,
     description: page.data.description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: path,
+      types: {
+        "text/plain": "/llms.txt",
+      },
+    },
     openGraph: {
       title: shareTitle,
       description: socialDescription,

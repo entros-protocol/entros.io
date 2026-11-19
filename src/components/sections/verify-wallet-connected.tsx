@@ -32,6 +32,7 @@ import {
   VerifiedView,
   FailedView,
   SoftFailedView,
+  micRecoveryFootnote,
 } from "@/components/verify/step-views";
 import {
   PRIVACY_LINES,
@@ -50,7 +51,10 @@ import {
   usePairedAuthorization,
 } from "@/components/verify/use-paired-authorization";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
-import { useWalletError } from "@/components/providers/wallet-provider";
+import {
+  formatWalletConnectionError,
+  useWalletError,
+} from "@/components/providers/wallet-provider";
 import { ArrowRight, Wallet, X } from "lucide-react";
 import type { ActiveStudyGrant } from "@/lib/population-study";
 import {
@@ -897,13 +901,13 @@ export function VerifyWalletConnected({
             className="mx-auto flex w-full max-w-sm items-center gap-3 border border-danger/30 bg-danger/[0.07] py-2.5 pl-4 pr-2 text-left"
           >
             <p className="flex-1 text-xs leading-5 text-foreground/80">
-              Wallet didn&apos;t connect: {walletError}
+              Wallet didn&apos;t connect: {formatWalletConnectionError(walletError)}
             </p>
             <button
               type="button"
               onClick={clearWalletError}
               aria-label="Dismiss wallet error"
-              className={`flex h-7 w-7 shrink-0 items-center justify-center text-foreground/50 transition-colors hover:text-foreground ${verificationFocusRing}`}
+              className={`flex h-9 w-9 shrink-0 items-center justify-center text-foreground/50 transition-colors hover:text-foreground ${verificationFocusRing}`}
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -1049,8 +1053,7 @@ export function VerifyWalletConnected({
         )}
         {micPermissionState === "denied" && (
           <ToneText tone="danger" alert>
-            Microphone access is blocked for this site. Click the lock icon in
-            your address bar, set Microphone to Allow, then refresh.
+            Microphone access is blocked for this site. {micRecoveryFootnote()}
           </ToneText>
         )}
         <div className="flex justify-center">
@@ -1139,6 +1142,7 @@ export function VerifyWalletConnected({
         actionPending={studyNextTrialPending || authorization.pending}
         actionError={authorization.error}
       />,
+      <PrivacyFooter lines={[PRIVACY_LINES[2]]} />,
     );
   }
 
@@ -1213,6 +1217,7 @@ export function VerifyWalletConnected({
         />
         {diagnosticPanel}
       </>,
+      <PrivacyFooter lines={[PRIVACY_LINES[2]]} />,
     );
   }
 

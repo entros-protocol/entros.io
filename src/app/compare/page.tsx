@@ -226,7 +226,7 @@ export default function ComparePage() {
             </h2>
             <p className="mt-4 text-base leading-relaxed text-foreground/70">
               No single verification modality answers all five questions.
-              Evaluate each question separately in server and on-chain checks.
+              Evaluate each question on its own in server and on-chain checks.
             </p>
           </div>
 

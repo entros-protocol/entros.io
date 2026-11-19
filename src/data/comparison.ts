@@ -96,7 +96,7 @@ export const MODALITY_ROWS: ModalityRow[] = [
   {
     id: "modality-behavioral",
     name: "Behavioral",
-    examples: "Voice, touch, and motion (Entros, Proof of Human)",
+    examples: "Voice, touch, motion, and interaction gestures (Entros, Proof of Human)",
     freshResult:
       "Paired browser rounds check spoken words, traced paths, and derived features against current policy before anchoring.",
     continuity:

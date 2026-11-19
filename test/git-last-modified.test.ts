@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -11,12 +11,73 @@ import {
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 
+function gitInTempRepo(
+  cwd: string,
+  args: string[],
+  dateIso?: string,
+): void {
+  const env = dateIso
+    ? {
+        ...process.env,
+        GIT_AUTHOR_DATE: dateIso,
+        GIT_COMMITTER_DATE: dateIso,
+      }
+    : process.env;
+  execFileSync(
+    "git",
+    [
+      "-c",
+      "user.name=Entros Test",
+      "-c",
+      "user.email=test@entros.invalid",
+      "-c",
+      "commit.gpgsign=false",
+      ...args,
+    ],
+    { cwd, env, stdio: "ignore" },
+  );
+}
+
 afterEach(() => {
   clearGitLastModifiedCache();
 });
 
 describe("git last-modified resolution", () => {
-  it("returns distinct per-file commit dates in a full repository checkout", async () => {
+  it("returns distinct per-file commit dates across commits and validates repo checkout depth", async () => {
+    const tempRepo = mkdtempSync(path.join(os.tmpdir(), "entros-history-test-"));
+    try {
+      gitInTempRepo(tempRepo, ["init"]);
+      mkdirSync(path.join(tempRepo, "content/docs"), { recursive: true });
+
+      const firstFile = path.join(tempRepo, "content/docs/first.mdx");
+      writeFileSync(firstFile, "# First\n");
+      gitInTempRepo(tempRepo, ["add", "content/docs/first.mdx"]);
+      gitInTempRepo(
+        tempRepo,
+        ["commit", "-m", "Add first doc"],
+        "2026-08-15T12:00:00Z",
+      );
+
+      const secondFile = path.join(tempRepo, "content/docs/second.mdx");
+      writeFileSync(secondFile, "# Second\n");
+      gitInTempRepo(tempRepo, ["add", "content/docs/second.mdx"]);
+      gitInTempRepo(
+        tempRepo,
+        ["commit", "-m", "Add second doc"],
+        "2026-10-20T12:00:00Z",
+      );
+
+      const firstDate = await resolveGitLastModified(firstFile, tempRepo);
+      const secondDate = await resolveGitLastModified(secondFile, tempRepo);
+
+      expect(firstDate).toBeInstanceOf(Date);
+      expect(secondDate).toBeInstanceOf(Date);
+      expect(formatSitemapDate(firstDate)).toBe("2026-08-15");
+      expect(formatSitemapDate(secondDate)).toBe("2026-10-20");
+    } finally {
+      rmSync(tempRepo, { recursive: true, force: true });
+    }
+
     const trustScoreDate = await resolveGitLastModified(
       path.join(REPO_ROOT, "content/docs/concepts/trust-score.mdx"),
       REPO_ROOT,
@@ -26,13 +87,40 @@ describe("git last-modified resolution", () => {
       REPO_ROOT,
     );
 
-    expect(trustScoreDate).toBeInstanceOf(Date);
-    expect(roadmapDate).toBeInstanceOf(Date);
-    expect(formatSitemapDate(trustScoreDate)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(formatSitemapDate(roadmapDate)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(formatSitemapDate(trustScoreDate)).not.toBe(
-      formatSitemapDate(roadmapDate),
-    );
+    const isShallowRaw = execFileSync(
+      "git",
+      ["rev-parse", "--is-shallow-repository"],
+      { cwd: REPO_ROOT, encoding: "utf8" },
+    ).trim();
+
+    if (isShallowRaw === "false") {
+      expect(trustScoreDate).toBeInstanceOf(Date);
+      expect(roadmapDate).toBeInstanceOf(Date);
+      expect(formatSitemapDate(trustScoreDate)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(formatSitemapDate(roadmapDate)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(formatSitemapDate(trustScoreDate)).not.toBe(
+        formatSitemapDate(roadmapDate),
+      );
+    } else {
+      const headSha = execFileSync("git", ["rev-parse", "HEAD"], {
+        cwd: REPO_ROOT,
+        encoding: "utf8",
+      }).trim();
+      const boundaries = new Set(
+        execFileSync("git", ["rev-list", "--max-parents=0", "HEAD"], {
+          cwd: REPO_ROOT,
+          encoding: "utf8",
+        })
+          .trim()
+          .split(/\r?\n/)
+          .filter(Boolean),
+      );
+      if (boundaries.has(headSha)) {
+        expect(trustScoreDate).toBeNull();
+        expect(roadmapDate).toBeNull();
+        expect(formatSitemapDate(trustScoreDate)).toBe(SITE_LAST_MODIFIED);
+      }
+    }
   });
 
   it("returns null on a --depth 1 shallow clone so callers fall back deterministically", async () => {

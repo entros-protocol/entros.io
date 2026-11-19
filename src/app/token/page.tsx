@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Token",
   description:
-    "Current protocol fees, fair-launch details, and the planned $ENTROS utility roadmap.",
+    "Current devnet SOL fees, standard SPL mint details, and the planned $ENTROS utility roadmap.",
   path: "/token",
 });
 
@@ -40,10 +40,10 @@ export default function Token() {
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-            {/* Bound so "revenue." never wraps away from what it belongs to. */}
-            Protocol fees today. Validator utility after hardening.
+            Devnet SOL fees today. Validator utility after hardening.
             <br />
-            $ENTROS is planned to support staking, capacity, and governance.
+            $ENTROS has zero verification coupling now and plans future
+            staking, capacity, and governance.
           </p>
 
           <TokenLaunchCard />
@@ -62,7 +62,7 @@ export default function Token() {
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             $ENTROS
             <br />
-            Built to secure human verification<span className="text-cyan">.</span>
+            Planned utility after mainnet gates<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Roadmap",
   description:
-    "Live on devnet with a shipped SDK and red-team results. The token funds the path to mainnet: hardening, a trusted-setup ceremony, and an external audit.",
+    "Live on Solana devnet with a published SDK and scoped red-team checks. Hardening, a trusted-setup ceremony, and an external audit precede mainnet.",
   path: "/roadmap",
 });
 
@@ -50,9 +50,9 @@ const timeline = [
     body: "The pilot is open at entros.io/verify. The SDK attempts a wallet-bound SAS attestation after verification. The Realms voter-weight program and Agent Anchor prototype are deployed; client integration remains open.",
   },
   {
-    window: "Now",
+    window: "July 2026",
     title: "$ENTROS launch",
-    body: "The token launched to fund the path to mainnet. Validator staking, fee share, and protocol governance remain planned; each needs specification, implementation, and audit.",
+    body: "The standard SPL token launched with zero on-chain verification coupling. Validator staking, fee share, and protocol governance remain planned; each needs specification, implementation, and audit.",
   },
   {
     window: "Ongoing",
@@ -112,8 +112,9 @@ export default function Roadmap() {
             <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
               Entros is live on devnet: three programs, a shipped SDK, and a
               private validation service with scoped red-team results. T5 and
-              population-level uniqueness evidence remain open. The token
-              funds the path to mainnet.
+              population-level uniqueness evidence remain open. Grants and
+              partner work carry hardening, the ceremony, and the external
+              audit.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -342,7 +343,8 @@ export default function Roadmap() {
               both in public.
             </p>
             <p>
-              The token funds that work.
+              Public grants and open engineering milestones carry that work
+              before mainnet.
             </p>
           </div>
         </div>

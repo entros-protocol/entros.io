@@ -45,7 +45,7 @@ export const STATIC_OG_ROUTES: Readonly<Record<string, StaticOgRouteEntry>> = {
   "/token": {
     title: "Token",
     description:
-      "Current protocol fees, fair-launch details, and the planned $ENTROS utility roadmap.",
+      "Current devnet SOL fees, standard SPL mint details, and the planned $ENTROS utility roadmap.",
   },
   "/integrate": {
     title: "Integrate",
@@ -75,7 +75,7 @@ export const STATIC_OG_ROUTES: Readonly<Record<string, StaticOgRouteEntry>> = {
   "/roadmap": {
     title: "Roadmap",
     description:
-      "Live on devnet with a shipped SDK and red-team results. The token funds the path to mainnet: hardening, a trusted-setup ceremony, and an external audit.",
+      "Live on Solana devnet with a published SDK and scoped red-team checks. Hardening, a trusted-setup ceremony, and an external audit precede mainnet.",
   },
   "/press": {
     title: "Press Kit",

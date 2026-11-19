@@ -4,9 +4,14 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { OpenSourcePosture } from "@/app/security/sections/OpenSourcePosture";
+import { trustSignals } from "@/data/trust-signals";
 
 const COMPONENT_SOURCE = readFileSync(
   resolve(__dirname, "../src/app/security/sections/OpenSourcePosture.tsx"),
+  "utf8",
+);
+const TRUST_SIGNALS_SOURCE = readFileSync(
+  resolve(__dirname, "../src/data/trust-signals.ts"),
   "utf8",
 );
 const README_SOURCE = readFileSync(
@@ -40,20 +45,35 @@ describe("open-source and dependency license posture", () => {
     expect(html).toContain("zero GPL-3.0 dependencies");
   });
 
-  it("avoids unconditional pure-MIT transitive claims for circuits or pulse-sdk", () => {
+  it("avoids unconditional pure-MIT transitive or generated-key claims across /security and /", () => {
     const html = renderToStaticMarkup(createElement(OpenSourcePosture));
     const lowerHtml = html.toLowerCase();
 
     expect(html).not.toContain("Open source, MIT licensed");
     expect(html).not.toContain("The client and on-chain protocol are MIT licensed");
+    expect(html).not.toContain("keys are MIT");
+    expect(html).not.toContain("exported keys");
+    expect(html).not.toContain("runtime SDK dependencies carry GPL-3.0");
     expect(lowerHtml).not.toContain("pure-mit transitive");
     expect(lowerHtml).not.toContain("pure mit transitive");
     expect(html).toContain("Open source (MIT first-party source)");
+
+    const openProtocol = trustSignals.find((s) => s.name === "Open Protocol");
+    expect(openProtocol).toBeDefined();
+    expect(openProtocol!.detail).toContain("First-party source");
+    expect(openProtocol!.detail).toContain("MIT");
+    expect(openProtocol!.detail).toContain("GPL-3.0");
+    expect(openProtocol!.detail).toContain("circuits");
+    expect(openProtocol!.detail).toContain("pulse-sdk");
+    expect(openProtocol!.detail).toContain("@entros/verify");
+    expect(openProtocol!.detail).not.toMatch(/^MIT licensed\./);
   });
 
-  it("keeps OpenSourcePosture and README license copy free of em dashes, internal IDs, and legal advice", () => {
+  it("keeps OpenSourcePosture, trust-signals, and README license copy free of em dashes, internal IDs, and legal advice", () => {
     expect(COMPONENT_SOURCE).not.toContain("\u2014");
     expect(COMPONENT_SOURCE).not.toMatch(/#\d+\b/);
+    expect(TRUST_SIGNALS_SOURCE).not.toContain("\u2014");
+    expect(TRUST_SIGNALS_SOURCE).not.toMatch(/#\d+\b/);
 
     const readmeLicense = README_SOURCE.slice(
       README_SOURCE.indexOf("## License"),
@@ -66,7 +86,7 @@ describe("open-source and dependency license posture", () => {
     expect(readmeLicense).not.toContain("\u2014");
     expect(readmeLicense).not.toMatch(/#\d+\b/);
 
-    const lowerSource = COMPONENT_SOURCE.toLowerCase();
+    const lowerSource = `${COMPONENT_SOURCE}\n${TRUST_SIGNALS_SOURCE}`.toLowerCase();
     for (const forbidden of [
       "legal advice",
       "legally compliant",

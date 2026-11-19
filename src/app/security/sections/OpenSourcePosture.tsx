@@ -4,7 +4,7 @@ const openSource = [
   "Verification integrator library (@entros/verify), pure MIT using only MIT @noble/curves and @noble/hashes with zero GPL-3.0 dependencies",
   "Executor gateway (executor-node), MIT",
   "Website and documentation (entros.io), MIT first-party source",
-  "ZK circuits (circuits): Entros-authored source and keys are MIT, while compiled artifacts include circomlib (GPL-3.0) templates and tooling uses snarkjs and circom (GPL-3.0)",
+  "ZK circuits (circuits): Entros-authored source is MIT, while compiled artifacts include circomlib (GPL-3.0) templates and tooling uses snarkjs and circom (GPL-3.0)",
   "Client SDK (@entros/pulse-sdk): Entros-authored source is MIT, and dist/ loads snarkjs and pitchfinder (GPL-3.0) via runtime dynamic import() without bundling them",
   "Security program results and baseline adversarial suite in pulse-sdk",
 ];
@@ -31,8 +31,10 @@ export function OpenSourcePosture() {
 
         <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
           Entros-authored source in our public repositories carries the MIT
-          License. Compiled circuits and runtime SDK dependencies carry GPL-3.0
-          terms. The private validation service and red-team harness stay closed.
+          License. Compiled circuit artifacts include circomlib (GPL-3.0)
+          templates, and @entros/pulse-sdk loads snarkjs and pitchfinder
+          (GPL-3.0) via dynamic import(). The private validation service and
+          red-team harness stay closed.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-px border border-border bg-border lg:grid-cols-2">

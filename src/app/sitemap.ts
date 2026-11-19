@@ -2,14 +2,25 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { source } from "@/lib/source";
 
-// Update when content meaningfully changes site-wide. Per-request `new Date()`
-// makes Google ignore lastModified entirely.
-const LAST_MODIFIED = "2026-09-19";
+// Deterministic fallback date for marketing routes and for docs pages built
+// from shallow clones where Git exposes no prior history. Never call
+// `new Date()` per request because a moving timestamp is ignored by crawlers.
+export const SITE_LAST_MODIFIED = "2026-11-19";
+
+export function formatSitemapDate(
+  value?: Date | string | number | null,
+): string {
+  if (value == null) return SITE_LAST_MODIFIED;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return SITE_LAST_MODIFIED;
+  return date.toISOString().slice(0, 10);
+}
 
 type Entry = {
   path: string;
   changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
   priority: number;
+  lastModified?: string;
 };
 
 const entries: Entry[] = [
@@ -17,6 +28,7 @@ const entries: Entry[] = [
   { path: "/solutions", changeFrequency: "weekly", priority: 0.9 },
   { path: "/technology", changeFrequency: "weekly", priority: 0.9 },
   { path: "/security", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/compare", changeFrequency: "monthly", priority: 0.8 },
   { path: "/paper", changeFrequency: "monthly", priority: 0.8 },
   { path: "/token", changeFrequency: "monthly", priority: 0.7 },
   { path: "/integrate", changeFrequency: "monthly", priority: 0.8 },
@@ -32,19 +44,22 @@ const entries: Entry[] = [
 ];
 
 // Docs paths come from the tree, never from a list here. A hand-kept list drops
-// a page the moment someone adds one, which is how all 31 of them stayed out of
-// this file. Keep `entries` free of `/docs` paths: a test enforces one url each.
+// a page the moment someone adds one. Keep `entries` free of `/docs` paths: a
+// test enforces one url each.
 export default function sitemap(): MetadataRoute.Sitemap {
   const docs: Entry[] = source.getPages().map((page) => ({
     path: page.url,
     changeFrequency: "monthly",
     priority: page.url === "/docs" ? 0.8 : 0.6,
+    lastModified: formatSitemapDate(page.data.lastModified),
   }));
 
-  return [...entries, ...docs].map(({ path, changeFrequency, priority }) => ({
-    url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
-    lastModified: LAST_MODIFIED,
-    changeFrequency,
-    priority,
-  }));
+  return [...entries, ...docs].map(
+    ({ path, changeFrequency, priority, lastModified }) => ({
+      url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
+      lastModified: lastModified ?? SITE_LAST_MODIFIED,
+      changeFrequency,
+      priority,
+    }),
+  );
 }

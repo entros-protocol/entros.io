@@ -172,18 +172,21 @@ describe("verify signing guidance and SAS isolation", () => {
     }
   });
 
-  it("avoids single-signature claims in /verify page metadata, hero copy, and OG route catalog", () => {
+  it("aligns restored /verify page metadata, hero copy, and OG route catalog", () => {
     const verifyPage = readFileSync(
       path.resolve(__dirname, "../src/app/(app)/verify/page.tsx"),
       "utf8",
     );
     const ogDescription = STATIC_OG_ROUTES["/verify"]?.description ?? "";
+    const expectedDescription =
+      "Verify your wallet on Solana devnet: three short rounds of voice, touch and motion, then one signature.";
 
-    expect(verifyPage).toContain("one on-chain transaction");
-    expect(ogDescription).toContain("one on-chain transaction");
-    for (const source of [verifyPage.toLowerCase(), ogDescription.toLowerCase()]) {
-      expect(source).not.toContain("one signature");
-      expect(source).not.toContain("single signature");
+    expect(verifyPage).toContain(expectedDescription);
+    expect(ogDescription).toBe(expectedDescription);
+    expect(verifyPage).toContain(
+      "Three short rounds, then one signature on Solana devnet.",
+    );
+    for (const source of [verifyPage, ogDescription]) {
       expect(source).not.toContain("—");
     }
   });

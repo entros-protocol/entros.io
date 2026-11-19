@@ -912,6 +912,10 @@ export function VerifyWalletConnected({
         <div className="vc-wallet">
           <WalletConnectButton showDesktopHint={false} />
         </div>
+        <p className="mx-auto max-w-sm text-balance text-xs leading-relaxed text-foreground/50">
+          Backpack fetches on-chain Anchor IDLs to display decoded Entros
+          instruction fields on devnet. Any Solana wallet works here.
+        </p>
       </div>,
       idleFooter,
     );

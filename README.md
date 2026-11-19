@@ -167,4 +167,4 @@ The security taxonomy covers T1 through T8. Public aggregate results currently c
 
 ## License
 
-MIT for each open repository in the organization, subject to its `LICENSE`. The private validation service runs behind the hosted devnet flow and is not published.
+Entros-authored source across public repositories carries the MIT License (`LICENSE`). Compiled `circuits` artifacts include `circomlib` (`GPL-3.0`) templates, and build tooling uses `snarkjs` and `circom` (`GPL-3.0`). `@entros/pulse-sdk` loads `snarkjs` and `pitchfinder` (`GPL-3.0`) via runtime dynamic `import()` without bundling them into `dist/`. `@entros/verify` uses only `MIT` `@noble/curves` and `@noble/hashes` with zero `GPL-3.0` dependencies. The private validation and red-team repositories stay closed.

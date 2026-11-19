@@ -5,7 +5,6 @@ import {
   COMPARISON_UPDATED,
   MODALITY_ROWS,
   POLICY_BOUNDARIES,
-  REGULATORY_DESIGN_CONTEXT,
   VENDOR_SCOPE_ROWS,
   type PrimarySource,
 } from "@/data/comparison";
@@ -75,7 +74,6 @@ export default function ComparePage() {
               { href: "#policy-boundaries", label: "Policy boundaries" },
               { href: "#vendors", label: "Dated vendor scope" },
               { href: "#explainers", label: "Integration notes" },
-              { href: "#context-anatomical-storage", label: "Design context" },
             ].map((item) => (
               <a
                 key={item.href}
@@ -430,35 +428,6 @@ export default function ComparePage() {
                 )}
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Structural design context (Spain AEPD GDPR Article 9) */}
-      <section
-        id={REGULATORY_DESIGN_CONTEXT.id}
-        className="scroll-mt-24 border-t border-border"
-      >
-        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <div className="border border-border bg-surface p-6 md:p-8">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-display text-xl font-normal tracking-tight text-foreground md:text-2xl">
-                {REGULATORY_DESIGN_CONTEXT.title}
-                <span className="text-cyan">.</span>
-              </h2>
-              <span className="font-mono text-xs text-foreground/55">
-                Checked {REGULATORY_DESIGN_CONTEXT.checked}
-              </span>
-            </div>
-            <p className="mt-4 max-w-4xl text-sm leading-relaxed text-foreground/80">
-              {REGULATORY_DESIGN_CONTEXT.body}
-            </p>
-            <p className="mt-3 max-w-4xl text-xs leading-relaxed text-foreground/60">
-              {REGULATORY_DESIGN_CONTEXT.disclaimer}
-            </p>
-            <div className="mt-4">
-              <SourceLink source={REGULATORY_DESIGN_CONTEXT.source} />
-            </div>
           </div>
         </div>
       </section>

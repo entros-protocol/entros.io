@@ -41,6 +41,7 @@ const BANNED_COPY_PATTERNS: ReadonlyArray<{
     rule: "no-invented-entros-eer",
     pattern: /\bentros\b[^.\n]{0,40}\b(0\.27%|99\.71%|sub-1%\s+eer)\b/i,
   },
+  { rule: "no-public-telemetry-wording", pattern: /\btelemetry\b/i },
 ];
 
 export function validatePublicCopy(text: string): CopyViolation[] {

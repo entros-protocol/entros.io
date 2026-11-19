@@ -41,7 +41,7 @@ export const DEFAULT_DATA_EGRESS_DATA: DataEgressData = {
         "Client signals, capture timing, wallet address, session digest, commitment, and wallet-signed authorization",
       ],
       boundaryNote:
-        "Entros is not RAM-only. Keyed session hashes, abuse windows, and redacted telemetry can persist per entros.io/privacy.",
+        "Entros is not RAM-only. Keyed session hashes, abuse windows, and redacted service logs can persist per entros.io/privacy.",
     },
     {
       id: "solana-devnet",

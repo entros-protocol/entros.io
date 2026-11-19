@@ -53,7 +53,8 @@ export const PROVER_BENCHMARK_DATA: BenchmarkCardData = {
       valueLabel: "1,153 to 1,211 B (<= 1,232 B cap)",
       barPercent: 98,
       denominator: "256 B proof / 1,232 B Solana packet cap",
-      scopeNote: "Fits within 200,000 CU (~182,978 CU measured on devnet path).",
+      scopeNote:
+        "145,047 CU on live devnet 5-ix update (slot 515082051), under 200,000 CU. Multi-KiB proofs exceed 1,232 B.",
     },
   ],
   methodologyNote:
@@ -116,7 +117,7 @@ export const ANTISPOOF_TWOSIDED_BENCHMARK_DATA: BenchmarkCardData = {
     },
   ],
   methodologyNote:
-    "Frozen-PCM regressions and fresh neural generators are reported separately. Entros has no measured population EER or ROC curve today.",
+    "Frozen-PCM regressions and fresh neural generators stay separate. Entros has no measured population EER or ROC curve today.",
   provenance: {
     subject: "Two-sided human and adversarial speech and procedural evaluation strata",
     sourceRecord: "Entros Security Program and Claims Register (2026-10-26 evidence record)",

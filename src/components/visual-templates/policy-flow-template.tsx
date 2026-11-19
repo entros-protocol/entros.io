@@ -42,7 +42,7 @@ export const DEFAULT_POLICY_FLOW_DATA: PolicyFlowData = {
       costLabel: "~0.005 SOL / 3 rounds",
       steps: [
         "Missing, stale, or below-floor evidence triggers three paired speech-and-trace rounds",
-        "Browser extracts 308 features and generates a 256-byte Groth16 proof locally",
+        "Browser extracts 308 features and generates a 256-byte Groth16 proof on the device",
         "Wallet submits validator receipt and proof to update IdentityState on devnet",
       ],
       timestampRule:
@@ -61,13 +61,13 @@ export const DEFAULT_POLICY_FLOW_DATA: PolicyFlowData = {
   ],
   provenance: {
     subject: "Integrator Policy v1 warm reuse and step-up flow",
-    sourceRecord: "@entros/verify policy.ts and warm-policy.ts (devnet contract)",
+    sourceRecord: "@entros/verify policy.ts and warm-policy.ts (develop)",
     captureVersion: "integrator-policy-v1 / paired-v2",
     cluster: "Solana devnet",
     sampleDenominator: "Protocol contract specification (no population sample)",
     recordedDate: "2026-11-19",
     limitsNote:
-      "Runs on Solana devnet under browser_unattested assurance without trusted sensor provenance. Population uniqueness remains unmeasured.",
+      "Runs on Solana devnet under browser_unattested assurance without trusted sensor provenance. Warm 0 SOL reuse sits on develop pending release. Population uniqueness remains unmeasured.",
   },
 };
 

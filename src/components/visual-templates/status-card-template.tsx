@@ -31,9 +31,9 @@ export const DEFAULT_STATUS_CARD_DATA: StatusCardData = {
       tag: "Devnet live",
     },
     {
-      label: "Integrator Policy v1 and warm reuse",
+      label: "Integrator Policy v1",
       detail:
-        "Versioned server evaluation supporting 0 SOL warm reuse while preserving original verifiedAt timestamps.",
+        "Versioned server evaluation checking score floor, verification age, assurance tier, and attestation on devnet (0 SOL warm reuse staged on develop).",
       tag: "Devnet live",
     },
     {

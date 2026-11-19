@@ -162,6 +162,8 @@ describe("visual-template rendering and disclosures", () => {
     expect(html).toContain("Groth16 proof");
     expect(html).toContain("IdentityState");
     expect(html).toContain("SAS attestation");
+    expect(html).toContain("redacted service logs");
+    expect(html).not.toMatch(/telemetry/i);
     expect(html).not.toMatch(/no data leaves/i);
   });
 
@@ -185,6 +187,9 @@ describe("visual-template rendering and disclosures", () => {
     expect(proverHtml).toContain("229.3 ms median");
     expect(proverHtml).toContain("256 B proof");
     expect(proverHtml).toContain("1,232 B");
+    expect(proverHtml).toContain("145,047 CU");
+    expect(proverHtml).toContain("slot 515082051");
+    expect(proverHtml).not.toContain("182,978");
 
     const antispoofHtml = renderToStaticMarkup(
       <BenchmarkCardTemplate data={ANTISPOOF_TWOSIDED_BENCHMARK_DATA} />,
@@ -203,6 +208,9 @@ describe("visual-template rendering and disclosures", () => {
     expect(html).toContain('data-status-column="live"');
     expect(html).toContain('data-status-column="roadmap"');
     expect(html).toContain("Live on Solana devnet");
+    expect(html).toContain("Integrator Policy v1");
+    expect(html).toContain("0 SOL warm reuse staged on develop");
+    expect(html).not.toContain("Integrator Policy v1 and warm reuse");
     expect(html).toContain("Phase 2 trusted-setup ceremony");
     expect(html).toContain("Independent external security audit");
     expect(html).toContain("Production key custody and mainnet launch");
@@ -248,6 +256,9 @@ describe("provenance, copy, and template validators", () => {
       0,
     );
     expect(validatePublicCopy("Bot farms pay 78 SOL in fees.").length).toBeGreaterThan(
+      0,
+    );
+    expect(validatePublicCopy("Retains redacted telemetry for 30 days.").length).toBeGreaterThan(
       0,
     );
   });

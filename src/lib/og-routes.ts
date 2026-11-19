@@ -55,7 +55,7 @@ export const STATIC_OG_ROUTES: Readonly<Record<string, StaticOgRouteEntry>> = {
   "/verify": {
     title: "Verify",
     description:
-      "Verify your wallet on Solana devnet: three short rounds of voice, touch and motion, then one signature.",
+      "Verify your wallet on Solana devnet: three short rounds of voice, touch and motion, then one on-chain transaction.",
   },
   "/dashboard": {
     title: "Dashboard",

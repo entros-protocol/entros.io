@@ -6,9 +6,14 @@ import { SiteChrome } from "@/components/layout/site-chrome";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { StructuredData } from "@/components/seo/structured-data";
 import {
+  buildOgImageUrl,
+  OG_CARD_HEIGHT,
+  OG_CARD_WIDTH,
+  OG_DEFAULT_TITLE,
+} from "@/lib/og-card";
+import {
   BRAND_COLOR_DARK,
   BRAND_COLOR_LIGHT,
-  OG_IMAGE_PATH,
   SITE_NAME,
   SITE_URL,
   TWITTER_HANDLE,
@@ -44,11 +49,16 @@ const wordmark = JetBrains_Mono({
   display: "swap",
 });
 
-const ROOT_TITLE = `Private human verification | ${SITE_NAME}`;
+const ROOT_TITLE = `${OG_DEFAULT_TITLE} | ${SITE_NAME}`;
 const ROOT_DESCRIPTION =
   "Private human verification. Verify your wallet in three short rounds. Raw motion and touch stay on your device.";
 const SOCIAL_DESCRIPTION =
   "Private human verification. Three short rounds put an Entros Anchor on your wallet, and any Solana app can read it for free.";
+const ROOT_OG_IMAGE_URL = buildOgImageUrl({
+  title: OG_DEFAULT_TITLE,
+  description: SOCIAL_DESCRIPTION,
+  path: "/",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -82,26 +92,20 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: OG_IMAGE_PATH,
-        width: 500,
-        height: 500,
-        alt: SITE_NAME,
+        url: ROOT_OG_IMAGE_URL,
+        width: OG_CARD_WIDTH,
+        height: OG_CARD_HEIGHT,
+        alt: ROOT_TITLE,
       },
     ],
   },
   twitter: {
-    // Use the small-square "summary" card layout instead of
-    // "summary_large_image" so every path on the site renders the same
-    // compact card (square logo on the left, title + description on the
-    // right). The wide hero card was inconsistent with how child paths
-    // (/verify, /docs, etc.) rendered without their own twitter:image,
-    // and squeezed the logo into a 4:3 box that looked broken.
-    card: "summary",
+    card: "summary_large_image",
     title: ROOT_TITLE,
     description: SOCIAL_DESCRIPTION,
     site: TWITTER_HANDLE,
     creator: TWITTER_HANDLE,
-    images: [OG_IMAGE_PATH],
+    images: [ROOT_OG_IMAGE_URL],
   },
   robots: {
     index: true,

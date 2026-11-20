@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
+import { EntrosMark } from "@/components/layout/entros-mark";
+import { verificationFocusRing } from "@/components/verify/verification-styles";
 import { TWITTER_HANDLE, TWITTER_URL } from "@/lib/site";
 
 /**
@@ -26,23 +28,26 @@ export function TokenLaunchCard() {
 
   const copy = () => {
     if (!live) return;
-    navigator.clipboard.writeText(CONTRACT_ADDRESS);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard
+      ?.writeText(CONTRACT_ADDRESS)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => undefined);
   };
 
   return (
     <div className="mx-auto mt-10 w-full max-w-xl">
-      {/* Collaboration lockup. EasyA's mark and wordmark treatment match
-          their own header (#52FFA1 tile, bold tracking-tight); the Entros
-          side mirrors the navbar wordmark, cyan square included. */}
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 sm:gap-x-5">
-        <span className="flex items-center gap-2.5">
+      {/* Collaboration lockup pairing the EasyA Kickstart mark with the
+          whole-pixel 18px EntrosMark lockup. */}
+      <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2 sm:gap-x-5 sm:gap-y-3">
+        <span className="flex items-center gap-2 sm:gap-2.5">
           <svg
             viewBox="0 0 1024 1024"
             fill="none"
             aria-hidden="true"
-            className="h-6 w-6 shrink-0 rounded-[5px] sm:h-7 sm:w-7"
+            className="h-5 w-5 shrink-0 rounded-[4px] sm:h-7 sm:w-7 sm:rounded-[5px]"
           >
             <rect width="1024" height="1024" fill="#52FFA1" />
             <path
@@ -50,7 +55,7 @@ export function TokenLaunchCard() {
               fill="black"
             />
           </svg>
-          <span className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+          <span className="text-base font-bold tracking-tight text-foreground sm:text-xl">
             EasyA Kickstart
           </span>
         </span>
@@ -64,10 +69,10 @@ export function TokenLaunchCard() {
             fontFamily:
               "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
           }}
-          className="inline-flex items-baseline text-lg tracking-tight text-foreground sm:text-xl"
+          className="inline-flex items-center text-base tracking-tight text-foreground sm:text-xl"
         >
-          Entros
-          <span aria-hidden className="ml-1 inline-block size-[4px] bg-cyan" />
+          <EntrosMark className="mr-1.5 size-[18px] shrink-0" />
+          <span>Entros</span>
         </span>
       </div>
 
@@ -121,12 +126,7 @@ export function TokenLaunchCard() {
           onClick={copy}
           disabled={!live}
           aria-label={copied ? "Contract address copied" : "Copy contract address"}
-          className="
-            flex w-[68px] shrink-0 items-center justify-center self-stretch
-            border-l border-border bg-foreground text-background
-            transition-colors hover:bg-foreground/90
-            disabled:cursor-not-allowed disabled:bg-foreground/25
-          "
+          className={`flex w-[68px] shrink-0 items-center justify-center self-stretch border-l border-border bg-foreground text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:bg-foreground/25 ${verificationFocusRing}`}
         >
           {copied ? (
             <Check className="h-4 w-4" strokeWidth={2} />

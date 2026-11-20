@@ -67,8 +67,8 @@ export function Navbar() {
        light mode keeps them flat so no dark halo sits on the cream. */
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50 pt-2.5 md:pt-3">
       <div className="pointer-events-auto mx-auto flex max-w-7xl items-center gap-2.5 px-6 md:gap-3">
-        {/* White strip: wordmark, then links pushed left to free right-hand room */}
-        <div className="flex h-[46px] min-w-0 flex-1 items-center bg-foreground px-5 dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]">
+        {/* Inverted strip: wordmark, then links pushed left to free right-hand room */}
+        <div className="flex h-[46px] min-w-0 flex-1 items-center bg-foreground px-5 [--verification-focus-ring:#22d3ee] dark:[--verification-focus-ring:#007888] dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]">
           <div className="shrink-0 text-background [&_a]:text-background [&_a]:text-2xl">
             <NavbarWordmark />
           </div>
@@ -160,7 +160,7 @@ export function Navbar() {
           <ArrowRight className="h-4 w-4" />
         </Link>
 
-        <div className="flex h-[46px] items-center bg-foreground px-1 dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)] navbar:hidden [&_button]:text-background">
+        <div className="flex h-[46px] items-center bg-foreground [--verification-focus-ring:#22d3ee] dark:[--verification-focus-ring:#007888] dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)] navbar:hidden [&_button]:text-background">
           <MobileNav />
         </div>
       </div>

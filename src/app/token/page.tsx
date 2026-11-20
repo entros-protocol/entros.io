@@ -40,7 +40,6 @@ export default function Token() {
           </h1>
 
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-            {/* Bound so "revenue." never wraps away from what it belongs to. */}
             Protocol fees today. Validator utility after hardening.
             <br />
             $ENTROS is planned to support staking, capacity, and governance.

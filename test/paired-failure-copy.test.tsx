@@ -290,4 +290,33 @@ describe("paired failure copy", () => {
     expect(container.textContent).toContain("Start a new verification");
     expect(container.querySelector("button")?.textContent).toBe("Try again");
   });
+
+  it("renders honest baseline-mismatch copy with Reset baseline CTA on drift-too-high", async () => {
+    const onResetBaseline = vi.fn();
+    await act(async () => {
+      root.render(
+        <FailedView
+          error="This verification did not match your stored baseline. Try another capture, or reset your baseline if this repeats. Baseline resets carry a 7-day cooldown."
+          failedAt="proving"
+          onReset={vi.fn()}
+          onResetBaseline={onResetBaseline}
+        />,
+      );
+    });
+
+    const text = container.textContent ?? "";
+    expect(text).toContain("This verification did not match your stored baseline.");
+    expect(text).toContain("7-day cooldown");
+    expect(text.match(/7-day cooldown/g)).toHaveLength(1);
+    expect(text).not.toMatch(/rushed|steady|closely match|Hamming|\b96\b|\bbits\b|—/i);
+
+    const resetButton = [...container.querySelectorAll("button")].find(
+      (btn) => btn.textContent === "Reset baseline",
+    );
+    expect(resetButton).toBeDefined();
+    await act(async () => {
+      resetButton!.click();
+    });
+    expect(onResetBaseline).toHaveBeenCalledTimes(1);
+  });
 });

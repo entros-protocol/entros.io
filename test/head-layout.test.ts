@@ -160,7 +160,12 @@ describe("echoLines", () => {
         expect(e.alpha).toBeLessThan(echoes[k - 1]!.alpha);
       }
       const y = (x: number) => e.base - riseAt(head, e.curve, x);
-      for (let x = head.crown; x <= chin; x += 0.5) expect(y(x) - above(x)).toBeGreaterThan(step * 0.7);
+      let minGap = Infinity;
+      for (let x = head.crown; x <= chin; x += 0.5) {
+        const gap = y(x) - above(x);
+        if (gap < minGap) minGap = gap;
+      }
+      expect(minGap).toBeGreaterThan(step * 0.7);
       above = y;
     }
     const last = echoes[echoes.length - 1]!;
@@ -190,7 +195,12 @@ describe("extrusionLines", () => {
         expect(s.alpha).toBeLessThan(slices[k - 1]!.alpha);
       }
       const y = (x: number) => s.base - riseAt(head, s.curve, x);
-      for (let x = head.crown; x <= chin; x += 0.5) expect(y(x) - above(x)).toBeGreaterThan(step * 0.3);
+      let minGap = Infinity;
+      for (let x = head.crown; x <= chin; x += 0.5) {
+        const gap = y(x) - above(x);
+        if (gap < minGap) minGap = gap;
+      }
+      expect(minGap).toBeGreaterThan(step * 0.3);
       above = y;
     }
     const last = slices[slices.length - 1]!;

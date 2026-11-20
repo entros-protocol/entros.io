@@ -96,6 +96,7 @@ export function Footer() {
               <FooterLink href="/integrate">Integrate</FooterLink>
               <FooterLink href="/technology">Technology</FooterLink>
               <FooterLink href="/security">Security</FooterLink>
+              <FooterLink href="/compare">Compare</FooterLink>
             </FooterColumn>
             <FooterColumn title="About">
               <FooterLink href="/manifesto">Manifesto</FooterLink>

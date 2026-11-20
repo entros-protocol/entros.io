@@ -96,6 +96,7 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  agentRules: false,
   // Tree-shake the heavy icon and animation packages so marketing routes
   // only ship the components they actually render. Without this, the
   // entire lucide-react index is bundled even when a page uses three icons.
@@ -104,6 +105,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "motion"],
     optimizeCss: true,
+    agentUpgrade: "security",
   },
   images: {
     // Next 16 allowlists the `quality` prop and silently falls back to 75
@@ -115,15 +117,19 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
     ],
   },
-  // Force Vercel's per-route output tracing to include the OG logo file
-  // in every lambda bundle. The metadata pipeline imports `lib/og.tsx`
-  // (transitively, via Next.js metadata-route discovery on
-  // `app/opengraph-image.tsx` + `app/twitter-image.tsx`), and that module
-  // readFileSyncs the PNG. Without this directive Vercel's tracer drops
-  // the file from dynamic-route lambdas, which then throw ENOENT on first
-  // request — cf. /embed/verify-popup, the only ƒ route in this build.
+  // Force Vercel's per-route output tracing to include runtime OG assets in
+  // the deployed lambda bundles. Dynamic OG routes read the TTF fonts from
+  // `public/fonts` at request time, and metadata routes can reference the logo.
   outputFileTracingIncludes: {
     "/**/*": ["./public/logos/Entros.png"],
+    "/api/og": [
+      "./public/fonts/Geist-Regular.ttf",
+      "./public/fonts/JetBrainsMono-Regular.ttf",
+    ],
+    "/api/og/*": [
+      "./public/fonts/Geist-Regular.ttf",
+      "./public/fonts/JetBrainsMono-Regular.ttf",
+    ],
   },
   turbopack: {
     resolveAlias: {

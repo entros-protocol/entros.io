@@ -14,12 +14,20 @@ export const docs = {
         {
           type: "page" as const,
           path: "index.mdx",
-          data: { title: "Entros Developer Docs", description: "Stub index." },
+          data: {
+            title: "Entros Developer Docs",
+            description: "Stub index.",
+            lastModified: undefined as Date | undefined,
+          },
         },
         {
           type: "page" as const,
           path: "concepts/trust-score.mdx",
-          data: { title: "Trust Score", description: "Stub concept page." },
+          data: {
+            title: "Trust Score",
+            description: "Stub concept page.",
+            lastModified: new Date("2026-10-27T00:49:22.000Z"),
+          },
         },
       ],
     };

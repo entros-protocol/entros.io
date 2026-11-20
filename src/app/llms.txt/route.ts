@@ -69,6 +69,7 @@ its protected action executes.
 - [Integrate](${SITE_URL}/integrate): add verification to an application.
 - [Technology](${SITE_URL}/technology): capture, features, proof, and on-chain state.
 - [Security](${SITE_URL}/security): threat model and current posture.
+- [Compare](${SITE_URL}/compare): modality and dated primary-source vendor scope comparison with explicit limits.
 - [Paper](${SITE_URL}/paper): the research write-up.
 - [Roadmap](${SITE_URL}/roadmap): what is live and what is planned.
 - [Token](${SITE_URL}/token): $ENTROS status and lock records.

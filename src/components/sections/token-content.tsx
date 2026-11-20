@@ -33,7 +33,7 @@ const FLYWHEEL_GLYPHS = [PersonGlyph, FeeGlyph, BuildGlyph, KeyGlyph, NetworkGly
 export function TokenContent() {
   return (
     <>
-      {/* Revenue Flywheel */}
+      {/* Planned Utility Loop */}
       <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-5xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
@@ -401,8 +401,10 @@ export function TokenContent() {
                       {launchDetails.standard}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Fixed supply at genesis, launched through the EasyA
-                      Kickstart bonding curve on Solana.
+                      Fixed supply from the EasyA Kickstart launch on Solana,
+                      with 6 decimals, mint and freeze authorities revoked, and
+                      zero Token-2022 extensions. The identity Entros Anchor
+                      uses a separate Token-2022 NonTransferable mint.
                     </p>
                   </div>
                 </div>
@@ -414,8 +416,9 @@ export function TokenContent() {
                       The treasury is on-chain
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      $ENTROS utility stays separate from the fee until its
-                      mechanisms ship.
+                      Verification runs on Solana devnet today, and $ENTROS
+                      utility stays separate from the fee until its mechanisms
+                      ship.
                     </p>
                   </div>
                 </div>

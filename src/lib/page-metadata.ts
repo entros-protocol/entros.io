@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { CATEGORY_LINE, OG_IMAGE_PATH, SITE_NAME, TWITTER_HANDLE } from "./site";
+import { buildOgImageUrl, OG_CARD_HEIGHT, OG_CARD_WIDTH } from "./og-card";
+import { CATEGORY_LINE, SITE_NAME, TWITTER_HANDLE } from "./site";
 
 type PageMetadataOptions = {
   title: string;
@@ -8,17 +9,12 @@ type PageMetadataOptions = {
 };
 
 /**
- * Build per-page metadata with canonical and openGraph.url scoped to the page.
- * Without this, Next.js shallow-inherits root openGraph fields, making every
- * page's social share card claim the homepage URL.
+ * Build per-page metadata with canonical, openGraph.url, and a 1200x630
+ * dynamic OG card scoped to the page.
  *
  * Every field the root layout sets on `openGraph` and `twitter` is restated
- * here. Next.js's metadata merge for `openGraph`/`twitter` is non-uniform
- * (some primitives inherit from parent, arrays and several string fields do
- * not), so the only guarantee that per-page social cards match the root is
- * to declare each field explicitly. Title, description, and url come from
- * the caller; siteName, image, twitter card, site, and creator come from
- * the shared site constants so layout.tsx and this helper stay in lockstep.
+ * here because Next.js merges nested metadata objects unevenly across parent
+ * and child segments.
  */
 export function pageMetadata({
   title,
@@ -30,10 +26,17 @@ export function pageMetadata({
   const socialDescription = description.startsWith(CATEGORY_LINE)
     ? description
     : `${CATEGORY_LINE} ${description}`;
+  const ogImageUrl = buildOgImageUrl(path);
+
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: path,
+      types: {
+        "text/plain": "/llms.txt",
+      },
+    },
     openGraph: {
       title: shareTitle,
       description: socialDescription,
@@ -42,20 +45,20 @@ export function pageMetadata({
       type: "website",
       images: [
         {
-          url: OG_IMAGE_PATH,
-          width: 500,
-          height: 500,
-          alt: SITE_NAME,
+          url: ogImageUrl,
+          width: OG_CARD_WIDTH,
+          height: OG_CARD_HEIGHT,
+          alt: shareTitle,
         },
       ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: shareTitle,
       description: socialDescription,
       site: TWITTER_HANDLE,
       creator: TWITTER_HANDLE,
-      images: [OG_IMAGE_PATH],
+      images: [ogImageUrl],
     },
   };
 }

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import sitemap from "@/app/sitemap";
+import { describe, expect, it, vi } from "vitest";
+import sitemap, { SITE_LAST_MODIFIED } from "@/app/sitemap";
 import { GET as llmsTxt, dynamic } from "@/app/llms.txt/route";
 
 /**
@@ -18,12 +18,13 @@ async function brief(): Promise<string> {
 }
 
 describe("sitemap", () => {
-  it("lists docs pages alongside the marketing routes", () => {
+  it("lists docs pages alongside the marketing routes and comparison page", () => {
     const urls = sitemap().map((entry) => entry.url);
 
     expect(urls).toContain("https://entros.io/docs");
     expect(urls).toContain("https://entros.io/docs/concepts/trust-score");
     expect(urls).toContain("https://entros.io/technology");
+    expect(urls).toContain("https://entros.io/compare");
   });
 
   it("lists the privacy notice the footer links to", () => {
@@ -38,9 +39,24 @@ describe("sitemap", () => {
     expect(new Set(urls).size).toBe(urls.length);
   });
 
-  it("dates every entry, because an undated entry is ignored", () => {
-    for (const entry of sitemap()) {
-      expect(entry.lastModified).toBeTruthy();
+  it("uses per-page docs dates with deterministic static fallback and never calls new Date()", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2031-04-15T12:00:00.000Z"));
+    try {
+      const entries = sitemap();
+      const byUrl = new Map(entries.map((entry) => [entry.url, entry.lastModified]));
+
+      expect(byUrl.get("https://entros.io/docs/concepts/trust-score")).toBe("2026-10-27");
+      expect(byUrl.get("https://entros.io/docs")).toBe(SITE_LAST_MODIFIED);
+      expect(byUrl.get("https://entros.io/compare")).toBe(SITE_LAST_MODIFIED);
+      expect(byUrl.get("https://entros.io")).toBe(SITE_LAST_MODIFIED);
+
+      for (const entry of entries) {
+        expect(entry.lastModified).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(entry.lastModified).not.toBe("2031-04-15");
+      }
+    } finally {
+      vi.useRealTimers();
     }
   });
 });
@@ -83,10 +99,11 @@ describe("llms.txt", () => {
     expect(body).not.toContain("](/docs");
   });
 
-  it("links the privacy notice", async () => {
+  it("links the privacy notice and modality comparison page", async () => {
     const body = await brief();
 
     expect(body).toContain("](https://entros.io/privacy)");
+    expect(body).toContain("](https://entros.io/compare)");
   });
 
   it("repeats no banned claim", async () => {

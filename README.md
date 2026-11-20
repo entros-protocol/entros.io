@@ -69,7 +69,7 @@ This repo (`entros.io`) is the website, the verification dApp, and the documenta
 | [`circuits`](https://github.com/entros-protocol/circuits) | Groth16 commitment-opening and bounded Hamming-distance circuit. Current source is an unpublished successor to deployed artifacts. |
 | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) | Client SDK: capture → fingerprint → prove → submit. npm [`@entros/pulse-sdk`](https://www.npmjs.com/package/@entros/pulse-sdk) |
 | [`entros-verify`](https://github.com/entros-protocol/entros-verify) | Drop-in popup component. npm [`@entros/verify`](https://www.npmjs.com/package/@entros/verify) |
-| [`executor-node`](https://github.com/entros-protocol/executor-node) | Public gateway: challenges, integrator auth, quotas, validator forwarding, SAS requests, and on-chain relay |
+| [`executor-node`](https://github.com/entros-protocol/executor-node) | Public gateway: challenges, paired-session authorization, integrator auth, quotas, validator forwarding and SAS requests |
 | [`entros-mobile`](https://github.com/entros-protocol/entros-mobile) | Mobile app, in development: capture, native ZK proving via mopro, on-chain submit via Mobile Wallet Adapter |
 | [`entros-mopro`](https://github.com/entros-protocol/entros-mopro) | Native Groth16 prover bindings consumed by `entros-mobile`. Native proof smoke coverage remains planned. |
 | [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) | Devnet voter-weight program. Realms client integration remains planned. |
@@ -167,4 +167,4 @@ The security taxonomy covers T1 through T8. Public aggregate results currently c
 
 ## License
 
-MIT for each open repository in the organization, subject to its `LICENSE`. The private validation service runs behind the hosted devnet flow and is not published.
+Entros-authored source across public repositories carries the MIT License (`LICENSE`). Compiled `circuits` artifacts include `circomlib` (`GPL-3.0`) templates, and build tooling uses `snarkjs` and `circom` (`GPL-3.0`). `@entros/pulse-sdk` loads `snarkjs` and `pitchfinder` (`GPL-3.0`) via runtime dynamic `import()` without bundling them into `dist/`. `@entros/verify` uses only `MIT` `@noble/curves` and `@noble/hashes` with zero `GPL-3.0` dependencies. The private validation and red-team repositories stay closed.

@@ -326,7 +326,7 @@ function ResultRow({ label, value, href }: { label: string; value: string; href?
           type="button"
           onClick={copy}
           aria-label={copied ? `${label} copied` : `Copy ${label.toLowerCase()}`}
-          className={`flex h-7 w-7 items-center justify-center text-foreground/45 transition-colors hover:text-foreground ${verificationFocusRing}`}
+          className={`flex h-9 w-9 items-center justify-center text-foreground/45 transition-colors hover:text-foreground ${verificationFocusRing}`}
         >
           {copied ? <Check className="h-3.5 w-3.5 text-cyan" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
@@ -336,7 +336,7 @@ function ResultRow({ label, value, href }: { label: string; value: string; href?
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`View ${label.toLowerCase()} on Solana Explorer`}
-            className={`flex h-7 w-7 items-center justify-center text-foreground/45 transition-colors hover:text-foreground ${verificationFocusRing}`}
+            className={`flex h-9 w-9 items-center justify-center text-foreground/45 transition-colors hover:text-foreground ${verificationFocusRing}`}
           >
             <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
@@ -382,12 +382,8 @@ export function VerifiedView({
   secondaryActionLabel?: string;
   onSecondaryAction?: () => void;
   /**
-   * False when the verification landed but wrote no portable copy of the
-   * baseline. `undefined` in walletless mode, where none is written at all.
-   *
-   * Worth a line on a success screen because the consequence lands on a
-   * different device, weeks later, with nothing to explain it. 13 of 107
-   * devnet anchors carry an on-chain baseline; the rest found out that way.
+   * False when the verification landed without writing a portable on-chain
+   * copy of the baseline.
    */
   portableBaseline?: boolean;
 }) {
@@ -507,16 +503,9 @@ export function VerifiedView({
 }
 
 /**
- * Per-category hint for soft-rejected verifications. Keyed by the validator's
- * safe reason label (`pulse-sdk` `VerificationResult.reason`). Hint copy
- * intentionally avoids technique names ("phrase content binding", "temporal
- * coupling", "Whisper", "SimHash", etc.) per the public-copy specificity
- * rule—we describe what the user can DO, not what we measured.
- *
- * Typed against the SDK's retryable set rather than `Record<string, string>`,
- * so adding a retryable reason without writing its hint is a compile error.
- * Before, the table and the retry list were two hand-maintained copies and a
- * missing key fell silently through to the generic fallback.
+ * Per-category hints for soft-rejected verifications, keyed exhaustively
+ * against the SDK's retryable reason union so missing entries fail typecheck.
+ * Copy describes user actions without naming internal detection methods.
  */
 
 const SOFT_HINT: Record<RetryableReason, string> = {
@@ -563,7 +552,7 @@ const SOFT_HINT: Record<RetryableReason, string> = {
 };
 
 const SOFT_HINT_FALLBACK =
-  "Something didn't come through cleanly. Give it another shot with natural movement and clear speech.";
+  "That capture was not clear enough. Try again with natural movement and clear speech.";
 
 /** Retry copy for a reason, or the generic line for one the table does not know. */
 export function softHint(reason: string): string {
@@ -690,28 +679,20 @@ function formatWait(seconds: number): string {
   return `${h} hour${h === 1 ? "" : "s"}`;
 }
 
-// Browser-aware recovery copy for the microphone permission-denied surface.
-// Each major browser hides the per-site mic permission control in a different
-// place: Chrome/Edge/Brave (lock icon → site settings), Firefox (shield icon →
-// edit settings), Safari (Settings → Websites → Microphone). UA sniff is
-// fragile in general but acceptable here — only used to render instruction
-// copy, not to gate behavior. Brave/Vivaldi/Opera all UA as Chrome and the
-// Chrome-style instructions match their UIs closely enough.
-function micRecoveryFootnote(): string {
+// Browser-aware instructions for re-enabling microphone permission.
+export function micRecoveryFootnote(): string {
   if (typeof navigator === "undefined") {
     return "Allow microphone access in your browser, then refresh and try again.";
   }
   const ua = navigator.userAgent.toLowerCase();
-  // Firefox iOS uses "FxiOS" rather than "firefox" in its UA token; treat
-  // both as the Firefox surface so iOS Firefox users see Firefox-shaped
-  // recovery copy instead of the Chrome fallback.
+  // Firefox on iOS uses the FxiOS user-agent token.
   if (ua.includes("firefox") || ua.includes("fxios")) {
-    return "In Firefox, click the shield icon in the address bar → Edit settings → set Microphone to Allow. Then refresh this page.";
+    return "In Firefox, click the shield icon in the address bar, open site settings, and set Microphone to Allow. Then refresh this page.";
   }
   if (ua.includes("safari") && !ua.includes("chrome")) {
-    return "In Safari, open Settings → Websites → Microphone → entros.io → set to Allow. Then refresh this page.";
+    return "In Safari, open Settings, Websites, Microphone, and set entros.io to Allow. Then refresh this page.";
   }
-  return "Click the lock icon in your address bar, set Microphone to Allow, then refresh this page and try again.";
+  return "Click the site settings icon in your address bar, set Microphone to Allow, then refresh this page and try again.";
 }
 
 export function FailedView({
@@ -818,11 +799,6 @@ export function FailedView({
         "No reset needed. Your baseline is fine.";
       break;
     case "no-portable-baseline":
-      // The largest group by far: 13 of 107 devnet anchors carry an on-chain
-      // baseline, so most people who reach a second device were minted before
-      // the feature existed. They used to be told a fingerprint was "not found
-      // on this device", which describes a search that could never have
-      // succeeded and points at a device that was never at fault.
       title = "This anchor predates portable baselines";
       body =
         "Your Entros Anchor was created before baselines were stored on chain, so there is nothing here to restore. Reset once from this device and your baseline becomes recoverable on any device you connect the same wallet to.";
@@ -897,15 +873,11 @@ export function FailedView({
         "Validation rejected this attempt. Please try again, or contact support if this persists.";
       break;
     case "insufficient-sol":
-      // TODO: This copy and CTA are devnet-specific. On mainnet, users get
-      // SOL from an exchange, not the faucet, so the body should drop the
-      // "devnet" qualifier and the "Get devnet SOL" button should either
-      // disappear or point to a "How to get SOL" docs page.
       title = "This wallet needs SOL";
       body =
         "Your SOL balance does not cover the protocol fees, account rent and network fees for this verification. Add devnet SOL, then try again.";
       primaryCta = { label: "Get devnet SOL", href: FAUCET_URL };
-      footnote = "Once the airdrop confirms in your wallet, click Try again.";
+      footnote = "Once the devnet SOL arrives in your wallet, click Try again.";
       break;
     case "user-rejection":
       title = "Signature canceled";
@@ -914,7 +886,7 @@ export function FailedView({
     case "stale-blockhash":
       title = "Network was slow";
       body =
-        "Your transaction expired before reaching Solana. The network was slow—try again.";
+        "Your transaction expired before reaching Solana because the network was slow. Try again.";
       break;
     case "rate-limited":
       if (error.toLowerCase().includes("recently verified") || error.toLowerCase().includes("different wallet")) {
@@ -952,7 +924,7 @@ export function FailedView({
           ? "Your browser blocked motion sensor access. Verification needs your device's motion data during the rounds."
           : "Your browser blocked motion sensor access. Verification needs your device's motion data during capture.";
         footnote =
-          "On iOS, allow motion access when prompted (or in Safari Settings → Privacy → Motion & Orientation Access). Then refresh this page and try again.";
+          "On iOS, allow motion access when prompted, or in Safari Settings under Privacy and Motion and Orientation Access. Then refresh this page and try again.";
       }
       break;
     case "automated-browser":
@@ -962,31 +934,27 @@ export function FailedView({
     case "microphone-too-quiet":
       title = "We couldn't hear you";
       body =
-        "The microphone was active but no voice was detected during the recording. Your mic might be muted, set to the wrong device, or the input volume is too low.";
+        "The microphone was active, but no voice was detected during the recording. Your microphone might be muted, set to the wrong device, or set too low.";
       footnote =
-        "Check your OS sound settings — input device and input volume — then try again.";
+        "Check your device sound settings for the input microphone and volume, then try again.";
       break;
     case "drift-too-high":
       title = "Let's try that again";
-      body =
-        "This capture didn't closely match your usual pattern. That often happens after an interrupted or rushed recording. Try again with a steady, uninterrupted capture.";
-      // A reset is offered here because a rushed recording is not the only way
-      // to land on this screen. A change to the feature pipeline moves every
-      // stored baseline into a space the next capture cannot match, and
-      // nothing upstream detects that: the stored commitment still equals the
-      // on-chain one, so every staleness check passes and the divergence
-      // surfaces only as distance. Without a way out the user reads copy
-      // blaming their recording and retries against a baseline that can never
-      // match again. Projection versioning would let the SDK name this case
-      // instead of leaving it to be inferred here.
+      // Keep the reset note in footnote when Reset baseline is wired so the
+      // concatenated paragraph states the 7-day cooldown once, while callers
+      // without a reset handler still display the full guidance.
       if (failure.canReset && onResetBaseline) {
+        body = "This verification did not match your stored baseline. Try another capture.";
         footnote =
-          "If this keeps happening across several clean attempts, your baseline may predate a pipeline update. Resetting re-enrolls you from scratch.";
+          "If this repeats, reset your baseline to enroll again. Baseline resets carry a 7-day cooldown.";
         secondaryAction = {
           label: "Reset baseline",
           onClick: onResetBaseline,
           tone: "danger",
         };
+      } else {
+        body =
+          "This verification did not match your stored baseline. Try another capture, or reset your baseline if this repeats. Baseline resets carry a 7-day cooldown.";
       }
       break;
     case "generic":

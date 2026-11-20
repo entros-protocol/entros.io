@@ -75,6 +75,11 @@ describe("bucketForResult", () => {
   it("buckets an on-chain revert and a bounds rejection as validation", () => {
     expect(bucketForResult(failure({ failedAt: "confirmation" }))).toBe("validation_failed");
     expect(bucketForResult(failure({ failedAt: "proving" }))).toBe("validation_failed");
+    expect(
+      bucketForResult(
+        failure({ failedAt: "validation", error: "Verification failed", opaque: true }),
+      ),
+    ).toBe("validation_failed");
   });
 
   it("defers to prose for the phases that decide nothing", () => {
@@ -110,6 +115,9 @@ describe("categorizeError", () => {
 
   it("buckets the opaque rejection and the drift ceiling as validation", () => {
     expect(categorizeError("Verification rejected. Please try again.")).toBe("validation_failed");
+    expect(categorizeError("This verification did not match your stored baseline.")).toBe(
+      "validation_failed",
+    );
     expect(categorizeError("This capture didn't closely match your usual pattern.")).toBe(
       "validation_failed",
     );

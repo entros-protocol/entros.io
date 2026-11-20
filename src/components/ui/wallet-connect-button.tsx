@@ -37,18 +37,34 @@ function useMediaQuery(query: string): boolean {
 const subscribeToStaticBrowserValue = () => () => undefined;
 const readAndroidPlatform = () => /Android/i.test(navigator.userAgent);
 const readServerAndroidPlatform = () => false;
+const readMobileUserAgent = () =>
+  /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+const readServerMobileUserAgent = () => false;
+
+/**
+ * True only for mobile devices (mobile user agent, or narrow touch viewport).
+ * Desktop popups such as the 460px embed window have a fine pointer and desktop
+ * UA, so they must not show the "Open on desktop" mobile warning.
+ */
+function useIsMobileDevice(): boolean {
+  const isNarrow = useMediaQuery("(max-width: 768px)");
+  const isCoarsePointer = useMediaQuery("(pointer: coarse)");
+  const isMobileUa = useSyncExternalStore(
+    subscribeToStaticBrowserValue,
+    readMobileUserAgent,
+    readServerMobileUserAgent,
+  );
+  return isMobileUa || (isNarrow && isCoarsePointer);
+}
 
 /**
  * Mobile-only hint. Branches by platform: Android can use the Solana Mobile
- * Wallet Adapter to connect Phantom Mobile, but only if the wallet's
- * Developer Settings → Testnet Mode is on (otherwise the dApp's
- * `chain: "solana:devnet"` request gets silently rejected and the connect
- * flow looks like a dead-end). iOS has no MWA equivalent during devnet, so
- * the original "limited during devnet" copy still holds there.
+ * Wallet Adapter to connect Phantom Mobile when Testnet Mode is on; iOS has
+ * no MWA equivalent during devnet.
  */
 function MobileWalletHint() {
   const { connected } = useWallet();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobileDevice();
   const isAndroid = useSyncExternalStore(
     subscribeToStaticBrowserValue,
     readAndroidPlatform,
@@ -60,11 +76,11 @@ function MobileWalletHint() {
   if (isAndroid) {
     return (
       <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">
-        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" aria-hidden />
         <p className="text-left">
-          On Android: enable Developer Settings in Phantom (Settings →
-          Developer Settings → Testnet Mode → Solana Devnet) before
-          connecting, and fund the wallet from the{" "}
+          On Android: turn on Developer Settings in Phantom (Settings,
+          Developer Settings, Testnet Mode, Solana Devnet) before
+          connecting, and add free SOL from the{" "}
           <a
             href="https://faucet.solana.com/"
             target="_blank"
@@ -81,7 +97,7 @@ function MobileWalletHint() {
 
   return (
     <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">
-      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" aria-hidden />
       <p className="text-left">
         Mobile wallet connection is limited during devnet. Open on desktop for
         the full wallet flow. Native mobile support arrives with the Solana
@@ -97,15 +113,16 @@ function MobileWalletHint() {
  */
 function DevnetHint() {
   const { connected } = useWallet();
-  const isDesktop = useMediaQuery("(min-width: 769px)");
+  const isMobile = useIsMobileDevice();
 
-  if (!isDesktop || connected) return null;
+  if (isMobile || connected) return null;
 
   return (
     <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">
-      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" aria-hidden />
       <p className="text-left">
-        Devnet pilot—switch your wallet to Devnet and grab free SOL from the{" "}
+        Solana Devnet pilot. Switch your wallet to Devnet and add free SOL from
+        the{" "}
         <a
           href="https://faucet.solana.com/"
           target="_blank"

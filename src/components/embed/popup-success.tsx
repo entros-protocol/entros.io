@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { CheckCircle } from "lucide-react";
 
 import { STATE_ICON_CLASS, STATE_ICON_STROKE } from "@/components/verify/console";
 
-// Matches PopupFailure timing for visual symmetry. Long enough for the
-// user to register the confirmation; short enough that the post-12s-capture
-// flow doesn't feel sluggish at the end.
 const CLOSE_DELAY_MS = 2500;
 
 const closePopupWindow = () => {
@@ -16,18 +13,21 @@ const closePopupWindow = () => {
 
 /**
  * Success surface for the popup. Renders a brief confirmation, then closes
- * the window. The verified postMessage is emitted by the parent before
- * this surface mounts; the close is purely UX.
- *
- * `onClose` defaults to a module-stable `window.close` reference so the
- * timeout fires once at `CLOSE_DELAY_MS` regardless of how many times the
- * parent re-renders. Tests can pass a stub.
+ * the window after the verified postMessage has been emitted.
  */
 export function PopupSuccess({
+  detail,
   onClose = closePopupWindow,
 }: {
+  detail?: string;
   onClose?: () => void;
 }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus({ preventScroll: true });
+  }, []);
+
   useEffect(() => {
     const t = setTimeout(onClose, CLOSE_DELAY_MS);
     return () => clearTimeout(t);
@@ -41,11 +41,20 @@ export function PopupSuccess({
         aria-hidden
       />
       <div>
-        <h1 className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground">
+        <h1
+          ref={headingRef}
+          tabIndex={-1}
+          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground outline-none"
+        >
           Verified.
         </h1>
+        {detail && (
+          <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-foreground/75">
+            {detail}
+          </p>
+        )}
         <p className="mt-3 text-sm text-foreground/60">
-          Returning you to the integrator...
+          Returning you to the app...
         </p>
       </div>
       <div className="mx-auto h-[2px] w-40 overflow-hidden bg-foreground/10" aria-hidden>

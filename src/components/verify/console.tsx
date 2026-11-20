@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { X } from "lucide-react";
@@ -160,15 +161,33 @@ export const PRIVACY_LINES = [
   "Commitments and proofs go on chain.",
 ] as const;
 
-export function PrivacyFooter({ lines }: { lines: readonly string[] }) {
+export function PrivacyFooter({
+  lines,
+  showPrivacyLink = true,
+}: {
+  lines: readonly string[];
+  showPrivacyLink?: boolean;
+}) {
   return (
-    <ul className="flex flex-col items-center gap-1 text-center">
-      {lines.map((line) => (
-        <li key={line} className="text-[11px] leading-relaxed text-foreground/50">
-          {line}
-        </li>
-      ))}
-    </ul>
+    <div className="flex flex-col items-center gap-2 text-center">
+      <ul className="flex flex-col items-center gap-1 text-center">
+        {lines.map((line) => (
+          <li key={line} className="text-[11px] leading-relaxed text-foreground/50">
+            {line}
+          </li>
+        ))}
+      </ul>
+      {showPrivacyLink && (
+        <Link
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`inline-flex items-center py-0.5 text-[11px] font-medium text-foreground/75 underline decoration-foreground/35 underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground ${verificationFocusRing}`}
+        >
+          Privacy notice
+        </Link>
+      )}
+    </div>
   );
 }
 
@@ -222,7 +241,7 @@ export function VerifyWalletChip() {
   if (!publicKey) return null;
   const address = publicKey.toBase58();
   return (
-    <div className="inline-flex h-8 items-stretch border border-foreground/12 font-mono text-xs" title={address}>
+    <div className="inline-flex h-10 items-stretch border border-foreground/12 font-mono text-xs" title={address}>
       <span className="inline-flex items-center gap-2 pl-3 pr-2.5 text-foreground/80">
         <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
         {address.length > 10 ? `${address.slice(0, 4)}...${address.slice(-4)}` : address}
@@ -231,7 +250,7 @@ export function VerifyWalletChip() {
         type="button"
         onClick={() => void disconnect?.()}
         aria-label="Disconnect wallet"
-        className={`inline-flex w-8 items-center justify-center border-l border-foreground/12 text-foreground/45 transition-colors hover:text-danger ${verificationFocusRing}`}
+        className={`inline-flex w-10 items-center justify-center border-l border-foreground/12 text-foreground/45 transition-colors hover:text-danger ${verificationFocusRing}`}
       >
         <X className="h-3.5 w-3.5" strokeWidth={2.25} />
       </button>

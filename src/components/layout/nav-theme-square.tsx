@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
+import { verificationFocusRing } from "@/components/verify/verification-styles";
 import { cn } from "@/lib/utils";
 
 const emptySubscribe = () => () => {};
@@ -13,7 +14,7 @@ function useMounted() {
 /** Square theme toggle. It lives in the footer, outlined like the social row. */
 const VARIANTS = {
   footer:
-    "inline-flex h-9 w-9 shrink-0 border border-border text-foreground/70 hover:border-foreground/30 hover:text-foreground",
+    `inline-flex h-11 w-11 shrink-0 border border-border text-foreground/70 hover:border-foreground/30 hover:text-foreground ${verificationFocusRing}`,
 } as const;
 
 export function NavThemeSquare({

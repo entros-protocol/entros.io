@@ -56,8 +56,9 @@ export function MobileNav() {
   return (
     <div className="flex items-center navbar:hidden">
       <button
+        type="button"
         onClick={() => setOpen(!open)}
-        className="flex h-8 w-8 items-center justify-center transition-opacity hover:opacity-70"
+        className="flex h-[46px] w-[46px] items-center justify-center transition-opacity hover:opacity-70"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
       >

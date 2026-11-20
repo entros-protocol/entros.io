@@ -14,7 +14,7 @@ export function CloseButton() {
     <button
       type="button"
       onClick={() => window.close()}
-      className={`flex h-9 w-9 items-center justify-center border border-foreground/12 text-foreground/55 transition-colors hover:border-foreground/40 hover:text-foreground ${verificationFocusRing}`}
+      className={`flex h-11 w-11 items-center justify-center border border-foreground/12 text-foreground/55 transition-colors hover:border-foreground/40 hover:text-foreground ${verificationFocusRing}`}
       aria-label="Close"
     >
       <X className="h-4 w-4" strokeWidth={2} />

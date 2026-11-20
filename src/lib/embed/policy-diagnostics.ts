@@ -8,8 +8,8 @@ import type { PolicyRequest, PolicyResult } from "@entros/verify/policy";
 
 export interface PolicyDiagnostic {
   schemaVersion: 1;
-  stage: "post_submission_policy";
-  sdkVerification: "succeeded";
+  stage: "post_submission_policy" | "warm_policy_reuse";
+  sdkVerification: "succeeded" | "reused";
   walletPubkey: string;
   transactionSignature: string;
   readStartedAtMs: number;

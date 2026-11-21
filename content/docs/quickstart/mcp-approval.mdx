@@ -5,7 +5,7 @@ description: Require a single-use owner-signed AgentPermit before an MCP tool se
 
 `@entros/verify/mcp` wraps `@entros/verify/agent-permit`, `@entros/verify/policy`, and `@entros/verify/solana` into a pause-and-approve gate for Model Context Protocol tool servers, OpenAI `mcp_approval_request` workflows, and HumanLayer callbacks.
 
-**Release status.** `@entros/verify/solana` and `@entros/verify/mcp` are implemented on `develop` for Solana devnet (`0.7.0` npm publication and `mainnet-beta` configuration follow release and mainnet launch gates). Published `@entros/verify@0.6.0` ships the popup component, `@entros/verify/policy`, and `@entros/verify/agent-permit` subpaths today.
+**Release status.** `@entros/verify@0.7.0` is live on npm for Solana devnet and ships the popup component alongside the `@entros/verify/policy`, `@entros/verify/agent-permit`, `@entros/verify/solana`, and `@entros/verify/mcp` subpaths. Mainnet (`mainnet-beta`) configuration follows mainnet launch gates.
 
 ## Install
 
@@ -112,7 +112,7 @@ import {
 
 ## Assurance and scope limits
 
-- **Devnet only today.** Mainnet program IDs and configuration follow release and mainnet launch gates.
+- **Devnet only today.** Mainnet (`mainnet-beta`) program IDs and configuration follow mainnet launch gates.
 - **Original timestamp preserved.** Reusing warm verification evidence or signing a new permit preserves the original `verifiedAt` (`IdentityState.lastVerificationTimestamp`) and never refreshes evidence age.
 - **Authorization, not execution presence.** An owner-signed permit proves wallet control of a registered 8004 agent under `browser_unattested` assurance (`uniqueness: unmeasured`) for one action. It does not prove human presence when the agent executes that action.
 

@@ -7,7 +7,7 @@ An Agent Operator Permit lets your service say yes to an agent for one action.
 The wallet that owns the agent signs it, and only the agent's registered agent wallet can present it.
 Your service checks current ownership and the owner's Entros verification when the action runs.
 
-Permits run on devnet. The [runnable reference consumer](https://github.com/entros-protocol/entros-verify/tree/main/examples/agent-permit) exercises every step with synthetic data.
+Permits run on Solana devnet. Read-only backends can import `readAgentState` and `readIntegratorEvidence` from pure-MIT `@entros/verify/solana` (`@entros/verify@0.7.0` on npm) or from `@entros/pulse-sdk@4.18.1`. The [runnable reference consumer](https://github.com/entros-protocol/entros-verify/tree/main/examples/agent-permit) exercises every step with synthetic data.
 
 ## Why permits
 

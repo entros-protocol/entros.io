@@ -11,13 +11,13 @@ A score lookup supports display. Authorizing a protected action also requires an
 
 ## Evaluate current evidence
 
-Install the released packages (`@entros/verify@0.6.0` and `@entros/pulse-sdk@4.18.0`):
+**Zero-GPL backend path.** `@entros/verify@0.7.0` is live on npm for Solana devnet and ships pure-MIT `@entros/verify/solana`, so read-only backends can install `@entros/verify` alone without `@solana/web3.js`, `@coral-xyz/anchor`, or GPL dependencies. See [Read verification state on Solana](/docs/quickstart/read-trust-score). Mainnet (`mainnet-beta`) configuration follows mainnet launch gates, and swapping `@entros/pulse-sdk` to re-export `@entros/verify/solana` remains upcoming.
+
+For applications pairing Verify with Pulse (`@entros/verify@0.7.0` and `@entros/pulse-sdk@4.18.1`):
 
 ```sh
 npm install @entros/pulse-sdk @entros/verify @solana/web3.js @coral-xyz/anchor
 ```
-
-**Zero-GPL backend path on `develop`.** Pure-MIT `@entros/verify/solana` is implemented on `develop` for Solana devnet so read-only backends can install `@entros/verify` alone once `0.7.0` publishes. See [Read verification state on Solana](/docs/quickstart/read-trust-score).
 
 Keep the RPC connection and policy in server configuration.
 Obtain `walletPubkey` from the authenticated, signed action request.

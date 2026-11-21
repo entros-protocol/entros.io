@@ -6,11 +6,11 @@ description: Read a wallet's Trust Score, SAS attestation, and strict devnet evi
 The Entros Anchor stores a wallet's Trust Score, verification count, and last verification timestamp on Solana devnet.
 Read-only backends can check stored history for display or evaluate strict policy evidence before executing a server action.
 
-**Release status.** `@entros/verify/solana` is implemented on `develop` for Solana devnet (`0.7.0` npm publication and `mainnet-beta` configuration follow release and mainnet launch gates). Published `@entros/verify@0.6.0` ships the React popup, `@entros/verify/policy`, and `@entros/verify/agent-permit` subpaths today. Pair it with published `@entros/pulse-sdk@4.18.0` until `0.7.0` publishes.
+**Release status.** `@entros/verify@0.7.0` and `@entros/pulse-sdk@4.18.1` are live on npm for Solana devnet. `@entros/verify@0.7.0` ships the React popup and the `@entros/verify/policy`, `@entros/verify/agent-permit`, `@entros/verify/solana`, and `@entros/verify/mcp` subpaths. Mainnet (`mainnet-beta`) configuration follows mainnet launch gates, and swapping `@entros/pulse-sdk` to re-export `@entros/verify/solana` remains upcoming.
 
 ## Zero-GPL backend reader
 
-Install `@entros/verify` alone for read-only backends and MCP servers on `develop` (upcoming `0.7.0`).
+Install `@entros/verify@0.7.0` alone for read-only backends and MCP servers on Solana devnet.
 Its runtime dependency graph contains only permissive MIT cryptography (`@noble/curves` and `@noble/hashes`) with zero GPL dependencies and no required `@solana/web3.js` or `@coral-xyz/anchor` install.
 
 ```sh
@@ -62,12 +62,12 @@ export async function evaluateServerEvidence(
 `@entros/verify/solana` also exports `readAgentState`, `findLatestVerificationTransaction`, `decodeIdentityState`, and `readMigrationRecord`.
 It enforces the 2-second slot-time tolerance, 15-second device clock catch-up, and 57-byte `MigrationRecord` checks.
 
-## Published npm fallback
+## Reading with `@entros/pulse-sdk`
 
-Until `@entros/verify@0.7.0` publishes to npm, install `@entros/pulse-sdk@4.18.0` alongside `@solana/web3.js` and `@coral-xyz/anchor` to read devnet state from published packages:
+Applications that install `@entros/pulse-sdk@4.18.1` with `@solana/web3.js` and `@coral-xyz/anchor` for capture or submission can read stored devnet state with `fetchIdentityState`. Re-exporting `@entros/verify/solana` inside `@entros/pulse-sdk` remains an upcoming refactor:
 
 ```sh
-npm install @entros/pulse-sdk@4.18.0 @solana/web3.js @coral-xyz/anchor
+npm install @entros/pulse-sdk@4.18.1 @solana/web3.js @coral-xyz/anchor
 ```
 
 ```ts

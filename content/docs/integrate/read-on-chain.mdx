@@ -11,11 +11,13 @@ A score lookup supports display. Authorizing a protected action also requires an
 
 ## Evaluate current evidence
 
-Install the released packages:
+Install the released packages (`@entros/verify@0.6.0` and `@entros/pulse-sdk@4.18.0`):
 
 ```sh
 npm install @entros/pulse-sdk @entros/verify @solana/web3.js @coral-xyz/anchor
 ```
+
+**Zero-GPL backend path on `develop`.** Pure-MIT `@entros/verify/solana` is implemented on `develop` for Solana devnet so read-only backends can install `@entros/verify` alone once `0.7.0` publishes. See [Read verification state on Solana](/docs/quickstart/read-trust-score).
 
 Keep the RPC connection and policy in server configuration.
 Obtain `walletPubkey` from the authenticated, signed action request.

@@ -1,0 +1,123 @@
+---
+title: Approve MCP agent actions
+description: Require a single-use owner-signed AgentPermit before an MCP tool server resumes a sensitive devnet action.
+---
+
+`@entros/verify/mcp` wraps `@entros/verify/agent-permit`, `@entros/verify/policy`, and `@entros/verify/solana` into a pause-and-approve gate for Model Context Protocol tool servers, OpenAI `mcp_approval_request` workflows, and HumanLayer callbacks.
+
+**Release status.** `@entros/verify/solana` and `@entros/verify/mcp` are implemented on `develop` for Solana devnet (`0.7.0` npm publication and `mainnet-beta` configuration follow release and mainnet launch gates). Published `@entros/verify@0.6.0` ships the popup component, `@entros/verify/policy`, and `@entros/verify/agent-permit` subpaths today.
+
+## Install
+
+Install `@entros/verify` alone. Its runtime dependencies (`@noble/curves` and `@noble/hashes`) are strictly MIT licensed with zero GPL packages and no required `@solana/web3.js` install.
+
+```sh
+npm install @entros/verify
+```
+
+## Pause a tool call and settle once
+
+Bind one server audience, devnet RPC URL, Integrator Policy v1 rules, and an atomic `McpNonceStore`.
+For multi-instance production servers, back `McpNonceStore` with an atomic compare-and-swap store or database transaction (`UPDATE ... WHERE consumed_at IS NULL`).
+
+```ts
+import {
+  createInMemoryNonceStore,
+  createMcpApprovalChallenge,
+  verifyMcpApprovalSettlement,
+} from "@entros/verify/mcp";
+
+const RPC_URL = "https://api.devnet.solana.com";
+const AUDIENCE = "https://mcp.example.com/tools/execute";
+const nonceStore = createInMemoryNonceStore();
+
+export async function pauseToolCall(
+  agentAsset: string,
+  args: Record<string, unknown>,
+) {
+  const challenge = await createMcpApprovalChallenge({
+    actor: { agent: agentAsset },
+    audience: AUDIENCE,
+    action: {
+      server: "treasury",
+      tool: "transfer_devnet_usdc",
+      arguments: args,
+    },
+    policy: {
+      id: "mcp-treasury",
+      version: 1,
+      minTrustScore: 200,
+      maxVerificationAgeSeconds: 3600,
+      maxEvaluationAgeSeconds: 90,
+      requiredAssurance: "browser_unattested",
+      uniquenessRequirement: "allow_unmeasured",
+      requireAttestation: true,
+      cluster: "devnet",
+    },
+    lifetimeSeconds: 300,
+    connection: RPC_URL,
+    nonceStore,
+  });
+
+  return {
+    permitId: challenge.permitId,
+    nonce: challenge.nonce,
+    approvalUrl: challenge.approvalUrl,
+    expiresAt: challenge.expiresAt,
+  };
+}
+
+export async function resumeToolCall(
+  settlementBundle: unknown,
+  args: Record<string, unknown>,
+) {
+  return verifyMcpApprovalSettlement({
+    settlement: settlementBundle,
+    nonceStore,
+    expectedAudience: AUDIENCE,
+    expectedAction: {
+      server: "treasury",
+      tool: "transfer_devnet_usdc",
+      arguments: args,
+    },
+    connection: RPC_URL,
+  });
+}
+```
+
+## Settlement guarantees and refusal behavior
+
+`verifyMcpApprovalSettlement` validates all non-mutating checks before consuming the single-use nonce:
+
+1. Checks settlement shape, pending nonce state, audience, canonical `action.sha256`, subject, actor, permit lifetime (`<= 900` seconds), and strict Ed25519 operator and agent signatures before any RPC call.
+2. Reads live Metaplex Core ownership (`readAgentState`) and current Entros verification evidence (`readIntegratorEvidence`), including the 57-byte `MigrationRecord` check.
+3. Re-samples the server clock after chain reads and evaluates `evaluateAgentPermit` and `evaluatePolicy`.
+4. Atomically consumes the nonce only after every check returns `allow`, so failed attempts never burn a valid pending nonce and concurrent replays settle at most once.
+
+## OpenAI `mcp_approval_request` and HumanLayer callbacks
+
+Use the built-in adapters to map framework payloads directly to canonical action hashes:
+
+```ts
+import {
+  createChallengeFromOpenAiMcpRequest,
+  createHumanLayerApprovalCall,
+  settleOpenAiMcpApproval,
+  verifyHumanLayerApprovalCallback,
+} from "@entros/verify/mcp";
+```
+
+- `createChallengeFromOpenAiMcpRequest` and `settleOpenAiMcpApproval` verify OpenAI `mcp_approval_request` tool names and JSON arguments and emit a ready-to-send `mcp_approval_response`.
+- `createHumanLayerApprovalCall` and `verifyHumanLayerApprovalCallback` wrap HumanLayer pause payloads and verify `approved: true`, `spec.kwargs`, and the Entros settlement bundle before resuming.
+
+## Assurance and scope limits
+
+- **Devnet only today.** Mainnet program IDs and configuration follow release and mainnet launch gates.
+- **Original timestamp preserved.** Reusing warm verification evidence or signing a new permit preserves the original `verifiedAt` (`IdentityState.lastVerificationTimestamp`) and never refreshes evidence age.
+- **Authorization, not execution presence.** An owner-signed permit proves wallet control of a registered 8004 agent under `browser_unattested` assurance (`uniqueness: unmeasured`) for one action. It does not prove human presence when the agent executes that action.
+
+## Next steps
+
+- [Read verification state on Solana](/docs/quickstart/read-trust-score)
+- [Agent Operator Permit specification](/docs/integrate/agent-permit)
+- [Protect a server action](/docs/integrate/protected-action)

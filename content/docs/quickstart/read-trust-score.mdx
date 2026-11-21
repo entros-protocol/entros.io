@@ -1,19 +1,74 @@
 ---
-title: Display wallet verification history
-description: Read a wallet's stored Trust Score and verification timestamp for display.
+title: Read verification state on Solana
+description: Read a wallet's Trust Score, SAS attestation, and strict devnet evidence without GPL dependencies.
 ---
 
-The Entros Anchor stores a wallet's Trust Score, verification count, and last verification timestamp.
-Use this lookup for a badge, account view, or verification history display.
-It does not authorize a protected action.
+The Entros Anchor stores a wallet's Trust Score, verification count, and last verification timestamp on Solana devnet.
+Read-only backends can check stored history for display or evaluate strict policy evidence before executing a server action.
 
-## Install
+**Release status.** `@entros/verify/solana` is implemented on `develop` for Solana devnet (`0.7.0` npm publication and `mainnet-beta` configuration follow release and mainnet launch gates). Published `@entros/verify@0.6.0` ships the React popup, `@entros/verify/policy`, and `@entros/verify/agent-permit` subpaths today. Pair it with published `@entros/pulse-sdk@4.18.0` until `0.7.0` publishes.
+
+## Zero-GPL backend reader
+
+Install `@entros/verify` alone for read-only backends and MCP servers on `develop` (upcoming `0.7.0`).
+Its runtime dependency graph contains only permissive MIT cryptography (`@noble/curves` and `@noble/hashes`) with zero GPL dependencies and no required `@solana/web3.js` or `@coral-xyz/anchor` install.
 
 ```sh
-npm install @entros/pulse-sdk @solana/web3.js @coral-xyz/anchor
+npm install @entros/verify
 ```
 
-## Read the stored state
+Pass a Solana devnet RPC URL string, a custom `fetch` config, or a duck-typed `Connection` instance.
+
+```ts
+import { evaluatePolicy, normalizePolicyRequest } from "@entros/verify/policy";
+import {
+  readIntegratorEvidence,
+  verifyEntrosAttestation,
+} from "@entros/verify/solana";
+
+const RPC_URL = "https://api.devnet.solana.com";
+
+export async function readDisplayAttestation(walletPubkey: string) {
+  return verifyEntrosAttestation(walletPubkey, RPC_URL);
+}
+
+export async function evaluateServerEvidence(
+  walletPubkey: string,
+  transactionSignature: string,
+) {
+  const policy = normalizePolicyRequest({
+    id: "claim-access",
+    version: 1,
+    minTrustScore: 100,
+    maxVerificationAgeSeconds: 300,
+    maxEvaluationAgeSeconds: 90,
+    requiredAssurance: "browser_unattested",
+    uniquenessRequirement: "allow_unmeasured",
+    requireAttestation: false,
+    cluster: "devnet",
+  });
+
+  const observation = await readIntegratorEvidence({
+    walletPubkey,
+    transactionSignature,
+    connection: RPC_URL,
+    nowSeconds: () => Math.floor(Date.now() / 1000),
+  });
+
+  return evaluatePolicy(policy, observation, Math.floor(Date.now() / 1000));
+}
+```
+
+`@entros/verify/solana` also exports `readAgentState`, `findLatestVerificationTransaction`, `decodeIdentityState`, and `readMigrationRecord`.
+It enforces the 2-second slot-time tolerance, 15-second device clock catch-up, and 57-byte `MigrationRecord` checks.
+
+## Published npm fallback
+
+Until `@entros/verify@0.7.0` publishes to npm, install `@entros/pulse-sdk@4.18.0` alongside `@solana/web3.js` and `@coral-xyz/anchor` to read devnet state from published packages:
+
+```sh
+npm install @entros/pulse-sdk@4.18.0 @solana/web3.js @coral-xyz/anchor
+```
 
 ```ts
 import { Connection } from "@solana/web3.js";
@@ -34,19 +89,20 @@ export async function readVerificationHistory(walletPubkey: string) {
 ```
 
 A `null` result can mean missing state or a failed lookup. Do not label every null result as a wallet that never verified.
-The returned score describes stored wallet history. It does not establish unique personhood or trusted sensor provenance.
+The returned score describes stored wallet history under `browser_unattested` assurance. It does not establish unique personhood or trusted sensor provenance.
 RPC providers can apply their own pricing and request limits. Entros does not charge an integrator fee for reading on-chain state.
 
 ## Protect an action
 
 For a claim, vote, or protected server operation, authenticate a signed action request and evaluate current evidence where the action executes.
-Use the strict reader and policy evaluator described in [Read verification evidence](/docs/integrate/read-on-chain).
+Use the strict reader and policy evaluator described in [Read verification evidence](/docs/integrate/read-on-chain), or require a single-use owner permit for agent tool calls in [Approve MCP agent actions](/docs/quickstart/mcp-approval).
 
 The [protected-action example](/docs/integrate/protected-action) demonstrates action binding, current evidence checks, and one-use nonces with synthetic fixtures.
 A client-side badge or route guard cannot replace those checks.
 
 ## Next steps
 
+- [Approve MCP agent actions](/docs/quickstart/mcp-approval)
 - [Show a Trust Score badge](/docs/integrate/show-a-badge)
 - [Gate a route's display](/docs/integrate/gate-a-route)
 - [Verification flow and application policy](/docs/integrate/verification-flow)

@@ -6,9 +6,8 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import { GithubMark } from "./github-mark";
 
 /**
- * The menu opens as a sheet under the nav strip, square-cornered and
- * shadowed like the other floating blocks. Links sit in two columns per
- * group so the whole tree fits without scrolling on a phone.
+ * The menu opens as a surface-stepped square sheet under the nav strip.
+ * Links sit in two columns per group so the tree fits without scrolling on a phone.
  */
 const sections = [
   {
@@ -17,24 +16,16 @@ const sections = [
       { label: "How It Works", href: "/technology" },
       { label: "Security Program", href: "/security" },
       { label: "Roadmap", href: "/roadmap" },
-      { label: "Paper", href: "/paper" },
+      { label: "Paper (2026)", href: "/paper" },
+      { label: "Paired Liveness Lab", href: "/lab/paired-liveness" },
     ],
   },
   {
     heading: "Solutions",
     items: [
       { label: "Use Cases", href: "/solutions" },
-      { label: "Integrate", href: "/integrate" },
       { label: "Agent Permits", href: "/agents" },
-      { label: "Governance", href: "/governance" },
-      { label: "Realms Case Study", href: "/case-studies/realms" },
-    ],
-  },
-  {
-    heading: "Protocol",
-    items: [
-      { label: "Token", href: "/token" },
-      { label: "Docs", href: "/docs" },
+      { label: "Integrate", href: "/integrate" },
     ],
   },
 ];
@@ -67,41 +58,29 @@ export function MobileNav() {
 
       {open && (
         <>
-          {/* Scrim. `-z-10` keeps it behind the nav strip while still
-              inside the header's z-50 stacking context, so it dims the
-              page without dimming the bar it hangs from. */}
+          {/* Dimmed backdrop behind the floating bar stacking context. */}
           <button
             type="button"
             aria-label="Close menu"
             onClick={close}
-            className="pointer-events-auto fixed inset-0 -z-10 cursor-default bg-background/70 backdrop-blur-sm"
+            className="pointer-events-auto fixed inset-0 -z-10 cursor-default bg-background/80"
           />
 
           <div className="absolute inset-x-0 top-[66px] px-6">
-            <div className="mx-auto max-h-[calc(100svh-84px)] max-w-7xl overflow-y-auto bg-foreground text-background dark:shadow-[0_10px_34px_rgba(0,0,0,0.3)]">
-              <div className="px-5 py-4">
+            <div className="mx-auto max-h-[calc(100svh-84px)] max-w-7xl overflow-y-auto bg-surface text-foreground">
+              <div className="px-5 py-5">
                 {sections.map((section, i) => (
-                  <div
-                    key={section.heading}
-                    className={
-                      i > 0
-                        ? "mt-3 border-t border-background/10 pt-3"
-                        : undefined
-                    }
-                  >
-                    <span className="block text-xs font-medium text-background/45">
+                  <div key={section.heading} className={i > 0 ? "mt-5" : undefined}>
+                    <span className="block text-xs font-medium text-muted">
                       {section.heading}
                     </span>
-                    {/* Two columns keeps the whole tree on one screen.
-                        13px so the longest label ("Realms Case Study")
-                        still clears a single line in a 120px column. */}
-                    <ul className="mt-1 grid grid-cols-2 gap-x-3">
+                    <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                       {section.items.map((item) => (
                         <li key={item.href}>
                           <Link
                             href={item.href}
                             onClick={close}
-                            className="block py-1.5 text-[13px] font-medium text-background/75 transition-colors hover:text-background"
+                            className="block py-1.5 text-sm font-medium text-foreground transition-colors hover:text-muted"
                           >
                             {item.label}
                           </Link>
@@ -112,29 +91,29 @@ export function MobileNav() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-2 border-t border-background/15 px-5 py-4">
+              <div className="flex items-center gap-2 px-5 pt-2 pb-5">
                 <Link
-                  href="/dashboard"
+                  href="/docs"
                   onClick={close}
                   className="
-                    inline-flex h-10 flex-1 items-center justify-center
-                    border border-background/25 px-2 text-[13px] font-medium
-                    text-background transition-colors hover:bg-background/10
+                    inline-flex h-10 items-center justify-center bg-background
+                    px-4 text-sm font-medium leading-4 text-foreground
+                    transition-colors hover:bg-surface-hover
                   "
                 >
-                  Dashboard
+                  Docs
                 </Link>
                 <Link
-                  href="/verify"
+                  href="/docs/quickstart/mcp-approval"
                   onClick={close}
                   className="
                     inline-flex h-10 flex-1 items-center justify-center gap-1.5
-                    bg-background px-2 text-[13px] font-medium text-foreground
-                    transition-colors hover:bg-background/90
+                    bg-foreground px-3 text-sm font-medium leading-4 text-background
+                    transition-colors hover:bg-foreground/90
                   "
                 >
-                  Verify
-                  <ArrowRight className="h-4 w-4" />
+                  MCP Quickstart
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
                 </Link>
                 <a
                   href="https://github.com/entros-protocol"
@@ -143,11 +122,11 @@ export function MobileNav() {
                   aria-label="Entros on GitHub"
                   className="
                     inline-flex h-10 w-10 shrink-0 items-center justify-center
-                    border border-background/25 text-background
-                    transition-colors hover:bg-background/10
+                    bg-background text-foreground transition-colors
+                    hover:bg-surface-hover
                   "
                 >
-                  <GithubMark className="h-[17px] w-[17px]" />
+                  <GithubMark className="h-4 w-4" />
                 </a>
               </div>
             </div>

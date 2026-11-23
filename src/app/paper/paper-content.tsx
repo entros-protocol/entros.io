@@ -24,7 +24,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
         role="note"
         className="mb-6 bg-surface px-4 py-3 text-sm leading-relaxed text-muted forced-colors:border forced-colors:border-[CanvasText] md:mb-8"
       >
-        <p>
+        <p className="max-w-[62ch]">
           This paper documents Entros&apos;s 2026 browser paired-liveness
           research and stays archived verbatim for citation integrity. See the{" "}
           <Link

@@ -9,6 +9,7 @@ import { EntrosGate } from "@/components/ui/entros-gate";
 import { CodeBlock } from "@/components/ui/code-block";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
+import { DevnetNotice } from "@/components/ui/devnet-notice";
 
 const USAGE_CODE = `import { EntrosGate } from "@/components/ui/entros-gate";
 
@@ -397,6 +398,8 @@ export default function GateDemo() {
           two stacked state cards showing the gate's branching output. */}
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-20 md:pt-40 md:pb-28">
+          <DevnetNotice />
+
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-7">
               <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">

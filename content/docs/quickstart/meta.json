@@ -1,4 +1,4 @@
 {
   "title": "Quickstart",
-  "pages": ["verify-popup", "next-js", "read-trust-score", "mcp-approval"]
+  "pages": ["mcp-approval", "read-trust-score", "verify-popup", "next-js"]
 }

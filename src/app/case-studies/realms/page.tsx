@@ -7,6 +7,7 @@ import {
   CodeGlyph,
   GaugeGlyph,
 } from "@/components/icons/glyphs";
+import { DevnetNotice } from "@/components/ui/devnet-notice";
 import { FactStrip } from "@/components/ui/fact-strip";
 import { pageMetadata } from "@/lib/page-metadata";
 
@@ -106,6 +107,8 @@ export default function RealmsCaseStudy() {
           baseline, closed by a strip of the plugin's status. */}
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 md:pt-40">
+          <DevnetNotice />
+
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-end lg:gap-16">
             <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:col-span-7 lg:text-7xl">
               Verified humans<span className="text-cyan">.</span>

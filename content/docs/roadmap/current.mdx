@@ -1,44 +1,47 @@
 ---
-title: Where the protocol is today
-description: What's live on devnet, what's in npm, what's documented.
+title: Where Entros is today
+description: Live production voice anti-spoofing, published npm packages, Solana devnet maintenance surfaces, and the $ENTROS token record.
 ---
 
-This page describes the current devnet and package surfaces. Mainnet remains future work.
+This page records what runs in production and on Solana devnet today. Commercial Voice Defense APIs, VPC sidecars, and Web2-first AgentPermit v2 remain active development tracks.
 
-## On-chain
-
-| Component | Network | Status |
-| --- | --- | --- |
-| `entros-anchor` program | Devnet | Deployed. Mints and updates Anchor state |
-| `entros-verifier` program | Devnet | Deployed. Verifies the current Groth16 artifact generation |
-| `entros-registry` program | Devnet | Deployed. Stores fee configuration, treasury state, and validator registration scaffolding |
-| `entros-voter-weight` plugin | Devnet | On-chain prototype deployed. Realms client integration remains planned |
-| Agent Operator Permit | Devnet | Pulse reads agent ownership and binds agent wallets. Verify evaluates permits. Owners sign on entros.io/agents |
-| SAS Entros credential and schema | Devnet | Best-effort wallet-bound issuance after successful verification |
-
-## Off-chain
+## Active production and packages
 
 | Component | Status |
 | --- | --- |
-| Pulse SDK on npm | [`@entros/pulse-sdk`](https://www.npmjs.com/package/@entros/pulse-sdk) |
-| Hosted verification dApp | `entros.io/verify` (open to all on devnet) |
-| Private validation service | One team-operated service applies the current policy. Temporal analysis remains research telemetry by default |
-| Public security program | `entros.io/security` publishes scoped T1 through T4b campaign results. T5 remains open |
+| Voice anti-spoofing model | Production validation enforces pinned `v2 AASIST-L` (`131.0 ms` p95 latency, `495.5 MB` RSS, `61.84%` catch rate on unseen neural TTS). |
+| [`@entros/verify`](https://www.npmjs.com/package/@entros/verify) on npm | Live at `@entros/verify@0.7.0`. Pure-MIT `@entros/verify/mcp` canonical action hashing, atomic single-use nonce store, and optional `@entros/verify/solana` chain readers. |
+| [`@entros/pulse-sdk`](https://www.npmjs.com/package/@entros/pulse-sdk) on npm | Live at `@entros/pulse-sdk@4.18.1`. Secondary browser paired-liveness and Solana devnet SDK. |
+| Public security program | `entros.io/security` publishes scoped T1 through T4b adversarial campaign results. T5 remains open. |
+
+## Solana devnet (maintenance)
+
+Solana devnet programs stay deployed and open source. Solana mainnet ceremony, external security audit, and deployment gates remain paused pending customer demand.
+
+| Component | Network | Status |
+| --- | --- | --- |
+| `entros-anchor` program | Devnet | Deployed. Mints and updates Entros Anchor state. |
+| `entros-verifier` program | Devnet | Deployed. Verifies the current Groth16 artifact generation. |
+| `entros-registry` program | Devnet | Deployed. Stores fee configuration, treasury state, and validator registration scaffolding. |
+| `entros-voter-weight` plugin | Devnet | Deployed prototype. Realms client integration remains paused. |
+| Agent Operator Permit (v1) | Devnet | Owners sign single-use wallet permits at `entros.io/agents`. |
+| SAS Entros credential | Devnet | Best-effort wallet-bound issuance after devnet verification. |
+| Paired Liveness Lab | Devnet | Secondary browser showcase at `/lab/paired-liveness` and `/verify`, with `/embed/verify-popup` kept compatible for published packages. |
 
 ## Token
 
-$ENTROS launched through a public fair launch on the EasyA Kickstart bonding curve. It is a standard SPL mint with mint and freeze authority revoked, and it carries no Token-2022 extensions. The identity Anchor is a separate Token-2022 mint using the `NonTransferable` extension, so the two are distinct assets under distinct standards.
+$ENTROS is a fixed-supply SPL mint created on an EasyA Kickstart bonding curve on July 30, 2026. Mint authority and freeze authority are revoked, and the mint carries zero Token-2022 extensions. The devnet Entros Anchor uses a separate Token-2022 mint with the `NonTransferable` extension, so the two assets share no code or state.
 
-The token has no on-chain coupling to verification today. Current verification fees and registry scaffolding use SOL. The roadmap evaluates $ENTROS staking, fee share, and governance after specification, implementation, and audit. See [the token page](/token) for the mint address and mechanism map.
+$ENTROS has zero coupling to Entros security products, API billing, or engineering roadmaps. Earlier concepts for validator staking, capacity tiers, and token governance remain unbuilt and paused alongside Solana mainnet. See [Token Record](/token) for the mint address and public Streamflow lockups.
 
-## Public artefacts
+## Public artifacts
 
-- Research paper, Zenodo DOI 10.5281/zenodo.19517441
-- Open programs and SDK on `github.com/entros-protocol`
+- Research paper, Zenodo DOI `10.5281/zenodo.19517441` (archived at [Paper](/paper))
+- Open programs and SDKs on `github.com/entros-protocol`
 - This documentation site
 
 ## Where to look next
 
-- [Near-term](/docs/roadmap/near-term) - work before mainnet
-- [Medium-term](/docs/roadmap/medium-term) - decentralization and validator economics
-- [Long-term](/docs/roadmap/long-term) - the protocol as public infrastructure
+- [Near-term](/docs/roadmap/near-term): blind voice anti-spoofing, Voice Defense API, and Web2-first AgentPermit v2
+- [Medium-term](/docs/roadmap/medium-term): telephony contact-center sidecars and optional audit anchoring
+- [Long-term](/docs/roadmap/long-term): human-presence and consent firewall invariants

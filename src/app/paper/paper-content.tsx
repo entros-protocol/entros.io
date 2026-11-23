@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -19,6 +20,30 @@ interface PaperContentProps {
 export function PaperContent({ title, meta, body }: PaperContentProps) {
   return (
     <article className="mx-auto max-w-3xl px-6 pt-28 pb-24 md:pt-32 md:pb-32">
+      <div
+        role="note"
+        className="mb-6 bg-surface px-4 py-3 text-sm leading-relaxed text-muted forced-colors:border forced-colors:border-[CanvasText] md:mb-8"
+      >
+        <p className="max-w-[62ch]">
+          This paper documents Entros&apos;s 2026 browser paired-liveness
+          research and stays archived verbatim for citation integrity. See the{" "}
+          <Link
+            href="/roadmap"
+            className="font-medium text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
+          >
+            Roadmap
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/security"
+            className="font-medium text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
+          >
+            Security program
+          </Link>{" "}
+          for active Voice-AI and agent firewall work.
+        </p>
+      </div>
+
       {/* Compact title block—title + small action buttons on
           the right, mono metadata row, hairline divider. Abstract
           visible immediately below. */}

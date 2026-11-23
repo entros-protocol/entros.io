@@ -43,9 +43,14 @@ export const STATIC_OG_ROUTES: Readonly<Record<string, StaticOgRouteEntry>> = {
       "Entros Protocol: Proof-of-Personhood through Temporal Biometric Consistency. Threat model, ZK circuit, on-chain anchoring, and security analysis.",
   },
   "/token": {
-    title: "Token",
+    title: "Token Record",
     description:
-      "Current protocol fees, fair-launch details, and the planned $ENTROS utility roadmap.",
+      "Factual on-chain record for the $ENTROS SPL mint, Streamflow lockups, and separation from Entros security products.",
+  },
+  "/lab/paired-liveness": {
+    title: "Paired Liveness Lab",
+    description:
+      "Experimental Solana devnet paired voice, touch, and motion browser liveness prototype.",
   },
   "/integrate": {
     title: "Integrate",
@@ -75,7 +80,7 @@ export const STATIC_OG_ROUTES: Readonly<Record<string, StaticOgRouteEntry>> = {
   "/roadmap": {
     title: "Roadmap",
     description:
-      "Live on Solana devnet with a published SDK and scoped red-team checks. Hardening, a trusted-setup ceremony, and an external audit precede mainnet.",
+      "Active work on real-time voice liveness and Web2-first AI agent authorization, plus maintenance status for Solana devnet programs.",
   },
   "/press": {
     title: "Press Kit",

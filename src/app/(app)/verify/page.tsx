@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { VerifyFlow } from "@/components/sections/verify-flow";
 import { pageMetadata } from "@/lib/page-metadata";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -67,14 +68,51 @@ export default function Verify() {
     <>
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-12 text-center md:pt-40 md:pb-16">
-          <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-            Verify your wallet<span className="text-cyan">.</span>
+          <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground text-balance md:text-6xl lg:text-7xl">
+            Verify your wallet
+            <span className="text-[var(--verification-accent-text)]">.</span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-balance text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
+          <p className="mx-auto mt-7 max-w-2xl text-balance text-base leading-relaxed text-muted md:mt-8 md:text-lg">
             Three short rounds, then one signature on Solana devnet. Your
             wallet gets an Entros Anchor and a Trust Score.
           </p>
+
+          <div
+            role="note"
+            className="mx-auto mt-8 max-w-2xl bg-surface px-4 py-3 text-left text-sm leading-relaxed text-muted forced-colors:border forced-colors:border-[CanvasText]"
+          >
+            <p>
+              This browser flow also lives in the{" "}
+              <Link
+                href="/lab/paired-liveness"
+                className="font-medium text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
+              >
+                Paired Liveness Lab
+              </Link>
+              .{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                /verify
+              </code>
+              ,{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                /verify?w=
+              </code>
+              , and{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                /embed/verify-popup
+              </code>{" "}
+              stay live for{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                @entros/verify@0.7.0
+              </code>{" "}
+              and{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                @entros/pulse-sdk@4.18.1
+              </code>{" "}
+              compatibility.
+            </p>
+          </div>
         </div>
       </section>
 

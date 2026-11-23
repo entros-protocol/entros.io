@@ -31,15 +31,15 @@ function FooterColumn({ title, children }: { title: string; children: ReactNode 
 }
 
 const SOCIAL = [
-  { label: "Entros on X", href: TWITTER_URL, Mark: XMark, size: "h-[15px] w-[15px]" },
+  { label: "Entros on X", href: TWITTER_URL, Mark: XMark, size: "h-4 w-4" },
   { label: "Entros on Discord", href: DISCORD_URL, Mark: DiscordMark, size: "h-[18px] w-[18px]" },
-  { label: "Entros on GitHub", href: GITHUB_URL, Mark: GithubMark, size: "h-[17px] w-[17px]" },
+  { label: "Entros on GitHub", href: GITHUB_URL, Mark: GithubMark, size: "h-4 w-4" },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-6 pt-16 pb-16 md:pt-20">
+    <footer className="bg-surface">
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-12 md:pt-20">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
             <Link
@@ -56,7 +56,7 @@ export function Footer() {
               <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
               <span aria-hidden>Entros</span>
             </Link>
-            <p className="mt-3 text-sm text-foreground/60">
+            <p className="mt-3 text-sm text-muted">
               Private human verification
             </p>
 
@@ -69,9 +69,11 @@ export function Footer() {
                     rel="noopener noreferrer"
                     aria-label={label}
                     className="
-                      inline-flex h-10 w-10 items-center justify-center
-                      border border-border text-foreground/70
-                      transition-colors hover:border-foreground/30 hover:text-foreground
+                      inline-flex h-11 w-11 items-center justify-center
+                      bg-background text-muted transition-colors duration-150
+                      ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-surface-hover
+                      hover:text-foreground motion-reduce:transition-none
+                      forced-colors:border forced-colors:border-[ButtonText]
                     "
                   >
                     <Mark className={size} />
@@ -83,35 +85,33 @@ export function Footer() {
 
           <nav
             aria-label="Footer"
-            className="grid grid-cols-3 gap-6 sm:gap-10 lg:col-span-7 lg:col-start-6"
+            className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-10 lg:col-span-7 lg:col-start-6"
           >
             <FooterColumn title="Product">
-              <FooterLink href="/verify">Verify</FooterLink>
-              <FooterLink href="/dashboard">Dashboard</FooterLink>
               <FooterLink href="/solutions">Solutions</FooterLink>
-              <FooterLink href="/token">Token</FooterLink>
+              <FooterLink href="/agents">Agent Permits</FooterLink>
+              <FooterLink href="/technology">Technology</FooterLink>
+              <FooterLink href="/security">Security</FooterLink>
             </FooterColumn>
             <FooterColumn title="Build">
               <FooterLink href="/docs">Docs</FooterLink>
               <FooterLink href="/integrate">Integrate</FooterLink>
-              <FooterLink href="/technology">Technology</FooterLink>
-              <FooterLink href="/security">Security</FooterLink>
               <FooterLink href="/compare">Compare</FooterLink>
+              <FooterLink href="/lab/paired-liveness">Paired Liveness Lab</FooterLink>
             </FooterColumn>
             <FooterColumn title="About">
               <FooterLink href="/manifesto">Manifesto</FooterLink>
               <FooterLink href="/paper">Paper</FooterLink>
               <FooterLink href="/roadmap">Roadmap</FooterLink>
+              <FooterLink href="/token">Token Record</FooterLink>
               <FooterLink href="/press">Press</FooterLink>
               <FooterLink href="/privacy">Privacy</FooterLink>
             </FooterColumn>
           </nav>
         </div>
-      </div>
 
-      <div className="border-t border-border">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 pt-6 pb-10">
-          <p className="text-xs text-foreground/50">&copy; 2026 Entros Protocol</p>
+        <div className="mt-16 flex items-center justify-between gap-4 pt-2 pb-2">
+          <p className="text-xs text-muted">&copy; 2026 Entros Protocol</p>
           <NavThemeSquare variant="footer" />
         </div>
       </div>

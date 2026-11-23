@@ -1,55 +1,42 @@
 ---
 title: Near-term
-description: Work before mainnet. The ceremony, the audit, the operational lift, and mainnet deployment.
+description: Blind voice anti-spoofing upgrades, hosted Voice Defense API, VPC sidecar, and Web2-first AgentPermit v2.
 ---
 
-Near-term work runs through three gates before mainnet, in order: the trusted setup ceremony, an external security audit, and the operational lift. The integrator-facing surface area fills out alongside them.
+Near-term engineering focuses on the live human-presence and consent firewall for Voice-AI and autonomous MCP agents. None of the items below are live as commercial SLAs today.
 
-## Trusted setup ceremony
+## Blind voice anti-spoofing and codecs
 
-The deployed verifier and current clients share one artifact generation. The `circuits` source and key directory describe an unpublished successor generation. The ceremony must produce one coordinated artifact set before any consumer changes.
+Production validation enforces the pinned `v2 AASIST-L` model (`131.0 ms` p95 latency, `495.5 MB` RSS, `61.84%` catch rate on unseen neural TTS). Active ML work trains and evaluates a distilled successor under preregistered blind holdout gates.
 
-Multiple participants will contribute entropy in sequence and destroy it after use. The final artifacts will publish with a hash chain. The protocol will rebuild the verifier, web client, mobile client, and native prover against that one generation.
+Evaluation covers `webrtc_16k` and `telephony_8k` codec profiles, unseen neural TTS generators, live voice conversion, and partial splices. Raw un-denoised audio enters the detector without upstream neural denoisers.
 
-## External security audit
+## Hosted Voice Defense API and VPC sidecar
 
-An established Solana audit firm will review the three on-chain programs and proof flow. `entros-registry` currently handles fees, treasury state, and validator registration scaffolding. Validator selection, quorum, rewards, and slashing remain planned.
+The upcoming Voice Defense API will expose streaming WebSocket and HTTP endpoints for live Voice-AI channels. Scoring will run in memory with zero disk persistence and zero default voiceprint database.
 
-The audit precedes mainnet deployment. The final report and safe remediation summaries will become public after fixes land.
+The service will emit calibrated verdicts, operating-profile metadata, and explicit `insufficient_signal` abstention states. A paired INT8 CPU ONNX VPC sidecar will serve teams that keep audio inside their own infrastructure.
 
-Pre-audit hardening runs through an internal security review and the public security program. Findings from internal red-teaming are remediated and re-tested before the external engagement begins.
+## Web2-first AgentPermit v2
 
-## Operational lift
+Active SDK work extends pure-MIT `@entros/verify/mcp` beyond Solana devnet wallets. Planned additions include OIDC and JWT principals, hardware Passkey and WebAuthn step-up approvals, signed voice-liveness binding, tamper-evident compliance receipts, and a Python SDK.
 
-The third gate is a sequence of small items rather than one large one: paid RPC capacity, a hardware-wallet upgrade authority, treasury backup and recovery procedures, monitoring, an incident-response runbook, and a partner integrator on standby for the first live mainnet verification.
+`@entros/verify/solana` stays available as an optional subpath export for Solana devnet compatibility.
 
-## Mainnet deployment
+## Design-partner pilots
 
-After all three gates clear, the three programs can deploy to mainnet. Devnet will remain the development surface. Mainnet program IDs will publish after deployment. Integrators must not assume they match devnet.
+Initial pilots will deploy real-time voice liveness and action-bound MCP authorization on live customer traffic. Pilot measurements will calibrate operating points and deployment guides.
 
-## Standalone display primitives
+## Paused Solana mainnet gates
 
-The verification *trigger* shipped as [`@entros/verify`](/docs/integrate/verification-flow). The React component opens the devnet flow in a popup and returns a result to the opener.
+Pre-mainnet Solana milestones stay paused pending paying customer demand for optional on-chain audit anchoring:
 
-The remaining packaging work is on the *read* primitives. `EntrosGate` (route guard, reading score and recency) and `EntrosBadge` (Trust Score pill) are still copy-source single-file components. The near-term plan is a standalone `@entros/react` package that consolidates them as drop-ins, composing with `@entros/verify` so a gate can run a verification in its own fallback. Until then, the canonical sources live in the entros.io repo and stay in sync with the on-chain layout.
-
-## Native Solana Mobile build
-
-A React Native client exists for Android development. Representative-device testing, app integrity integration, release hardening, and store distribution remain open.
-
-The planned Seeker release uses Mobile Wallet Adapter and device-protected key handling. A future notification path can remind users when an application requires a fresh result.
-
-## Integrator pilots
-
-Three production integrator pilots, one each across the three composability surfaces:
-
-- A Realms DAO using the voter-weight plugin
-- An airdrop or referral protocol using SAS attestations
-- An AI-agent platform gating registrations on operator Trust Score
-
-These pilots inform the threshold-setting documentation and surface real-world edge cases that internal testing misses.
+- Public multi-party trusted-setup ceremony for the Groth16 verifier
+- External security audit of `entros-anchor`, `entros-verifier`, and `entros-registry`
+- Mainnet program deployment and validator network research
+- Native mobile client builds
 
 ## Where to look next
 
-- [Medium-term](/docs/roadmap/medium-term) - work after the audit
-- [How to influence](/docs/roadmap/how-to-influence) - the RFC process
+- [Medium-term](/docs/roadmap/medium-term): telephony contact-center expansion and compliance receipts
+- [How to influence](/docs/roadmap/how-to-influence): the RFC process

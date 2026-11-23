@@ -1,169 +1,149 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
 import { EntrosMark } from "@/components/layout/entros-mark";
 import { verificationFocusRing } from "@/components/verify/verification-styles";
-import { TWITTER_HANDLE, TWITTER_URL } from "@/lib/site";
+import {
+  TOKEN_LAUNCH_ARCHIVE_URL,
+  TOKEN_MINT_ADDRESS,
+  TOKEN_SOLSCAN_URL,
+} from "@/data/token-economics";
 
-/**
- * Contract address for $ENTROS: a standard SPL mint, 6 decimals, with mint
- * and freeze authority both revoked. Leave this empty to return the card to
- * its pre-launch state rather than show an address that cannot be verified.
- */
-const CONTRACT_ADDRESS = "fc7hPCHtpNezg7cAp6UoUksHU6Sy98hEGswf8SSEASY";
-
-/**
- * Public launch page for the token. Empty renders the label muted and
- * non-interactive.
- */
-const TOKEN_URL =
-  "https://kickstart.easya.io/token/fc7hPCHtpNezg7cAp6UoUksHU6Sy98hEGswf8SSEASY";
-
-const EXPLORER_BASE = "https://solscan.io/token/";
+type CopyState = "idle" | "copied" | "error";
 
 export function TokenLaunchCard() {
-  const [copied, setCopied] = useState(false);
-  const live = CONTRACT_ADDRESS.length > 0;
+  const [copyState, setCopyState] = useState<CopyState>("idle");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const copy = () => {
-    if (!live) return;
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (!navigator.clipboard?.writeText) {
+      setCopyState("error");
+      return;
+    }
+
     navigator.clipboard
-      ?.writeText(CONTRACT_ADDRESS)
+      .writeText(TOKEN_MINT_ADDRESS)
       .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setCopyState("copied");
+        timerRef.current = setTimeout(() => {
+          setCopyState("idle");
+          timerRef.current = null;
+        }, 2500);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        setCopyState("error");
+      });
   };
 
   return (
     <div className="mx-auto mt-10 w-full max-w-xl">
-      {/* Collaboration lockup pairing the EasyA Kickstart mark with the
-          whole-pixel 18px EntrosMark lockup. */}
-      <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2 sm:gap-x-5 sm:gap-y-3">
-        <span className="flex items-center gap-2 sm:gap-2.5">
-          <svg
-            viewBox="0 0 1024 1024"
-            fill="none"
-            aria-hidden="true"
-            className="h-5 w-5 shrink-0 rounded-[4px] sm:h-7 sm:w-7 sm:rounded-[5px]"
-          >
-            <rect width="1024" height="1024" fill="#52FFA1" />
-            <path
-              d="M704 512C748.804 512 771.206 512 788.319 503.281C803.372 495.611 815.611 483.372 823.281 468.319C832 451.206 832 428.804 832 384V320C832 275.196 832 252.794 823.281 235.681C815.611 220.628 803.372 208.389 788.319 200.719C771.206 192 748.804 192 704 192H640C595.196 192 572.794 192 555.681 200.719C540.628 208.389 528.389 220.628 520.719 235.681C512 252.794 512 275.196 512 320V385.467C511.999 429.295 511.904 451.394 503.281 468.319C495.611 483.372 483.372 495.611 468.319 503.281C451.206 512 428.805 512 384 512H320C275.196 512 252.794 512 235.681 520.719C220.628 528.389 208.389 540.628 200.719 555.681C192 572.794 192 595.196 192 640V704C192 748.804 192 771.206 200.719 788.319C208.389 803.372 220.628 815.611 235.681 823.281C252.794 832 275.196 832 320 832H384C428.804 832 451.206 832 468.319 823.281C483.372 815.611 495.611 803.372 503.281 788.319C512 771.206 512 748.804 512 704V640C512 595.196 512 572.794 520.719 555.681C528.389 540.628 540.628 528.389 555.681 520.719C572.794 512 595.196 512 640 512H704Z"
-              fill="black"
-            />
-          </svg>
-          <span className="text-base font-bold tracking-tight text-foreground sm:text-xl">
-            EasyA Kickstart
-          </span>
-        </span>
-
-        <span aria-hidden className="text-sm font-light text-foreground/25">
-          &times;
-        </span>
-
+      <div className="flex items-center justify-center gap-3">
         <span
           style={{
             fontFamily:
               "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
           }}
-          className="inline-flex items-center text-base tracking-tight text-foreground sm:text-xl"
+          className="inline-flex items-center text-2xl leading-none tracking-tight text-foreground"
         >
           <EntrosMark className="mr-1.5 size-[18px] shrink-0" />
-          <span>Entros</span>
+          <span className="[text-box:trim-both_cap_alphabetic]">Entros</span>
+        </span>
+        <span className="font-mono text-sm leading-none text-muted [text-box:trim-both_cap_alphabetic]">
+          $ENTROS
         </span>
       </div>
 
-      <div className="mt-4 flex justify-center">
-        {TOKEN_URL ? (
-          <a
-            href={TOKEN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              group inline-flex items-center gap-1.5
-              text-sm font-medium text-foreground
-              underline decoration-cyan/60 underline-offset-4
-              transition-colors hover:decoration-cyan
-            "
-          >
-            Token URL
-            <ArrowUpRight
-              className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-              strokeWidth={2}
-            />
-          </a>
-        ) : (
-          <span className="text-sm font-medium inline-flex items-center gap-1.5 text-foreground">
-            Token URL
-            <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
-          </span>
-        )}
-      </div>
-
-      {/* Address plate. The copy button is flush to the body, sharing the
-          hairline, and inverts with the theme via bg-foreground. */}
-      <div className="mt-6 flex h-[68px] items-stretch overflow-hidden border border-border bg-surface">
+      {/* Surface-stepped contract address plate with flush solid copy control. */}
+      <div className="mt-6 flex min-h-[68px] items-stretch bg-surface forced-colors:border forced-colors:border-[CanvasText]">
         <div className="flex min-w-0 flex-1 flex-col justify-center px-4 py-3 text-left sm:px-5">
-          <span className="text-sm font-medium text-foreground/60">
+          <span className="text-sm font-medium text-muted">
             Contract address
           </span>
-          <span
-            className={
-              live
-                ? "mt-1.5 truncate font-mono text-[13px] text-foreground sm:text-sm"
-                : "mt-1.5 truncate font-mono text-[13px] text-foreground/35 sm:text-sm"
-            }
-          >
-            {live ? CONTRACT_ADDRESS : "Published at launch"}
+          <span className="mt-1 select-all break-all font-mono text-[13px] leading-snug text-foreground sm:text-sm">
+            {TOKEN_MINT_ADDRESS}
           </span>
         </div>
 
         <button
           type="button"
           onClick={copy}
-          disabled={!live}
-          aria-label={copied ? "Contract address copied" : "Copy contract address"}
-          className={`flex w-[68px] shrink-0 items-center justify-center self-stretch border-l border-border bg-foreground text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:bg-foreground/25 ${verificationFocusRing}`}
+          aria-label={
+            copyState === "copied"
+              ? "Contract address copied"
+              : "Copy contract address"
+          }
+          className={`flex w-[68px] shrink-0 items-center justify-center self-stretch bg-foreground text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText] ${verificationFocusRing}`}
         >
-          {copied ? (
-            <Check className="h-4 w-4" strokeWidth={2} />
+          {copyState === "copied" ? (
+            <Check className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
           ) : (
-            <Copy className="h-4 w-4" strokeWidth={1.75} />
+            <Copy className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
           )}
         </button>
       </div>
 
-      <p className="mt-4 text-center text-xs text-foreground/45">
-        {live ? (
-          <>
-            Verify the address before you transact.{" "}
-            <a
-              href={`${EXPLORER_BASE}${CONTRACT_ADDRESS}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground/70 underline decoration-foreground/25 underline-offset-4 transition-colors hover:text-foreground"
-            >
-              View on Solscan
-            </a>
-          </>
-        ) : (
-          <>
-            The address will be published here and on{" "}
-            {/* Bound so the handle and "at launch." share the final line. */}
-            <a
-              href={TWITTER_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="whitespace-nowrap text-foreground/70 underline decoration-foreground/25 underline-offset-4 transition-colors hover:text-foreground"
-            >
-              {TWITTER_HANDLE}
-            </a>
-            &nbsp;at&nbsp;launch.
-          </>
-        )}
+      <p
+        role="status"
+        aria-live="polite"
+        className="mt-2 min-h-[1rem] text-center text-xs text-muted"
+      >
+        {copyState === "copied"
+          ? "Copied contract address."
+          : copyState === "error"
+            ? "Clipboard unavailable. Select the address above to copy manually."
+            : ""}
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+        <a
+          href={TOKEN_SOLSCAN_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`inline-flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground forced-colors:border forced-colors:border-[ButtonText] ${verificationFocusRing}`}
+        >
+          <span className="[text-box:trim-both_cap_alphabetic]">
+            View on Solscan
+          </span>
+          <ArrowUpRight
+            className="h-4 w-4 shrink-0"
+            strokeWidth={2}
+            aria-hidden="true"
+          />
+        </a>
+
+        <a
+          href={TOKEN_LAUNCH_ARCHIVE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`inline-flex items-center gap-1.5 px-2 py-1 text-sm text-muted underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground forced-colors:border forced-colors:border-[ButtonText] ${verificationFocusRing}`}
+        >
+          <span className="[text-box:trim-both_cap_alphabetic]">
+            Historical launch archive
+          </span>
+          <ArrowUpRight
+            className="h-4 w-4 shrink-0"
+            strokeWidth={2}
+            aria-hidden="true"
+          />
+        </a>
+      </div>
+
+      <p className="mt-4 text-center text-xs text-muted">
+        Verify the contract address on Solscan before interacting with any pool.
       </p>
     </div>
   );

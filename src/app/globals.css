@@ -56,8 +56,8 @@
   --verification-surface-end: rgba(0, 0, 0, 0.98);
   --verification-surface-highlight: rgba(255, 255, 255, 0.035);
   --verification-surface-shadow: rgba(0, 0, 0, 0.42);
-  --verification-accent-text: #22d3ee;
-  --verification-focus-ring: #22d3ee;
+  --verification-accent-text: #22D3E6;
+  --verification-focus-ring: #22D3E6;
   --color-panel: rgba(232, 230, 224, 0.06);
   --color-panel-line: transparent;
 }
@@ -209,6 +209,14 @@ body {
    vector-effect does not inherit, so it targets each shape. */
 .entros-glyph :is(path, rect, line, polyline, circle) {
   vector-effect: non-scaling-stroke;
+}
+
+/* Fallback optical nudge for icons beside single-line labels when text-box trim
+   is unsupported. */
+@supports not (text-box: trim-both cap alphabetic) {
+  .optical-icon-nudge {
+    transform: translateY(-0.5px);
+  }
 }
 
 /* Scroll containers take keyboard focus so arrow keys can scroll them. */

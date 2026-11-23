@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { EntrosBadge } from "@/components/ui/entros-badge";
 import { CodeBlock } from "@/components/ui/code-block";
+import { DevnetNotice } from "@/components/ui/devnet-notice";
 
 const COMPONENT_CODE = `"use client";
 
@@ -211,6 +212,8 @@ export default function BadgeDemo() {
           a profile-list mockup showing the badge in real context. */}
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-20 md:pt-40 md:pb-28">
+          <DevnetNotice />
+
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-7">
               <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
@@ -222,7 +225,7 @@ export default function BadgeDemo() {
               <p className="mt-8 max-w-xl text-base leading-relaxed text-foreground/70 md:text-lg">
                 A drop-in React component that displays any wallet's
                 Entros Trust Score. Use in profiles, comments,
-                leaderboards—anywhere humanness matters.
+                leaderboards, anywhere humanness matters.
               </p>
 
               <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

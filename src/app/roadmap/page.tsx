@@ -1,251 +1,166 @@
-import { StepNumber } from "@/components/ui/step-number";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { GaugeGlyph, KeyGlyph, ShieldGlyph, ToolGlyph } from "@/components/icons/glyphs";
-import { cn } from "@/lib/utils";
+import {
+  AgentGlyph,
+  ServerGlyph,
+  ShieldGlyph,
+  VoiceGlyph,
+} from "@/components/icons/glyphs";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
   title: "Roadmap",
   description:
-    "Live on Solana devnet with a published SDK and scoped red-team checks. Hardening, a trusted-setup ceremony, and an external audit precede mainnet.",
+    "Active work on real-time voice liveness and Web2-first AI agent authorization, plus maintenance status for Solana devnet programs.",
   path: "/roadmap",
 });
 
-const gates = [
+const activeTracks = [
   {
-    Icon: GaugeGlyph,
-    label: "Protocol hardening",
-    window: "Ongoing",
+    Icon: VoiceGlyph,
+    label: "Blind voice anti-spoofing and telephony codecs",
+    status: "In progress",
+    active: true,
     description:
-      "Adversarial campaigns test the live pipeline. Controlled studies measure same-wallet drift, cross-wallet separation, device effects, and human completion. Detection layers record evidence before enforcement.",
+      "Production validation enforces the pinned v2 AASIST-L model while Entros trains and evaluates a distilled successor against unseen neural TTS, live voice conversion, partial splices, webrtc_16k, and telephony_8k codecs under preregistered blind holdout gates.",
   },
   {
-    Icon: KeyGlyph,
-    label: "Trusted setup ceremony",
-    window: "Public ceremony",
+    Icon: ServerGlyph,
+    label: "Hosted Voice Defense API and VPC sidecar",
+    status: "Next",
+    active: false,
     description:
-      "Multiple participants will each contribute entropy and destroy it after use. The resulting key will replace the one compiled into entros-verifier. The math holds if one participant is honest about the destruction.",
+      "Streaming WebSocket and HTTP endpoints will score raw un-denoised audio in memory with zero disk persistence, calibrated operating profiles, and explicit insufficient_signal abstention states, paired with an INT8 CPU VPC sidecar.",
+  },
+  {
+    Icon: AgentGlyph,
+    label: "Web2-first AgentPermit v2",
+    status: "Next",
+    active: false,
+    description:
+      "Expanding pure-MIT @entros/verify/mcp with OIDC and JWT principals, Passkey and WebAuthn step-up approvals, signed voice-liveness binding, compliance receipts, and a Python SDK with zero wallet or SOL requirement, while keeping @entros/verify/solana as an optional adapter.",
   },
   {
     Icon: ShieldGlyph,
-    label: "External security audit",
-    window: "Independent audit",
+    label: "Design-partner pilots",
+    status: "Upcoming",
+    active: false,
     description:
-      "An established Solana audit firm will review the three on-chain programs and the proof flow, including the registry's fee, treasury, and validator-registration scaffolding. Remediation summaries publish after fixes land.",
+      "Deploying real-time voice liveness and action-bound MCP authorization on live traffic with initial enterprise and developer partners.",
   },
-  {
-    Icon: ToolGlyph,
-    label: "Operational lift",
-    window: "Launch prep",
-    description:
-      "Paid RPC capacity, a hardware-wallet upgrade authority, treasury backup and recovery, monitoring, an incident-response runbook, and a partner integrator on standby for mainnet launch. Each item is small; they run in sequence.",
-  },
-];
-
-const timeline = [
-  {
-    window: "May 2026",
-    title: "Devnet pilot live",
-    body: "The pilot is open at entros.io/verify. The SDK attempts a wallet-bound SAS attestation after verification. The Realms voter-weight program and Agent Anchor prototype are deployed; client integration remains open.",
-  },
-  {
-    window: "July 2026",
-    title: "$ENTROS launch",
-    body: "The standard SPL token launched with zero on-chain verification coupling. Validator staking, fee share, and protocol governance remain planned; each needs specification, implementation, and audit.",
-  },
-  {
-    window: "Ongoing",
-    title: "Protocol hardening",
-    body: "We tighten what the capture data shows. The fingerprint pipeline carries a version, so a projection change routes users to re-enrolment rather than invalidating issued Anchors. Mainnet waits on it.",
-  },
-  {
-    window: "Next",
-    title: "Trusted setup ceremony",
-    body: "Participants across the ecosystem will run the multi-party setup. We will recompile entros-verifier against the new key and publish the log and hash chain at entros.io/ceremony.",
-  },
-  {
-    window: "Then",
-    title: "External security audit",
-    body: "An established Solana firm will review the three programs and the proof flow; the final report and patch trail publish together.",
-  },
-  {
-    window: "Launch",
-    title: "Mainnet launch",
-    body: "The three programs will deploy under a hardware-wallet upgrade authority, with a partner integrator on standby. The treasury and incident procedures will run against real flow.",
-  },
-  {
-    window: "After launch",
-    title: "Decentralized validator network",
-    body: "The planned network would add validator admission, request assignment, quorum settlement, rewards, and governance; the distribution and attestation model remains under design.",
-  },
-];
-
-const flipCriteria = [
-  "Adversarial campaign run against the release candidate, with findings remediated",
-  "Calibration data collected across devices, with enforcement thresholds set from it",
-  "Feature-pipeline versioning live, so a projection change routes users to re-enrolment",
-  "Trusted setup ceremony complete, with the public log and at least one independent participant on record",
-  "Audit report published, with all critical and high findings remediated",
-  "Hardware-wallet upgrade authority configured",
-  "Deploy procedure verified end-to-end against a mainnet-cloned local validator",
-  "Monitoring and incident-response runbook documented",
-  "Treasury backup and recovery procedure tested",
-  "Partner integrator on standby for mainnet launch",
 ];
 
 export default function Roadmap() {
   return (
     <>
-      {/* Hero — asymmetric: text left (3/5), checklist panel right (2/5).
-          The panel previews the four gates so a reader sees the structure
-          before scrolling. */}
       <section>
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-9 lg:items-center lg:gap-10">
-          <div className="lg:col-span-5">
-            <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-              Devnet today<span className="text-cyan">.</span>
-              <br />
-              Mainnet next<span className="text-cyan">.</span>
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 pt-32 pb-16 md:pt-40 md:pb-24 lg:grid-cols-12 lg:items-center lg:gap-12">
+          <div className="lg:col-span-7">
+            <h1 className="text-balance font-display text-4xl font-normal leading-[1.04] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+              Voice defense and agent authorization first
+              <span className="text-[var(--verification-accent-text)]">.</span>
             </h1>
 
-            <p className="mt-7 max-w-xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-              Entros is live on devnet: three programs, a shipped SDK, and a
-              private validation service with scoped red-team results. T5 and
-              population-level uniqueness evidence remain open. Grants and
-              partner work carry hardening, the ceremony, and the external
-              audit.
+            <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-muted md:mt-8 md:text-lg">
+              Entros builds the live human-presence and consent firewall for
+              Voice-AI and autonomous agents: real-time zero-retention voice
+              liveness paired with single-use AgentPermit and MCP authorization.
+              Solana devnet programs remain live and open source while Solana
+              mainnet deployment stays paused pending customer demand.
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               <Link
-                href="#timeline"
-                className="
-                  group inline-flex items-center justify-center gap-2
-                  bg-foreground px-6 py-3
-                  text-sm font-medium text-background
-                  transition-colors hover:bg-foreground/90
-                "
+                href="#tracks"
+                className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
               >
-                See the timeline
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                Active tracks
               </Link>
               <Link
-                href="/paper"
-                className="
-                  group inline-flex items-center justify-center gap-2
-                  border border-foreground/20 px-6 py-3
-                  text-sm font-medium text-foreground
-                  transition-colors hover:border-foreground/40 hover:bg-foreground/5
-                "
+                href="/security"
+                className="inline-flex items-center justify-center bg-surface px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
               >
-                Read the paper
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                Security program
               </Link>
             </div>
           </div>
 
-          {/* Hero panel: the path to mainnet as a plain ordered sequence.
-              No header: the headline beside it already says
-              what this is and that devnet is live. No per-gate icons or
-              category chips either: those restated the step titles. What is
-              left is the order, which step is next, and where the sequence
-              ends. Each gate's substance lives in the section below. */}
-          <div className="lg:col-span-4">
-            <div className="border border-panel-line bg-panel px-8 py-10 md:px-10 md:py-12">
-              {/* `w-fit` collapses the list to its own content width so the
-                  sequence sits centred rather than against the left edge
-                  with a wide empty gutter. */}
-              <ol className="relative mx-auto w-fit">
-                {/* One continuous spine behind every marker, stopped short
-                    at both ends so it reads as a path rather than a rule. */}
-                <span
-                  aria-hidden
-                  className="absolute bottom-3 left-[3.5px] top-3 w-px bg-border"
-                />
-
-                {[...gates.map((g) => g.label), "Mainnet launch"].map(
-                  (label, i, all) => {
-                    const isNext = i === 0;
-                    const isDestination = i === all.length - 1;
-                    return (
-                      <li
-                        key={label}
-                        className={cn(
-                          "relative flex items-center gap-5",
-                          isDestination ? "pt-10" : "pb-10"
-                        )}
-                      >
-                        <span
-                          aria-hidden
-                          className={cn(
-                            "relative z-10 h-2 w-2 shrink-0 rounded-full",
-                            isNext && "bg-cyan",
-                            isDestination && "bg-foreground",
-                            !isNext &&
-                              !isDestination &&
-                              "border border-foreground/30 bg-background"
-                          )}
-                        />
-                        <p
-                          className={cn(
-                            "font-display text-base font-medium tracking-tight md:text-lg",
-                            isNext || isDestination
-                              ? "text-foreground"
-                              : "text-foreground/55"
-                          )}
-                        >
-                          {label}
-                        </p>
-                        {isNext && (
-                          <span className="text-sm font-medium text-foreground">
-                            Now
-                          </span>
-                        )}
-                      </li>
-                    );
-                  }
-                )}
+          <div className="lg:col-span-5">
+            <div className="bg-surface p-6 md:p-8">
+              <p className="text-sm font-medium text-muted">
+                Engineering sequence
+              </p>
+              <ol className="mt-6 space-y-5">
+                {activeTracks.map((track) => (
+                  <li key={track.label} className="flex items-start gap-4">
+                    <span
+                      aria-hidden="true"
+                      className={
+                        track.active
+                          ? "mt-2 h-2 w-2 shrink-0 bg-[var(--verification-accent-text)] forced-colors:border forced-colors:border-[Highlight] forced-colors:bg-[Highlight]"
+                          : "mt-2 h-2 w-2 shrink-0 border border-muted bg-transparent forced-colors:border-[CanvasText]"
+                      }
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-display text-base font-medium tracking-tight text-foreground">
+                        {track.label}
+                      </p>
+                      <p className="mt-1 text-xs font-medium text-muted">
+                        {track.status}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+                <li className="flex items-start gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 h-2 w-2 shrink-0 border border-muted bg-transparent forced-colors:border-[CanvasText]"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-base font-medium tracking-tight text-muted">
+                      Solana mainnet ceremony and audit
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-muted">
+                      Paused pending customer demand
+                    </p>
+                  </div>
+                </li>
               </ol>
             </div>
           </div>
         </div>
       </section>
 
-      {/* The four gates, vertical hairline stack, full description */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            What still has to happen<span className="text-cyan">.</span>
+      <section id="tracks" className="bg-surface">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-28">
+          <h2 className="max-w-3xl text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            Active engineering tracks
+            <span className="text-[var(--verification-accent-text)]">.</span>
           </h2>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            Four pieces of work take Entros to mainnet: hardening, a public
-            ceremony, an independent audit, and the operational lift. Each
-            ships in public.
+          <p className="mt-6 max-w-[52ch] text-base leading-relaxed text-muted md:text-lg">
+            Items below are in active development or queued next, not live as
+            commercial SLAs today.
           </p>
 
-          <div className="mt-16 border-t border-border">
-            {gates.map((gate) => {
-              const Icon = gate.Icon;
+          <div className="mt-12 max-w-[64rem] space-y-4">
+            {activeTracks.map((track) => {
+              const Icon = track.Icon;
               return (
                 <div
-                  key={gate.label}
-                  className="grid grid-cols-1 gap-x-12 gap-y-4 border-b border-border py-10 md:grid-cols-[14rem_1fr] md:py-14"
+                  key={track.label}
+                  className="grid grid-cols-1 gap-x-10 gap-y-4 bg-background p-6 md:grid-cols-[18rem_1fr] md:p-8"
                 >
-                  <div className="flex items-start gap-3">
-                    <Icon className="h-7 w-7 shrink-0 text-foreground/80" />
-                    <div>
-                      <p className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
-                        {gate.label}
-                      </p>
-                      <p className="text-sm font-medium mt-2 text-foreground/65">
-                        {gate.window}
-                      </p>
-                    </div>
+                  <div>
+                    <Icon className="h-6 w-6 text-foreground" />
+                    <h3 className="mt-3 text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
+                      {track.label}
+                    </h3>
+                    <p className="mt-2 text-sm font-medium text-muted">
+                      {track.status}
+                    </p>
                   </div>
-                  <p className="text-base leading-relaxed text-foreground/65 md:text-lg">
-                    {gate.description}
+                  <p className="max-w-[52ch] text-base leading-relaxed text-muted md:text-lg">
+                    {track.description}
                   </p>
                 </div>
               );
@@ -254,132 +169,217 @@ export default function Roadmap() {
         </div>
       </section>
 
-      {/* Timeline — vertical milestone list with date rails */}
-      <section id="timeline" className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            From devnet to decentralized<span className="text-cyan">.</span>
+      <section>
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-28">
+          <div className="max-w-3xl">
+            <h2 className="text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+              Why the roadmap changed
+              <span className="text-[var(--verification-accent-text)]">.</span>
+            </h2>
+
+            <div className="mt-8 max-w-[52ch] space-y-5 text-base leading-relaxed text-muted md:text-lg">
+              <p>
+                Real-time voice cloning streams faster than a caller reads a
+                prompt off a screen, exposing phone lines, help desks, wire
+                approvals, and Voice-AI channels to live impersonation. Teams
+                shipping autonomous MCP agents also need signed human approval
+                gates that work with standard enterprise authentication rather
+                than crypto wallets or spoken browser popups.
+              </p>
+              <p>
+                Entros concentrates active engineering on its strongest verified
+                components: compact CPU ONNX voice anti-spoofing gated by a
+                blind adversarial test bank, and the pure-MIT AgentPermit and
+                MCP package in{" "}
+                <span className="font-mono text-sm text-foreground md:text-base">
+                  @entros/verify@0.7.0
+                </span>
+                . Spending capital on a Solana trusted-setup ceremony and
+                mainnet contract audit ahead of paying security deployments
+                would delay both tracks.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-surface">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-28">
+          <h2 className="max-w-3xl text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            Live today
+            <span className="text-[var(--verification-accent-text)]">.</span>
           </h2>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            What has shipped, and what comes next.
+          <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="bg-background p-6 md:p-8">
+              <h3 className="text-balance font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+                Production validation and npm packages
+              </h3>
+              <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
+                Production validation enforces the pinned{" "}
+                <span className="font-mono text-foreground">v2 AASIST-L</span>{" "}
+                anti-spoofing model (
+                <span className="font-mono text-foreground tabular-nums">
+                  131.0 ms
+                </span>{" "}
+                p95 latency,{" "}
+                <span className="font-mono text-foreground tabular-nums">
+                  495.5 MB
+                </span>{" "}
+                RSS, and{" "}
+                <span className="font-mono text-foreground tabular-nums">
+                  61.84%
+                </span>{" "}
+                catch rate on unseen neural TTS). Published npm packages remain{" "}
+                <span className="font-mono text-foreground">
+                  @entros/verify@0.7.0
+                </span>{" "}
+                and{" "}
+                <span className="font-mono text-foreground">
+                  @entros/pulse-sdk@4.18.1
+                </span>
+                .
+              </p>
+            </div>
+
+            <div className="bg-background p-6 md:p-8">
+              <h3 className="text-balance font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+                Solana devnet and browser lab
+              </h3>
+              <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
+                Solana devnet programs (
+                <span className="font-mono text-foreground">entros-anchor</span>
+                ,{" "}
+                <span className="font-mono text-foreground">
+                  entros-verifier
+                </span>
+                ,{" "}
+                <span className="font-mono text-foreground">
+                  entros-registry
+                </span>
+                , and{" "}
+                <span className="font-mono text-foreground">
+                  entros-voter-weight
+                </span>
+                ) remain deployed and open source. Paired browser liveness
+                remains available at{" "}
+                <Link
+                  href="/lab/paired-liveness"
+                  className="text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
+                >
+                  Paired Liveness Lab
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/verify"
+                  className="text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
+                >
+                  /verify
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-28">
+          <h2 className="max-w-3xl text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            Solana devnet and paired browser liveness
+            <span className="text-[var(--verification-accent-text)]">.</span>
+          </h2>
+
+          <p className="mt-6 max-w-[52ch] text-base leading-relaxed text-muted md:text-lg">
+            Maintenance and paused surfaces stay online and documented.
           </p>
 
-          <ol className="mt-16 border-t border-border">
-            {timeline.map((item) => (
-              <li
-                key={item.title}
-                className="grid grid-cols-1 gap-x-12 gap-y-3 border-b border-border py-10 md:grid-cols-[14rem_1fr] md:py-12"
-              >
-                <p className="text-sm font-medium text-foreground">
-                  {item.window}
-                </p>
-                <div>
-                  <h3 className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-base leading-relaxed text-foreground/65 md:text-lg">
-                    {item.body}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* Decision gates — the checklist */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
-              <div className="lg:relative">
-                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  The go/no-go list<span className="text-cyan">.</span>
-                </h2>
-
-                <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                  The four gates above, restated as conditions anyone can
-                  check, ticked off in the open.
-                </p>
-              </div>
+          <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="bg-surface p-6 md:p-8">
+              <h3 className="text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
+                Solana mainnet gates paused
+              </h3>
+              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
+                The public multi-party trusted-setup ceremony, independent
+                Anchor and circuit security audit, Solana mainnet deployment,
+                and validator network research stay paused until customer demand
+                calls for optional on-chain audit anchoring.
+              </p>
             </div>
 
-            <div className="lg:col-span-7">
-              <ul className="border border-border">
-                {flipCriteria.map((item, i) => (
-                  <li
-                    key={item}
-                    className={`flex items-start gap-4 px-6 py-5 md:px-8 ${
-                      i < flipCriteria.length - 1 ? "border-b border-border" : ""
-                    }`}
-                  >
-                    <span className="flex h-[1.625rem] w-9 shrink-0 items-center md:h-[1.828rem]">
-                      <StepNumber n={i + 1} />
-                    </span>
-                    <p className="text-base leading-relaxed text-foreground/70 md:text-lg">
-                      {item}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+            <div className="bg-surface p-6 md:p-8">
+              <h3 className="text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
+                Secondary research surface
+              </h3>
+              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
+                The paired browser liveness flow stays available at{" "}
+                <Link
+                  href="/lab/paired-liveness"
+                  className="text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
+                >
+                  /lab/paired-liveness
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/verify"
+                  className="text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
+                >
+                  /verify
+                </Link>
+                , with{" "}
+                <span className="font-mono text-foreground">
+                  /embed/verify-popup
+                </span>{" "}
+                preserved for published packages and the 2026 write-up archived
+                at{" "}
+                <Link
+                  href="/paper"
+                  className="text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
+                >
+                  /paper
+                </Link>
+                .
+              </p>
+            </div>
+
+            <div className="bg-surface p-6 md:p-8">
+              <h3 className="text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
+                $ENTROS token separation
+              </h3>
+              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
+                $ENTROS remains a standard SPL mint with zero coupling to Entros
+                security products, API billing, or engineering roadmaps. See{" "}
+                <Link
+                  href="/token"
+                  className="text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
+                >
+                  Token Record
+                </Link>{" "}
+                for the public Streamflow lockup schedule.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why wait — closing principle */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-          <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Why both, and why in public<span className="text-cyan">.</span>
+      <section className="bg-background">
+        <div className="mx-auto max-w-5xl px-6 py-20 text-center md:py-28">
+          <h2 className="text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            Inspect live security posture
+            <span className="text-[var(--verification-accent-text)]">.</span>
           </h2>
-
-          <div className="mt-8 space-y-6 text-base leading-relaxed text-foreground/70 md:text-lg">
-            <p>
-              A single-party ceremony would let whoever ran it forge proofs
-              against the verifier. An audit surfaces a bug in the
-              cryptographic anchor before mainnet carries real value. We do
-              both in public.
-            </p>
-            <p>
-              Public grants and open engineering milestones carry that work
-              before mainnet.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-            The road to mainnet<span className="text-cyan">.</span>
-          </h2>
-          <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/security"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
+              className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
             >
               Security program
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
+              href="/docs"
+              className="inline-flex items-center justify-center bg-surface px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
             >
-              Try it live
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              Developer docs
             </Link>
           </div>
         </div>

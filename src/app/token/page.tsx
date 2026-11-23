@@ -32,7 +32,7 @@ export default function Token() {
 
       <TokenContent />
 
-      <section className="bg-surface">
+      <section className="bg-background">
         <div className="mx-auto max-w-5xl px-6 py-20 text-center md:py-28">
           <h2 className="text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Explore Entros engineering
@@ -41,15 +41,15 @@ export default function Token() {
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/security"
-              className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
+              className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
             >
-              Security Program
+              Security program
             </Link>
             <Link
               href="/docs"
-              className="inline-flex items-center justify-center bg-background px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
+              className="inline-flex items-center justify-center bg-surface px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
             >
-              Developer Docs
+              Developer docs
             </Link>
           </div>
         </div>

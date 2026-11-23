@@ -62,7 +62,7 @@ export default function Roadmap() {
 
             <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-muted md:mt-8 md:text-lg">
               Entros builds the live human-presence and consent firewall for
-              voice-AI and autonomous agents: real-time zero-retention voice
+              Voice-AI and autonomous agents: real-time zero-retention voice
               liveness paired with single-use AgentPermit and MCP authorization.
               Solana devnet programs remain live and open source while Solana
               mainnet deployment stays paused pending customer demand.
@@ -71,15 +71,15 @@ export default function Roadmap() {
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               <Link
                 href="#tracks"
-                className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
+                className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
               >
                 Active tracks
               </Link>
               <Link
                 href="/security"
-                className="inline-flex items-center justify-center bg-surface px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
+                className="inline-flex items-center justify-center bg-surface px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
               >
-                Security Program
+                Security program
               </Link>
             </div>
           </div>
@@ -96,8 +96,8 @@ export default function Roadmap() {
                       aria-hidden="true"
                       className={
                         track.active
-                          ? "mt-2 h-2 w-2 shrink-0 bg-[var(--verification-accent-text)]"
-                          : "mt-2 h-2 w-2 shrink-0 bg-subtle"
+                          ? "mt-2 h-2 w-2 shrink-0 bg-[var(--verification-accent-text)] forced-colors:border forced-colors:border-[Highlight] forced-colors:bg-[Highlight]"
+                          : "mt-2 h-2 w-2 shrink-0 border border-muted bg-transparent forced-colors:border-[CanvasText]"
                       }
                     />
                     <div className="min-w-0 flex-1">
@@ -113,7 +113,7 @@ export default function Roadmap() {
                 <li className="flex items-start gap-4">
                   <span
                     aria-hidden="true"
-                    className="mt-2 h-2 w-2 shrink-0 bg-subtle"
+                    className="mt-2 h-2 w-2 shrink-0 border border-muted bg-transparent forced-colors:border-[CanvasText]"
                   />
                   <div className="min-w-0 flex-1">
                     <p className="font-display text-base font-medium tracking-tight text-muted">
@@ -142,7 +142,7 @@ export default function Roadmap() {
             commercial SLAs today.
           </p>
 
-          <div className="mt-12 space-y-4">
+          <div className="mt-12 max-w-[64rem] space-y-4">
             {activeTracks.map((track) => {
               const Icon = track.Icon;
               return (
@@ -181,7 +181,7 @@ export default function Roadmap() {
               <p>
                 Real-time voice cloning streams faster than a caller reads a
                 prompt off a screen, exposing phone lines, help desks, wire
-                approvals, and voice-AI channels to live impersonation. Teams
+                approvals, and Voice-AI channels to live impersonation. Teams
                 shipping autonomous MCP agents also need signed human approval
                 gates that work with standard enterprise authentication rather
                 than crypto wallets or spoken browser popups.
@@ -294,7 +294,7 @@ export default function Roadmap() {
             Maintenance and paused surfaces stay online and documented.
           </p>
 
-          <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-3">
             <div className="bg-surface p-6 md:p-8">
               <h3 className="text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                 Solana mainnet gates paused
@@ -342,7 +342,7 @@ export default function Roadmap() {
               </p>
             </div>
 
-            <div className="bg-surface p-6 md:p-8 md:col-span-2">
+            <div className="bg-surface p-6 md:p-8">
               <h3 className="text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                 $ENTROS token separation
               </h3>
@@ -362,7 +362,7 @@ export default function Roadmap() {
         </div>
       </section>
 
-      <section className="bg-surface">
+      <section className="bg-background">
         <div className="mx-auto max-w-5xl px-6 py-20 text-center md:py-28">
           <h2 className="text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Inspect live security posture
@@ -371,15 +371,15 @@ export default function Roadmap() {
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/security"
-              className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
+              className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
             >
-              Security Program
+              Security program
             </Link>
             <Link
-              href="/docs/quickstart/mcp-approval"
-              className="inline-flex items-center justify-center bg-background px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
+              href="/docs"
+              className="inline-flex items-center justify-center bg-surface px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
             >
-              MCP Quickstart
+              Developer docs
             </Link>
           </div>
         </div>

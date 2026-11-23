@@ -52,7 +52,7 @@ export function TokenContent() {
             <div className="mt-8 max-w-[52ch] space-y-5 text-base leading-relaxed text-muted md:text-lg">
               <p>
                 Entros builds the live human-presence and consent firewall for
-                voice-AI and autonomous agents. Those security products use
+                Voice-AI and autonomous agents. Those security products use
                 standard API access and commercial billing.
               </p>
               <p>
@@ -108,18 +108,72 @@ export function TokenContent() {
             </div>
           </div>
 
+          {/* Mobile stacked record cards keep all five fields visible at 320px-767px without horizontal clipping. */}
+          <div className="mt-10 space-y-4 md:hidden">
+            {streamflowTranches.map((row) => (
+              <div
+                key={row.metadataId}
+                className="bg-surface p-5 forced-colors:border forced-colors:border-[CanvasText]"
+              >
+                <p className="font-display text-base font-medium text-foreground">
+                  {row.tranche}
+                </p>
+                <dl className="mt-4 space-y-3 text-sm">
+                  <div>
+                    <dt className="text-xs font-medium text-muted">
+                      Net locked amount
+                    </dt>
+                    <dd className="mt-0.5 font-mono text-foreground tabular-nums">
+                      {row.netLocked}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-medium text-muted">
+                      Unlock date
+                    </dt>
+                    <dd className="mt-0.5 text-foreground">
+                      <span>{row.unlockDate}</span>
+                      <span className="mt-0.5 block font-mono text-xs text-muted tabular-nums">
+                        {row.unlockUtc}
+                      </span>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-medium text-muted">Status</dt>
+                    <dd className="mt-0.5 text-foreground">{row.status}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-medium text-muted">
+                      Streamflow metadata
+                    </dt>
+                    <dd className="mt-0.5">
+                      <a
+                        href={row.solscanUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="break-all font-mono text-xs text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
+                      >
+                        {row.metadataId}
+                      </a>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            ))}
+          </div>
+
           <div
             tabIndex={0}
             role="region"
             aria-label="Streamflow lockup contracts"
-            className="mt-10 overflow-x-auto bg-surface p-4 sm:p-6"
+            className="mt-10 hidden overflow-x-auto bg-surface p-6 md:block"
           >
             <table className="w-full min-w-[640px] border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-subtle/30">
+                <tr className="border-b border-muted/80 forced-colors:border-[CanvasText]">
                   <th
                     scope="col"
-                    className="py-3 pr-6 font-medium text-foreground"
+                    className="sticky left-0 z-10 bg-surface py-3 pr-6 font-medium text-foreground"
                   >
                     Tranche
                   </th>
@@ -152,11 +206,11 @@ export function TokenContent() {
                     key={row.metadataId}
                     className={
                       index < streamflowTranches.length - 1
-                        ? "border-b border-subtle/30"
+                        ? "border-b border-muted/80 forced-colors:border-[CanvasText]"
                         : undefined
                     }
                   >
-                    <td className="whitespace-nowrap py-4 pr-6 font-medium text-foreground">
+                    <td className="sticky left-0 z-10 whitespace-nowrap bg-surface py-4 pr-6 font-medium text-foreground">
                       {row.tranche}
                     </td>
                     <td className="whitespace-nowrap py-4 pr-6 font-mono text-foreground tabular-nums">

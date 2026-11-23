@@ -1,69 +1,27 @@
 ---
 title: Medium-term
-description: What comes after mainnet. Decentralization of the Anonymity Ring, validator economics, multi-chain reads.
+description: Narrowband telephony VPC sidecars, compliance receipts, decomposed policies, and optional on-chain audit anchoring.
 ---
 
-The medium-term goal is a validator network that does not depend on one team-operated service.
+Medium-term work expands the firewall from developer voice-AI and MCP deployments into regulated contact centers and enterprise compliance pipelines.
 
-## Anonymity Ring decentralization
+## Narrowband telephony and VPC expansion
 
-The private validation engine runs behind the current devnet gateway. The registry contains SOL registration scaffolding but no selection, assignment, quorum, slashing, rewards, or delegation. The decentralization plan adds those mechanisms:
+Once narrowband `8 kHz` telephony blind gates pass, Entros will package zero-voiceprint VPC sidecars for PSTN and SIP contact centers and IT help desks. Deployment will require no GPU cluster and store no caller voiceprint registry.
 
-- **Validator entry.** Replace the current registration scaffolding with admission, assignment, and health checks. The planned economic layer uses $ENTROS.
-- **Slashable stake.** Specify objective evidence, penalties, appeals, and correlated-failure handling before implementing slashing.
-- **Aggregated signatures.** Add validator selection, a quorum rule, and an on-chain settlement format.
-- **Economic incentives.** Define a fee split that rewards measured validation quality without rewarding permissive decisions.
+## Compliance receipts and decomposed policy
 
-Decentralization follows the external audit, once the check stack settles into a slower iteration cadence than day-one operation needs.
+Planned `Policy v2` contracts keep evidence freshness, assurance tier, modality, continuity, uniqueness status, and canonical action payload hashes as separate fields. Lower assurance tiers will not satisfy higher policy rules.
 
-### The validator distribution question
+Each authorization decision will emit a verifiable `IETF SCITT` transparency receipt for regulated audit logs.
 
-How a third-party validator gets the check engine to run on their machine is a real architectural decision, not just an engineering one. Three patterns are on the table:
+## Optional on-chain audit anchoring
 
-- **Open engine.** Anyone can run the code. This also exposes operational checks and thresholds.
-- **Attested binary.** Validators can run a measured binary inside a supported trusted execution environment. Hardware attestation can bind the measured code to an outcome.
-- **Permissioned network.** Selected operators can run the private binary under on-chain coordination before permissionless admission exists.
+Enterprise buyers that want third-party chain non-repudiation can opt into batch Merkle-root anchoring of compliance receipts. On-chain anchoring stays off by default and requires zero crypto wallets in standard Web2 deployments.
 
-The design must state its trust assumption, update process, and failure policy. The current research preference is an attested binary with a permissioned fallback. No distribution model is active today.
-
-## Validator economics
-
-Protocol fees are collected in SOL and accrue in the on-chain treasury. The split evolves as the validator network decentralizes:
-
-- **Today.** Fees fund protocol operations and security while the team runs validation.
-- **As validators onboard.** A share of fees routes to validators, weighted by validation accuracy against ground-truth benchmarks, never by throughput, so honest validation is what earns.
-- **Steady state.** Governance sets the fee split between the treasury and the validator set as the ring grows.
-
-The split is the current public plan, refined through the [RFC process](/docs/roadmap/how-to-influence) as audit and integrator-pilot data come in.
-
-## Multi-chain reads
-
-The Anchor PDA lives on Solana. Other chains can verify a wallet's status via cross-chain attestation relay (the same pattern as Wormhole-relayed price feeds). The work in this window: a documented relay path for the SAS attestation, a reference reader contract on a major EVM chain, and tooling for cross-chain protocols to gate on Entros without a Solana RPC integration.
-
-## Reputation portability
-
-Reputation is wallet-bound by default. The devnet `migrate_identity` instruction moves Trust Score and verification history through a two-signer authorization flow.
-
-The medium-term policy must define cooldowns, score caps, migration history, and anti-reuse rules. Integrators also need a clear migration status.
-
-## Scaling considerations
-
-The current private registry compares each new server-side fingerprint with stored fingerprints from other wallets. It uses a full scan and one configured Hamming-distance policy.
-
-The protocol has not yet established a population-scale precision-recall curve. Offline evaluation must measure same-wallet drift, cross-wallet separation, and threshold behavior before mainnet claims.
-
-The medium-term architectural shift is from binary gating to **probabilistic scoring with ensemble signals**:
-
-- **Scoped comparison.** Partition candidates by documented context when that partition does not create an evasion path.
-- **Evidence ensemble.** Combine behavioral distance with recency, attestation history, and compatible external signals.
-- **Measured outcomes.** Publish calibrated operating points and let integrators select a policy for their risk level.
-
-Entros aims to supply the behavioral continuity signal in a broader evidence stack. It complements anatomical, credential, and application-specific systems.
-
-Calibration of the new scoring system uses empirical fingerprint distributions across a larger and more diverse population than the current pilot. The design publishes as that data comes in.
+Resuming the paused Solana trusted-setup ceremony, independent security audit, and mainnet deployment gates depends on concrete customer demand for on-chain anchoring.
 
 ## Where to look next
 
-- [Long-term](/docs/roadmap/long-term) - the protocol as public infrastructure
-- [Concepts: Anonymity Ring](/docs/concepts/anonymity-ring) - the current service and planned network
-- [How to influence](/docs/roadmap/how-to-influence) - the RFC process
+- [Long-term](/docs/roadmap/long-term): durable architecture invariants
+- [How to influence](/docs/roadmap/how-to-influence): the RFC process

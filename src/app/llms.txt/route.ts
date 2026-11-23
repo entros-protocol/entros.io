@@ -7,25 +7,32 @@ import { SITE_URL } from "@/lib/site";
 // of walking the docs tree in a function.
 export const dynamic = "force-static";
 
-// Machine-readable site brief for assistants that answer developer questions
-// about proof of personhood on Solana. The status and limits sections are load
-// bearing: an assistant that repeats an Entros claim must repeat the devnet and
-// population caveats with it.
+// Machine-readable site brief for assistants answering developer questions
+// about Entros. The status and limits sections are load bearing: an assistant
+// repeating an Entros claim must repeat the devnet, model, and population
+// caveats with it.
 //
 // Every line here restates something the site already publishes. Keep it that
 // way. This file is written to be ingested and repeated, so nothing should
 // make its public debut in it.
-const BRIEF = `# Entros Protocol
+const BRIEF = `# Entros
 
-> Private human verification. A person completes three short rounds in the
-> browser, each with one word to say and one short path to trace. The device derives
-> features locally. The protocol anchors the accepted result to a wallet on chain.
+> Live human-presence and consent firewall for voice-AI and autonomous agents,
+> alongside open-source Solana devnet reference programs and a browser
+> paired-liveness prototype.
 
 ## Status
 
-Entros runs on Solana devnet. No Entros program runs on Solana mainnet. The
-trusted-setup ceremony and the external security audit are open. Treat the protocol
-as research-grade.
+Production validation enforces the pinned v2 AASIST-L anti-spoofing model
+(131.0 ms p95 latency, 495.5 MB RSS, 61.84% catch rate on unseen neural TTS).
+Published npm packages are @entros/verify@0.7.0 and @entros/pulse-sdk@4.18.1.
+Active engineering focuses on blind voice anti-spoofing upgrades, a hosted Voice
+Defense API and VPC sidecar, and Web2-first AgentPermit v2.
+
+Entros on-chain programs run on Solana devnet in maintenance mode.
+No Entros program runs on Solana mainnet. The multi-party trusted-setup ceremony
+and the external security audit stay paused pending customer demand. Treat the
+devnet protocol as research-grade.
 
 ## What a verification answers
 
@@ -51,13 +58,14 @@ Groth16 proof and its public inputs.
 
 - Browser evidence carries no trusted sensor provenance.
 - Population uniqueness is unmeasured. The study cohort is too small for ROC or EER analysis.
-- $ENTROS is a standard SPL mint. It has no coupling to live verification.
+- $ENTROS is a standard SPL mint. It has no coupling to live verification, Entros security products, API billing, or engineering roadmaps.
 
 ## How an application uses it
 
-An integrator reads a wallet's on-chain state with \`verifyEntrosAttestation\` from the
-SDK. Reads cost nothing. A person pays a SOL-denominated protocol fee to run a
-wallet-connected verification.
+An integrator can verify single-use MCP action approvals with @entros/verify/mcp
+or read a wallet's devnet on-chain state with \`verifyEntrosAttestation\` from
+@entros/verify/solana. On-chain reads cost nothing. A person pays a
+SOL-denominated protocol fee to run a wallet-connected devnet verification.
 
 Integrator Policy v1 separates continuity, accepted evidence, assurance, and
 uniqueness status. An application sets its own requirements and enforces them where
@@ -65,17 +73,18 @@ its protected action executes.
 
 ## Key pages
 
-- [Verify](${SITE_URL}/verify): run the live devnet verification flow.
+- [Roadmap](${SITE_URL}/roadmap): active voice defense and agent authorization tracks, plus paused Solana mainnet status.
+- [Security](${SITE_URL}/security): threat model, adversarial campaigns, and current posture.
+- [Token Record](${SITE_URL}/token): factual $ENTROS SPL mint parameters, Streamflow lockups, and product separation.
+- [Paired Liveness Lab](${SITE_URL}/lab/paired-liveness): experimental Solana devnet paired voice, touch, and motion browser prototype.
+- [Verify](${SITE_URL}/verify): Solana devnet browser verification flow preserved for published SDK compatibility.
 - [Integrate](${SITE_URL}/integrate): add verification to an application.
 - [Technology](${SITE_URL}/technology): capture, features, proof, and on-chain state.
-- [Security](${SITE_URL}/security): threat model and current posture.
 - [Compare](${SITE_URL}/compare): modality and dated primary-source vendor scope comparison with explicit limits.
-- [Paper](${SITE_URL}/paper): the research write-up.
-- [Roadmap](${SITE_URL}/roadmap): what is live and what is planned.
-- [Token](${SITE_URL}/token): $ENTROS status and lock records.
+- [Paper](${SITE_URL}/paper): archived 2026 research write-up.
 - [Manifesto](${SITE_URL}/manifesto): why Entros exists and what it is built to protect.
 - [Privacy](${SITE_URL}/privacy): what Entros receives, where it goes, and how long it is kept.
-- [Source](https://github.com/entros-protocol): on-chain programs, SDK, and clients.
+- [Source](https://github.com/entros-protocol): on-chain programs, SDKs, and clients.
 
 ## Documentation
 `;

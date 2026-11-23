@@ -1,80 +1,55 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { AsciiFlow } from "@/components/ui/ascii-flow";
 import { TokenContent } from "@/components/sections/token-content";
 import { TokenLaunchCard } from "@/components/sections/token-launch-card";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
-  title: "Token",
+  title: "Token Record",
   description:
-    "Current protocol fees, fair-launch details, and the planned $ENTROS utility roadmap.",
+    "Factual on-chain record for the $ENTROS SPL mint, Streamflow lockups, and separation from Entros security products.",
   path: "/token",
 });
 
 export default function Token() {
   return (
     <>
-      {/* Hero—centered, ASCII orbit full-width below the copy. */}
       <section>
-        <div className="mx-auto max-w-5xl px-6 pt-32 pb-2 text-center md:pt-40">
-          {/* Breaks are set per breakpoint rather than left to wrapping.
-              Desktop keeps its "The economic layer / of verified humanity."
-              split. Below md the phrase is broken explicitly so it reads
-              "The economic / layer of / verified / humanity."
-
-              The breaks only hold if the longest of those rows fits. At
-              48px "The economic" measures ~302px against a 298px column on
-              a 390px phone, so below md the size is fluid: "The economic"
-              runs ~6.29x the font size and the column is `100vw - 92px`,
-              which is what the slope solves for. It reaches the full 3rem
-              by ~400px and never exceeds it. md and up are untouched. */}
-          <h1 className="font-display text-[clamp(2rem,calc(15.2vw_-_14px),3rem)] font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
-            The economic{" "}
-            <br className="md:hidden" />
-            layer{" "}
-            <br className="hidden md:inline" />
-            of{" "}
-            <br className="md:hidden" />
-            verified humanity<span className="text-cyan">.</span>
+        <div className="mx-auto max-w-5xl px-6 pt-32 pb-16 text-center md:pt-40 md:pb-24">
+          <h1 className="text-balance font-display text-4xl font-normal leading-[1.04] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+            $ENTROS token record
+            <span className="text-[var(--verification-accent-text)]">.</span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/70 md:mt-8 md:text-lg">
-            Protocol fees today. Validator utility after hardening.
-            <br />
-            $ENTROS is planned to support staking, capacity, and governance.
+          <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-muted md:mt-8 md:text-lg">
+            $ENTROS is a fixed-supply SPL mint launched on July 30, 2026. It has
+            zero coupling to Entros security products, API billing, or
+            engineering roadmaps.
           </p>
 
           <TokenLaunchCard />
-        </div>
-
-        <div className="mx-auto mt-6 h-[220px] max-w-7xl sm:h-[270px] md:h-[320px] lg:h-[360px] xl:h-[400px]">
-          <AsciiFlow brand="$ENTROS" />
         </div>
       </section>
 
       <TokenContent />
 
-      {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
-          <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
-            $ENTROS
-            <br />
-            Built to secure human verification<span className="text-cyan">.</span>
+      <section className="bg-surface">
+        <div className="mx-auto max-w-5xl px-6 py-20 text-center md:py-28">
+          <h2 className="text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            Explore Entros engineering
+            <span className="text-[var(--verification-accent-text)]">.</span>
           </h2>
-          <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
+              href="/security"
+              className="inline-flex items-center justify-center bg-foreground px-6 py-3 text-sm font-medium text-background transition-[background-color,transform] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
             >
-              Try the demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              Security Program
+            </Link>
+            <Link
+              href="/docs"
+              className="inline-flex items-center justify-center bg-background px-6 py-3 text-sm font-medium text-foreground transition-[background-color,transform] duration-150 ease-out hover:bg-surface-hover active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none"
+            >
+              Developer Docs
             </Link>
           </div>
         </div>

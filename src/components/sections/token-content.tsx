@@ -1,429 +1,208 @@
-import { StepNumber } from "@/components/ui/step-number";
-import { SolanaIcon } from "@/lib/solana-icon";
 import {
-  BallotGlyph,
-  BenchmarkGlyph,
-  BuildGlyph,
-  DelegateGlyph,
-  FeeGlyph,
-  KeyGlyph,
-  LaunchGlyph,
-  LockGlyph,
-  NetworkGlyph,
-  PersonGlyph,
-  QuorumGlyph,
-  SlashGlyph,
-  StakeGlyph,
-  TierGlyph,
-  TreasuryGlyph,
-} from "@/components/icons/glyphs";
-import {
-  protocolFee,
-  flywheel,
-  supplyPrinciples,
-  tokenUtilities,
-  launchDetails,
+  FOUNDER_CUSTODY_SOLSCAN_URL,
+  FOUNDER_CUSTODY_WALLET,
+  FOUNDER_SALES_STATEMENT,
+  mintParameters,
+  STREAMFLOW_NET_LOCKED_TOTAL,
+  streamflowTranches,
 } from "@/data/token-economics";
-
-const UTILITY_GLYPHS = [StakeGlyph, DelegateGlyph, TierGlyph, BallotGlyph];
-
-/** One glyph per flywheel node, in order. None reused elsewhere on this page. */
-const FLYWHEEL_GLYPHS = [PersonGlyph, FeeGlyph, BuildGlyph, KeyGlyph, NetworkGlyph];
 
 export function TokenContent() {
   return (
     <>
-      {/* Planned Utility Loop */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <h2 className="max-w-5xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            The Entros flywheel<span className="text-cyan">.</span>
+      <section>
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-28">
+          <h2 className="max-w-3xl text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+            On-chain parameters
+            <span className="text-[var(--verification-accent-text)]">.</span>
           </h2>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            The roadmap connects validator security, capacity, and governance
-            to $ENTROS.
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
+            Mint properties became immutable at creation on July 30, 2026.
           </p>
 
-          {/* Five square nodes in a row, hairline connectors between them,
-              and a dashed return path under the labels that closes the
-              loop. The viewBox keeps the layout proportional. */}
-          <div className="mt-16 hidden border border-panel-line bg-panel md:block">
-            <svg
-              viewBox="0 0 1200 300"
-              className="block w-full"
-              role="img"
-              aria-label="Token flywheel diagram: verification, protocol fees, integrator adoption, token-secured validation, a compounding network, looping back to verification."
-            >
-              <defs>
-                <marker
-                  id="flywheel-arrow"
-                  viewBox="0 0 8 8"
-                  refX="7"
-                  refY="4"
-                  markerWidth="8"
-                  markerHeight="8"
-                  orient="auto"
-                >
-                  <path
-                    d="M 1 1 L 7 4 L 1 7"
-                    fill="none"
-                    strokeWidth="1"
-                    style={{ stroke: "var(--color-cyan)" }}
-                  />
-                </marker>
-              </defs>
-
-              {flywheel.map((step, i) => {
-                const cx = 120 + i * 240;
-                const Glyph = FLYWHEEL_GLYPHS[i] ?? PersonGlyph;
-                return (
-                  <g key={step.step}>
-                    <text
-                      x={cx}
-                      y={68}
-                      textAnchor="middle"
-                      style={{
-                        fill: "var(--color-foreground)",
-                        fillOpacity: 0.45,
-                        fontFamily: "var(--font-display)",
-                        fontSize: 22,
-                        fontWeight: 300,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </text>
-                    <rect
-                      x={cx - 36}
-                      y={84}
-                      width="72"
-                      height="72"
-                      strokeWidth="1"
-                      style={{
-                        fill: "var(--color-background)",
-                        stroke: "var(--color-foreground)",
-                        strokeOpacity: 0.18,
-                      }}
-                    />
-                    <Glyph
-                      x={cx - 19}
-                      y={101}
-                      width={38}
-                      height={38}
-                      className="text-foreground/80"
-                    />
-                    <text
-                      x={cx}
-                      y={186}
-                      textAnchor="middle"
-                      style={{
-                        fill: "var(--color-foreground)",
-                        fontFamily: "var(--font-sans)",
-                        fontSize: 14,
-                      }}
-                    >
-                      {step.step}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {[0, 1, 2, 3].map((i) => (
-                <line
-                  key={i}
-                  x1={120 + i * 240 + 48}
-                  y1={120}
-                  x2={120 + (i + 1) * 240 - 48}
-                  y2={120}
-                  strokeWidth="1"
-                  style={{ stroke: "var(--color-cyan)", strokeOpacity: 0.55 }}
-                  markerEnd="url(#flywheel-arrow)"
-                />
-              ))}
-
-              <path
-                d="M 1080 204 V 236 H 120 V 206"
-                fill="none"
-                strokeWidth="1"
-                strokeDasharray="3 5"
-                style={{ stroke: "var(--color-cyan)", strokeOpacity: 0.45 }}
-                markerEnd="url(#flywheel-arrow)"
-              />
-
-              <text
-                x={600}
-                y={264}
-                textAnchor="middle"
-                style={{
-                  fill: "var(--color-foreground)",
-                  fillOpacity: 0.45,
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 10,
-                  letterSpacing: "0.24em",
-                }}
-              >
-                THE LOOP
-              </text>
-            </svg>
-          </div>
-
-          <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-5">
-            {flywheel.map((step, i) => {
-              const Glyph = FLYWHEEL_GLYPHS[i] ?? PersonGlyph;
-              return (
-                <div
-                  key={step.step}
-                  className="flex flex-col bg-background p-6 md:p-8"
-                >
-                  <div className="flex items-center gap-3">
-                    <StepNumber n={i + 1} />
-                    <span className="h-px flex-1 bg-border" />
-                    <Glyph className="h-7 w-7 text-foreground/80 md:hidden" />
-                  </div>
-
-                  <h3 className="mt-6 font-display text-lg font-medium tracking-tight text-foreground">
-                    {step.step}
-                  </h3>
-
-                  <p className="mt-3 text-sm leading-relaxed text-foreground/60">
-                    {step.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Supply — fair launch */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            A fair launch<span className="text-cyan">.</span>
-          </h2>
-
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-            No presale and no VC round. One launch, open to everyone.
-          </p>
-
-          <div className="mt-12 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
-            {supplyPrinciples.map((principle) => (
-              <div
-                key={principle.title}
-                className="flex flex-col bg-background p-8 md:p-10"
-              >
+          <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
+            {mintParameters.map((item) => (
+              <div key={item.title} className="bg-surface p-6 md:p-8">
                 <h3 className="font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
-                  {principle.title}
+                  {item.title}
                 </h3>
-                <p className="mt-4 text-sm leading-relaxed text-foreground/65">
-                  {principle.description}
+                <p className="mt-3 text-sm leading-relaxed text-muted md:text-base">
+                  {item.description}
                 </p>
+                {item.code ? (
+                  <p className="mt-4 break-all font-mono text-xs text-foreground md:text-[13px]">
+                    {item.code}
+                  </p>
+                ) : null}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Protocol Fee */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
-              <div className="lg:relative">
-                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  Every verification<span className="text-cyan">.</span>
-                  <br />
-                  One on-chain treasury<span className="text-cyan">.</span>
-                </h2>
-              </div>
-            </div>
+      <section className="bg-surface">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-28">
+          <div className="max-w-3xl">
+            <h2 className="text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+              Decoupled from Entros products
+              <span className="text-[var(--verification-accent-text)]">.</span>
+            </h2>
 
-            <div className="lg:col-span-7">
-              <div className="border border-border p-6 md:p-8">
-                <div className="flex items-start gap-4">
-                  <SolanaIcon className="mt-1 h-6 w-6 shrink-0 text-cyan" />
-                  <div>
-                    <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
-                      {protocolFee.amount}
-                    </p>
-                    <p className="text-sm font-medium mt-3 text-foreground/65">
-                      {protocolFee.destination}
-                    </p>
-                  </div>
-                </div>
-
-                <p className="mt-8 text-base leading-relaxed text-foreground/70 md:text-lg">
-                  {protocolFee.description}
-                </p>
-                <p className="mt-4 text-base leading-relaxed text-foreground/65 md:text-lg">
-                  Users pay the configured fee to write protocol state.
-                  Integrators read that state for free. Detection decides
-                  whether a verification passes. The fee bounds repeated
-                  attempts.
-                </p>
-              </div>
+            <div className="mt-8 space-y-5 text-base leading-relaxed text-muted md:text-lg">
+              <p>
+                Entros builds the live human-presence and consent firewall for
+                voice-AI and autonomous agents. Those security products use
+                standard API access and commercial billing.
+              </p>
+              <p>
+                $ENTROS has zero coupling to Entros security products, API
+                billing, or engineering roadmaps. Holding $ENTROS grants no
+                product access, equity, revenue share, voting control over
+                company operations, or fee rights.
+              </p>
+              <p>
+                Earlier roadmap concepts for validator staking, capacity tiers,
+                and token governance remain unbuilt and paused alongside Solana
+                mainnet deployment.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Token Utility */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-            Utility expands with decentralization<span className="text-cyan">.</span>
-          </h2>
+      <section>
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-28">
+          <div className="max-w-3xl">
+            <h2 className="text-balance font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
+              Public Streamflow lockups
+              <span className="text-[var(--verification-accent-text)]">.</span>
+            </h2>
 
-          <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2">
-            {tokenUtilities.map((utility, i) => {
-              const Icon = UTILITY_GLYPHS[i] ?? StakeGlyph;
-              return (
-                <div
-                  key={utility.title}
-                  className="flex flex-col bg-background p-8 md:p-10"
+            <div className="mt-6 space-y-4 text-base leading-relaxed text-muted md:text-lg">
+              <p>
+                At launch, the founder bought tokens on the open curve through
+                custody wallet{" "}
+                <a
+                  href={FOUNDER_CUSTODY_SOLSCAN_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="break-all font-mono text-sm text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-10 w-10 text-foreground/80" />
-                    <span className="h-px flex-1 bg-border" />
-                  </div>
-
-                  <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
-                    {utility.title}
-                  </h3>
-
-                  <p className="mt-4 text-sm leading-relaxed text-foreground/65">
-                    {utility.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Planned economic hardening and slashing */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
-              <div className="lg:relative">
-                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  Slashing and incentive design<span className="text-cyan">.</span>
-                </h2>
-                
-                <p className="mt-6 text-sm leading-relaxed text-foreground/65 max-w-md">
-                  These mechanisms are design targets. The registry does not
-                  implement selection, quorum, rewards, or slashing today.
-                </p>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7">
-              <div className="border border-border">
-                <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <BenchmarkGlyph className="h-9 w-9 text-foreground/80" />
-                  <div>
-                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      Ground-Truth Honey-pots
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      The planned design can include blinded benchmark tasks.
-                      The specification must define dataset governance and
-                      prevent validators from identifying benchmark traffic.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <SlashGlyph className="h-9 w-9 text-foreground/80" />
-                  <div>
-                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      Asymmetric Slashing
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      A future slashing design must define objective evidence,
-                      bounded penalties, appeals, and correlated-failure
-                      handling before funds can be at risk.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <QuorumGlyph className="h-9 w-9 text-foreground/80" />
-                  <div>
-                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      Multi-Party Consensus
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      A future validator network can require receipts from a
-                      selected cohort. Selection, quorum, and aggregation are
-                      not implemented in the current registry.
-                    </p>
-                  </div>
-                </div>
-              </div>
+                  {FOUNDER_CUSTODY_WALLET}
+                </a>{" "}
+                and locked{" "}
+                <span className="font-mono text-sm text-foreground tabular-nums md:text-base">
+                  {STREAMFLOW_NET_LOCKED_TOTAL}
+                </span>{" "}
+                (~35% of supply, net of Streamflow fees) across three immutable
+                time-based Streamflow contracts. That custody wallet stays
+                separate from protocol devnet keys and holds no protocol fee
+                treasury.
+              </p>
+              <p>
+                All three contracts pay one recipient wallet, so this record
+                lists amounts, unlock dates, and contract accounts with zero
+                purpose-split labels.
+              </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Launch */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
-              <div className="lg:relative">
-                <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:mt-0">
-                  How the token works<span className="text-cyan">.</span>
-                </h2>
-              </div>
-            </div>
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label="Streamflow lockup contracts"
+            className="mt-10 overflow-x-auto bg-surface p-4 sm:p-6"
+          >
+            <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-subtle/30">
+                  <th
+                    scope="col"
+                    className="py-3 pr-6 font-medium text-foreground"
+                  >
+                    Tranche
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3 pr-6 font-medium text-foreground"
+                  >
+                    Net locked amount
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3 pr-6 font-medium text-foreground"
+                  >
+                    Unlock date
+                  </th>
+                  <th
+                    scope="col"
+                    className="py-3 pr-6 font-medium text-foreground"
+                  >
+                    Status
+                  </th>
+                  <th scope="col" className="py-3 font-medium text-foreground">
+                    Streamflow metadata
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {streamflowTranches.map((row, index) => (
+                  <tr
+                    key={row.metadataId}
+                    className={
+                      index < streamflowTranches.length - 1
+                        ? "border-b border-subtle/30"
+                        : undefined
+                    }
+                  >
+                    <td className="whitespace-nowrap py-4 pr-6 font-medium text-foreground">
+                      {row.tranche}
+                    </td>
+                    <td className="whitespace-nowrap py-4 pr-6 font-mono text-foreground tabular-nums">
+                      {row.netLocked}
+                    </td>
+                    <td className="whitespace-nowrap py-4 pr-6 text-foreground">
+                      <span>{row.unlockDate}</span>
+                      <span className="mt-0.5 block font-mono text-xs text-muted tabular-nums">
+                        {row.unlockUtc}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap py-4 pr-6 text-muted">
+                      {row.status}
+                    </td>
+                    <td className="whitespace-nowrap py-4">
+                      <a
+                        href={row.solscanUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-xs text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 ease-out hover:text-foreground"
+                      >
+                        {row.metadataId}
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            <div className="lg:col-span-7">
-              <div className="border border-border">
-                <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <LaunchGlyph className="h-9 w-9 text-foreground/80" />
-                  <div>
-                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      {launchDetails.mechanism}
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      {launchDetails.airdrop}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 border-b border-border p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <LockGlyph className="h-9 w-9 text-foreground/80" />
-                  <div>
-                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      {launchDetails.standard}
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Fixed supply from the EasyA Kickstart launch on Solana,
-                      with 6 decimals, mint and freeze authorities revoked, and
-                      zero Token-2022 extensions. The identity Entros Anchor
-                      uses a separate Token-2022 NonTransferable mint.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-[auto_1fr] md:gap-8 md:p-8">
-                  <TreasuryGlyph className="h-9 w-9 text-foreground/80" />
-                  <div>
-                    <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
-                      The treasury is on-chain
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-                      Verification runs on Solana devnet today, and $ENTROS
-                      utility stays separate from the fee until its mechanisms
-                      ship.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="mt-8 max-w-3xl space-y-4 text-sm leading-relaxed text-muted md:text-base">
+            <p>
+              Tranche 1 unlocks at{" "}
+              <span className="font-mono text-foreground">
+                2026-11-29T23:00:00Z
+              </span>
+              . This table will update with the confirmed live Streamflow
+              contract URL once the planned November 30 re-lock settles on-chain.
+            </p>
+            <p>
+              <span className="font-medium text-foreground">
+                {FOUNDER_SALES_STATEMENT}
+              </span>{" "}
+              Anyone can verify the custody wallet balance and every Streamflow
+              escrow on Solscan.
+            </p>
           </div>
         </div>
       </section>

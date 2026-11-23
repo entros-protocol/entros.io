@@ -1,31 +1,27 @@
 ---
 title: Long-term
-description: Identity as public infrastructure, cross-chain by default, openly maintained.
+description: Real-time human presence and cryptographic consent across voice and autonomous agent channels.
 ---
 
-The long-term aim is a Solana-native human-control signal that any program can read. The protocol is designed to become public infrastructure.
+The long-term goal is a standard runtime layer that proves live human presence and action-bound consent across voice-AI and autonomous agent channels without biometric identity vaults.
 
-## Identity as public infrastructure
+## Human-presence and consent firewall
 
-The mission is to make a fresh human-control check as composable as a wallet signature. Integrators should read one documented state format across applications.
+Applications should verify whether a live human authorized a privileged tool call with the same predictability as verifying a TLS certificate or OIDC token. Downstream APIs and MCP servers verify signed permits offline in milliseconds without building custom anti-spoofing pipelines.
 
-The planned economics route fees to validators and a governed treasury after the validator network exists. Current fees accrue to the protocol treasury.
+## Adversarial adaptation
 
-## Cross-chain as a default
-
-A wallet's current verification state is a Solana account. Future relay work can make that state readable on other chains. The relay design must state its bridge and finality assumptions.
-
-## Behavioral as a moving target
-
-Voice, motion, and touch synthesis will improve. The validation policy must evolve against new measured attacks. A future validator network needs a controlled update and attestation process for that policy.
+Neural speech synthesis and live voice conversion improve every quarter. Detection models and calibrated operating points must evolve against sealed, speaker-isolated, vocoder-disjoint blind evaluations rather than static benchmark sets.
 
 ## What stays constant
 
-- **Privacy boundary.** Raw motion and full-resolution touch stay on the client. Phrase audio leaves for transient processing and must never persist.
-- **Bounded mission.** Entros is designed to answer whether a wallet presents current and returning human-control evidence. It does not verify legal identity or personal attributes.
-- **Public protocol.** The on-chain programs, client SDK, circuits, and research paper remain public. The private validation engine publishes scoped campaign results and safe resolved-finding summaries.
+- **Zero-retention privacy boundary.** Entros builds no face, iris, palm, or voiceprint registries and requires no government ID. Entros scores voice audio in memory with zero disk persistence.
+- **Empirical truth.** Every published detection number cites a reproducible held-out evaluation with exact denominators, model version, and codec profile. Models that miss preregistered gates do not ship to production.
+- **Permissive commercial licensing.** Production models and consumer verification SDKs stay under permissive commercial licenses (`MIT`, `Apache-2.0`, `BSD-3-Clause`) with zero GPL dependencies in `@entros/verify`.
+- **Token decoupling.** `$ENTROS` stays separate from Entros security products, API billing, and engineering roadmaps.
 
 ## Where to look next
 
-- [Concepts: Proof of Personhood](/docs/concepts/proof-of-personhood) - the bounded mission
-- [How to influence](/docs/roadmap/how-to-influence) - the RFC process
+- [Roadmap](/roadmap): active tracks and live status
+- [Security Program](/security): published adversarial campaigns
+- [How to influence](/docs/roadmap/how-to-influence): the RFC process

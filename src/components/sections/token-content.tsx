@@ -17,17 +17,17 @@ export function TokenContent() {
             <span className="text-[var(--verification-accent-text)]">.</span>
           </h2>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
+          <p className="mt-6 max-w-[52ch] text-base leading-relaxed text-muted md:text-lg">
             Mint properties became immutable at creation on July 30, 2026.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
             {mintParameters.map((item) => (
               <div key={item.title} className="bg-surface p-6 md:p-8">
-                <h3 className="font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+                <h3 className="text-balance font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
                   {item.title}
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted md:text-base">
+                <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
                   {item.description}
                 </p>
                 {item.code ? (
@@ -49,7 +49,7 @@ export function TokenContent() {
               <span className="text-[var(--verification-accent-text)]">.</span>
             </h2>
 
-            <div className="mt-8 space-y-5 text-base leading-relaxed text-muted md:text-lg">
+            <div className="mt-8 max-w-[52ch] space-y-5 text-base leading-relaxed text-muted md:text-lg">
               <p>
                 Entros builds the live human-presence and consent firewall for
                 voice-AI and autonomous agents. Those security products use
@@ -79,7 +79,7 @@ export function TokenContent() {
               <span className="text-[var(--verification-accent-text)]">.</span>
             </h2>
 
-            <div className="mt-6 space-y-4 text-base leading-relaxed text-muted md:text-lg">
+            <div className="mt-6 max-w-[52ch] space-y-4 text-base leading-relaxed text-muted md:text-lg">
               <p>
                 At launch, the founder bought tokens on the open curve through
                 custody wallet{" "}
@@ -187,7 +187,7 @@ export function TokenContent() {
             </table>
           </div>
 
-          <div className="mt-8 max-w-3xl space-y-4 text-sm leading-relaxed text-muted md:text-base">
+          <div className="mt-8 max-w-[52ch] space-y-4 text-sm leading-relaxed text-muted md:text-base">
             <p>
               Tranche 1 unlocks at{" "}
               <span className="font-mono text-foreground">

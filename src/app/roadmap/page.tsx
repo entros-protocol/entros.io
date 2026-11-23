@@ -60,7 +60,7 @@ export default function Roadmap() {
               <span className="text-[var(--verification-accent-text)]">.</span>
             </h1>
 
-            <p className="mt-7 max-w-2xl text-base leading-relaxed text-muted md:mt-8 md:text-lg">
+            <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-muted md:mt-8 md:text-lg">
               Entros builds the live human-presence and consent firewall for
               voice-AI and autonomous agents: real-time zero-retention voice
               liveness paired with single-use AgentPermit and MCP authorization.
@@ -137,7 +137,7 @@ export default function Roadmap() {
             <span className="text-[var(--verification-accent-text)]">.</span>
           </h2>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
+          <p className="mt-6 max-w-[52ch] text-base leading-relaxed text-muted md:text-lg">
             Items below are in active development or queued next, not live as
             commercial SLAs today.
           </p>
@@ -150,18 +150,16 @@ export default function Roadmap() {
                   key={track.label}
                   className="grid grid-cols-1 gap-x-10 gap-y-4 bg-background p-6 md:grid-cols-[18rem_1fr] md:p-8"
                 >
-                  <div className="flex items-start gap-3">
-                    <Icon className="h-6 w-6 shrink-0 text-foreground" />
-                    <div>
-                      <h3 className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
-                        {track.label}
-                      </h3>
-                      <p className="mt-2 text-sm font-medium text-muted">
-                        {track.status}
-                      </p>
-                    </div>
+                  <div>
+                    <Icon className="h-6 w-6 text-foreground" />
+                    <h3 className="mt-3 text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
+                      {track.label}
+                    </h3>
+                    <p className="mt-2 text-sm font-medium text-muted">
+                      {track.status}
+                    </p>
                   </div>
-                  <p className="text-base leading-relaxed text-muted md:text-lg">
+                  <p className="max-w-[52ch] text-base leading-relaxed text-muted md:text-lg">
                     {track.description}
                   </p>
                 </div>
@@ -179,7 +177,7 @@ export default function Roadmap() {
               <span className="text-[var(--verification-accent-text)]">.</span>
             </h2>
 
-            <div className="mt-8 space-y-5 text-base leading-relaxed text-muted md:text-lg">
+            <div className="mt-8 max-w-[52ch] space-y-5 text-base leading-relaxed text-muted md:text-lg">
               <p>
                 Real-time voice cloning streams faster than a caller reads a
                 prompt off a screen, exposing phone lines, help desks, wire
@@ -214,10 +212,10 @@ export default function Roadmap() {
 
           <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="bg-background p-6 md:p-8">
-              <h3 className="font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+              <h3 className="text-balance font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
                 Production validation and npm packages
               </h3>
-              <p className="mt-4 text-sm leading-relaxed text-muted md:text-base">
+              <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
                 Production validation enforces the pinned{" "}
                 <span className="font-mono text-foreground">v2 AASIST-L</span>{" "}
                 anti-spoofing model (
@@ -245,10 +243,10 @@ export default function Roadmap() {
             </div>
 
             <div className="bg-background p-6 md:p-8">
-              <h3 className="font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
+              <h3 className="text-balance font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
                 Solana devnet and browser lab
               </h3>
-              <p className="mt-4 text-sm leading-relaxed text-muted md:text-base">
+              <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
                 Solana devnet programs (
                 <span className="font-mono text-foreground">entros-anchor</span>
                 ,{" "}
@@ -292,16 +290,16 @@ export default function Roadmap() {
             <span className="text-[var(--verification-accent-text)]">.</span>
           </h2>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
+          <p className="mt-6 max-w-[52ch] text-base leading-relaxed text-muted md:text-lg">
             Maintenance and paused surfaces stay online and documented.
           </p>
 
           <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="bg-surface p-6 md:p-8">
-              <h3 className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
+              <h3 className="text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                 Solana mainnet gates paused
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-muted md:text-base">
+              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
                 The public multi-party trusted-setup ceremony, independent
                 Anchor and circuit security audit, Solana mainnet deployment,
                 and validator network research stay paused until customer demand
@@ -310,10 +308,10 @@ export default function Roadmap() {
             </div>
 
             <div className="bg-surface p-6 md:p-8">
-              <h3 className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
+              <h3 className="text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                 Secondary research surface
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-muted md:text-base">
+              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
                 The paired browser liveness flow stays available at{" "}
                 <Link
                   href="/lab/paired-liveness"
@@ -345,10 +343,10 @@ export default function Roadmap() {
             </div>
 
             <div className="bg-surface p-6 md:p-8 md:col-span-2">
-              <h3 className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
+              <h3 className="text-balance font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                 $ENTROS token separation
               </h3>
-              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted md:text-base">
+              <p className="mt-3 max-w-[52ch] text-sm leading-relaxed text-muted md:text-base">
                 $ENTROS remains a standard SPL mint with zero coupling to Entros
                 security products, API billing, or engineering roadmaps. See{" "}
                 <Link

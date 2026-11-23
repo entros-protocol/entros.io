@@ -20,7 +20,7 @@ export default function Token() {
             <span className="text-[var(--verification-accent-text)]">.</span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-muted md:mt-8 md:text-lg">
+          <p className="mx-auto mt-7 max-w-[52ch] text-base leading-relaxed text-muted md:mt-8 md:text-lg">
             $ENTROS is a fixed-supply SPL mint launched on July 30, 2026. It has
             zero coupling to Entros security products, API billing, or
             engineering roadmaps.

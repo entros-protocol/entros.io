@@ -119,12 +119,12 @@ export function NavDropdown({
           }
           if (e.key === "Escape") setOpen(false);
         }}
-        className="inline-flex items-center gap-1 py-2 text-sm text-foreground/70 transition-colors duration-200 hover:text-foreground"
+        className="inline-flex items-center gap-1 py-2 text-sm text-foreground/70 transition-colors duration-200 hover:text-foreground motion-reduce:transition-none"
       >
         {label}
         <ChevronDown
           className={cn(
-            "h-3.5 w-3.5 text-foreground/40 transition-transform duration-200",
+            "h-3.5 w-3.5 text-foreground/40 transition-transform duration-200 motion-reduce:transition-none",
             open && "rotate-180"
           )}
         />
@@ -134,13 +134,13 @@ export function NavDropdown({
       <div
         aria-hidden={!open}
         className={cn(
-          "absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-opacity",
+          "absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-opacity motion-reduce:transition-none",
           open
             ? "visible pointer-events-auto opacity-100 duration-75"
             : "invisible pointer-events-none opacity-0 duration-0"
         )}
       >
-        <div className="w-[340px] border border-border bg-surface p-1.5 shadow-xl shadow-black/[0.06] dark:shadow-2xl dark:shadow-black/30">
+        <div className="w-[340px] bg-surface p-1.5">
           {items.map((item) => (
             <Link
               key={item.href}

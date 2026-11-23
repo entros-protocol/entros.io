@@ -11,10 +11,10 @@ function useMounted() {
   return useSyncExternalStore(emptySubscribe, () => true, () => false);
 }
 
-/** Square theme toggle. It lives in the footer, outlined like the social row. */
+/** Square theme toggle. It lives in the footer, stepped off the footer surface. */
 const VARIANTS = {
   footer:
-    `inline-flex h-11 w-11 shrink-0 border border-border text-foreground/70 hover:border-foreground/30 hover:text-foreground ${verificationFocusRing}`,
+    `inline-flex h-11 w-11 shrink-0 bg-background text-muted hover:bg-surface-hover hover:text-foreground ${verificationFocusRing}`,
 } as const;
 
 export function NavThemeSquare({

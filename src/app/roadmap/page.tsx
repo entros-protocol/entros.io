@@ -29,7 +29,7 @@ const activeTracks = [
     status: "Next",
     active: false,
     description:
-      "Streaming WebSocket and HTTP endpoints score raw un-denoised audio in memory with zero disk persistence, calibrated operating profiles, and explicit insufficient_signal abstention states, paired with an INT8 CPU VPC sidecar.",
+      "Streaming WebSocket and HTTP endpoints will score raw un-denoised audio in memory with zero disk persistence, calibrated operating profiles, and explicit insufficient_signal abstention states, paired with an INT8 CPU VPC sidecar.",
   },
   {
     Icon: AgentGlyph,

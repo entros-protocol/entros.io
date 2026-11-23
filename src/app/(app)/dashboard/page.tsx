@@ -1,6 +1,7 @@
 import { DashboardAnchorView } from "@/components/sections/dashboard-anchor-view";
 import { DashboardHistory } from "@/components/sections/dashboard-history";
 import { DashboardAgents } from "@/components/sections/dashboard-agents";
+import { DevnetNotice } from "@/components/ui/devnet-notice";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata = pageMetadata({
@@ -15,6 +16,8 @@ export default function Dashboard() {
     <>
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-12 md:pt-40 md:pb-16">
+          <DevnetNotice />
+
           <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
             Your Entros Anchor<span className="text-cyan">.</span>
           </h1>

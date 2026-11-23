@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { VerifyFlow } from "@/components/sections/verify-flow";
 import { pageMetadata } from "@/lib/page-metadata";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -75,6 +76,42 @@ export default function Verify() {
             Three short rounds, then one signature on Solana devnet. Your
             wallet gets an Entros Anchor and a Trust Score.
           </p>
+
+          <div
+            role="note"
+            className="mx-auto mt-8 max-w-2xl bg-surface px-4 py-3 text-left text-sm leading-6 text-muted"
+          >
+            <p>
+              This browser flow also lives in the{" "}
+              <Link
+                href="/lab/paired-liveness"
+                className="font-medium text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
+              >
+                Paired Liveness Lab
+              </Link>
+              .{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                /verify
+              </code>
+              ,{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                /verify?w=
+              </code>
+              , and{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                /embed/verify-popup
+              </code>{" "}
+              stay live for{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                @entros/verify@0.7.0
+              </code>{" "}
+              and{" "}
+              <code className="font-mono text-[13px] text-foreground [overflow-wrap:anywhere]">
+                @entros/pulse-sdk@4.18.1
+              </code>{" "}
+              compatibility.
+            </p>
+          </div>
         </div>
       </section>
 

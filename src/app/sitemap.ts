@@ -33,6 +33,7 @@ const entries: Entry[] = [
   { path: "/token", changeFrequency: "monthly", priority: 0.7 },
   { path: "/integrate", changeFrequency: "monthly", priority: 0.8 },
   { path: "/verify", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/lab/paired-liveness", changeFrequency: "monthly", priority: 0.6 },
   { path: "/dashboard", changeFrequency: "weekly", priority: 0.6 },
   { path: "/agents", changeFrequency: "weekly", priority: 0.7 },
   { path: "/governance", changeFrequency: "weekly", priority: 0.7 },

@@ -69,17 +69,18 @@ export default function Verify() {
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-12 text-center md:pt-40 md:pb-16">
           <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground text-balance md:text-6xl lg:text-7xl">
-            Verify your wallet<span className="text-cyan">.</span>
+            Verify your wallet
+            <span className="text-[var(--verification-accent-text)]">.</span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-balance text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
+          <p className="mx-auto mt-7 max-w-2xl text-balance text-base leading-relaxed text-muted md:mt-8 md:text-lg">
             Three short rounds, then one signature on Solana devnet. Your
             wallet gets an Entros Anchor and a Trust Score.
           </p>
 
           <div
             role="note"
-            className="mx-auto mt-8 max-w-2xl bg-surface px-4 py-3 text-left text-sm leading-6 text-muted"
+            className="mx-auto mt-8 max-w-2xl bg-surface px-4 py-3 text-left text-sm leading-relaxed text-muted forced-colors:border forced-colors:border-[CanvasText]"
           >
             <p>
               This browser flow also lives in the{" "}

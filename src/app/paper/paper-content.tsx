@@ -22,14 +22,11 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
     <article className="mx-auto max-w-3xl px-6 pt-28 pb-24 md:pt-32 md:pb-32">
       <div
         role="note"
-        className="mb-10 bg-surface px-5 py-4 text-sm leading-6 text-muted"
+        className="mb-6 bg-surface px-4 py-3 text-sm leading-relaxed text-muted forced-colors:border forced-colors:border-[CanvasText] md:mb-8"
       >
         <p>
           This paper documents Entros&apos;s 2026 browser paired-liveness
-          research lineage and remains archived verbatim for academic and DOI
-          citation integrity. For active engineering direction on the live
-          human-presence and consent firewall for Voice-AI and autonomous
-          agents, see the{" "}
+          research and stays archived verbatim for citation integrity. See the{" "}
           <Link
             href="/roadmap"
             className="font-medium text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
@@ -41,9 +38,9 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
             href="/security"
             className="font-medium text-[var(--verification-accent-text)] underline underline-offset-4 transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
           >
-            Security Program
-          </Link>
-          .
+            Security program
+          </Link>{" "}
+          for active Voice-AI and agent firewall work.
         </p>
       </div>
 

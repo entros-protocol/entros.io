@@ -9,7 +9,7 @@ export function DevnetNotice({ className }: DevnetNoticeProps) {
     <div
       role="note"
       className={cn(
-        "mb-8 max-w-3xl bg-surface px-4 py-3 text-sm leading-6 text-muted",
+        "mb-8 max-w-3xl bg-surface px-4 py-3 text-sm leading-relaxed text-muted forced-colors:border forced-colors:border-[CanvasText]",
         className,
       )}
     >

@@ -68,7 +68,7 @@ export default function Verify() {
     <>
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-12 text-center md:pt-40 md:pb-16">
-          <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground text-balance md:text-6xl lg:text-7xl">
             Verify your wallet<span className="text-cyan">.</span>
           </h1>
 

@@ -66,7 +66,7 @@ export function Navbar() {
        controls, with one high-contrast solid primary action. */
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50 pt-2.5 md:pt-3">
       <div className="pointer-events-auto mx-auto flex max-w-7xl items-center gap-2.5 px-6 md:gap-3">
-        <div className="flex h-[46px] min-w-0 flex-1 items-center bg-surface px-5 text-foreground">
+        <div className="flex h-[46px] min-w-0 flex-1 items-center bg-surface px-5 text-foreground forced-colors:border forced-colors:border-[CanvasText]">
           <div className="shrink-0 [&_a]:text-2xl">
             <NavbarWordmark />
           </div>
@@ -92,18 +92,22 @@ export function Navbar() {
                   {item.external ? (
                     <a
                       href={item.href}
-                      className="text-sm font-medium leading-none text-foreground transition-colors hover:text-foreground/75"
+                      className="inline-flex h-[46px] items-center text-sm font-medium leading-none text-foreground transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-foreground/75 motion-reduce:transition-none"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {item.label}
+                      <span className="[text-box:trim-both_cap_alphabetic]">
+                        {item.label}
+                      </span>
                     </a>
                   ) : (
                     <Link
                       href={item.href}
-                      className="text-sm font-medium leading-none text-foreground transition-colors hover:text-foreground/75"
+                      className="inline-flex h-[46px] items-center text-sm font-medium leading-none text-foreground transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-foreground/75 motion-reduce:transition-none"
                     >
-                      {item.label}
+                      <span className="[text-box:trim-both_cap_alphabetic]">
+                        {item.label}
+                      </span>
                     </Link>
                   )}
                 </li>
@@ -119,7 +123,10 @@ export function Navbar() {
           aria-label="Entros on GitHub"
           className="
             hidden h-[46px] w-[46px] items-center justify-center bg-surface
-            text-foreground transition-colors hover:bg-surface-hover
+            text-foreground transition-colors duration-150
+            ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-surface-hover
+            motion-reduce:transition-none
+            forced-colors:border forced-colors:border-[ButtonText]
             navbar:inline-flex
           "
         >
@@ -130,23 +137,34 @@ export function Navbar() {
           href="/docs"
           className="
             hidden h-[46px] items-center bg-surface px-4
-            text-sm font-medium leading-4 text-foreground
-            transition-colors hover:bg-surface-hover navbar:inline-flex
+            text-sm font-medium leading-none text-foreground
+            transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
+            hover:bg-surface-hover motion-reduce:transition-none
+            forced-colors:border forced-colors:border-[ButtonText]
+            navbar:inline-flex
           "
         >
-          Docs
+          <span className="[text-box:trim-both_cap_alphabetic]">Docs</span>
         </Link>
 
         <Link
           href="/docs/quickstart/mcp-approval"
           className="
             hidden h-[46px] items-center gap-2 bg-foreground px-4
-            text-sm font-medium leading-4 text-background
-            transition-colors hover:bg-foreground/90 navbar:inline-flex
+            text-sm font-medium leading-none text-background
+            transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
+            hover:bg-foreground/90 motion-reduce:transition-none
+            forced-colors:border forced-colors:border-[ButtonText]
+            navbar:inline-flex
           "
         >
-          MCP Quickstart
-          <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="[text-box:trim-both_cap_alphabetic]">
+            MCP Quickstart
+          </span>
+          <ArrowRight
+            className="optical-icon-nudge h-4 w-4 shrink-0"
+            aria-hidden="true"
+          />
         </Link>
 
         <div className="flex h-[46px] items-center bg-surface text-foreground navbar:hidden">

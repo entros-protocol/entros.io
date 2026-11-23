@@ -69,9 +69,11 @@ export function Footer() {
                     rel="noopener noreferrer"
                     aria-label={label}
                     className="
-                      inline-flex h-10 w-10 items-center justify-center
-                      bg-background text-muted transition-colors
-                      hover:bg-surface-hover hover:text-foreground
+                      inline-flex h-11 w-11 items-center justify-center
+                      bg-background text-muted transition-colors duration-150
+                      ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-surface-hover
+                      hover:text-foreground motion-reduce:transition-none
+                      forced-colors:border forced-colors:border-[ButtonText]
                     "
                   >
                     <Mark className={size} />

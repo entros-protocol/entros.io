@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { GithubMark } from "./github-mark";
@@ -32,11 +32,15 @@ const sections = [
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -47,9 +51,10 @@ export function MobileNav() {
   return (
     <div className="flex items-center navbar:hidden">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex h-[46px] w-[46px] items-center justify-center transition-opacity hover:opacity-70"
+        className="flex h-[46px] w-[46px] items-center justify-center transition-opacity duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:opacity-70 motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
       >
@@ -59,15 +64,14 @@ export function MobileNav() {
       {open && (
         <>
           {/* Dimmed backdrop behind the floating bar stacking context. */}
-          <button
-            type="button"
-            aria-label="Close menu"
+          <div
+            aria-hidden="true"
             onClick={close}
             className="pointer-events-auto fixed inset-0 -z-10 cursor-default bg-background/80"
           />
 
           <div className="absolute inset-x-0 top-[66px] px-6">
-            <div className="mx-auto max-h-[calc(100svh-84px)] max-w-7xl overflow-y-auto bg-surface text-foreground">
+            <div className="mx-auto max-h-[calc(100svh-84px)] max-w-7xl overflow-y-auto bg-surface text-foreground forced-colors:border forced-colors:border-[CanvasText]">
               <div className="px-5 py-5">
                 {sections.map((section, i) => (
                   <div key={section.heading} className={i > 0 ? "mt-5" : undefined}>
@@ -80,7 +84,7 @@ export function MobileNav() {
                           <Link
                             href={item.href}
                             onClick={close}
-                            className="block py-1.5 text-sm font-medium text-foreground transition-colors hover:text-muted"
+                            className="block py-1.5 text-sm font-medium text-foreground transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-muted motion-reduce:transition-none"
                           >
                             {item.label}
                           </Link>
@@ -91,43 +95,61 @@ export function MobileNav() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-2 px-5 pt-2 pb-5">
-                <Link
-                  href="/docs"
-                  onClick={close}
-                  className="
-                    inline-flex h-10 items-center justify-center bg-background
-                    px-4 text-sm font-medium leading-4 text-foreground
-                    transition-colors hover:bg-surface-hover
-                  "
-                >
-                  Docs
-                </Link>
+              <div className="flex flex-col gap-2 px-5 pt-2 pb-5 sm:flex-row sm:items-center">
                 <Link
                   href="/docs/quickstart/mcp-approval"
                   onClick={close}
                   className="
-                    inline-flex h-10 flex-1 items-center justify-center gap-1.5
-                    bg-foreground px-3 text-sm font-medium leading-4 text-background
-                    transition-colors hover:bg-foreground/90
+                    inline-flex min-h-11 w-full items-center justify-center gap-2
+                    bg-foreground px-4 text-sm font-medium leading-none text-background
+                    transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
+                    hover:bg-foreground/90 motion-reduce:transition-none
+                    forced-colors:border forced-colors:border-[ButtonText]
+                    sm:order-2 sm:w-auto sm:flex-1
                   "
                 >
-                  MCP Quickstart
-                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    MCP Quickstart
+                  </span>
+                  <ArrowRight
+                    className="optical-icon-nudge h-4 w-4 shrink-0"
+                    aria-hidden="true"
+                  />
                 </Link>
-                <a
-                  href="https://github.com/entros-protocol"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Entros on GitHub"
-                  className="
-                    inline-flex h-10 w-10 shrink-0 items-center justify-center
-                    bg-background text-foreground transition-colors
-                    hover:bg-surface-hover
-                  "
-                >
-                  <GithubMark className="h-4 w-4" />
-                </a>
+                <div className="flex items-center gap-2 sm:contents">
+                  <Link
+                    href="/docs"
+                    onClick={close}
+                    className="
+                      inline-flex min-h-11 flex-1 items-center justify-center
+                      bg-background px-4 text-sm font-medium leading-none text-foreground
+                      transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
+                      hover:bg-surface-hover motion-reduce:transition-none
+                      forced-colors:border forced-colors:border-[ButtonText]
+                      sm:order-1 sm:flex-none
+                    "
+                  >
+                    <span className="[text-box:trim-both_cap_alphabetic]">
+                      Docs
+                    </span>
+                  </Link>
+                  <a
+                    href="https://github.com/entros-protocol"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Entros on GitHub"
+                    className="
+                      inline-flex h-11 w-11 shrink-0 items-center justify-center
+                      bg-background text-foreground transition-colors duration-150
+                      ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-surface-hover
+                      motion-reduce:transition-none
+                      forced-colors:border forced-colors:border-[ButtonText]
+                      sm:order-3
+                    "
+                  >
+                    <GithubMark className="h-4 w-4" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>

@@ -14,7 +14,7 @@ function useMounted() {
 /** Square theme toggle. It lives in the footer, stepped off the footer surface. */
 const VARIANTS = {
   footer:
-    `inline-flex h-11 w-11 shrink-0 bg-background text-muted hover:bg-surface-hover hover:text-foreground ${verificationFocusRing}`,
+    `inline-flex h-11 w-11 shrink-0 bg-background text-muted hover:bg-surface-hover hover:text-foreground forced-colors:border forced-colors:border-[ButtonText] ${verificationFocusRing}`,
 } as const;
 
 export function NavThemeSquare({
@@ -26,7 +26,7 @@ export function NavThemeSquare({
   const mounted = useMounted();
 
   const base = cn(
-    "items-center justify-center transition-colors",
+    "items-center justify-center transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
     VARIANTS[variant]
   );
 

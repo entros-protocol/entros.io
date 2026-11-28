@@ -18,6 +18,7 @@
  */
 
 import { AlertCircle } from "lucide-react";
+import { primaryButtonClass } from "@/components/ui/button-styles";
 
 export default function GlobalError({
   reset,
@@ -28,7 +29,7 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body className="bg-background text-foreground antialiased">
-        <main className="flex min-h-screen items-center justify-center px-6">
+        <main className="flex min-h-[100svh] items-center justify-center px-6">
           <div className="max-w-md space-y-6 text-center">
             <AlertCircle className="mx-auto h-12 w-12 text-danger" strokeWidth={1.5} />
             <div>
@@ -40,8 +41,9 @@ export default function GlobalError({
               </p>
             </div>
             <button
+              type="button"
               onClick={() => reset()}
-              className="border border-cyan/30 bg-cyan/10 px-6 py-2 text-sm font-medium text-cyan transition-colors hover:bg-cyan/20"
+              className={primaryButtonClass}
             >
               Reload
             </button>

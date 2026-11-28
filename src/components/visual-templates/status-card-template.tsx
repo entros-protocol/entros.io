@@ -145,7 +145,7 @@ export function StatusCardTemplate({
                 {verified.liveHeading}
               </h3>
               <span
-                className="font-mono text-xs uppercase tracking-[0.08em]"
+                className="font-mono text-xs"
                 style={{ color: palette.greenText }}
               >
                 Present tense
@@ -171,7 +171,7 @@ export function StatusCardTemplate({
                       {item.label}
                     </span>
                     <span
-                      className="font-mono text-[11px] uppercase"
+                      className="font-mono text-xs"
                       style={{ color: palette.greenText }}
                     >
                       {item.tag}
@@ -208,7 +208,7 @@ export function StatusCardTemplate({
                 {verified.roadmapHeading}
               </h3>
               <span
-                className="font-mono text-xs uppercase tracking-[0.08em]"
+                className="font-mono text-xs"
                 style={{ color: palette.warningText }}
               >
                 Roadmap only
@@ -234,7 +234,7 @@ export function StatusCardTemplate({
                       {item.label}
                     </span>
                     <span
-                      className="font-mono text-[11px] uppercase"
+                      className="font-mono text-xs"
                       style={{ color: palette.warningText }}
                     >
                       {item.tag}

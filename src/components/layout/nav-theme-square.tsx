@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { verificationFocusRing } from "@/components/verify/verification-styles";
 import { cn } from "@/lib/utils";
 
@@ -17,12 +17,24 @@ const VARIANTS = {
     `inline-flex h-11 w-11 shrink-0 bg-background text-muted hover:bg-surface-hover hover:text-foreground forced-colors:border forced-colors:border-[ButtonText] ${verificationFocusRing}`,
 } as const;
 
+const NEXT_THEME = {
+  system: "light",
+  light: "dark",
+  dark: "system",
+} as const;
+
+const THEME_LABEL = {
+  system: "Theme: System. Switch to light mode",
+  light: "Theme: Light. Switch to dark mode",
+  dark: "Theme: Dark. Switch to system theme",
+} as const;
+
 export function NavThemeSquare({
   variant = "footer",
 }: {
   variant?: keyof typeof VARIANTS;
 }) {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const mounted = useMounted();
 
   const base = cn(
@@ -32,19 +44,24 @@ export function NavThemeSquare({
 
   if (!mounted) return <div className={base} aria-hidden />;
 
-  const isDark = resolvedTheme === "dark";
+  const current: keyof typeof NEXT_THEME =
+    theme === "light" || theme === "dark" || theme === "system"
+      ? theme
+      : "system";
 
   return (
     <button
       type="button"
       className={base}
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      onClick={() => setTheme(NEXT_THEME[current])}
+      aria-label={THEME_LABEL[current]}
     >
-      {isDark ? (
-        <Moon className="h-4 w-4" strokeWidth={1.75} />
+      {current === "system" ? (
+        <Monitor className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+      ) : current === "dark" ? (
+        <Moon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
       ) : (
-        <Sun className="h-4 w-4" strokeWidth={1.75} />
+        <Sun className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
       )}
     </button>
   );

@@ -10,6 +10,11 @@ import {
 import { DevnetNotice } from "@/components/ui/devnet-notice";
 import { FactStrip } from "@/components/ui/fact-strip";
 import { pageMetadata } from "@/lib/page-metadata";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/button-styles";
 
 export const metadata = pageMetadata({
   title: "Realms Case Study",
@@ -127,27 +132,18 @@ export default function RealmsCaseStudy() {
                   href={PLUGIN_REPO}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
+                  className={primaryButtonClass}
                 >
-                  View the plugin
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    View the plugin
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </a>
-                <Link
-                  href="/governance"
-                  className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-                >
-                  Governance overview
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <Link href="/governance" className={secondaryButtonClass}>
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    Governance overview
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </Link>
               </div>
             </div>
@@ -164,24 +160,23 @@ export default function RealmsCaseStudy() {
         </div>
       </section>
 
-      {/* Why this exists — named incidents */}
-      <section className="border-t border-border">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Token weight tells you about balances
             <span className="text-cyan">.</span>
           </h2>
 
-          <p className="mt-6 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
+          <p className="mt-6 max-w-[65ch] text-base leading-relaxed text-muted md:text-lg">
             A standard Solana DAO counts ballots by token balance. Tokens change
             hands, sit in cold wallets, and get delegated.
           </p>
 
-          <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
+          <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
             {incidents.map((incident) => (
               <div
                 key={incident.actor}
-                className="flex flex-col bg-background p-8 md:p-10"
+                className="flex flex-col bg-background p-8 forced-colors:border forced-colors:border-[CanvasText] md:p-10"
               >
                 <p className="text-sm font-medium text-foreground">
                   {incident.year}
@@ -189,55 +184,53 @@ export default function RealmsCaseStudy() {
                 <h3 className="mt-6 font-display text-xl font-medium tracking-tight text-foreground md:text-2xl">
                   {incident.actor}
                 </h3>
-                <p className="text-sm font-medium mt-2 text-foreground/65">
+                <p className="mt-2 text-sm font-medium text-muted">
                   {incident.headline}
                 </p>
-                <p className="mt-6 text-sm leading-relaxed text-foreground/65">
+                <p className="mt-6 text-sm leading-relaxed text-muted">
                   {incident.detail}
                 </p>
               </div>
             ))}
           </div>
 
-          <p className="mt-12 max-w-3xl text-base leading-relaxed text-foreground/65 md:text-lg">
+          <p className="mt-12 max-w-[65ch] text-base leading-relaxed text-muted md:text-lg">
             Each ballot asked about balance. None asked whether a returning
             human stood behind it.
           </p>
         </div>
       </section>
 
-      {/* How it integrates — 4-step */}
-      <section className="border-t border-border">
+      <section>
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Program now, client next<span className="text-cyan">.</span>
           </h2>
 
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+          <p className="mt-6 max-w-[65ch] text-base leading-relaxed text-muted md:text-lg">
             The on-chain addin implements the voter-weight record format. A
             JavaScript client and Governance UI registration are required before
             voters can use the normal Realms flow.
           </p>
 
-          <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {integrationSteps.map((step, i) => {
               const Icon = step.Icon;
               return (
                 <div
                   key={step.title}
-                  className="flex flex-col bg-background p-6 md:p-8"
+                  className="flex flex-col bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between gap-3">
                     <StepNumber n={i + 1} />
-                    <span className="h-px flex-1 bg-border" />
-                    <Icon className="h-5 w-5 text-foreground/70" />
+                    <Icon className="h-5 w-5 text-foreground/75" />
                   </div>
 
                   <h3 className="mt-8 font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                     {step.title}
                   </h3>
 
-                  <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+                  <p className="mt-3 text-sm leading-relaxed text-muted">
                     {step.body}
                   </p>
                 </div>
@@ -247,27 +240,26 @@ export default function RealmsCaseStudy() {
         </div>
       </section>
 
-      {/* Before / after */}
-      <section className="border-t border-border">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             What the plugin changes<span className="text-cyan">.</span>
           </h2>
 
-          <div className="mt-16 border-t border-border">
+          <div className="mt-14 divide-y divide-border">
             {beforeAfter.map((row) => (
               <div
                 key={row.scenario}
-                className="grid grid-cols-1 gap-x-12 gap-y-6 border-b border-border py-10 md:grid-cols-3 md:py-14"
+                className="grid grid-cols-1 gap-x-12 gap-y-6 py-10 md:grid-cols-3 md:py-12"
               >
                 <p className="font-display text-lg font-medium tracking-tight text-foreground md:text-xl">
                   {row.scenario}
                 </p>
                 <div>
-                  <p className="text-sm font-medium text-foreground/60">
+                  <p className="text-sm font-medium text-muted">
                     Standard
                   </p>
-                  <p className="mt-3 text-sm leading-relaxed text-foreground/60 md:text-base">
+                  <p className="mt-3 text-sm leading-relaxed text-muted md:text-base">
                     {row.before}
                   </p>
                 </div>
@@ -275,7 +267,7 @@ export default function RealmsCaseStudy() {
                   <p className="text-sm font-medium text-foreground">
                     With Entros
                   </p>
-                  <p className="mt-3 text-sm leading-relaxed text-foreground/70 md:text-base">
+                  <p className="mt-3 text-sm leading-relaxed text-foreground/80 md:text-base">
                     {row.after}
                   </p>
                 </div>
@@ -285,8 +277,7 @@ export default function RealmsCaseStudy() {
         </div>
       </section>
 
-      {/* Status / deployment specifics */}
-      <section className="border-t border-border">
+      <section>
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5 lg:flex lg:flex-col lg:justify-center">
@@ -295,7 +286,7 @@ export default function RealmsCaseStudy() {
                   Deployed and inspectable<span className="text-cyan">.</span>
                 </h2>
 
-                <p className="mt-8 text-base leading-relaxed text-foreground/65 md:text-lg">
+                <p className="mt-8 text-base leading-relaxed text-muted md:text-lg">
                   The plugin runs on Solana devnet under the program ID below.
                   The source is on GitHub: read it, run it, fork it.
                 </p>
@@ -303,15 +294,13 @@ export default function RealmsCaseStudy() {
             </div>
 
             <div className="lg:col-span-7">
-              <dl className="border border-border">
-                {status.map((row, i) => (
+              <dl className="divide-y divide-border bg-surface forced-colors:border forced-colors:border-[CanvasText]">
+                {status.map((row) => (
                   <div
                     key={row.label}
-                    className={`grid grid-cols-1 gap-3 p-6 md:grid-cols-[10rem_1fr] md:gap-8 md:p-8 ${
-                      i < status.length - 1 ? "border-b border-border" : ""
-                    }`}
+                    className="grid grid-cols-1 gap-3 p-6 md:grid-cols-[10rem_1fr] md:gap-8 md:p-8"
                   >
-                    <dt className="text-sm font-medium text-foreground/60">
+                    <dt className="text-sm font-medium text-muted">
                       {row.label}
                     </dt>
                     <dd
@@ -331,7 +320,7 @@ export default function RealmsCaseStudy() {
                 href={PLUGIN_REPO}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium mt-6 inline-flex items-center gap-2 text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan"
+                className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors duration-150 hover:decoration-cyan motion-reduce:transition-none"
               >
                 Open the repo
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -341,42 +330,32 @@ export default function RealmsCaseStudy() {
         </div>
       </section>
 
-      {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Run your DAO<span className="text-cyan">.</span>
             <br />
             On verified humans<span className="text-cyan">.</span>
           </h2>
-          <p className="mx-auto mt-8 max-w-xl text-base leading-relaxed text-foreground/65 md:text-lg">
+          <p className="mx-auto mt-8 max-w-xl text-base leading-relaxed text-muted md:text-lg">
             The on-chain prototype is ready for program-level testing. Proposal
             pilots begin after the client and chaining boundaries ship.
           </p>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="mailto:contact@entros.io?subject=Realms%20plugin%20pilot"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
+              className={primaryButtonClass}
             >
-              Propose a pilot
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Propose a pilot
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </a>
-            <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              Try the demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/verify" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Try the demo
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

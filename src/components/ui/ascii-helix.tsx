@@ -144,7 +144,7 @@ export function AsciiHelix({ cols, rows, className }: AsciiHelixProps) {
       ref={preRef}
       aria-hidden="true"
       className={cn(
-        "ascii-art-bright select-none whitespace-pre font-mono leading-[1]",
+        "select-none whitespace-pre font-mono leading-[1]",
         className,
       )}
     />

@@ -24,17 +24,17 @@ export function PopupShell({ children }: { children: ReactNode }) {
             fontFamily:
               "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
           }}
-          className={`inline-flex items-baseline text-2xl tracking-tight text-foreground transition-opacity hover:opacity-80 ${verificationFocusRing}`}
-          aria-label="Entros home"
+          className={`inline-flex min-h-11 items-center text-2xl tracking-tight text-foreground transition-opacity duration-150 hover:opacity-80 motion-reduce:transition-none ${verificationFocusRing}`}
         >
           <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
-          <span aria-hidden>Entros</span>
+          <span className="[text-box:trim-both_cap_alphabetic]">Entros</span>
+          <span className="sr-only"> home</span>
         </Link>
         <CloseButton />
       </header>
       <main className="flex flex-1 flex-col">{children}</main>
-      <footer className="border-t border-foreground/[0.07] px-5 py-3 text-center">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/30">
+      <footer className="bg-surface px-5 py-3 text-center">
+        <span className="font-mono text-xs text-muted">
           powered by entros.io
         </span>
       </footer>

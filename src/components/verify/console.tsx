@@ -53,25 +53,21 @@ function StepRail({ rail, steps }: { rail: RailState; steps: readonly string[] }
           ? "bg-foreground/55"
           : here && rail.status === "error"
             ? "bg-danger"
-            : here && rail.status === "active"
-              ? "bg-cyan/30"
-              : here
-                ? "bg-cyan"
-                : "bg-foreground/10";
+            : here
+              ? "bg-cyan"
+              : "bg-foreground/15";
         const label = done
-          ? "text-foreground/60"
+          ? "text-muted"
           : here && rail.status === "error"
             ? "text-danger"
             : here
               ? "text-foreground"
-              : "text-foreground/30";
+              : "text-muted";
         return (
           <li key={step} className="min-w-0" aria-current={here ? "step" : undefined}>
-            <span className={`relative block h-[2px] overflow-hidden ${bar}`}>
-              {here && rail.status === "active" && <span className="vc-shimmer" />}
-            </span>
+            <span className={`relative block h-[2px] overflow-hidden ${bar}`} />
             <span
-              className={`mt-2 block truncate font-mono text-[9px] uppercase tracking-[0.06em] transition-colors duration-300 sm:tracking-[0.18em] md:text-[10px] ${label}`}
+              className={`mt-2 block truncate font-mono text-xs transition-colors duration-200 motion-reduce:transition-none ${label}`}
             >
               {step}
             </span>
@@ -119,14 +115,10 @@ export function VerifyConsole({
       <div
         className={
           framed
-            ? "relative flex min-h-[720px] flex-col border border-foreground/[0.07] bg-background md:min-h-[760px]"
+            ? "relative flex min-h-[540px] flex-col bg-surface forced-colors:border forced-colors:border-[CanvasText] md:min-h-[580px]"
             : "relative flex flex-1 flex-col bg-background"
         }
       >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(var(--color-foreground)_0.5px,transparent_0.5px)] [background-size:18px_18px] opacity-[0.07] [mask-image:radial-gradient(ellipse_at_50%_45%,black_20%,transparent_72%)]"
-        />
         <p className="sr-only" aria-live="polite" aria-atomic="true">
           {announcement}
         </p>
@@ -146,7 +138,7 @@ export function VerifyConsole({
           )}
         </div>
         {footer && (
-          <div className="relative border-t border-foreground/[0.07] px-6 py-4 md:px-8">
+          <div className="relative px-6 pt-2 pb-6 md:px-8">
             {footer}
           </div>
         )}
@@ -172,7 +164,7 @@ export function PrivacyFooter({
     <div className="flex flex-col items-center gap-2 text-center">
       <ul className="flex flex-col items-center gap-1 text-center">
         {lines.map((line) => (
-          <li key={line} className="text-[11px] leading-relaxed text-foreground/50">
+          <li key={line} className="text-xs leading-relaxed text-muted">
             {line}
           </li>
         ))}
@@ -182,7 +174,7 @@ export function PrivacyFooter({
           href="/privacy"
           target="_blank"
           rel="noopener noreferrer"
-          className={`inline-flex items-center py-0.5 text-[11px] font-medium text-foreground/75 underline decoration-foreground/35 underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground ${verificationFocusRing}`}
+          className={`inline-flex items-center py-1 text-xs font-medium text-foreground underline decoration-foreground/40 underline-offset-4 transition-colors duration-150 hover:decoration-foreground motion-reduce:transition-none ${verificationFocusRing}`}
         >
           Privacy notice
         </Link>

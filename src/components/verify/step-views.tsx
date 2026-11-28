@@ -282,7 +282,7 @@ function AnchorSeal({ commitment, score }: { commitment: string; score: number |
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         {score !== null ? (
           <>
-            <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-foreground/50">
+            <span className="font-mono text-xs text-muted">
               Your Trust Score
             </span>
             <span
@@ -317,7 +317,7 @@ function ResultRow({ label, value, href }: { label: string; value: string; href?
   }
   return (
     <div className="grid grid-cols-[6.5rem_1fr_auto] items-center gap-3 border-b border-foreground/[0.08] py-2.5">
-      <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/45">{label}</dt>
+      <dt className="font-mono text-xs text-muted">{label}</dt>
       <dd className="truncate font-mono text-xs text-foreground/75" title={value}>
         {shortValue(value)}
       </dd>
@@ -422,7 +422,7 @@ export function VerifiedView({
         <h2
           ref={heading}
           tabIndex={-1}
-          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground outline-none"
+          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-[var(--verification-focus-ring)]"
         >
           {title}
         </h2>
@@ -440,7 +440,7 @@ export function VerifiedView({
       </dl>
       {portableBaseline === false && (
         <div className="mx-auto max-w-sm text-center text-warning">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em]">
+          <p className="font-mono text-xs font-medium">
             This device only
           </p>
           <p className="mt-1.5 text-balance text-xs leading-relaxed">
@@ -606,7 +606,7 @@ export function SoftFailedView({
         <h2
           ref={heading}
           tabIndex={-1}
-          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground outline-none"
+          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-[var(--verification-focus-ring)]"
         >
           Let&apos;s try that again
         </h2>
@@ -622,7 +622,7 @@ export function SoftFailedView({
               />
             ))}
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/50">
+          <span className="font-mono text-xs text-muted">
             {attemptsLabel}
           </span>
         </div>
@@ -1036,7 +1036,7 @@ export function FailedView({
         <h2
           ref={heading}
           tabIndex={-1}
-          className="font-display text-[1.75rem] font-normal leading-tight tracking-[-0.015em] text-foreground outline-none md:text-3xl"
+          className="font-display text-[1.75rem] font-normal leading-tight tracking-[-0.015em] text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-[var(--verification-focus-ring)] md:text-3xl"
         >
           {title}
         </h2>

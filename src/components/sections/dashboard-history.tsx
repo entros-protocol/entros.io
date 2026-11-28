@@ -128,76 +128,76 @@ export function DashboardHistory() {
         </h2>
 
         {loading && (
-          <div className="mt-12 flex items-center justify-center border border-border py-16">
+          <div className="mt-12 flex items-center justify-center bg-surface py-16 forced-colors:border forced-colors:border-[CanvasText]">
             <Loader2 className="h-6 w-6 animate-spin text-cyan" />
           </div>
         )}
 
         {error && (
-          <p className="mt-12 text-sm text-foreground/55">
+          <p className="mt-12 text-sm text-muted">
             Failed to load verification history
           </p>
         )}
 
         {!loading && !error && !mintTimestamp && (
-          <p className="mt-12 text-sm text-foreground/55">
+          <p className="mt-12 text-sm text-muted">
             No verification history found. Complete a verification to see
             entries here.
           </p>
         )}
 
         {!loading && !error && mintTimestamp && (
-          <div className="mt-12 max-h-[600px] space-y-px overflow-y-auto border-y border-border bg-border">
+          <div className="mt-12 max-h-[600px] divide-y divide-border overflow-y-auto bg-surface forced-colors:border forced-colors:border-[CanvasText]">
             {reVerifications.map((ts, i) => (
               <div
                 key={ts}
-                className="flex items-center gap-4 bg-background px-6 py-5"
+                className="flex items-center gap-4 px-6 py-5"
               >
                 <CheckCircle className="h-5 w-5 shrink-0 text-cyan" />
                 <div className="min-w-0 flex-1">
                   <p className="font-display text-base font-medium tracking-tight text-foreground">
                     Re-verification #{verificationCount - i}
                   </p>
-                  <p className="mt-1 text-xs text-foreground/55">
+                  <p className="mt-1 text-xs text-muted">
                     Behavioral consistency confirmed within threshold
                   </p>
                 </div>
-                <p className="shrink-0 text-xs tabular-nums text-foreground/55">
+                <p className="shrink-0 text-xs tabular-nums text-muted">
                   {formatTimestamp(ts)}
                 </p>
               </div>
             ))}
 
             {lastResetTimestamp > 0 && (
-              <div className="flex items-center gap-4 bg-background px-6 py-5">
+              <div className="flex items-center gap-4 px-6 py-5">
                 <RotateCcw className="h-5 w-5 shrink-0 text-danger" strokeWidth={1.5} />
                 <div className="min-w-0 flex-1">
                   <p className="font-display text-base font-medium tracking-tight text-foreground">
                     Baseline reset
                   </p>
-                  <p className="mt-1 text-xs text-foreground/55">
+                  <p className="mt-1 text-xs text-muted">
                     Fingerprint re-enrolled from this device
                   </p>
                 </div>
-                <p className="shrink-0 text-xs tabular-nums text-foreground/55">
+                <p className="shrink-0 text-xs tabular-nums text-muted">
                   {formatTimestamp(lastResetTimestamp)}
                 </p>
               </div>
             )}
 
-            <div className="flex items-center gap-4 bg-background px-6 py-5">
+            <div className="flex items-center gap-4 px-6 py-5">
               <Fingerprint className="h-5 w-5 shrink-0 text-cyan" strokeWidth={1.5} />
               <div className="min-w-0 flex-1">
                 <p className="font-display text-base font-medium tracking-tight text-foreground">
                   {lastResetTimestamp > 0 ? "Anchor minted" : "Initial verification"}
                 </p>
-                <p className="mt-1 text-xs text-foreground/55">
+                <p className="mt-1 text-xs text-muted">
                   {lastResetTimestamp > 0
                     ? "Entros Anchor PDA and Token-2022 mint created on-chain"
                     : "Behavioral baseline established"}
                 </p>
               </div>
-              <p className="shrink-0 text-xs tabular-nums text-foreground/55">
+              <p className="shrink-0 text-xs tabular-nums text-muted">
                 {formatTimestamp(mintTimestamp)}
               </p>
             </div>

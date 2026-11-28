@@ -208,14 +208,12 @@ export function PermitSequenceTemplate({
           style={{
             backgroundColor: palette.surfaceAlt,
             borderColor: palette.border,
-            borderLeftWidth: 3,
-            borderLeftColor: palette.warningFill,
             color: palette.foreground,
             borderRadius: 0,
           }}
         >
           <span
-            className="font-mono text-[11px] font-medium uppercase tracking-[0.08em]"
+            className="font-mono text-xs font-medium"
             style={{ color: palette.warningText }}
           >
             Authorization boundary:{" "}

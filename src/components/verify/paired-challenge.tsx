@@ -182,35 +182,33 @@ export function PairedChallenge({
       </p>
 
       {/* Round header. The slot is reserved before the first reveal. */}
-      <div className="h-[104px] shrink-0 overflow-hidden text-center">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-foreground/55 tabular-nums">
+      <div className="h-[108px] shrink-0 overflow-hidden text-center">
+        <p className="font-mono text-xs text-muted tabular-nums">
           {round ? `Round ${round.roundIndex} of ${round.rounds}` : " "}
         </p>
         <div className="mx-auto mt-2 flex max-w-[12rem] gap-1" aria-hidden="true">
           {Array.from({ length: round?.rounds ?? 3 }, (_, index) => (
             <span
               key={index}
-              className={`h-[3px] flex-1 transition-colors duration-300 ${
-                round && index < round.roundIndex ? "bg-cyan" : "bg-foreground/10"
+              className={`h-[3px] flex-1 transition-colors duration-200 motion-reduce:transition-none ${
+                round && index < round.roundIndex ? "bg-cyan" : "bg-foreground/15"
               }`}
             />
           ))}
         </div>
-        <p className="mt-2.5 font-mono text-[10px] uppercase tracking-[0.24em] text-cyan">
+        <p className="mt-2 font-mono text-xs text-cyan">
           {round ? "Say this word" : " "}
         </p>
         <p
           key={round ? `word-${roundIndex}` : "word"}
-          className={`mt-1 h-10 font-mono text-[2rem] font-semibold leading-10 tracking-[0.06em] transition-[color,text-shadow] duration-150 md:text-[2.25rem] ${
+          data-voice-active={isVoiceActive ? "true" : "false"}
+          className={`mt-1 h-10 font-mono text-[2rem] font-semibold leading-10 tracking-[0.04em] transition-colors duration-150 motion-reduce:transition-none md:text-[2.25rem] ${
             round ? "vc-reveal" : ""
           }`}
           style={{
             color: isVoiceActive
               ? "var(--color-foreground)"
-              : "color-mix(in srgb, var(--color-foreground) 55%, transparent)",
-            textShadow: isVoiceActive
-              ? `0 0 ${12 + normalizedAudio * 22}px color-mix(in srgb, var(--color-cyan) ${20 + normalizedAudio * 35}%, transparent)`
-              : "none",
+              : "var(--color-muted)",
           }}
         >
           {round ? round.word : " "}
@@ -218,7 +216,7 @@ export function PairedChallenge({
       </div>
 
       {/* Trace label. One fixed line under the header. */}
-      <p className="h-[20px] shrink-0 overflow-hidden text-center font-mono text-[10px] uppercase tracking-[0.22em] text-solana-green">
+      <p className="h-[22px] shrink-0 overflow-hidden text-center font-mono text-xs text-solana-green">
         {round
           ? phase === "cue"
             ? `Trace to the new point ${waypoints.length}`
@@ -231,16 +229,16 @@ export function PairedChallenge({
           an overlay inside the same slot, never a resize. */}
       <div className="relative min-h-0 flex-1">
         <div
-          className={`absolute inset-0 flex flex-col items-center justify-center gap-5 px-4 text-center transition-opacity duration-150 ${
+          className={`absolute inset-0 flex flex-col items-center justify-center gap-5 px-4 text-center transition-opacity duration-150 motion-reduce:transition-none ${
             round ? "pointer-events-none opacity-0" : "opacity-100"
           }`}
           aria-hidden={round !== null}
         >
-          <div className="relative h-14 w-14 overflow-hidden rounded-full border border-foreground/15" aria-hidden="true">
-            <div className="vc-sweep absolute inset-0 rounded-full" />
-            <span className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan" />
+          <div className="relative flex h-14 w-14 items-center justify-center" aria-hidden="true">
+            <span className="vc-orbit block h-12 w-12 rounded-full border-2 border-foreground/15 border-t-cyan" />
+            <span className="absolute h-1.5 w-1.5 bg-cyan" />
           </div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-foreground/55">
+          <p className="font-mono text-xs text-muted">
             Preparing round 1
           </p>
           <div className="max-w-[22rem] space-y-2">
@@ -263,7 +261,7 @@ export function PairedChallenge({
           >
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-2 top-2 z-[1] font-mono text-[9px] tracking-[0.18em] text-foreground/35 tabular-nums"
+              className="pointer-events-none absolute left-2 top-2 z-[1] font-mono text-xs text-muted tabular-nums"
             >
               {round ? `${String(Math.min(reachedNow, waypoints.length)).padStart(2, "0")}/${String(waypoints.length).padStart(2, "0")}` : ""}
             </span>
@@ -375,43 +373,43 @@ export function PairedChallenge({
       </div>
 
       {/* Microphone meter. Always mounted; the ticks rest flat before reveal. */}
-      <div className="flex h-[48px] shrink-0 flex-col items-center justify-center overflow-hidden">
+      <div className="flex h-[52px] shrink-0 flex-col items-center justify-center overflow-hidden">
         <div className="flex h-7 items-center justify-center gap-[3px]">
           {BAR_OFFSETS.map((offset, i) => (
             <div
               key={i}
-              className="w-[2px] rounded-full bg-cyan/60"
+              data-meter-bar=""
+              className="h-7 w-[2px] origin-center bg-cyan/70 transition-transform duration-100 ease-out motion-reduce:transition-none"
               style={{
-                height: `${2 + normalizedAudio * 32 * offset}px`,
-                transition: "height 100ms ease-out",
+                transform: `scaleY(${Math.min(1, 0.08 + normalizedAudio * 0.92 * offset).toFixed(3)})`,
               }}
             />
           ))}
         </div>
-        <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/40">
+        <p className="mt-1 font-mono text-xs text-muted">
           Microphone level
         </p>
       </div>
 
       {/* Status and prompts: three fixed lines. The Continue control and the
           messages appear inside them without moving anything else. */}
-      <div className="flex h-[60px] shrink-0 flex-col items-center overflow-hidden text-center">
-        <div className="flex h-7 items-center">
+      <div className="flex h-[68px] shrink-0 flex-col items-center overflow-hidden text-center">
+        <div className="flex h-9 items-center">
           {phase === "committing" ? (
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-foreground/55">
+            <p className="font-mono text-xs text-muted">
               Sending round {round?.roundIndex}
             </p>
           ) : phase === "cue_loading" ? (
-            <p className="text-xs text-foreground/55">Loading the final point…</p>
+            <p className="text-xs text-muted">Loading the final point…</p>
           ) : phase === "cue" ? (
-            <p className="text-xs text-foreground/55">Finish the trace at the new point.</p>
+            <p className="text-xs text-muted">Finish the trace at the new point.</p>
           ) : (
             phase === "round" &&
             canContinue && (
               <button
                 type="button"
                 onClick={handleContinue}
-                className={`vc-slide inline-flex h-7 items-center border border-cyan/45 px-3.5 font-mono text-[11px] tracking-[0.06em] text-cyan transition-colors hover:border-cyan hover:bg-cyan/[0.07] active:scale-[0.97] motion-reduce:transform-none ${verificationFocusRing}`}
+                className={`vc-slide inline-flex h-9 items-center bg-cyan/10 px-4 font-mono text-xs font-medium text-cyan transition-[background-color,transform] duration-150 hover:bg-cyan/15 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText] ${verificationFocusRing}`}
               >
                 I spoke · Continue
               </button>
@@ -448,7 +446,7 @@ export function PairedChallenge({
             }}
           />
         </div>
-        <p className="h-4 font-mono text-[10px] tabular-nums tracking-[0.12em] text-foreground/45">
+        <p className="h-4 font-mono text-xs tabular-nums text-muted">
           {round &&
           (phase === "round" || phase === "cue_loading" || phase === "cue")
             ? `${remaining}s remaining`

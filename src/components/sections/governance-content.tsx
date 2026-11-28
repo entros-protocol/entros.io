@@ -369,27 +369,27 @@ export function GovernanceContent() {
               <div className="flex h-full items-center">
                 <div className="min-w-0 w-full lg:w-auto lg:shrink lg:grow-0 lg:basis-[38rem]">
                   <div tabIndex={0} className="overflow-x-auto border border-panel-line bg-panel p-6 font-mono text-sm md:p-8">
-                <pre className="leading-relaxed text-foreground/80">
-                  <span className="text-foreground/40">
+                <pre className="leading-relaxed text-foreground/85">
+                  <span className="text-muted">
                     {"// DAO admin configures the Entros voter weight plugin\n"}
                   </span>
                   <span className="text-cyan">{"await"}</span>
                   {" program.methods\n  ."}
-                  <span className="text-[#C084FC]">{"createRegistrar"}</span>
+                  <span className="text-solana-purple">{"createRegistrar"}</span>
                   {"(\n    100,      "}
-                  <span className="text-foreground/40">
+                  <span className="text-muted">
                     {"// min_trust_score (at least one re-verification)"}
                   </span>
                   {"\n    2592000,  "}
-                  <span className="text-foreground/40">
+                  <span className="text-muted">
                     {"// max_verification_age (30 days in seconds)"}
                   </span>
                   {"\n  )\n  ."}
-                  <span className="text-[#C084FC]">{"accounts"}</span>
+                  <span className="text-solana-purple">{"accounts"}</span>
                   {"({\n    realm: realmPubkey,\n    governanceProgramId: govProgramId,\n    governingTokenMint: mintPubkey,\n    realmAuthority: admin.publicKey,\n    payer: admin.publicKey,\n  })\n  ."}
-                  <span className="text-[#C084FC]">{"signers"}</span>
+                  <span className="text-solana-purple">{"signers"}</span>
                   {"([admin])\n  ."}
-                  <span className="text-[#C084FC]">{"rpc"}</span>
+                  <span className="text-solana-purple">{"rpc"}</span>
                   {"();"}
                 </pre>
                   </div>

@@ -9,6 +9,11 @@ import {
   type PrimarySource,
 } from "@/data/comparison";
 import { pageMetadata } from "@/lib/page-metadata";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/button-styles";
 import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
@@ -25,7 +30,7 @@ function SourceLink({ source }: { source: PrimarySource }) {
         href={source.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 text-xs text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors hover:text-cyan hover:decoration-cyan"
+        className="inline-flex min-h-8 items-center gap-1 text-xs text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors duration-150 hover:text-cyan hover:decoration-cyan motion-reduce:transition-none"
       >
         <span>{source.label}</span>
         <ArrowUpRight className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -35,7 +40,7 @@ function SourceLink({ source }: { source: PrimarySource }) {
   return (
     <Link
       href={source.href}
-      className="inline-flex items-center gap-1 text-xs text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors hover:text-cyan hover:decoration-cyan"
+      className="inline-flex min-h-8 items-center gap-1 text-xs text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors duration-150 hover:text-cyan hover:decoration-cyan motion-reduce:transition-none"
     >
       <span>{source.label}</span>
     </Link>
@@ -52,13 +57,13 @@ export default function ComparePage() {
             Compare verification modalities<span className="text-cyan">.</span>
           </h1>
 
-          <p className="mt-7 max-w-2xl text-base leading-relaxed text-foreground/75 md:mt-8 md:text-lg">
+          <p className="mt-7 max-w-[65ch] text-base leading-relaxed text-foreground/75 md:mt-8 md:text-lg">
             Entros supplies optional complementary behavioral evidence within an
             application policy. Teams choose anatomical, credential, KYC, or
             behavioral inputs based on the risks each action carries.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-border px-6 py-4 font-mono text-xs text-foreground/60">
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 bg-surface px-6 py-4 font-mono text-xs text-muted forced-colors:border forced-colors:border-[CanvasText]">
             <span>Updated {COMPARISON_UPDATED}</span>
             <span>Entros status: Solana devnet</span>
             <span>Primary sources dated per row</span>
@@ -78,7 +83,7 @@ export default function ComparePage() {
               <a
                 key={item.href}
                 href={item.href}
-                className="border border-border bg-surface px-3.5 py-2 text-xs font-medium text-foreground/80 transition-colors hover:border-cyan/50 hover:text-foreground"
+                className="inline-flex min-h-11 items-center bg-surface px-4 py-2 text-xs font-medium text-foreground transition-colors duration-150 hover:bg-surface-hover motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
               >
                 {item.label}
               </a>
@@ -88,14 +93,14 @@ export default function ComparePage() {
       </section>
 
       {/* Modality table */}
-      <section id="modalities" className="scroll-mt-24 border-t border-border">
+      <section id="modalities" className="scroll-mt-24 bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-24">
           <div className="max-w-3xl">
             <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-4xl">
               Four modalities across Integrator Policy v1 primitives
               <span className="text-cyan">.</span>
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-foreground/70">
+            <p className="mt-4 max-w-[65ch] text-base leading-relaxed text-muted">
               Each row evaluates fresh result, continuity, uniqueness status,
               assurance tier, and limits in one table. Entros states its
               devnet, sensor provenance, and unmeasured population limits
@@ -105,14 +110,14 @@ export default function ComparePage() {
 
           {/* Row anchor index */}
           <div className="mt-8 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-foreground/60">
+            <span className="text-xs font-medium text-muted">
               Row anchors:
             </span>
             {MODALITY_ROWS.map((row) => (
               <a
                 key={row.id}
                 href={`#${row.id}`}
-                className="border border-border px-2.5 py-1 font-mono text-xs text-foreground/75 transition-colors hover:border-cyan/50 hover:text-cyan"
+                className="inline-flex min-h-11 items-center bg-background px-3 py-2 font-mono text-xs text-foreground/80 transition-colors duration-150 hover:bg-surface-hover hover:text-cyan motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
               >
                 #{row.id}
               </a>
@@ -120,10 +125,10 @@ export default function ComparePage() {
           </div>
 
           {/* Desktop column headers */}
-          <div className="mt-8 border-y border-border">
+          <div className="mt-8 bg-background forced-colors:border forced-colors:border-[CanvasText]">
             <div
               aria-hidden="true"
-              className="hidden border-b border-border bg-surface px-6 py-3.5 text-xs font-medium text-foreground/70 lg:grid lg:grid-cols-[1.05fr_1fr_1fr_1fr_1fr_1.35fr] lg:gap-6"
+              className="hidden border-b border-border bg-surface-hover/50 px-6 py-3.5 text-xs font-medium text-muted lg:grid lg:grid-cols-[1.05fr_1fr_1fr_1fr_1fr_1.35fr] lg:gap-6"
             >
               <span>Modality</span>
               <span>Fresh result</span>
@@ -140,67 +145,74 @@ export default function ComparePage() {
                   id={row.id}
                   className={cn(
                     "scroll-mt-24 grid grid-cols-1 gap-5 px-6 py-6 lg:grid-cols-[1.05fr_1fr_1fr_1fr_1fr_1.35fr] lg:gap-6",
-                    row.highlight && "border-l-2 border-l-cyan bg-surface/60",
+                    row.highlight && "bg-surface/75",
                   )}
                 >
                   <div>
                     <div className="flex flex-col gap-1">
-                      <h3 className="font-display text-lg font-medium text-foreground">
-                        {row.name}
-                      </h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-display text-lg font-medium text-foreground">
+                          {row.name}
+                        </h3>
+                        {row.highlight && (
+                          <span className="bg-background px-2 py-0.5 font-mono text-xs font-medium text-cyan">
+                            Entros
+                          </span>
+                        )}
+                      </div>
                       <a
                         href={`#${row.id}`}
-                        className="inline-block w-fit font-mono text-[11px] text-foreground/55 transition-colors hover:text-cyan"
+                        className="inline-flex min-h-11 w-fit items-center font-mono text-xs text-muted transition-colors duration-150 hover:text-cyan motion-reduce:transition-none"
                       >
                         #{row.id}
                       </a>
                     </div>
-                    <p className="mt-2 text-xs leading-relaxed text-foreground/65">
+                    <p className="mt-1 max-w-[65ch] text-xs leading-relaxed text-muted">
                       {row.examples}
                     </p>
                   </div>
 
                   <div>
-                    <p className="mb-1 text-xs font-medium text-foreground/55 lg:hidden">
+                    <p className="mb-1 text-xs font-medium text-muted lg:hidden">
                       Fresh result
                     </p>
-                    <p className="text-sm leading-relaxed text-foreground/80">
+                    <p className="max-w-[65ch] text-sm leading-relaxed text-foreground/85">
                       {row.freshResult}
                     </p>
                   </div>
 
                   <div>
-                    <p className="mb-1 text-xs font-medium text-foreground/55 lg:hidden">
+                    <p className="mb-1 text-xs font-medium text-muted lg:hidden">
                       Continuity
                     </p>
-                    <p className="text-sm leading-relaxed text-foreground/80">
+                    <p className="max-w-[65ch] text-sm leading-relaxed text-foreground/85">
                       {row.continuity}
                     </p>
                   </div>
 
                   <div>
-                    <p className="mb-1 text-xs font-medium text-foreground/55 lg:hidden">
+                    <p className="mb-1 text-xs font-medium text-muted lg:hidden">
                       Uniqueness status
                     </p>
-                    <p className="text-sm leading-relaxed text-foreground/80">
+                    <p className="max-w-[65ch] text-sm leading-relaxed text-foreground/85">
                       {row.uniquenessStatus}
                     </p>
                   </div>
 
                   <div>
-                    <p className="mb-1 text-xs font-medium text-foreground/55 lg:hidden">
+                    <p className="mb-1 text-xs font-medium text-muted lg:hidden">
                       Assurance tier
                     </p>
-                    <p className="text-sm leading-relaxed text-foreground/80">
+                    <p className="max-w-[65ch] text-sm leading-relaxed text-foreground/85">
                       {row.assuranceTier}
                     </p>
                   </div>
 
                   <div className="border-t border-border pt-4 lg:border-t-0 lg:border-l lg:border-border lg:pt-0 lg:pl-6">
-                    <p className="mb-1 text-xs font-medium text-foreground/55 lg:hidden">
+                    <p className="mb-1 text-xs font-medium text-muted lg:hidden">
                       Limit
                     </p>
-                    <p className="text-sm leading-relaxed text-foreground/85">
+                    <p className="max-w-[65ch] text-sm leading-relaxed text-foreground/85">
                       {row.limit}
                     </p>
                   </div>
@@ -214,7 +226,7 @@ export default function ComparePage() {
       {/* Distinct policy concerns */}
       <section
         id="policy-boundaries"
-        className="scroll-mt-24 border-t border-border"
+        className="scroll-mt-24"
       >
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-24">
           <div className="max-w-3xl">
@@ -222,23 +234,18 @@ export default function ComparePage() {
               Keep five policy questions separate
               <span className="text-cyan">.</span>
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-foreground/70">
+            <p className="mt-4 max-w-[65ch] text-base leading-relaxed text-muted">
               No single verification modality answers all five questions.
               Evaluate each question on its own in server and on-chain checks.
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 divide-y divide-border border-y border-border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-5">
-            {POLICY_BOUNDARIES.map((item, index) => (
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {POLICY_BOUNDARIES.map((item) => (
               <div
                 key={item.id}
                 id={item.id}
-                className={cn(
-                  "scroll-mt-24 flex flex-col justify-between p-6",
-                  index > 0 && "lg:border-l lg:border-border",
-                  index % 2 === 1 && "sm:border-l sm:border-border lg:border-l",
-                  index >= 2 && "sm:border-t sm:border-border lg:border-t-0",
-                )}
+                className="scroll-mt-24 flex flex-col justify-between bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText]"
               >
                 <div>
                   <h3 className="font-display text-lg font-medium text-foreground">
@@ -248,7 +255,7 @@ export default function ComparePage() {
                     {item.question}
                   </p>
                 </div>
-                <p className="mt-4 text-sm leading-relaxed text-foreground/75">
+                <p className="mt-4 max-w-[65ch] text-sm leading-relaxed text-foreground/80">
                   {item.detail}
                 </p>
               </div>
@@ -258,14 +265,14 @@ export default function ComparePage() {
       </section>
 
       {/* Dated vendor scope */}
-      <section id="vendors" className="scroll-mt-24 border-t border-border">
+      <section id="vendors" className="scroll-mt-24 bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-24">
           <div className="max-w-3xl">
             <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-4xl">
               Dated primary-source vendor scope
               <span className="text-cyan">.</span>
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-foreground/70">
+            <p className="mt-4 max-w-[65ch] text-base leading-relaxed text-muted">
               Each row cites public primary documentation on the recorded check
               date. Vendor capabilities change over time, so recheck the linked
               source before making architecture decisions. This page publishes
@@ -275,24 +282,24 @@ export default function ComparePage() {
 
           {/* Vendor anchor index */}
           <div className="mt-8 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-foreground/60">
+            <span className="text-xs font-medium text-muted">
               Vendor anchors:
             </span>
             {VENDOR_SCOPE_ROWS.map((row) => (
               <a
                 key={row.id}
                 href={`#${row.id}`}
-                className="border border-border px-2.5 py-1 font-mono text-xs text-foreground/75 transition-colors hover:border-cyan/50 hover:text-cyan"
+                className="inline-flex min-h-11 items-center bg-background px-3 py-2 font-mono text-xs text-foreground/80 transition-colors duration-150 hover:bg-surface-hover hover:text-cyan motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
               >
                 #{row.id}
               </a>
             ))}
           </div>
 
-          <div className="mt-8 border-y border-border">
+          <div className="mt-8 bg-background forced-colors:border forced-colors:border-[CanvasText]">
             <div
               aria-hidden="true"
-              className="hidden border-b border-border bg-surface px-6 py-3.5 text-xs font-medium text-foreground/70 lg:grid lg:grid-cols-[1.05fr_1.7fr_1.45fr_0.95fr] lg:gap-6"
+              className="hidden border-b border-border bg-surface-hover/50 px-6 py-3.5 text-xs font-medium text-muted lg:grid lg:grid-cols-[1.05fr_1.7fr_1.45fr_0.95fr] lg:gap-6"
             >
               <span>System and check date</span>
               <span>Documented scope</span>
@@ -307,49 +314,56 @@ export default function ComparePage() {
                   id={row.id}
                   className={cn(
                     "scroll-mt-24 grid grid-cols-1 gap-5 px-6 py-6 lg:grid-cols-[1.05fr_1.7fr_1.45fr_0.95fr] lg:gap-6",
-                    row.highlight && "border-l-2 border-l-cyan bg-surface/60",
+                    row.highlight && "bg-surface/75",
                   )}
                 >
                   <div>
                     <div className="flex flex-col gap-1">
-                      <h3 className="font-display text-lg font-medium text-foreground">
-                        {row.name}
-                      </h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-display text-lg font-medium text-foreground">
+                          {row.name}
+                        </h3>
+                        {row.highlight && (
+                          <span className="bg-background px-2 py-0.5 font-mono text-xs font-medium text-cyan">
+                            This protocol
+                          </span>
+                        )}
+                      </div>
                       <a
                         href={`#${row.id}`}
-                        className="inline-block w-fit font-mono text-[11px] text-foreground/55 transition-colors hover:text-cyan"
+                        className="inline-flex min-h-11 w-fit items-center font-mono text-xs text-muted transition-colors duration-150 hover:text-cyan motion-reduce:transition-none"
                       >
                         #{row.id}
                       </a>
                     </div>
-                    <p className="mt-2 text-xs text-foreground/70">
+                    <p className="mt-1 text-xs text-muted">
                       {row.modality}
                     </p>
-                    <p className="mt-2 font-mono text-xs text-foreground/55">
+                    <p className="mt-2 font-mono text-xs text-muted">
                       Checked {row.checked}
                     </p>
                   </div>
 
                   <div>
-                    <p className="mb-1 text-xs font-medium text-foreground/55 lg:hidden">
+                    <p className="mb-1 text-xs font-medium text-muted lg:hidden">
                       Documented scope
                     </p>
-                    <p className="text-sm leading-relaxed text-foreground/80">
+                    <p className="max-w-[34rem] text-sm leading-relaxed text-foreground/85">
                       {row.scope}
                     </p>
                   </div>
 
                   <div>
-                    <p className="mb-1 text-xs font-medium text-foreground/55 lg:hidden">
+                    <p className="mb-1 text-xs font-medium text-muted lg:hidden">
                       Limits and comparison boundary
                     </p>
-                    <p className="text-sm leading-relaxed text-foreground/80">
+                    <p className="max-w-[30rem] text-sm leading-relaxed text-foreground/85">
                       {row.boundary}
                     </p>
                   </div>
 
                   <div>
-                    <p className="mb-2 text-xs font-medium text-foreground/55 lg:hidden">
+                    <p className="mb-2 text-xs font-medium text-muted lg:hidden">
                       Primary sources
                     </p>
                     <ul className="flex flex-col gap-2">
@@ -368,29 +382,25 @@ export default function ComparePage() {
       </section>
 
       {/* Integration explainers */}
-      <section id="explainers" className="scroll-mt-24 border-t border-border">
+      <section id="explainers" className="scroll-mt-24">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-24">
           <div className="max-w-3xl">
             <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-4xl">
               How Entros fits inside an application policy
               <span className="text-cyan">.</span>
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-foreground/70">
+            <p className="mt-4 max-w-[65ch] text-base leading-relaxed text-muted">
               Four architectural boundaries that govern how consuming apps read,
               reuse, and enforce behavioral evidence.
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 divide-y divide-border border-y border-border md:grid-cols-2 md:divide-y-0">
-            {COMPARISON_EXPLAINERS.map((item, index) => (
+          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+            {COMPARISON_EXPLAINERS.map((item) => (
               <article
                 key={item.id}
                 id={item.id}
-                className={cn(
-                  "scroll-mt-24 flex flex-col justify-between p-6 md:p-8",
-                  index % 2 === 1 && "md:border-l md:border-border",
-                  index >= 2 && "md:border-t md:border-border",
-                )}
+                className="scroll-mt-24 flex flex-col justify-between bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8"
               >
                 <div>
                   <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
@@ -400,12 +410,12 @@ export default function ComparePage() {
                     </h3>
                     <a
                       href={`#${item.id}`}
-                      className="w-fit shrink-0 font-mono text-[11px] text-foreground/50 transition-colors hover:text-cyan"
+                      className="inline-flex min-h-11 w-fit shrink-0 items-center font-mono text-xs text-muted transition-colors duration-150 hover:text-cyan motion-reduce:transition-none"
                     >
                       #{item.id}
                     </a>
                   </div>
-                  <div className="mt-4 space-y-3 text-sm leading-relaxed text-foreground/75">
+                  <div className="mt-3 max-w-[30rem] space-y-3 text-sm leading-relaxed text-foreground/80">
                     {item.body.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>
                     ))}
@@ -416,11 +426,11 @@ export default function ComparePage() {
                   <div className="mt-6">
                     <Link
                       href={item.link.href}
-                      className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors hover:text-cyan hover:decoration-cyan"
+                      className="group inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-foreground underline decoration-foreground/30 underline-offset-4 transition-colors duration-150 hover:text-cyan hover:decoration-cyan motion-reduce:transition-none"
                     >
                       <span>{item.link.label}</span>
                       <ArrowRight
-                        className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                        className="h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
                         aria-hidden="true"
                       />
                     </Link>
@@ -433,40 +443,31 @@ export default function ComparePage() {
       </section>
 
       {/* Footer CTA */}
-      <section className="border-t border-border">
+      <section>
         <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.06]">
             Combine behavioral evidence with your policy
             <span className="text-cyan">.</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-foreground/70">
+          <p className="mx-auto mt-5 max-w-[60ch] text-base leading-relaxed text-muted">
             Read the Integrator Policy v1 reference or run a devnet verification
             in your browser.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/docs/integrate/verification-flow"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
+              className={primaryButtonClass}
             >
-              Read policy docs
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Read policy docs
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
-            <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              Try the devnet demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/verify" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Try the devnet demo
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

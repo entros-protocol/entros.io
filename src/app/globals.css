@@ -5,7 +5,7 @@
 
 /* ----------------------------------------------------------------
    Theme-aware colours: light by default, .dark class overrides.
-   next-themes toggles .dark on <html>.
+   next-themes toggles .dark on <html> and follows OS preference.
    ---------------------------------------------------------------- */
 
 :root {
@@ -15,30 +15,44 @@
   --color-foreground: #1A1A1F;
   --color-muted: #5A5A6A;
   --color-subtle: #B0B0BA;
-  --color-cyan: #0AADBC;
-  --color-solana-purple: #7C3AED;
-  --color-solana-green: #059669;
-  --color-warning: #D97706;
-  --color-danger: #DC2626;
-  --color-code-bg: #F1F5F9;
-  --color-border: rgba(0, 0, 0, 0.08);
-  --color-border-hover: rgba(0, 196, 212, 0.3);
-  --color-effect: rgba(0, 160, 180, 0.6);
-  --verification-surface-border: rgba(26, 26, 31, 0.07);
-  --verification-surface-start: rgba(240, 240, 236, 0.78);
-  --verification-surface-end: rgba(250, 250, 248, 0.98);
-  --verification-surface-highlight: rgba(26, 26, 31, 0.03);
-  --verification-surface-shadow: rgba(26, 26, 31, 0.06);
+  --color-cyan: #007888;
+  --color-solana-purple: #6D28D9;
+  --color-solana-green: #047857;
+  --color-warning: #9A4D00;
+  --color-danger: #B91C1C;
+  --color-code-bg: #F0F0EC;
+  --color-border: rgba(26, 26, 31, 0.12);
+  --color-control-border: #767682;
+  --color-border-hover: rgba(0, 120, 136, 0.45);
+  --color-effect: rgba(0, 120, 136, 0.6);
   --verification-accent-text: #007888;
   --verification-focus-ring: #007888;
-  --color-panel: #EEF1F3;
-  --color-panel-line: rgba(26, 26, 31, 0.07);
+  --color-panel: #F0F0EC;
+  --color-panel-line: transparent;
+
+  /* Map Fumadocs UI tokens to Entros light tokens. */
+  --color-fd-background: #FAFAF8;
+  --color-fd-foreground: #1A1A1F;
+  --color-fd-muted: #F0F0EC;
+  --color-fd-muted-foreground: #5A5A6A;
+  --color-fd-popover: #F0F0EC;
+  --color-fd-popover-foreground: #1A1A1F;
+  --color-fd-card: #F0F0EC;
+  --color-fd-card-foreground: #1A1A1F;
+  --color-fd-border: rgba(26, 26, 31, 0.14);
+  --color-fd-primary: #1A1A1F;
+  --color-fd-primary-foreground: #FAFAF8;
+  --color-fd-secondary: #E6E6E0;
+  --color-fd-secondary-foreground: #1A1A1F;
+  --color-fd-accent: #E6E6E0;
+  --color-fd-accent-foreground: #1A1A1F;
+  --color-fd-ring: #007888;
 }
 
 .dark {
   --color-background: #000000;
-  --color-surface: #0A0A0F;
-  --color-surface-hover: #14141C;
+  --color-surface: #121218;
+  --color-surface-hover: #1B1B24;
   --color-foreground: #E8E6E0;
   --color-muted: #858595;
   --color-subtle: #3A3A48;
@@ -47,19 +61,60 @@
   --color-solana-green: #14F195;
   --color-warning: #FFB800;
   --color-danger: #FF3B3B;
-  --color-code-bg: #1E293B;
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(0, 240, 255, 0.2);
-  --color-effect: rgba(0, 240, 255, 0.6);
-  --verification-surface-border: rgba(232, 230, 224, 0.07);
-  --verification-surface-start: rgba(10, 10, 15, 0.92);
-  --verification-surface-end: rgba(0, 0, 0, 0.98);
-  --verification-surface-highlight: rgba(255, 255, 255, 0.035);
-  --verification-surface-shadow: rgba(0, 0, 0, 0.42);
+  --color-code-bg: #121218;
+  --color-border: rgba(232, 230, 224, 0.1);
+  --color-control-border: #6E6E7D;
+  --color-border-hover: rgba(34, 211, 230, 0.35);
+  --color-effect: rgba(34, 211, 230, 0.6);
   --verification-accent-text: #22D3E6;
   --verification-focus-ring: #22D3E6;
-  --color-panel: rgba(232, 230, 224, 0.06);
+  --color-panel: #121218;
   --color-panel-line: transparent;
+
+  /* Map Fumadocs UI tokens to Entros dark tokens. */
+  --color-fd-background: #000000;
+  --color-fd-foreground: #E8E6E0;
+  --color-fd-muted: #121218;
+  --color-fd-muted-foreground: #858595;
+  --color-fd-popover: #121218;
+  --color-fd-popover-foreground: #E8E6E0;
+  --color-fd-card: #121218;
+  --color-fd-card-foreground: #E8E6E0;
+  --color-fd-border: rgba(232, 230, 224, 0.14);
+  --color-fd-primary: #E8E6E0;
+  --color-fd-primary-foreground: #000000;
+  --color-fd-secondary: #1B1B24;
+  --color-fd-secondary-foreground: #E8E6E0;
+  --color-fd-accent: #1B1B24;
+  --color-fd-accent-foreground: #E8E6E0;
+  --color-fd-ring: #22D3E6;
+}
+
+.dark #nd-sidebar {
+  --color-fd-muted: #121218;
+  --color-fd-secondary: #1B1B24;
+  --color-fd-muted-foreground: #858595;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --color-muted: #1A1A1F;
+    --color-control-border: #1A1A1F;
+    --color-border: rgba(26, 26, 31, 0.45);
+    --color-fd-muted-foreground: #1A1A1F;
+    --color-fd-border: rgba(26, 26, 31, 0.45);
+  }
+  .dark,
+  .dark #nd-sidebar {
+    --color-muted: #E8E6E0;
+    --color-control-border: #E8E6E0;
+    --color-border: rgba(232, 230, 224, 0.45);
+    --color-fd-muted-foreground: #E8E6E0;
+    --color-fd-border: rgba(232, 230, 224, 0.45);
+  }
+  :is(a[href], button, input, select, textarea, summary, [role="button"]):focus-visible {
+    outline-width: 3px;
+  }
 }
 
 /* ----------------------------------------------------------------
@@ -81,6 +136,7 @@
   --color-danger: var(--color-danger);
   --color-code-bg: var(--color-code-bg);
   --color-border: var(--color-border);
+  --color-control-border: var(--color-control-border);
   --color-border-hover: var(--color-border-hover);
   --color-effect: var(--color-effect);
   --color-panel: var(--color-panel);
@@ -104,67 +160,23 @@
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
   --font-display: var(--font-geist), "Geist", "Inter", ui-sans-serif, system-ui, sans-serif;
-
-  /* Animation keyframes */
-  --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
-  --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
-  --animate-ripple: ripple 3.6s ease-out infinite;
-
-  @keyframes shimmer-slide {
-    to {
-      transform: translate(calc(100cqw - 100%), 0);
-    }
-  }
-
-  @keyframes ripple {
-    0% {
-      transform: scale(0.7);
-      opacity: 0.5;
-    }
-    100% {
-      transform: scale(1.25);
-      opacity: 0;
-    }
-  }
-
-  @keyframes spin-around {
-    0% {
-      transform: translateZ(0) rotate(0);
-    }
-    15%, 35% {
-      transform: translateZ(0) rotate(90deg);
-    }
-    65%, 85% {
-      transform: translateZ(0) rotate(270deg);
-    }
-    100% {
-      transform: translateZ(0) rotate(360deg);
-    }
-  }
-
-  @keyframes cursor-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
+  padding-top: 0;
 }
 
-/* Agent review panels use light structure and layered depth. */
+/* Agent review panels step off the page ground with no border or drop shadow. */
 .verification-surface {
-  border: 1px solid var(--verification-surface-border);
-  background: linear-gradient(
-    145deg,
-    var(--verification-surface-start) 0%,
-    var(--verification-surface-end) 100%
-  );
-  box-shadow:
-    inset 0 1px 0 var(--verification-surface-highlight),
-    0 20px 56px var(--verification-surface-shadow);
+  background: var(--color-surface);
+}
+@media (forced-colors: active) {
+  .verification-surface {
+    border: 1px solid CanvasText;
+  }
 }
 
 /* ----------------------------------------------------------------
@@ -173,38 +185,33 @@ body {
    passes from 65% foreground, dark mode from 55%. Fainter tints in the
    markup render at that floor. `:where()` keeps the specificity of a
    plain utility, and the utilities layer keeps the rule below hover and
-   focus variants, so `hover:text-foreground` still wins. The inverted
-   navbar and mobile menu use `text-background/*` on a foreground fill,
-   which behaves like the opposite theme.
+   focus variants, so `hover:text-foreground` still wins.
    ---------------------------------------------------------------- */
 @layer utilities {
   :where(:root:not(.dark))
     :is(.text-foreground\/25, .text-foreground\/30, .text-foreground\/35,
       .text-foreground\/40, .text-foreground\/45, .text-foreground\/50,
       .text-foreground\/55, .text-foreground\/60) {
-    color: color-mix(in oklab, var(--color-foreground) 65%, transparent);
+    color: color-mix(in oklab, var(--color-foreground) 68%, transparent);
   }
   :where(.dark)
     :is(.text-foreground\/25, .text-foreground\/30, .text-foreground\/35,
       .text-foreground\/40, .text-foreground\/45, .text-foreground\/50) {
-    color: color-mix(in oklab, var(--color-foreground) 55%, transparent);
+    color: color-mix(in oklab, var(--color-foreground) 62%, transparent);
   }
-  /* Brand cyan reads at 2.4 to 2.6:1 on the light page. Readable cyan
-     text takes the deeper teal the verification console already uses
-     (about 4.6 to 5:1). Fills, strokes and aria-hidden ascii art keep
-     the brand cyan. */
   :where(:root:not(.dark))
     :is(.text-cyan, .text-cyan\/90, .text-cyan\/80, .text-cyan\/75,
       .text-cyan\/70, .text-cyan\/60):where(:not([aria-hidden="true"])) {
     color: var(--verification-accent-text);
   }
   :where(:root:not(.dark)) .text-background\/40 {
-    color: color-mix(in oklab, var(--color-background) 55%, transparent);
+    color: color-mix(in oklab, var(--color-background) 62%, transparent);
   }
   :where(.dark) .text-background\/40 {
-    color: color-mix(in oklab, var(--color-background) 65%, transparent);
+    color: color-mix(in oklab, var(--color-background) 68%, transparent);
   }
 }
+
 /* Line glyphs keep one hairline weight at every rendered size.
    vector-effect does not inherit, so it targets each shape. */
 .entros-glyph :is(path, rect, line, polyline, circle) {
@@ -221,14 +228,21 @@ body {
 
 /* Scroll containers take keyboard focus so arrow keys can scroll them. */
 [tabindex="0"]:is(div, pre, code):focus-visible {
-  outline: 1px solid var(--color-cyan);
+  outline: 2px solid var(--verification-focus-ring);
   outline-offset: 2px;
 }
 
-/* Square, high-contrast keyboard focus fallback for interactive controls
-   without an explicit ring utility. Placed in @layer base so component-level
-   focus-visible utilities override it cleanly. */
+/* Base layout defaults: sticky nav clearance, balanced headings, and square
+   high-contrast keyboard focus fallback for controls without a custom ring. */
 @layer base {
+  html {
+    scroll-padding-top: 72px;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
   :is(a[href], button, input, select, textarea, summary, [role="button"]):focus-visible {
     outline: 2px solid var(--verification-focus-ring);
     outline-offset: 2px;
@@ -246,108 +260,39 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 0;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.28);
 }
 
 :root *::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(26, 26, 31, 0.2);
 }
 
 :root *::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(26, 26, 31, 0.36);
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 }
 
 :root * {
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-}
-
-/* Cyan halo for accent type. Light defaults to a toned-down teal so
-   it doesn't fight the warm cream bg; dark uses the brighter cyan
-   against the void. (Earlier the override used `:root .text-glow-cyan`
-   which has the same specificity as `.dark .text-glow-cyan` but appears
-   later—silently clobbering the dark variant. Replaced with the
-   conventional light/dark order so .dark wins via specificity.) */
-.text-glow-cyan {
-  text-shadow: 0 0 20px rgba(0, 196, 212, 0.1);
-}
-.dark .text-glow-cyan {
-  text-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
-}
-
-/* ----------------------------------------------------------------
-   ShimmerButton—theme-aware fill + inset glow.
-   Default rgba whites in the component invert badly in light mode
-   (white-on-white = invisible). These vars flip with theme so the
-   button reads as a subtle filled pill in both modes.
-
-   IMPORTANT: variable names must NOT collide with the local vars
-   ShimmerButton sets in its inline style (`--shimmer-color`, `--bg`).
-   Using `--theme-shimmer-*` avoids the circular reference that caused
-   constant flicker (browser detects cycle → falls back to invalid →
-   shimmer-slide animation re-renders unstable colors per frame).
-   ---------------------------------------------------------------- */
-:root {
-  --theme-shimmer-bg: rgba(0, 0, 0, 0.05);
-  --theme-shimmer-glow-base: rgba(0, 0, 0, 0.08);
-  --theme-shimmer-glow-hover: rgba(0, 0, 0, 0.18);
-  --theme-shimmer-glow-active: rgba(0, 0, 0, 0.24);
-  --theme-shimmer-color: rgba(0, 0, 0, 0.12);
-}
-.dark {
-  --theme-shimmer-bg: rgba(255, 255, 255, 0.04);
-  --theme-shimmer-glow-base: rgba(255, 255, 255, 0.12);
-  --theme-shimmer-glow-hover: rgba(255, 255, 255, 0.24);
-  --theme-shimmer-glow-active: rgba(255, 255, 255, 0.24);
-  --theme-shimmer-color: rgba(255, 255, 255, 0.1);
-}
-
-/* ----------------------------------------------------------------
-   ASCII spiral—light-mode-only glyph thickening.
-   At 4-6px font-size, the box-drawing characters (▪ ▫ ·) anti-alias
-   thinly and wash out against the warm cream background. A sub-pixel
-   text-shadow stack thickens each glyph without changing its color
-   or layout. Reset to none in dark mode where the void already
-   provides enough contrast.
-   ---------------------------------------------------------------- */
-/* Shared light-mode glyph thickening for any ASCII-art canvas
-   (spiral, icosahedron, future shapes). At 4-8px font-size the box-
-   drawing characters anti-alias thinly and wash out on the cream bg;
-   a sub-pixel text-shadow stack adds visual weight. No-op in dark
-   mode where the void already provides enough contrast. */
-.ascii-art-bright {
-  text-shadow:
-    0 0 0.5px currentColor,
-    0.3px 0 0 currentColor,
-    -0.3px 0 0 currentColor;
-}
-.dark .ascii-art-bright {
-  text-shadow: none;
+  scrollbar-color: rgba(26, 26, 31, 0.2) transparent;
 }
 
 ::selection {
-  background: rgba(0, 240, 255, 0.2);
+  background: color-mix(in srgb, var(--color-cyan) 22%, transparent);
   color: var(--color-foreground);
 }
 
 /* ----------------------------------------------------------------
-   Verify proving-stage loader — cartoon "tumbling block".
-   Square holds on a side, then rotates 90° clockwise to the next.
-   Repeats four times per full revolution. The hold is the resting
-   "tick"; the rotation is a smooth eased glide so the eye reads it
-   as a graceful tumble rather than a hard snap. Each tick+rotation
-   pair is 750 ms (450 ms hold, 300 ms rotation) at the default 3 s
-   cycle below.
+   Verification console motion. Every UI transition stays at or under
+   300ms using transform/opacity only, and stops under reduced motion.
    ---------------------------------------------------------------- */
 
 @keyframes entros-tumble {
@@ -358,184 +303,152 @@ body {
   100%       { transform: rotate(360deg); }
 }
 
-/* ----------------------------------------------------------------
-   Verification console motion. Decorative only: nothing here plays
-   during capture as sound or vibration, and every class stops under
-   prefers-reduced-motion.
-   ---------------------------------------------------------------- */
+.vc-enter { animation: vc-enter 220ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+@keyframes vc-enter { from { opacity: 0; transform: translateY(6px); } }
 
-.vc-shimmer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0%, var(--color-cyan) 50%, transparent 100%);
-  transform: translateX(-100%);
-  animation: vc-shimmer 1.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
-}
-@keyframes vc-shimmer { to { transform: translateX(100%); } }
+.vc-reveal { animation: vc-reveal 240ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+@keyframes vc-reveal { from { opacity: 0; transform: translateY(4px); } }
 
-.vc-enter { animation: vc-enter 320ms cubic-bezier(0.23, 1, 0.32, 1) both; }
-@keyframes vc-enter { from { opacity: 0; transform: translateY(6px); filter: blur(2px); } }
-
-.vc-reveal { animation: vc-reveal 360ms cubic-bezier(0.23, 1, 0.32, 1) both; }
-@keyframes vc-reveal { from { opacity: 0; letter-spacing: 0.3em; filter: blur(4px); } }
-
-.vc-slide { animation: vc-slide 260ms cubic-bezier(0.32, 0.72, 0, 1) both; }
-@keyframes vc-slide { from { opacity: 0; transform: translateY(12px); } }
+.vc-slide { animation: vc-slide 220ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+@keyframes vc-slide { from { opacity: 0; transform: translateY(10px); } }
 
 .vc-target {
   transform-box: fill-box;
   transform-origin: center;
-  animation: vc-target 1.4s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+  animation: vc-target 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 @keyframes vc-target {
-  0% { opacity: 0.55; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.75); }
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 0.7; transform: scale(1.22); }
 }
 
 .vc-pop {
   transform-box: fill-box;
   transform-origin: center;
-  animation: vc-pop 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: vc-pop 200ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-@keyframes vc-pop { from { transform: scale(0.82); } }
+@keyframes vc-pop { from { transform: scale(0.84); } }
 
-.vc-sweep {
-  background: conic-gradient(from 0deg, transparent 0deg, color-mix(in srgb, var(--color-cyan) 45%, transparent) 70deg, transparent 90deg);
-  animation: vc-spin 2.4s linear infinite;
-}
 .vc-orbit { animation: vc-spin 1.1s linear infinite; }
 @keyframes vc-spin { to { transform: rotate(360deg); } }
 
 .vc-tumble { animation: entros-tumble 3s ease-in-out infinite; }
 
-/* Drains over the popup's 2.5 s auto-close. */
-.vc-close-timer { animation: vc-close-timer 2500ms linear forwards; }
+/* Drains over the popup's 2.5 s auto-close countdown. */
+.vc-close-timer { animation: vc-close-timer 2.5s linear forwards; }
 @keyframes vc-close-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
 .vc-draw {
   stroke-dasharray: var(--vc-len);
   stroke-dashoffset: var(--vc-len);
-  animation: vc-draw 900ms cubic-bezier(0.23, 1, 0.32, 1) 120ms forwards;
+  animation: vc-draw 280ms cubic-bezier(0.23, 1, 0.32, 1) 80ms forwards;
 }
 @keyframes vc-draw { to { stroke-dashoffset: 0; } }
 
-.vc-fade { animation: vc-fade 500ms cubic-bezier(0.23, 1, 0.32, 1) 300ms both; }
+.vc-fade { animation: vc-fade 220ms cubic-bezier(0.23, 1, 0.32, 1) 120ms both; }
 @keyframes vc-fade { from { opacity: 0; } }
 
-/* A highlight travelling a diagram's hairline, start to end. */
-.flow-pulse {
-  transform: translateX(-100%);
-  animation: flow-pulse 2.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-}
-@keyframes flow-pulse {
-  0% { transform: translateX(-100%); opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { transform: translateX(0); opacity: 0; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .flow-pulse { animation: none; transform: none; opacity: 0.6; }
-  .vc-shimmer, .vc-target, .vc-sweep, .vc-orbit, .vc-tumble,
+  .vc-target, .vc-orbit, .vc-tumble,
   .vc-enter, .vc-reveal, .vc-slide, .vc-pop, .vc-fade, .vc-close-timer { animation: none; }
-  .vc-shimmer { transform: none; opacity: 0.4; }
-  .vc-target { opacity: 0; }
+  .vc-target { opacity: 0.7; transform: scale(1.22); }
   .vc-draw { animation: none; stroke-dashoffset: 0; }
 }
 
 /* ----------------------------------------------------------------
-   Solana wallet adapter dark theme overrides
+   Solana wallet adapter overrides: unified solid square primary button
+   across /verify, /dashboard, /agents, and devnet demos.
    ---------------------------------------------------------------- */
 
 .wallet-adapter-button {
-  background-color: var(--color-surface) !important;
-  color: var(--color-foreground) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 0 !important;
-  font-family: var(--font-mono) !important;
-  font-size: 0.875rem !important;
+  min-height: 2.75rem !important;
   height: auto !important;
-  padding: 0.5rem 1.25rem !important;
-}
-
-.wallet-adapter-button:hover {
-  background-color: var(--color-surface-hover) !important;
-  border-color: var(--color-border-hover) !important;
-}
-
-/* The docs chrome comes from fumadocs-ui, whose controls are rounded.
-   Square them so buttons match across the site. Unlayered, so it wins
-   over the library's utility classes. */
-#nd-docs-layout :is(button, a[href], [role="button"], input),
-#nd-docs-layout [data-theme-toggle] > *,
-#nd-docs-layout :has(> [data-theme-toggle]),
-[role="dialog"] :is(button, a[href], input) {
-  border-radius: 0;
-}
-
-/* Two docs greys sit just under 4.5:1: the search button's placeholder and
-   the light code theme's comment colour. */
-[data-search-full] {
-  color: color-mix(in oklab, var(--color-foreground) 70%, transparent);
-}
-:root:not(.dark) #nd-docs-layout pre [style*="--shiki-light:#66707B"] {
-  color: #57606a;
-}
-
-/* The connect control inside the verification console matches its
-   primary action: square, solid, sans. */
-.vc-wallet .wallet-adapter-button {
-  height: 3rem !important;
-  padding: 0 1.75rem !important;
+  padding: 0.625rem 1.5rem !important;
   border: 0 !important;
   border-radius: 0 !important;
   background-color: var(--color-foreground) !important;
   color: var(--color-background) !important;
   font-family: var(--font-sans) !important;
+  font-size: 0.875rem !important;
   font-weight: 500 !important;
-  transition: background-color 150ms ease-out, transform 150ms ease-out;
+  line-height: 1.25 !important;
+  transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
-.vc-wallet .wallet-adapter-button:not([disabled]):hover {
+
+.wallet-adapter-button:not([disabled]):hover {
   background-color: color-mix(in srgb, var(--color-foreground) 90%, transparent) !important;
 }
-.vc-wallet .wallet-adapter-button:not([disabled]):active { transform: scale(0.96); }
-.vc-wallet .wallet-adapter-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-background), 0 0 0 4px var(--verification-focus-ring);
+
+.wallet-adapter-button:not([disabled]):active {
+  transform: scale(0.96);
 }
+
+.wallet-adapter-button:focus-visible {
+  outline: 2px solid var(--verification-focus-ring) !important;
+  outline-offset: 2px !important;
+}
+
+.vc-wallet .wallet-adapter-button {
+  min-height: 3rem !important;
+  padding: 0 1.75rem !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .vc-wallet .wallet-adapter-button { transition: none; }
-  .vc-wallet .wallet-adapter-button:not([disabled]):active { transform: none; }
+  .wallet-adapter-button {
+    transition: none;
+  }
+  .wallet-adapter-button:not([disabled]):active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .wallet-adapter-button {
+    border: 1px solid ButtonText !important;
+  }
+  .wallet-adapter-modal-wrapper,
+  .wallet-adapter-dropdown-list {
+    border: 1px solid CanvasText !important;
+  }
 }
 
 .wallet-adapter-modal-wrapper {
   background-color: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
+  border: 0 !important;
   border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .wallet-adapter-modal-title {
   color: var(--color-foreground) !important;
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-display) !important;
 }
 
 .wallet-adapter-modal-list .wallet-adapter-button {
+  background-color: var(--color-background) !important;
+  color: var(--color-foreground) !important;
   border-radius: 0 !important;
 }
 
+.wallet-adapter-modal-list .wallet-adapter-button:not([disabled]):hover {
+  background-color: var(--color-surface-hover) !important;
+}
+
 .wallet-adapter-modal-overlay {
-  background-color: rgba(0, 0, 0, 0.7) !important;
+  background-color: rgba(0, 0, 0, 0.72) !important;
 }
 
 .wallet-adapter-dropdown-list {
   background-color: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
+  border: 0 !important;
   border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .wallet-adapter-dropdown-list-item {
   color: var(--color-foreground) !important;
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-sans) !important;
+  border-radius: 0 !important;
 }
 
 .wallet-adapter-dropdown-list-item:hover {
@@ -543,11 +456,98 @@ body {
 }
 
 /* ----------------------------------------------------------------
-   Page skeleton
+   Fumadocs UI harmonization (/docs): square 0px controls and code
+   surfaces, flat tonal depth without shadows or blurred glass,
+   explicit keyboard focus and touch visibility on heading anchors.
+   ---------------------------------------------------------------- */
 
-   A wide content span bounded by a pair of vertical rails, with the
-   horizontal rules of card grids meeting them. `--breathe` keeps the
-   rails off the viewport edge on narrow screens.
+#nd-docs-layout :is(button, a[href], [role="button"], input, code, pre, figure, [data-card], [data-search-full], kbd),
+#nd-docs-layout [data-theme-toggle] > *,
+#nd-docs-layout :has(> [data-theme-toggle]),
+[role="dialog"] :is(button, a[href], input, code, pre, figure, kbd) {
+  border-radius: 0;
+}
+
+#nd-docs-layout figure {
+  border: 0;
+  box-shadow: none;
+  background-color: var(--color-surface);
+}
+
+#nd-docs-layout :is(a[data-card], div[data-card]) {
+  border: 0;
+  box-shadow: none;
+  background-color: var(--color-surface);
+}
+
+#nd-docs-layout #nd-subnav,
+#nd-docs-layout [data-toc-popover] > header,
+#nd-docs-layout figure > div,
+[data-radix-popper-content-wrapper] > * {
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+
+#nd-docs-layout #nd-subnav,
+#nd-docs-layout [data-toc-popover] > header {
+  background-color: var(--color-surface);
+  box-shadow: none;
+}
+
+#nd-docs-layout #nd-sidebar {
+  transition-property: transform, opacity, background-color, border-color;
+}
+
+#nd-docs-layout [data-search-full] {
+  border: 0;
+  background-color: var(--color-background);
+  color: var(--color-muted);
+}
+
+#nd-docs-layout figure button {
+  border: 0;
+  background-color: var(--color-background);
+}
+
+/* Override Fumadocs utility focus-visible:outline-none on interactive triggers. */
+#nd-docs-layout :is(button, a[href], [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid var(--verification-focus-ring);
+  outline-offset: -2px;
+}
+
+/* Keep heading copy-anchor buttons immediately visible on keyboard focus and touch devices. */
+#nd-docs-layout :is(h1, h2, h3, h4, h5, h6) > button:is(:focus, :focus-visible) {
+  opacity: 1;
+  transition: none;
+}
+@media (hover: none) {
+  #nd-docs-layout :is(h1, h2, h3, h4, h5, h6) > button {
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nd-docs-layout *,
+  #nd-sidebar-mobile,
+  #nd-sidebar-mobile * {
+    animation-name: none;
+    animation-duration: 0s;
+    transition-duration: 0s;
+  }
+}
+
+@media (forced-colors: active) {
+  #nd-docs-layout :is(button, [data-search-full], a[data-card], figure) {
+    border: 1px solid ButtonText;
+  }
+}
+
+:root:not(.dark) #nd-docs-layout pre [style*="--shiki-light:#66707B"] {
+  color: #57606a;
+}
+
+/* ----------------------------------------------------------------
+   Page span and section rhythm
    ---------------------------------------------------------------- */
 
 :root {
@@ -556,8 +556,6 @@ body {
   --breathe: clamp(22px, 2.4vw, 52px);
 }
 
-/* Widen the two span tokens at the source rather than at ~116 call
-   sites. Ratio held at ~1.34x for both. */
 .max-w-7xl {
   max-width: min(var(--wrap), calc(100% - 2 * var(--breathe)));
 }
@@ -565,68 +563,17 @@ body {
   max-width: min(var(--wrap-narrow), calc(100% - 2 * var(--breathe)));
 }
 
-/* Rails ride the SECTION, not the inner container, so they run the full
-   height of every section regardless of how many wrappers it holds. */
 section {
   position: relative;
 }
-section::before,
-section::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--color-border);
-  pointer-events: none;
-  z-index: 0;
-}
-/* Sections come in two shapes. Most are full-width with an inner
-   .mx-auto.max-w-7xl, so the rail has to be inset to that container's edge.
-   A few (the home hero) ARE the constrained container, where percentage
-   math would double-count the inset — those rail at left:0 instead. */
-section:not([class*="max-w-"])::before {
-  left: max(var(--breathe), calc((100% - var(--wrap)) / 2));
-}
-section:not([class*="max-w-"])::after {
-  right: max(var(--breathe), calc((100% - var(--wrap)) / 2));
-}
-section[class*="max-w-"]::before { left: 0; }
-section[class*="max-w-"]::after { right: 0; }
 
-/* Card grids sit inside the container's px-6, so their own border-y stops
-   short of the rail. Bleed them out by exactly that padding so the
-   horizontals meet the verticals. A grid inside a bordered box stays inside
-   the box's padding. */
-section > .mx-auto.max-w-7xl > .border-y,
-section > .mx-auto.max-w-7xl > .border-b,
-section > .mx-auto.max-w-7xl > div:not(.border) > .border-y {
-  margin-left: -1.5rem;
-  margin-right: -1.5rem;
-}
-
-/* A grid that sits flush against a panel on its left bleeds to the right
-   rail only, so its rules end on the panel's edge instead of under it. */
-@media (min-width: 64rem) {
-  section > .mx-auto.max-w-7xl > div:not(.border) > .border-y.bleed-right {
-    margin-left: 0;
-  }
-}
-
-/* Nav clearance: the bar floats instead of occupying a fixed 64px row. */
-body { padding-top: 0; }
-
-/* Standard content sections use py-24 / md:py-32. Widen the gap so each
-   band gets its own scroll viewport. Selector is .mx-auto.<pad> (0,2,0)
-   so it outranks the Tailwind utility without !important. Docs, verify,
-   dashboard and paper don't use this pair, so they're untouched. */
 section > .mx-auto.py-24 {
-  padding-top: 9rem;
-  padding-bottom: 9rem;
+  padding-top: 6rem;
+  padding-bottom: 6rem;
 }
 @media (min-width: 768px) {
   section > .mx-auto.md\:py-32 {
-    padding-top: 13rem;
-    padding-bottom: 13rem;
+    padding-top: 8.5rem;
+    padding-bottom: 8.5rem;
   }
 }

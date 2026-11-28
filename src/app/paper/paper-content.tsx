@@ -57,7 +57,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
             href="https://doi.org/10.5281/zenodo.19517441"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border border-border px-4 py-1.5 text-sm text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className="inline-flex min-h-11 items-center gap-2 bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-surface-hover motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
           >
             Zenodo
             <span aria-hidden="true">↗</span>
@@ -65,7 +65,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
           <a
             href="/entros-protocol-2026.pdf"
             download
-            className="inline-flex items-center gap-2 border border-border px-4 py-1.5 text-sm text-foreground/70 transition-colors hover:border-foreground/40 hover:text-foreground"
+            className="inline-flex min-h-11 items-center gap-2 bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-surface-hover motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
           >
             PDF
             <span aria-hidden="true">↓</span>
@@ -106,9 +106,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
         </div>
       )}
 
-      <hr className="mt-10 border-t border-border md:mt-12" />
-
-      <div className="mt-12 md:mt-16">
+      <div className="mt-14 md:mt-16">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -207,7 +205,7 @@ export function PaperContent({ title, meta, body }: PaperContentProps) {
                 {children}
               </a>
             ),
-            hr: () => <hr className="my-12 border-t border-border" />,
+            hr: () => <div className="my-12" aria-hidden="true" />,
             strong: ({ children }) => (
               <strong className="font-medium text-foreground">{children}</strong>
             ),

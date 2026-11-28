@@ -4,6 +4,12 @@ import { SolutionCasesSection } from "@/components/sections/solution-cases-secti
 import { PartnersSection } from "@/components/sections/partners-section";
 import { WalletField } from "@/components/ui/wallet-field";
 import { pageMetadata } from "@/lib/page-metadata";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  secondaryButtonOnSurfaceClass,
+} from "@/components/ui/button-styles";
 
 export const metadata = pageMetadata({
   title: "Solutions",
@@ -31,29 +37,17 @@ export default function Solutions() {
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/integrate"
-                className="
-                  group inline-flex items-center justify-center gap-2
-                  bg-foreground px-6 py-3
-                  text-sm font-medium text-background
-                  transition-colors hover:bg-foreground/90
-                "
-              >
-                Start integrating
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <Link href="/integrate" className={primaryButtonClass}>
+                <span className="[text-box:trim-both_cap_alphabetic]">
+                  Start integrating
+                </span>
+                <ArrowRight className={buttonArrowClass} aria-hidden="true" />
               </Link>
-              <Link
-                href="/verify"
-                className="
-                  group inline-flex items-center justify-center gap-2
-                  border border-foreground/20 px-6 py-3
-                  text-sm font-medium text-foreground
-                  transition-colors hover:border-foreground/40 hover:bg-foreground/5
-                "
-              >
-                Try the demo
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <Link href="/verify" className={secondaryButtonClass}>
+                <span className="[text-box:trim-both_cap_alphabetic]">
+                  Try the demo
+                </span>
+                <ArrowRight className={buttonArrowClass} aria-hidden="true" />
               </Link>
             </div>
           </div>
@@ -66,15 +60,15 @@ export default function Solutions() {
       <PartnersSection />
 
       {/* Modality comparison cross-link */}
-      <section className="border-t border-border">
+      <section>
         <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-          <div className="flex flex-col items-start justify-between gap-6 border border-border bg-surface p-6 md:flex-row md:items-center md:p-8">
+          <div className="flex flex-col items-start justify-between gap-6 bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText] md:flex-row md:items-center md:p-8">
             <div className="max-w-2xl">
               <h2 className="font-display text-2xl font-normal tracking-tight text-foreground md:text-3xl">
                 Evaluating verification modalities
                 <span className="text-cyan">?</span>
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-foreground/70 md:text-base">
+              <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted md:text-base">
                 Compare anatomical, credential, KYC, and behavioral evidence
                 across Integrator Policy v1 primitives with dated primary
                 sources and explicit limits.
@@ -82,52 +76,37 @@ export default function Solutions() {
             </div>
             <Link
               href="/compare"
-              className="
-                group inline-flex shrink-0 items-center justify-center gap-2
-                border border-foreground/20 px-5 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-cyan hover:text-cyan
-              "
+              className={`shrink-0 ${secondaryButtonOnSurfaceClass}`}
             >
-              Compare modalities
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Compare modalities
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>
       </section>
 
       {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Verify once<span className="text-cyan">.</span>
             <br />
             Compose anywhere<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/integrate"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              Start integrating
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/integrate" className={primaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Start integrating
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
-            <Link
-              href="/technology"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              How it works
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/technology" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                How it works
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

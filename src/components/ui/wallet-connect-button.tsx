@@ -75,8 +75,8 @@ function MobileWalletHint() {
 
   if (isAndroid) {
     return (
-      <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">
-        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" aria-hidden />
+      <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-muted leading-relaxed">
+        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
         <p className="text-left">
           On Android: turn on Developer Settings in Phantom (Settings,
           Developer Settings, Testnet Mode, Solana Devnet) before
@@ -85,7 +85,7 @@ function MobileWalletHint() {
             href="https://faucet.solana.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-cyan underline hover:text-foreground transition-colors"
+            className="text-cyan underline underline-offset-4 hover:text-foreground transition-colors duration-150 motion-reduce:transition-none"
           >
             Solana faucet
           </a>
@@ -96,12 +96,20 @@ function MobileWalletHint() {
   }
 
   return (
-    <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">
-      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" aria-hidden />
+    <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-muted leading-relaxed">
+      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
       <p className="text-left">
-        Mobile wallet connection is limited during devnet. Open on desktop for
-        the full wallet flow. Native mobile support arrives with the Solana
-        Mobile app.
+        Solana Devnet pilot. Mobile wallet connection is limited during devnet. Open
+        on desktop for the full wallet flow and add free SOL from the{" "}
+        <a
+          href="https://faucet.solana.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-cyan underline underline-offset-4 hover:text-foreground transition-colors duration-150 motion-reduce:transition-none"
+        >
+          Solana faucet
+        </a>
+        .
       </p>
     </div>
   );
@@ -118,8 +126,8 @@ function DevnetHint() {
   if (isMobile || connected) return null;
 
   return (
-    <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-foreground/60 leading-relaxed">
-      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" aria-hidden />
+    <div className="mt-3 flex max-w-xs items-start gap-2 text-xs text-muted leading-relaxed">
+      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
       <p className="text-left">
         Solana Devnet pilot. Switch your wallet to Devnet and add free SOL from
         the{" "}
@@ -127,7 +135,7 @@ function DevnetHint() {
           href="https://faucet.solana.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-cyan underline hover:text-foreground transition-colors"
+          className="text-cyan underline underline-offset-4 hover:text-foreground transition-colors duration-150 motion-reduce:transition-none"
         >
           Solana faucet
         </a>

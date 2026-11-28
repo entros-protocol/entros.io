@@ -8,7 +8,7 @@ This client-side component supports progressive disclosure. It does not authoriz
 
 Use [Verification flow](/docs/integrate/verification-flow) for a new capture and the [protected-action example](/docs/integrate/protected-action) for server authorization.
 
-> **Prerequisite.** `EntrosGate` depends on the Solana wallet adapter providers (`ConnectionProvider`, `WalletProvider`, `WalletModalProvider`). The component throws at render time without them. Step 2 below sets them up — do that first if your app doesn't already have a wallet adapter wiring at the root.
+> **Prerequisite.** `EntrosGate` depends on the Solana wallet adapter providers (`ConnectionProvider`, `WalletProvider`, `WalletModalProvider`). The component throws at render time without them. Step 2 below sets them up; do that first if your app doesn't already have a wallet adapter wiring at the root.
 
 ## 1. Install
 
@@ -76,7 +76,7 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 
 ## 3. Add the gate component
 
-`EntrosGate` is published as a single-file React component you copy into your project. The canonical source is in the entros.io repo at [`src/components/ui/entros-gate.tsx`](https://github.com/entros-protocol/entros.io/blob/main/src/components/ui/entros-gate.tsx)—copy it into your own `components/` directory. A standalone npm package is on the [near-term roadmap](/docs/roadmap/near-term).
+`EntrosGate` is published as a single-file React component you copy into your project. The canonical source is in the entros.io repo at [`src/components/ui/entros-gate.tsx`](https://github.com/entros-protocol/entros.io/blob/main/src/components/ui/entros-gate.tsx). Copy it into your own `components/` directory. A standalone npm package is on the [near-term roadmap](/docs/roadmap/near-term).
 
 ## 4. Wrap your display component
 

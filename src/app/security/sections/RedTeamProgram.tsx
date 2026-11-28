@@ -16,36 +16,41 @@ const taxonomy = [
  */
 export function RedTeamProgram() {
   return (
-    <section id="red-team" className="border-t border-border">
+    <section id="red-team" className="bg-surface">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           How we test our defenses<span className="text-cyan">.</span>
         </h2>
 
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+        <p className="mt-6 max-w-[65ch] text-base leading-relaxed text-muted md:text-lg">
           The private harness runs isolated and full-stack campaigns against
           the devnet pipeline. T5 remains open; T6 through T8 are planned.
         </p>
 
-        <div tabIndex={0} className="mt-16 overflow-x-auto border-y border-border">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Red team attack taxonomy"
+          className="mt-14 overflow-x-auto bg-background p-4 forced-colors:border forced-colors:border-[CanvasText] md:p-6"
+        >
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border">
                 <th
                   scope="col"
-                  className="text-sm font-medium py-4 pl-2 pr-6 text-left text-foreground/65"
+                  className="py-4 pl-2 pr-6 text-left text-sm font-medium text-muted"
                 >
                   Tier
                 </th>
                 <th
                   scope="col"
-                  className="text-sm font-medium py-4 pr-6 text-left text-foreground/65"
+                  className="py-4 pr-6 text-left text-sm font-medium text-muted"
                 >
                   Attack class
                 </th>
                 <th
                   scope="col"
-                  className="text-sm font-medium py-4 pr-2 text-left text-foreground/65"
+                  className="py-4 pr-2 text-left text-sm font-medium text-muted"
                 >
                   Tests defense against
                 </th>
@@ -54,13 +59,13 @@ export function RedTeamProgram() {
             <tbody>
               {taxonomy.map((row) => (
                 <tr key={row.tier} className="border-b border-border last:border-b-0">
-                  <td className="whitespace-nowrap py-4 pl-2 pr-6 font-display text-lg font-light tabular-nums tracking-tight text-foreground/55">
+                  <td className="whitespace-nowrap py-4 pl-2 pr-6 font-display text-lg font-normal tabular-nums tracking-tight text-muted">
                     {row.tier}
                   </td>
-                  <td className="py-4 pr-6 text-foreground/80">
+                  <td className="py-4 pr-6 text-foreground/85">
                     {row.attackClass}
                   </td>
-                  <td className="py-4 pr-2 text-foreground/55">
+                  <td className="py-4 pr-2 text-muted">
                     {row.tests}
                   </td>
                 </tr>
@@ -69,7 +74,7 @@ export function RedTeamProgram() {
           </table>
         </div>
 
-        <p className="mt-8 max-w-3xl text-sm leading-relaxed text-foreground/55">
+        <p className="mt-8 max-w-[65ch] text-sm leading-relaxed text-muted">
           Attack code, per-attempt telemetry, and parameter values that
           produce elevated pass rates stay in a private repository.
         </p>

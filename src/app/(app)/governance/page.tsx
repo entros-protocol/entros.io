@@ -4,6 +4,11 @@ import { GovernanceContent } from "@/components/sections/governance-content";
 import { DevnetNotice } from "@/components/ui/devnet-notice";
 import { FactStrip } from "@/components/ui/fact-strip";
 import { pageMetadata } from "@/lib/page-metadata";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/button-styles";
 
 export const metadata = pageMetadata({
   title: "Governance Plugin",
@@ -35,31 +40,22 @@ export default function Governance() {
               </p>
 
               <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                <Link
-                  href="/verify"
-                  className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-                >
-                  Verify and vote
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <Link href="/verify" className={primaryButtonClass}>
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    Verify and vote
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </Link>
                 <a
                   href="https://github.com/entros-protocol/entros-governance-plugin"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
+                  className={secondaryButtonClass}
                 >
-                  View on GitHub
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    View on GitHub
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </a>
               </div>
             </div>
@@ -79,37 +75,25 @@ export default function Governance() {
       <GovernanceContent />
 
       {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Verified humans<span className="text-cyan">.</span>
             <br />
             Verified votes<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              Verify and vote
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/verify" className={primaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Verify and vote
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
-            <Link
-              href="/integrate"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              Read the docs
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/integrate" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Read the docs
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

@@ -7,6 +7,12 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import { EntrosBadge } from "@/components/ui/entros-badge";
 import { CodeBlock } from "@/components/ui/code-block";
 import { DevnetNotice } from "@/components/ui/devnet-notice";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  textInputClass,
+} from "@/components/ui/button-styles";
 
 const COMPONENT_CODE = `"use client";
 
@@ -208,7 +214,7 @@ export default function BadgeDemo() {
 
   return (
     <>
-      {/* Hero—asymmetric split. Left: wide h1 + copy + CTAs. Right:
+      {/* Hero: asymmetric split. Left: wide h1 + copy + CTAs. Right:
           a profile-list mockup showing the badge in real context. */}
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-20 md:pt-40 md:pb-28">
@@ -229,36 +235,24 @@ export default function BadgeDemo() {
               </p>
 
               <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                <Link
-                  href="/integrate"
-                  className="
-                    group inline-flex items-center justify-center gap-2
-                    bg-foreground px-6 py-3
-                    text-sm font-medium text-background
-                    transition-colors hover:bg-foreground/90
-                  "
-                >
-                  All components
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <Link href="/integrate" className={primaryButtonClass}>
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    All components
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </Link>
-                <Link
-                  href="/verify"
-                  className="
-                    group inline-flex items-center justify-center gap-2
-                    border border-foreground/20 px-6 py-3
-                    text-sm font-medium text-foreground
-                    transition-colors hover:border-foreground/40 hover:bg-foreground/5
-                  "
-                >
-                  Try the demo
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <Link href="/verify" className={secondaryButtonClass}>
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    Try the demo
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </Link>
               </div>
             </div>
 
-            {/* Mock profile list—the badge in real UI context */}
+            {/* Mock profile list showing the badge in real UI context */}
             <div className="lg:col-span-5">
-              <div className="relative border border-panel-line bg-panel p-6 md:p-8">
+              <div className="relative bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
 
                 <div className="space-y-6">
                   {[
@@ -268,26 +262,26 @@ export default function BadgeDemo() {
                     { handle: "0x4ku9.sol", score: null, state: "unverified" },
                   ].map((row) => (
                     <div key={row.handle} className="flex items-center gap-3">
-                      <div className="h-8 w-8 shrink-0 border border-foreground/15 bg-background" />
+                      <div className="h-8 w-8 shrink-0 bg-background" />
                       <p className="flex-1 truncate font-mono text-sm text-foreground/85">
                         {row.handle}
                       </p>
                       {row.state === "verified" && (
-                        <span className="inline-flex items-center gap-2 border border-cyan/30 bg-cyan/10 px-3 py-1 font-mono text-xs text-cyan">
+                        <span className="inline-flex items-center gap-2 bg-cyan/10 px-3 py-1 font-mono text-xs text-cyan">
                           <span className="h-1.5 w-1.5 bg-cyan" />
                           {row.score}
                         </span>
                       )}
                       {row.state === "loading" && (
-                        <span className="inline-flex items-center gap-2 border border-border bg-surface px-3 py-1 font-mono text-xs text-foreground/60">
-                          <span className="h-1.5 w-1.5 animate-pulse bg-foreground/40" />
+                        <span className="inline-flex items-center gap-2 bg-background px-3 py-1 font-mono text-xs text-muted">
+                          <span className="h-1.5 w-1.5 bg-muted" />
                           …
                         </span>
                       )}
                       {row.state === "unverified" && (
-                        <span className="inline-flex items-center gap-2 border border-border px-3 py-1 font-mono text-xs text-foreground/60">
-                          <span className="h-1.5 w-1.5 bg-foreground/30" />
-                          —
+                        <span className="inline-flex items-center gap-2 bg-background px-3 py-1 font-mono text-xs text-muted">
+                          <span className="h-1.5 w-1.5 bg-muted" />
+                          None
                         </span>
                       )}
                     </div>
@@ -300,7 +294,7 @@ export default function BadgeDemo() {
       </section>
 
       {/* Live preview */}
-      <section className="border-t border-border">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Try it now<span className="text-cyan">.</span>
@@ -311,11 +305,11 @@ export default function BadgeDemo() {
             verification state and live Trust Score from devnet.
           </p>
 
-          <div className="mt-12 border border-border p-6 md:p-8">
+          <div className="mt-12 bg-background p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
-                <span className="text-sm font-medium text-foreground/60">
+                <span className="text-sm font-medium text-muted">
                   Devnet
                 </span>
               </div>
@@ -325,33 +319,35 @@ export default function BadgeDemo() {
               <div>
                 <label
                   htmlFor="wallet-input"
-                  className="text-sm font-medium mb-2 block text-foreground/60"
+                  className="mb-2 block text-sm font-medium text-muted"
                 >
                   Wallet Address
                 </label>
                 <input
                   id="wallet-input"
                   type="text"
+                  autoComplete="off"
+                  spellCheck={false}
                   placeholder="Paste a Solana wallet address..."
-                  className="w-full border border-border bg-background px-4 py-3 font-mono text-sm text-foreground placeholder:text-foreground/30 transition-colors focus:border-cyan/50 focus:outline-none"
+                  className={textInputClass}
                   value={walletInput}
                   onChange={(e) => setWalletInput(e.target.value)}
                 />
-                <p className="mt-3 text-xs leading-relaxed text-foreground/50">
+                <p className="mt-3 text-xs leading-relaxed text-muted">
                   Use a wallet from your devnet testing to see the
                   verified state.
                 </p>
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-2 text-foreground/60">
+                <p className="mb-2 text-sm font-medium text-muted">
                   Preview
                 </p>
-                <div className="flex min-h-[120px] items-center justify-center border border-border bg-surface p-6">
+                <div className="flex min-h-[120px] items-center justify-center bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText]">
                   {isValidLength ? (
                     <EntrosBadge walletAddress={walletInput} connection={connection} />
                   ) : (
-                    <span className="text-sm font-medium text-foreground/60">
+                    <span className="text-sm font-medium text-muted">
                       Enter a valid address
                     </span>
                   )}
@@ -363,7 +359,7 @@ export default function BadgeDemo() {
       </section>
 
       {/* Usage */}
-      <section className="border-t border-border">
+      <section>
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
@@ -387,7 +383,7 @@ export default function BadgeDemo() {
       </section>
 
       {/* Component source */}
-      <section className="border-t border-border">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Copy<span className="text-cyan">.</span> Paste
@@ -408,8 +404,9 @@ export default function BadgeDemo() {
 
           <div className="relative mt-12">
             <button
+              type="button"
               onClick={copySource}
-              className="text-sm font-medium absolute right-4 top-4 z-10 text-foreground/60 transition-colors hover:text-cyan"
+              className="absolute right-4 top-4 z-10 min-h-11 bg-background px-3 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-surface-hover motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
             >
               {copied ? "Copied" : "Copy"}
             </button>
@@ -419,37 +416,25 @@ export default function BadgeDemo() {
       </section>
 
       {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             One component<span className="text-cyan">.</span>
             <br />
             Every profile<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/integrate"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              All components
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/integrate" className={primaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                All components
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
-            <Link
-              href="/gate-demo"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              See &lt;EntrosGate /&gt;
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/gate-demo" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                See &lt;EntrosGate /&gt;
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

@@ -31,7 +31,7 @@ export function tokenizeLine(line: string): React.ReactNode[] {
     // Comments
     if (line.slice(i, i + 2) === "//") {
       tokens.push(
-        <span key={i} className="text-[#9090A0]">
+        <span key={i} className="text-muted">
           {line.slice(i)}
         </span>
       );
@@ -68,7 +68,7 @@ export function tokenizeLine(line: string): React.ReactNode[] {
       const nextNonSpace = line.slice(end).match(/^(\s*)\(/);
       if (nextNonSpace) {
         tokens.push(
-          <span key={i} className="text-[#C084FC]">
+          <span key={i} className="text-solana-purple">
             {word}
           </span>
         );
@@ -100,7 +100,7 @@ export function CodeBlock({ code, className }: CodeBlockProps) {
     <pre
       tabIndex={0}
       className={cn(
-        "overflow-x-auto border border-panel-line bg-panel p-6 font-mono text-sm leading-relaxed text-foreground/80",
+        "overflow-x-auto bg-surface p-6 font-mono text-sm leading-relaxed text-foreground/85 forced-colors:border forced-colors:border-[CanvasText]",
         className
       )}
     >

@@ -7,33 +7,32 @@ import { getIcon } from "@/lib/icons";
  */
 export function HowItWorksSection() {
   return (
-    <section className="border-t border-border">
+    <section className="bg-surface">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Your voice, your touch, your motion<span className="text-cyan">.</span>{" "}
           One private proof<span className="text-cyan">.</span>
         </h2>
 
-        {/* Hairline grid via bg-border + gap-px (see why-solana-section.tsx). */}
-        <div className="mt-16 grid grid-cols-1 gap-px border-y border-border bg-border md:grid-cols-3">
+        <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
           {features.map((feature, i) => {
             const Icon = getIcon(feature.icon);
             return (
-              <div key={feature.title} className="bg-background p-8">
-                {/* Index rule—step number, hairline span, mini icon.
-                    Mirrors the integration cards on the Realms case study. */}
-                <div className="flex items-center gap-3">
+              <div
+                key={feature.title}
+                className="bg-background p-8 forced-colors:border forced-colors:border-[CanvasText]"
+              >
+                <div className="flex items-center justify-between gap-3">
                   <StepNumber n={i + 1} />
-                  <span className="h-px flex-1 bg-border" />
                   <Icon className="h-10 w-10 text-foreground/80" />
                 </div>
                 <h3 className="mt-8 font-display text-xl font-medium tracking-tight text-foreground">
                   {feature.title}
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+                <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted">
                   {feature.description}
                 </p>
-                <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+                <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted">
                   {feature.benefit}
                 </p>
               </div>

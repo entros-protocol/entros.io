@@ -15,14 +15,14 @@ export default function Dashboard() {
   return (
     <>
       <section>
-        <div className="mx-auto max-w-7xl px-6 pt-32 pb-12 md:pt-40 md:pb-16">
-          <DevnetNotice />
+        <div className="mx-auto max-w-7xl px-6 pt-24 pb-8 md:pt-28 md:pb-10">
+          <DevnetNotice className="mb-10" />
 
-          <h1 className="font-display text-5xl font-normal leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
+          <h1 className="font-display text-4xl font-normal leading-[1.04] tracking-[-0.02em] text-foreground md:text-5xl lg:text-6xl">
             Your Entros Anchor<span className="text-cyan">.</span>
           </h1>
 
-          <p className="mt-7 max-w-2xl text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
             Trust Score, verification history, and the agents registered to
             your wallet.
           </p>

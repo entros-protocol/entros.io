@@ -9,6 +9,7 @@ import { ArrowUpRight, Loader2, PenLine } from "lucide-react";
 import { AgentPermitSummary } from "@/components/sections/agent-permit-summary";
 import { AuthorizeCheckList } from "@/components/ui/authorize-check-list";
 import { CopyBlock } from "@/components/ui/copy-block";
+import { primaryButtonClass } from "@/components/ui/button-styles";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { buildApproval, reviewPermitRequest, type PermitReview } from "@/lib/agent-permit-authorize";
 import { readLastVerification } from "@/lib/last-verification";
@@ -90,7 +91,7 @@ export function AgentPermitReview({
   return (
     <div className="verification-surface p-6 md:p-10">
       <AgentPermitSummary request={request} />
-      <p className="mt-8 border-l-2 border-cyan/40 pl-4 text-sm leading-relaxed text-foreground/70">
+      <p className="mt-8 bg-background p-4 text-sm leading-relaxed text-foreground/80 forced-colors:border forced-colors:border-[CanvasText]">
         Sign only if you asked this agent to do this at this application. Your signature authorizes
         one action, and only the agent wallet above can use it before it expires.
       </p>
@@ -108,24 +109,28 @@ export function AgentPermitReview({
           href="/verify"
           target="_blank"
           rel="noopener noreferrer"
-          className="group mt-6 inline-flex items-center gap-2 text-sm text-cyan transition-colors hover:text-foreground"
+          className="group mt-6 inline-flex min-h-11 items-center gap-2 text-sm text-cyan transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
         >
           Verify with Entros in a new tab
           <ArrowUpRight
-            className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            className="h-4 w-4 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
             aria-hidden
           />
         </Link>
       )}
 
-      {error && <p className="mt-6 text-sm text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-6 text-sm text-danger">
+          {error}
+        </p>
+      )}
 
       {wallet && !approval && (
         <button
           type="button"
           onClick={sign}
           disabled={!current?.canSign || signing || !signMessage}
-          className="mt-8 inline-flex items-center justify-center gap-2 border border-foreground/20 bg-foreground px-6 py-3 font-mono text-sm text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-40"
+          className={`mt-8 ${primaryButtonClass}`}
         >
           {signing ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <PenLine className="h-4 w-4" aria-hidden />}
           {signing ? "Waiting for your wallet…" : "Sign permit"}

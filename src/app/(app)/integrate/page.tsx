@@ -2,6 +2,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { IntegrateGuide } from "@/components/sections/integrate-guide";
 import { pageMetadata } from "@/lib/page-metadata";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/button-styles";
 
 export const metadata = pageMetadata({
   title: "Integrate",
@@ -31,39 +36,30 @@ export default function Integrate() {
               href="https://github.com/entros-protocol/entros-verify"
               target="_blank"
               rel="noopener noreferrer"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
+              className={primaryButtonClass}
             >
-              View on GitHub
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                View on GitHub
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </a>
-            <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              Try the demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/verify" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Try the demo
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>
 
         {/* Install callout */}
         <div className="mx-auto max-w-3xl px-6 pb-20 md:pb-28">
-          <div className="relative border border-panel-line bg-panel px-6 py-5 font-mono text-sm md:px-8 md:py-6 md:text-base">
+          <div className="relative bg-surface px-6 py-5 font-mono text-sm forced-colors:border forced-colors:border-[CanvasText] md:px-8 md:py-6 md:text-base">
 
-            <span className="text-foreground/40">$</span>
-            <span className="ml-3 text-foreground/85">npm install </span>
+            <span className="text-muted">$</span>
+            <span className="ml-3 text-foreground/90">npm install </span>
             <span className="text-cyan">@entros/verify</span>
-            <span className="text-foreground/40"> # or @entros/pulse-sdk for programmatic UX</span>
+            <span className="text-muted"> # or @entros/pulse-sdk for programmatic UX</span>
           </div>
         </div>
       </section>
@@ -71,37 +67,25 @@ export default function Integrate() {
       <IntegrateGuide />
 
       {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Verified humans<span className="text-cyan">.</span>
             <br />
             Free for integrators<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              Try the demo
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/verify" className={primaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Try the demo
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
-            <Link
-              href="/solutions"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              See use cases
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/solutions" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                See use cases
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

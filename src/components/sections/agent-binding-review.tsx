@@ -11,6 +11,7 @@ import {
 import { ExternalLink, Link2, Loader2 } from "lucide-react";
 import { AuthorizeCheckList } from "@/components/ui/authorize-check-list";
 import { DetailField } from "@/components/ui/detail-field";
+import { primaryButtonClass } from "@/components/ui/button-styles";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { reviewBindingRequest, type BindingReview } from "@/lib/agent-permit-authorize";
 import { explorerUrl } from "@/lib/explorer";
@@ -94,7 +95,7 @@ export function AgentBindingReview({ binding }: { binding: AgentWalletBindingReq
           value={new Date(binding.deadline * 1000).toISOString().replace(".000Z", " UTC").replace("T", " ")}
         />
       </dl>
-      <p className="mt-8 border-l-2 border-cyan/40 pl-4 text-sm leading-relaxed text-foreground/70">
+      <p className="mt-8 bg-background p-4 text-sm leading-relaxed text-foreground/80 forced-colors:border forced-colors:border-[CanvasText]">
         This devnet transaction sets the agent wallet in the 8004 agent registry. Only that key can
         present the permits you sign. A transfer of the agent clears it.
       </p>
@@ -106,7 +107,11 @@ export function AgentBindingReview({ binding }: { binding: AgentWalletBindingReq
           <AuthorizeCheckList checks={current?.checks ?? null} loading={!current && !error} />
         )}
       </div>
-      {error && <p className="mt-6 text-sm text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-6 text-sm text-danger">
+          {error}
+        </p>
+      )}
       {signature ? (
         <p className="mt-6 text-sm text-solana-green">
           Bound. The registry now holds this agent wallet.{" "}
@@ -114,7 +119,7 @@ export function AgentBindingReview({ binding }: { binding: AgentWalletBindingReq
             href={explorerUrl(signature, "tx")}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 font-mono text-xs text-cyan transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1 font-mono text-xs text-cyan transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
           >
             {signature.slice(0, 12)}… <ExternalLink className="h-3.5 w-3.5" aria-hidden />
           </a>
@@ -129,7 +134,7 @@ export function AgentBindingReview({ binding }: { binding: AgentWalletBindingReq
           type="button"
           onClick={send}
           disabled={!current?.canSend || sending}
-          className="mt-8 flex w-fit items-center justify-center gap-2 border border-foreground/20 bg-foreground px-6 py-3 font-mono text-sm text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-40"
+          className={`mt-8 ${primaryButtonClass}`}
         >
           {sending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Link2 className="h-4 w-4" aria-hidden />}
           {sending ? "Waiting for your wallet…" : "Bind agent wallet"}

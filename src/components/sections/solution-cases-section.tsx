@@ -24,7 +24,7 @@ const SCENES = [
  */
 export function SolutionCasesSection() {
   return (
-    <section className="border-t border-border">
+    <section>
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Where Entros fits<span className="text-cyan">.</span>

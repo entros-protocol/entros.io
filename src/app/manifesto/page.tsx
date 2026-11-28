@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { pageMetadata } from "@/lib/page-metadata";
 import { ProseSection } from "@/components/ui/prose-section";
+import { buttonArrowClass, primaryButtonClass } from "@/components/ui/button-styles";
 
 export const metadata = pageMetadata({
   title: "Manifesto",
@@ -105,21 +106,15 @@ export default function Manifesto() {
         </ProseSection>
       ))}
 
-      <section className="border-t border-border">
+      <section>
         <div className="mx-auto max-w-3xl px-6 py-20 md:py-24">
-          <Link
-            href="/verify"
-            className="
-              group inline-flex items-center justify-center gap-2
-              bg-foreground px-6 py-3
-              text-sm font-medium text-background
-              transition-colors hover:bg-foreground/90
-            "
-          >
-            Verify your wallet
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          <Link href="/verify" className={primaryButtonClass}>
+            <span className="[text-box:trim-both_cap_alphabetic]">
+              Verify your wallet
+            </span>
+            <ArrowRight className={buttonArrowClass} aria-hidden="true" />
           </Link>
-          <p className="mt-10 text-sm text-foreground/50">Entros Protocol, October 2026</p>
+          <p className="mt-10 text-sm text-muted">Entros Protocol, October 2026</p>
         </div>
       </section>
     </>

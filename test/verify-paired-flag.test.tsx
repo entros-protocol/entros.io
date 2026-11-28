@@ -713,31 +713,31 @@ describe("paired-only verify flow", () => {
       options.onReveal?.(ROUND);
     });
     const firstBar = () =>
-      container.querySelector<HTMLElement>('[class~="bg-cyan/60"]')!.style.height;
-    expect(firstBar()).toBe("2px");
+      container.querySelector<HTMLElement>("[data-meter-bar]")!.style.transform;
+    expect(firstBar()).toBe("scaleY(0.080)");
 
     // Five frames of audio in a burst ask for one redraw.
     for (let frame = 0; frame < 5; frame++) options.onLevel?.(0.01 * frame, false);
     expect(frames).toHaveLength(1);
 
     await act(async () => frames.shift()!(1_000));
-    // The latest level, 0.04, fills the bar: 2 + 1 * 32 * 0.6.
-    expect(firstBar()).toBe("21.2px");
+    // The latest level, 0.04, fills the bar: 0.08 + 1 * 0.92 * 0.6.
+    expect(firstBar()).toBe("scaleY(0.632)");
     const word = () => [...container.querySelectorAll("p")].find((node) => node.textContent === ROUND.word)!;
-    expect(word().style.textShadow).toBe("none");
+    expect(word().dataset.voiceActive).toBe("false");
 
     // A level inside the interval waits for a later frame.
     options.onLevel?.(0, false);
     await act(async () => frames.shift()!(1_050));
-    expect(firstBar()).toBe("21.2px");
+    expect(firstBar()).toBe("scaleY(0.632)");
     expect(frames).toHaveLength(1);
     await act(async () => frames.shift()!(1_100));
-    expect(firstBar()).toBe("2px");
+    expect(firstBar()).toBe("scaleY(0.080)");
     options.onLevel?.(0.004, true);
     await act(async () => frames.shift()!(1_200));
-    expect(word().style.textShadow).not.toBe("none");
+    expect(word().dataset.voiceActive).toBe("true");
     await act(async () => options.onReveal?.(ROUND));
-    expect(word().style.textShadow).toBe("none");
+    expect(word().dataset.voiceActive).toBe("false");
   });
 });
 

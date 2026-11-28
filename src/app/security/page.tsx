@@ -8,6 +8,11 @@ import { OpenSourcePosture } from "./sections/OpenSourcePosture";
 import { ResponsibleDisclosure } from "./sections/ResponsibleDisclosure";
 import { References } from "./sections/References";
 import { pageMetadata } from "@/lib/page-metadata";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/button-styles";
 import { cn } from "@/lib/utils";
 
 export const metadata = pageMetadata({
@@ -57,41 +62,29 @@ export default function Security() {
             </p>
 
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="#measurements"
-                className="
-                  group inline-flex items-center justify-center gap-2
-                  bg-foreground px-6 py-3
-                  text-sm font-medium text-background
-                  transition-colors hover:bg-foreground/90
-                "
-              >
-                See latest measurements
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <Link href="#measurements" className={primaryButtonClass}>
+                <span className="[text-box:trim-both_cap_alphabetic]">
+                  Latest measurements
+                </span>
+                <ArrowRight className={buttonArrowClass} aria-hidden="true" />
               </Link>
-              <Link
-                href="/paper"
-                className="
-                  group inline-flex items-center justify-center gap-2
-                  border border-foreground/20 px-6 py-3
-                  text-sm font-medium text-foreground
-                  transition-colors hover:border-foreground/40 hover:bg-foreground/5
-                "
-              >
-                Read the paper
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <Link href="/paper" className={secondaryButtonClass}>
+                <span className="[text-box:trim-both_cap_alphabetic]">
+                  Read the paper
+                </span>
+                <ArrowRight className={buttonArrowClass} aria-hidden="true" />
               </Link>
             </div>
           </div>
 
           {/* Campaign ladder: one square per attack tier, filled where a
-              campaign result is published, outlined where testing is open,
-              hairline where it is planned. */}
+              campaign result is published, framed with an active inner square
+              where testing is open, and neutral framed where planned. */}
           <div className="lg:col-span-4">
             <p className="font-display text-6xl font-normal tracking-[-0.02em] text-foreground md:text-7xl">
               17,000<span className="text-cyan">+</span>
             </p>
-            <p className="mt-3 text-sm text-foreground/60">
+            <p className="mt-3 text-sm text-muted">
               published attack attempts, T1 to T4b
             </p>
 
@@ -102,19 +95,22 @@ export default function Security() {
                     aria-hidden
                     className={cn(
                       "relative block aspect-square w-full",
-                      rung.state === "published" && "bg-cyan",
-                      rung.state === "open" && "border border-cyan",
-                      rung.state === "planned" && "border border-foreground/20",
+                      rung.state === "published" &&
+                        "bg-cyan forced-colors:border forced-colors:border-[Highlight] forced-colors:bg-[Highlight]",
+                      rung.state === "open" &&
+                        "border border-cyan forced-colors:border-[Highlight]",
+                      rung.state === "planned" &&
+                        "border border-control-border forced-colors:border-[CanvasText]",
                     )}
                   >
                     {rung.state === "open" && (
-                      <span className="absolute inset-[30%] animate-pulse bg-cyan/60 motion-reduce:animate-none" />
+                      <span className="absolute inset-[28%] bg-cyan forced-colors:bg-[Highlight]" />
                     )}
                   </span>
                   <span
                     className={cn(
                       "font-display text-xs tabular-nums sm:text-sm",
-                      rung.state === "planned" ? "text-foreground/35" : "text-foreground/70",
+                      rung.state === "planned" ? "text-muted" : "text-foreground",
                     )}
                   >
                     {rung.tier}
@@ -124,17 +120,28 @@ export default function Security() {
               ))}
             </ol>
 
-            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs text-foreground/55">
+            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted">
               <li className="inline-flex items-center gap-2">
-                <span aria-hidden className="size-2.5 bg-cyan" />
+                <span
+                  aria-hidden
+                  className="size-2.5 bg-cyan forced-colors:border forced-colors:border-[Highlight] forced-colors:bg-[Highlight]"
+                />
                 Published
               </li>
               <li className="inline-flex items-center gap-2">
-                <span aria-hidden className="size-2.5 border border-cyan" />
+                <span
+                  aria-hidden
+                  className="relative inline-block size-2.5 border border-cyan forced-colors:border-[Highlight]"
+                >
+                  <span className="absolute inset-[2px] bg-cyan forced-colors:bg-[Highlight]" />
+                </span>
                 Testing now
               </li>
               <li className="inline-flex items-center gap-2">
-                <span aria-hidden className="size-2.5 border border-foreground/25" />
+                <span
+                  aria-hidden
+                  className="size-2.5 border border-control-border forced-colors:border-[CanvasText]"
+                />
                 Planned
               </li>
             </ul>
@@ -151,35 +158,23 @@ export default function Security() {
       <References />
 
       {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Built to keep pace with AI<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/paper"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              Read the paper
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/paper" className={primaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Read the paper
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
-            <Link
-              href="/technology"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              How it works
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/technology" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                How it works
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

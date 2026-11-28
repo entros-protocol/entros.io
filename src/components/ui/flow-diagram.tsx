@@ -34,7 +34,7 @@ function Node({ node }: { node: FlowNode }) {
  */
 export function FlowDiagram({ from, to, signal, properties }: FlowDiagramProps) {
   return (
-    <figure className="flex h-full flex-col border border-panel-line bg-panel">
+    <figure className="flex h-full flex-col bg-surface forced-colors:border forced-colors:border-[CanvasText]">
       <figcaption className="sr-only">
         {from.label} sends {signal} to {to.label}. {properties.map((p) => p.label).join(". ")}.
       </figcaption>
@@ -46,16 +46,12 @@ export function FlowDiagram({ from, to, signal, properties }: FlowDiagramProps) 
           <Node node={from} />
 
           <div className="relative mx-2 mb-9 flex-1 sm:mx-4">
-            <div className="relative h-px overflow-hidden bg-foreground/15">
-              <span className="flow-pulse absolute inset-0">
-                <span className="absolute right-0 top-1/2 h-px w-16 -translate-y-1/2 bg-gradient-to-r from-transparent to-cyan" />
-              </span>
+            <div className="relative h-px overflow-hidden bg-foreground/20">
+              <span className="absolute inset-y-0 left-0 w-1/3 bg-cyan" />
             </div>
-            <span className="absolute -right-px top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 border-r border-t border-foreground/40" />
-            {/* The panel tint is translucent in dark mode, so the tag sits on
-                an opaque page-colour backing to hide the line and pulse. */}
+            <span className="absolute -right-px top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 border-r border-t border-foreground/45" />
             <span className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 bg-background sm:block">
-              <span className="block whitespace-nowrap border border-foreground/15 bg-panel px-3 py-1.5 font-mono text-xs text-foreground/90">
+              <span className="block whitespace-nowrap bg-background px-3 py-1.5 font-mono text-xs text-foreground/90 forced-colors:border forced-colors:border-[CanvasText]">
                 {signal}
               </span>
             </span>

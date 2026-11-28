@@ -5,7 +5,7 @@ export function StepNumber({ n, className }: { n: number | string; className?: s
   return (
     <span
       className={cn(
-        "font-display text-2xl font-light leading-none tracking-tight tabular-nums text-foreground/45 md:text-[1.75rem]",
+        "font-display text-2xl font-normal leading-none tracking-tight tabular-nums text-muted md:text-[1.75rem]",
         className,
       )}
     >

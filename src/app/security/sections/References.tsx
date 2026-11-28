@@ -26,40 +26,36 @@ const links = [
 ];
 
 const LINK =
-  "inline-flex items-center gap-2.5 text-base font-medium text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors hover:decoration-cyan md:text-lg";
+  "inline-flex min-h-11 items-center gap-2.5 text-base font-medium text-foreground underline decoration-cyan/60 underline-offset-4 transition-colors duration-150 hover:decoration-cyan motion-reduce:transition-none md:text-lg";
 
-/**
- * References: hairline-divided rows, each an underlined link with its
- * destination host on the right.
- */
 export function References() {
   return (
-    <section id="references" className="border-t border-border">
+    <section id="references" className="bg-surface">
       <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
         <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Learn more<span className="text-cyan">.</span>
         </h2>
 
-        <ul className="mt-12 border-t border-border">
+        <ul className="mt-12 divide-y divide-border">
           {links.map((ref) => {
             const external = ref.href.startsWith("http");
             return (
               <li
                 key={ref.label}
-                className="flex items-center justify-between gap-6 border-b border-border py-5"
+                className="flex items-center justify-between gap-6 py-3"
               >
                 {external ? (
                   <a href={ref.href} target="_blank" rel="noopener noreferrer" className={LINK}>
                     {ref.label}
-                    <ArrowUpRight className="h-4 w-4" aria-hidden />
+                    <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden />
                   </a>
                 ) : (
                   <Link href={ref.href} className={LINK}>
                     {ref.label}
-                    <ArrowRight className="h-4 w-4" aria-hidden />
+                    <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                   </Link>
                 )}
-                <span className="hidden text-sm text-foreground/40 md:block">{ref.host}</span>
+                <span className="hidden text-sm text-muted md:block">{ref.host}</span>
               </li>
             );
           })}

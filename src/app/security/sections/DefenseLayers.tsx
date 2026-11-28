@@ -28,28 +28,28 @@ const tiers = [
  */
 export function DefenseLayers() {
   return (
-    <section id="defense-layers" className="border-t border-border">
+    <section id="defense-layers">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <h2 className="max-w-2xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Three layers, one evidence stack<span className="text-cyan">.</span>
         </h2>
 
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+        <p className="mt-6 max-w-[65ch] text-base leading-relaxed text-muted md:text-lg">
           Enforced checks decide whether a capture can settle. Temporal
           analysis remains research telemetry.
         </p>
 
-        <div className="mt-16 border-t border-border">
+        <div className="mt-16 divide-y divide-border">
           {tiers.map((tier) => (
             <div
               key={tier.name}
-              className="grid grid-cols-1 items-baseline gap-y-4 border-b border-border py-10 md:py-14 lg:grid-cols-12 lg:gap-x-16"
+              className="grid grid-cols-1 items-baseline gap-y-4 py-10 md:py-12 lg:grid-cols-12 lg:gap-x-16"
             >
               <StepNumber n={tier.name} className="lg:col-span-2" />
               <h3 className="font-display text-xl font-medium leading-tight tracking-tight text-foreground md:text-2xl lg:col-span-4">
                 {tier.label}
               </h3>
-              <p className="text-base leading-relaxed text-foreground/65 lg:col-span-6">
+              <p className="max-w-[36rem] text-base leading-relaxed text-muted lg:col-span-6">
                 {tier.description}
               </p>
             </div>

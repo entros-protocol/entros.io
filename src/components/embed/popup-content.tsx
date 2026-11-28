@@ -344,11 +344,6 @@ export function PopupContent({ params }: { params: ParsedEmbedParams }) {
     Promise.race([proofPromise, timeoutPromise])
       .then(async (result) => {
         if (!active()) return;
-        if (result.compositeRiskScore !== undefined) {
-          console.log(
-            `[Entros] Embed popup verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`,
-          );
-        }
         if (!result.success) {
           reportRefusal(result.reason);
           if (isClientOriginReason(result.reason)) {

@@ -5,6 +5,11 @@ import { AgentAuthorize } from "@/components/sections/agent-authorize";
 import { AgentsContent } from "@/components/sections/agents-content";
 import { AgentsCheckSection } from "@/components/sections/agents-check-section";
 import { pageMetadata } from "@/lib/page-metadata";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/button-styles";
 
 export const metadata = pageMetadata({
   title: "Agent Operator Permit",
@@ -37,36 +42,24 @@ export default function Agents() {
               <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <Link
                   href="/docs/integrate/agent-permit"
-                  className="
-                    group inline-flex items-center justify-center gap-2
-                    bg-foreground px-6 py-3
-                    text-sm font-medium text-background
-                    transition-colors hover:bg-foreground/90
-                  "
+                  className={primaryButtonClass}
                 >
-                  Read the integration guide
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    Integration guide
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </Link>
-                <Link
-                  href="#check"
-                  className="
-                    group inline-flex items-center justify-center gap-2
-                    border border-foreground/20 px-6 py-3
-                    text-sm font-medium text-foreground
-                    transition-colors hover:border-foreground/40 hover:bg-foreground/5
-                  "
-                >
-                  Check an agent
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <Link href="#check" className={secondaryButtonClass}>
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    Check an agent
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </Link>
               </div>
             </div>
 
             {/* The sphere is square, so a width cap plus `aspect-square` sizes it
-                on both axes. A fixed height cannot: `flex-1` resolves to
-                `flex-basis: 0%`, which overrides `height` while this row is
-                stacked, and leaves the box taller than its own column once the
-                row splits at lg. */}
+                on both axes. */}
             <div className="relative flex flex-1 items-center justify-center lg:w-1/2">
               <AgentNetworkAnimation className="aspect-square w-full max-w-[400px] sm:max-w-[480px] lg:max-w-[560px]" />
             </div>
@@ -78,35 +71,26 @@ export default function Agents() {
       <AgentsCheckSection />
 
       {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             Let your agent act on a permit you signed<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              Verify with Entros
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/verify" className={primaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Verify with Entros
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
             <Link
               href="/docs/integrate/agent-permit"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
+              className={secondaryButtonClass}
             >
-              Read the docs
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Read the docs
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

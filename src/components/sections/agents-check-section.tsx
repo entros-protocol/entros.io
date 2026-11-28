@@ -4,19 +4,19 @@ const TEST_AGENT = "CW9ogj3qxGxqdyMdsbVr6fkh6F9S5xYYkiNQir7LMW1M";
 
 export function AgentsCheckSection() {
   return (
-    <section id="check" className="border-t border-border">
+    <section id="check">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Read an agent's current state<span className="text-cyan">.</span>
         </h2>
 
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+        <p className="mt-6 max-w-[65ch] text-base leading-relaxed text-muted md:text-lg">
           Enter an agent asset address to read its current owner, agent
           wallet, and the owner's Entros Anchor from devnet. The example is
           an Entros test agent.
         </p>
 
-        <div className="mt-12 border border-border p-6 md:p-8">
+        <div className="mt-12 bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
           <AgentCheckForm initialAgent={TEST_AGENT} inputId="check-agent-asset" />
         </div>
       </div>

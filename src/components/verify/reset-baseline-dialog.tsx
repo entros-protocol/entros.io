@@ -80,17 +80,17 @@ export function ResetBaselineDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="reset-baseline-dialog-title"
     >
       <div
         ref={panelRef}
-        className="vc-slide relative w-full max-w-md border border-foreground/10 bg-background p-6"
+        className="vc-slide relative w-full max-w-md bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText]"
       >
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-danger">
-          Irreversible
+        <p className="text-xs font-medium text-danger">
+          Irreversible action
         </p>
         <h2
           id="reset-baseline-dialog-title"

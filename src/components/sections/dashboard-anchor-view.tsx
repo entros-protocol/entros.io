@@ -10,6 +10,7 @@ import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
 import { commitmentBytesToHex } from "@/lib/on-chain";
 import { explorerUrl } from "@/lib/explorer";
 import { ArrowRight, ExternalLink, Wallet, Loader2, ShieldAlert } from "lucide-react";
+import { buttonArrowClass, primaryButtonClass } from "@/components/ui/button-styles";
 
 function formatRelativeTime(unixSeconds: number): string {
   const now = new Date();
@@ -114,14 +115,14 @@ export function DashboardAnchorView() {
   if (!connected) {
     return (
       <section>
-        <div className="mx-auto max-w-7xl px-6 pb-24">
-          <div className="flex flex-col items-center gap-6 border border-border py-20 text-center">
-            <Wallet className="h-10 w-10 text-foreground/40" strokeWidth={1.5} />
+        <div className="mx-auto max-w-7xl px-6 pb-20">
+          <div className="flex flex-col items-center gap-6 bg-surface px-6 py-12 text-center forced-colors:border forced-colors:border-[CanvasText] md:py-16">
+            <Wallet className="h-9 w-9 text-muted" strokeWidth={1.5} aria-hidden="true" />
             <div className="max-w-md">
               <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
                 Connect your wallet<span className="text-cyan">.</span>
               </p>
-              <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+              <p className="mt-2.5 text-sm leading-relaxed text-muted">
                 View your Entros Anchor, Trust Score, and verification
                 history.
               </p>
@@ -142,11 +143,11 @@ export function DashboardAnchorView() {
   if (loading) {
     return (
       <section>
-        <div className="mx-auto max-w-7xl px-6 pb-24">
+        <div className="mx-auto max-w-7xl px-6 pb-20">
           {walletPill}
-          <div className="flex flex-col items-center gap-4 border border-border py-20">
+          <div className="flex flex-col items-center gap-4 bg-surface py-16 forced-colors:border forced-colors:border-[CanvasText]">
             <Loader2 className="h-6 w-6 animate-spin text-cyan" />
-            <p className="text-sm font-medium text-foreground/60">
+            <p className="text-sm font-medium text-muted">
               Reading from Solana devnet…
             </p>
           </div>
@@ -158,11 +159,11 @@ export function DashboardAnchorView() {
   if (error) {
     return (
       <section>
-        <div className="mx-auto max-w-7xl px-6 pb-24">
+        <div className="mx-auto max-w-7xl px-6 pb-20">
           {walletPill}
-          <div className="flex flex-col items-center gap-4 border border-border py-20 text-center">
+          <div className="flex flex-col items-center gap-4 bg-surface py-16 text-center forced-colors:border forced-colors:border-[CanvasText]">
             <ShieldAlert className="h-8 w-8 text-danger" strokeWidth={1.5} />
-            <p className="text-sm text-foreground/65">
+            <p className="text-sm text-muted">
               Failed to fetch identity state
             </p>
           </div>
@@ -174,29 +175,23 @@ export function DashboardAnchorView() {
   if (!identity) {
     return (
       <section>
-        <div className="mx-auto max-w-7xl px-6 pb-24">
+        <div className="mx-auto max-w-7xl px-6 pb-20">
           {walletPill}
-          <div className="flex flex-col items-center gap-6 border border-border py-20 text-center">
-            <ShieldAlert className="h-10 w-10 text-foreground/40" strokeWidth={1.5} />
+          <div className="flex flex-col items-center gap-6 bg-surface px-6 py-14 text-center forced-colors:border forced-colors:border-[CanvasText] md:py-16">
+            <ShieldAlert className="h-9 w-9 text-muted" strokeWidth={1.5} aria-hidden="true" />
             <div className="max-w-md">
               <p className="font-display text-2xl font-medium tracking-tight text-foreground md:text-3xl">
                 No Entros Anchor yet<span className="text-cyan">.</span>
               </p>
-              <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+              <p className="mt-2.5 text-sm leading-relaxed text-muted">
                 Complete a verification to mint your Entros Anchor.
               </p>
             </div>
-            <Link
-              href="/verify"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              Verify now
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/verify" className={primaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                Verify now
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>
@@ -209,23 +204,23 @@ export function DashboardAnchorView() {
       <div className="mx-auto max-w-7xl px-6 pb-16">
         {walletPill}
 
-        <div className="grid grid-cols-1 gap-px border border-border bg-border lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* Trust Score panel */}
-          <div className="flex flex-col items-center justify-center bg-background p-8 text-center md:p-10 lg:col-span-1">
-            <p className="text-sm font-medium text-foreground/60">
+          <div className="flex flex-col items-center justify-center bg-surface p-8 text-center forced-colors:border forced-colors:border-[CanvasText] md:p-10 lg:col-span-1">
+            <p className="text-sm font-medium text-muted">
               Trust Score
             </p>
-            <p className="mt-4 font-display text-7xl font-medium tracking-tight text-foreground md:text-8xl">
+            <p className="mt-4 font-display text-7xl font-medium tracking-tight text-foreground tabular-nums md:text-8xl">
               {identity.trustScore}
             </p>
-            <div className="mt-6 h-1 w-full max-w-[220px] overflow-hidden bg-foreground/[0.06]">
+            <div className="mt-6 h-1 w-full max-w-[220px] overflow-hidden bg-foreground/10">
               <div
-                className="h-full bg-cyan transition-all"
-                style={{ width: `${Math.min(identity.trustScore, 100)}%` }}
+                className="h-full w-full origin-left bg-cyan transition-transform duration-200 ease-out motion-reduce:transition-none"
+                style={{ transform: `scaleX(${Math.min(identity.trustScore, 100) / 100})` }}
               />
             </div>
             {identity.trustScore > 0 ? (
-              <p className="text-sm font-medium mt-4 text-foreground">
+              <p className="mt-4 text-sm font-medium text-foreground">
                 Active
               </p>
             ) : (
@@ -233,7 +228,7 @@ export function DashboardAnchorView() {
                 <p className="text-sm font-medium text-foreground">
                   Baseline established
                 </p>
-                <p className="mt-3 text-xs leading-relaxed text-foreground/55">
+                <p className="mt-3 text-xs leading-relaxed text-muted">
                   Re-verify to start building your Trust Score. Each
                   matching session increases it.
                 </p>
@@ -242,7 +237,7 @@ export function DashboardAnchorView() {
           </div>
 
           {/* Stats panel */}
-          <div className="flex flex-col bg-background p-8 md:p-10 lg:col-span-2">
+          <div className="flex flex-col bg-surface p-8 forced-colors:border forced-colors:border-[CanvasText] md:p-10 lg:col-span-2">
             <div className="grid grid-cols-2 gap-8">
               <div>
                 <p className="text-sm font-medium text-foreground/60">

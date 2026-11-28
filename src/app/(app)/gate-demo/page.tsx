@@ -10,6 +10,12 @@ import { CodeBlock } from "@/components/ui/code-block";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { ConnectedWalletPill } from "@/components/ui/connected-wallet-pill";
 import { DevnetNotice } from "@/components/ui/devnet-notice";
+import {
+  buttonArrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  textInputClass,
+} from "@/components/ui/button-styles";
 
 const USAGE_CODE = `import { EntrosGate } from "@/components/ui/entros-gate";
 
@@ -36,7 +42,7 @@ const FALLBACK_CODE = `<EntrosGate
 const COMPONENT_CODE = `"use client";
 
 /**
- * <EntrosGate>—drop-in route guard for Entros Trust Score.
+ * <EntrosGate>: drop-in route guard for Entros Trust Score.
  *
  * Renders children only when the connected wallet has an Entros Anchor with
  * trustScore >= minTrustScore. Otherwise renders a fallback (default: a
@@ -394,7 +400,7 @@ export default function GateDemo() {
 
   return (
     <>
-      {/* Hero—asymmetric split. Left: wide h1 + copy + CTAs. Right:
+      {/* Hero: asymmetric split. Left: wide h1 + copy + CTAs. Right:
           two stacked state cards showing the gate's branching output. */}
       <section>
         <div className="mx-auto max-w-7xl px-6 pt-32 pb-20 md:pt-40 md:pb-28">
@@ -416,40 +422,28 @@ export default function GateDemo() {
               </p>
 
               <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                <Link
-                  href="/integrate"
-                  className="
-                    group inline-flex items-center justify-center gap-2
-                    bg-foreground px-6 py-3
-                    text-sm font-medium text-background
-                    transition-colors hover:bg-foreground/90
-                  "
-                >
-                  All components
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <Link href="/integrate" className={primaryButtonClass}>
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    All components
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </Link>
-                <Link
-                  href="/verify"
-                  className="
-                    group inline-flex items-center justify-center gap-2
-                    border border-foreground/20 px-6 py-3
-                    text-sm font-medium text-foreground
-                    transition-colors hover:border-foreground/40 hover:bg-foreground/5
-                  "
-                >
-                  Try the demo
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <Link href="/verify" className={secondaryButtonClass}>
+                  <span className="[text-box:trim-both_cap_alphabetic]">
+                    Try the demo
+                  </span>
+                  <ArrowRight className={buttonArrowClass} aria-hidden="true" />
                 </Link>
               </div>
             </div>
 
-            {/* Two stacked state cards—the gate's branching output */}
+            {/* Two stacked state cards showing the gate's branching output */}
             <div className="lg:col-span-5">
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* PASS state */}
-                <div className="relative border border-cyan/40 bg-cyan/[0.03] p-6 md:p-7">
+                <div className="relative bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-7">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">
+                    <span className="text-sm font-medium text-cyan">
                       482 ≥ 100
                     </span>
                   </div>
@@ -459,25 +453,25 @@ export default function GateDemo() {
                       Welcome, verified human.
                     </p>
                   </div>
-                  <p className="mt-2 font-mono text-[11px] text-foreground/45">
+                  <p className="mt-2 font-mono text-xs text-muted">
                     {"<children />"} rendered
                   </p>
                 </div>
 
                 {/* BLOCK state */}
-                <div className="relative border border-border p-6 md:p-7">
+                <div className="relative bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-7">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground/60">
+                    <span className="text-sm font-medium text-muted">
                       0 &lt; 100
                     </span>
                   </div>
                   <div className="mt-6 flex items-center gap-3">
-                    <LockGlyph className="h-6 w-6 shrink-0 text-foreground/50" />
-                    <p className="font-display text-base font-medium tracking-tight text-foreground/55 md:text-lg">
+                    <LockGlyph className="h-6 w-6 shrink-0 text-muted" />
+                    <p className="font-display text-base font-medium tracking-tight text-muted md:text-lg">
                       Verify your humanness.
                     </p>
                   </div>
-                  <p className="mt-2 font-mono text-[11px] text-foreground/35">
+                  <p className="mt-2 font-mono text-xs text-muted">
                     {"<fallback />"} rendered
                   </p>
                 </div>
@@ -488,7 +482,7 @@ export default function GateDemo() {
       </section>
 
       {/* Live preview */}
-      <section className="border-t border-border">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Try it now<span className="text-cyan">.</span>
@@ -509,11 +503,11 @@ export default function GateDemo() {
             )}
           </div>
 
-          <div className="mt-8 border border-border p-6 md:p-8">
+          <div className="mt-8 bg-background p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
-                <span className="text-sm font-medium text-foreground/60">
+                <span className="text-sm font-medium text-muted">
                   Devnet
                 </span>
               </div>
@@ -523,7 +517,7 @@ export default function GateDemo() {
               <div>
                 <label
                   htmlFor="threshold-input"
-                  className="text-sm font-medium mb-2 block text-foreground/60"
+                  className="mb-2 block text-sm font-medium text-muted"
                 >
                   Required Trust Score
                 </label>
@@ -532,13 +526,14 @@ export default function GateDemo() {
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  className="w-full border border-border bg-background px-4 py-3 font-mono text-sm text-foreground transition-colors focus:border-cyan/50 focus:outline-none"
+                  autoComplete="off"
+                  className={textInputClass}
                   value={thresholdInput}
                   onChange={(e) =>
                     setThresholdInput(e.target.value.replace(/[^0-9]/g, ""))
                   }
                 />
-                <p className="mt-3 text-xs leading-relaxed text-foreground/50">
+                <p className="mt-3 text-xs leading-relaxed text-muted">
                   Try 0 to allow any verified human, or a high number to
                   block. Adjust to test the gate against your connected
                   wallet's Trust Score.
@@ -546,17 +541,17 @@ export default function GateDemo() {
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-2 text-foreground/60">
+                <p className="mb-2 text-sm font-medium text-muted">
                   Output
                 </p>
-                <div className="border border-border bg-surface p-6">
+                <div className="bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText]">
                   <EntrosGate minTrustScore={threshold}>
-                    <div className="border border-cyan/30 bg-cyan/[0.05] p-6 text-center">
+                    <div className="bg-background p-6 text-center forced-colors:border forced-colors:border-[CanvasText]">
                       <VerifiedGlyph className="mx-auto mb-3 h-8 w-8 text-foreground/85" />
                       <p className="font-display text-base font-medium tracking-tight text-foreground md:text-lg">
                         Protected content visible
                       </p>
-                      <p className="mt-1 text-xs text-foreground/55">
+                      <p className="mt-1 text-xs text-muted">
                         Your Anchor clears a Trust Score of {threshold} and
                         verified inside the window.
                       </p>
@@ -570,7 +565,7 @@ export default function GateDemo() {
       </section>
 
       {/* Usage */}
-      <section className="border-t border-border">
+      <section>
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
@@ -595,7 +590,7 @@ export default function GateDemo() {
       </section>
 
       {/* Custom fallback */}
-      <section className="border-t border-border">
+      <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-5">
@@ -618,7 +613,7 @@ export default function GateDemo() {
       </section>
 
       {/* Component source */}
-      <section className="border-t border-border">
+      <section>
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
             Copy. Paste. Ship<span className="text-cyan">.</span>
@@ -641,8 +636,9 @@ export default function GateDemo() {
 
           <div className="relative mt-12">
             <button
+              type="button"
               onClick={copySource}
-              className="text-sm font-medium absolute right-4 top-4 z-10 text-foreground/60 transition-colors hover:text-cyan"
+              className="absolute right-4 top-4 z-10 min-h-11 bg-surface px-3 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-surface-hover motion-reduce:transition-none forced-colors:border forced-colors:border-[ButtonText]"
             >
               {copied ? "Copied" : "Copy"}
             </button>
@@ -655,37 +651,25 @@ export default function GateDemo() {
       </section>
 
       {/* Footer CTA */}
-      <section className="border-t border-border">
-        <div className="mx-auto max-w-5xl px-6 py-32 text-center md:py-40">
+      <section>
+        <div className="mx-auto max-w-5xl px-6 py-24 text-center md:py-32">
           <h2 className="font-display text-4xl font-normal tracking-tight text-foreground md:text-6xl md:leading-[1.05]">
             One wrapper<span className="text-cyan">.</span>
             <br />
             Every gated route<span className="text-cyan">.</span>
           </h2>
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/integrate"
-              className="
-                group inline-flex items-center justify-center gap-2
-                bg-foreground px-6 py-3
-                text-sm font-medium text-background
-                transition-colors hover:bg-foreground/90
-              "
-            >
-              All components
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/integrate" className={primaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                All components
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
-            <Link
-              href="/badge-demo"
-              className="
-                group inline-flex items-center justify-center gap-2
-                border border-foreground/20 px-6 py-3
-                text-sm font-medium text-foreground
-                transition-colors hover:border-foreground/40 hover:bg-foreground/5
-              "
-            >
-              See &lt;EntrosBadge /&gt;
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/badge-demo" className={secondaryButtonClass}>
+              <span className="[text-box:trim-both_cap_alphabetic]">
+                See &lt;EntrosBadge /&gt;
+              </span>
+              <ArrowRight className={buttonArrowClass} aria-hidden="true" />
             </Link>
           </div>
         </div>

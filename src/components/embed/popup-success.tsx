@@ -44,7 +44,7 @@ export function PopupSuccess({
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground outline-none"
+          className="font-display text-3xl font-normal tracking-[-0.015em] text-foreground focus:outline-none focus-visible:outline-2 focus-visible:outline-[var(--verification-focus-ring)]"
         >
           Verified.
         </h1>

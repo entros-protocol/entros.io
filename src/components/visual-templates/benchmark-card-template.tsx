@@ -198,7 +198,7 @@ export function BenchmarkCardTemplate({
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span
-            className="font-mono text-xs uppercase tracking-[0.08em]"
+            className="font-mono text-xs"
             style={{ color: palette.muted }}
           >
             {verified.metricHeading}
@@ -231,7 +231,7 @@ export function BenchmarkCardTemplate({
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
-                      className="border px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.06em]"
+                      className="border px-2 py-0.5 font-mono text-xs"
                       style={{
                         backgroundColor: palette.surfaceAlt,
                         borderColor: palette.border,

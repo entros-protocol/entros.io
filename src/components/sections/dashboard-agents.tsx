@@ -62,56 +62,59 @@ export function DashboardAgents() {
   const current = owned?.requestKey === requestKey ? owned : null;
 
   return (
-    <section className="border-t border-border">
+    <section className="bg-surface">
       <div className="mx-auto max-w-7xl px-6 py-16 md:py-24">
         <h2 className="max-w-3xl font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
           Your agents<span className="text-cyan">.</span>
         </h2>
-        <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
+        <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted md:text-lg">
           When an app asks for a permit, your agent sends you a link. Open it to review the action
           and sign.{" "}
-          <Link href="/docs/integrate/agent-permit" className="text-cyan transition-colors hover:text-foreground">
+          <Link href="/docs/integrate/agent-permit" className="text-cyan transition-colors duration-150 hover:text-foreground motion-reduce:transition-none">
             How permits work
           </Link>
         </p>
 
-        <div className="mt-12 border border-border p-6 md:p-8">
+        <div className="mt-12 bg-background p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
           <div className="flex items-center gap-3">
             {!current && <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan" aria-hidden />}
           </div>
           {current?.status === "error" && (
-            <p className="mt-6 text-sm text-foreground/55">
+            <p className="mt-6 text-sm text-muted">
               Could not reach the agent registry index. Check a specific agent below.
             </p>
           )}
           {current?.status === "ready" && current.agents.length === 0 && (
-            <p className="mt-6 text-sm text-foreground/55">No agents are registered to this wallet.</p>
+            <p className="mt-6 text-sm text-muted">No agents are registered to this wallet.</p>
           )}
           {current?.status === "ready" && current.agents.length > 0 && (
-            <ul className="mt-8 grid grid-cols-1 gap-px border-y border-border bg-border sm:grid-cols-2">
+            <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {current.agents.map((agent) => (
-                <li key={agent.asset} className="flex flex-col gap-3 bg-background p-5">
+                <li
+                  key={agent.asset}
+                  className="flex flex-col gap-3 bg-surface p-5 forced-colors:border forced-colors:border-[CanvasText]"
+                >
                   <div className="flex items-center gap-2">
-                    <Bot className="h-4 w-4 shrink-0 text-foreground/45" strokeWidth={1.5} aria-hidden />
-                    <p className="font-mono text-xs text-foreground/80">{truncate(agent.asset)}</p>
+                    <Bot className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.5} aria-hidden />
+                    <p className="font-mono text-xs text-foreground/85">{truncate(agent.asset)}</p>
                     <a
                       href={explorerUrl(agent.asset)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="shrink-0 text-cyan transition-colors hover:text-foreground"
+                      className="shrink-0 text-cyan transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
                       aria-label="View agent on Solana Explorer"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   </div>
-                  <p className="text-xs text-foreground/60">{describe(agent.state, walletAddress)}</p>
+                  <p className="text-xs text-muted">{describe(agent.state, walletAddress)}</p>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        <div className="mt-6 border border-border p-6 md:p-8">
+        <div className="mt-6 bg-background p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
           <AgentCheckForm inputId="dashboard-agent-asset" />
         </div>
       </div>

@@ -4,10 +4,11 @@ export const verificationFocusRing = [
 ].join(" ");
 
 const press = [
-  "transition-[background-color,border-color,color,transform] duration-150 ease-out",
+  "transition-[background-color,color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]",
   "active:scale-[0.96]",
   "motion-reduce:transform-none motion-reduce:transition-none",
   "disabled:cursor-not-allowed disabled:opacity-50",
+  "forced-colors:border forced-colors:border-[ButtonText]",
 ].join(" ");
 
 /** The one solid action on each verification screen. Square, like the console. */
@@ -22,27 +23,27 @@ export const primaryVerificationActionClass = [
 
 export const secondaryVerificationActionClass = [
   "inline-flex h-11 items-center justify-center gap-2",
-  "border border-foreground/15 px-6",
-  "text-sm text-foreground/70",
-  "hover:border-foreground/40 hover:text-foreground",
+  "bg-background px-6",
+  "text-sm font-medium text-foreground",
+  "hover:bg-surface-hover",
   verificationFocusRing,
   press,
 ].join(" ");
 
 export const dangerVerificationActionClass = [
   "inline-flex h-11 items-center justify-center gap-2",
-  "border border-danger/35 px-6",
-  "text-sm text-danger",
-  "hover:border-danger/70 hover:bg-danger/[0.06]",
+  "bg-danger/10 px-6",
+  "text-sm font-medium text-danger",
+  "hover:bg-danger/15",
   verificationFocusRing,
   press,
 ].join(" ");
 
 export const accentVerificationActionClass = [
   "inline-flex h-11 items-center justify-center gap-2",
-  "border border-cyan/40 px-6",
+  "bg-cyan/10 px-6",
   "text-sm font-medium text-cyan",
-  "hover:border-cyan/80 hover:bg-cyan/[0.06]",
+  "hover:bg-cyan/15",
   verificationFocusRing,
   press,
 ].join(" ");

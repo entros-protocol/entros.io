@@ -13,7 +13,7 @@ function FooterLink({ href, children }: { href: string; children: ReactNode }) {
     <li>
       <Link
         href={href}
-        className="text-sm text-muted transition-colors hover:text-foreground"
+        className="text-sm text-muted transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
       >
         {children}
       </Link>
@@ -44,17 +44,17 @@ export function Footer() {
           <div className="lg:col-span-4">
             <Link
               href="/"
-              aria-label="Entros home"
               style={{
                 fontFamily:
                   "var(--font-wordmark), 'JetBrains Mono', ui-monospace, monospace",
               }}
-              className="inline-flex items-baseline text-2xl tracking-tight text-foreground"
+              className="inline-flex min-h-11 items-center text-2xl tracking-tight text-foreground"
             >
               {/* The navbar's lockup and type size, at which the mark's
                   grid lands on whole pixels. */}
               <EntrosMark className="mr-1.5 size-[0.75em] shrink-0" />
-              <span aria-hidden>Entros</span>
+              <span className="[text-box:trim-both_cap_alphabetic]">Entros</span>
+              <span className="sr-only"> home</span>
             </Link>
             <p className="mt-3 text-sm text-muted">
               Private human verification

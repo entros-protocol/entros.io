@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * <EntrosGate>—drop-in route guard for Entros Trust Score.
+ * <EntrosGate>: drop-in route guard for Entros Trust Score.
  *
  * Renders children only when the connected wallet has an Entros Anchor with
  * trustScore >= minTrustScore. Otherwise renders a fallback (default: a

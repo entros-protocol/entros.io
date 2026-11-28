@@ -2,15 +2,10 @@
   "title": "Entros Docs",
   "pages": [
     "index",
-    "---Quickstart---",
     "quickstart",
-    "---Concepts---",
     "concepts",
-    "---Integrate---",
     "integrate",
-    "---Reference---",
     "reference",
-    "---Roadmap---",
     "roadmap"
   ]
 }

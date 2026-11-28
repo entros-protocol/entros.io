@@ -13,8 +13,8 @@ export function ProseSection({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="border-t border-border">
-      <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
+    <section id={id}>
+      <div className="mx-auto max-w-3xl px-6 py-12 md:py-16">
         <h2 className="font-display text-2xl font-normal tracking-tight text-foreground md:text-3xl">
           {title}
           <span className="text-cyan">.</span>

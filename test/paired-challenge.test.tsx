@@ -315,7 +315,9 @@ describe("PairedChallenge", () => {
 it("uses tracker activity for the speech highlight regardless of amplitude", async () => {
   await render({ speechActive: false });
   const word = () => [...container.querySelectorAll("p")].find((node) => node.textContent === "garden")!;
-  expect(word().style.textShadow).toBe("none");
+  expect(word().dataset.voiceActive).toBe("false");
+  expect(word().style.color).toBe("var(--color-muted)");
   await render({ speechActive: true });
-  expect(word().style.textShadow).not.toBe("none");
+  expect(word().dataset.voiceActive).toBe("true");
+  expect(word().style.color).toBe("var(--color-foreground)");
 });

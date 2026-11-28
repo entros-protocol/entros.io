@@ -64,10 +64,10 @@ function Cell({ state, className, style }: { state: CellState; className?: strin
       aria-hidden
       style={style}
       className={cn(
-        "relative aspect-square border transition-[background-color,border-color] duration-700 ease-out",
-        state === 0 && "border-foreground/20 bg-transparent",
-        state === 1 && "border-cyan bg-transparent",
-        state === 2 && "border-cyan bg-cyan",
+        "relative aspect-square border transition-[background-color,border-color] duration-200 ease-out motion-reduce:transition-none",
+        state === 0 && "border-control-border/50 bg-transparent forced-colors:border-[CanvasText]",
+        state === 1 && "border-cyan bg-transparent forced-colors:border-[Highlight]",
+        state === 2 && "border-cyan bg-cyan forced-colors:border-[Highlight] forced-colors:bg-[Highlight]",
         className,
       )}
     >

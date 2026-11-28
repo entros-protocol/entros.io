@@ -35,9 +35,9 @@ export function AgentStatusCard({ status }: { status: AgentStatus }) {
   const { state, ownerAnchor, snapshot } = status;
   if (state.status !== "available") {
     return (
-      <div className="flex items-start gap-3 border border-border p-5">
-        <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-foreground/50" aria-hidden />
-        <p className="text-sm text-foreground/70">{failure(state.reason)}</p>
+      <div className="flex items-start gap-3 bg-background p-5 forced-colors:border forced-colors:border-[CanvasText]">
+        <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted" aria-hidden />
+        <p className="text-sm text-foreground/80">{failure(state.reason)}</p>
       </div>
     );
   }
@@ -49,7 +49,7 @@ export function AgentStatusCard({ status }: { status: AgentStatus }) {
         ? "Set before the last transfer. The owner must bind it again."
         : "Not bound. The agent cannot present permits yet.";
   return (
-    <div className="border border-border p-6 md:p-8">
+    <div className="bg-background p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
       <div className="flex items-center gap-3">
         <CheckCircle className="h-5 w-5 text-solana-green" aria-hidden />
         <p className="text-sm font-medium text-foreground">Registered agent on the 8004 registry</p>

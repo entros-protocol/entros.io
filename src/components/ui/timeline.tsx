@@ -4,6 +4,7 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import {
   motion,
   useMotionValueEvent,
+  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
@@ -45,18 +46,20 @@ const TimelineNode = forwardRef<
     queueMicrotask(() => setFilled(next));
   });
 
+  const reducedMotion = useReducedMotion();
+
   return (
     <div
       ref={ref}
       className="absolute left-3 flex h-10 w-10 items-center justify-center bg-background md:left-3"
     >
       <motion.div
-        style={{ rotate: rotateMV }}
+        style={reducedMotion ? undefined : { rotate: rotateMV }}
         className={cn(
-          "h-4 w-4 border transition-[background-color,border-color,box-shadow] duration-300",
+          "h-4 w-4 border transition-[background-color,border-color] duration-200 motion-reduce:transition-none",
           filled
-            ? "border-cyan bg-cyan shadow-[0_0_12px_rgba(34,211,230,0.55)]"
-            : "border-border bg-surface"
+            ? "border-cyan bg-cyan forced-colors:border-[Highlight] forced-colors:bg-[Highlight]"
+            : "border-control-border bg-surface forced-colors:border-[CanvasText]"
         )}
       />
     </div>
@@ -157,14 +160,14 @@ export function Timeline({ data }: { data: TimelineEntry[] }) {
 
         <div
           style={{ height: height + "px" }}
-          className="absolute left-[31px] top-0 w-[2px] overflow-hidden bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-border to-transparent to-[99%] [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] md:left-[31px]"
+          className="absolute left-[31px] top-0 w-[2px] overflow-hidden bg-border [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] md:left-[31px]"
         >
           <motion.div
             style={{
               height: heightTransform,
               opacity: opacityTransform,
             }}
-            className="absolute inset-x-0 top-0 w-[2px] rounded-full bg-gradient-to-t from-cyan via-solana-purple to-transparent from-[0%] via-[10%]"
+            className="absolute inset-x-0 top-0 w-[2px] bg-cyan"
           />
         </div>
       </div>

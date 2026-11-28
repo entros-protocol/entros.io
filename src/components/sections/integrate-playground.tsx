@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { CheckCircle, XCircle, Loader2, Search, ExternalLink } from "lucide-react";
 import { explorerUrl } from "@/lib/explorer";
+import { primaryButtonClass, textInputClass } from "@/components/ui/button-styles";
 
 const DEMO_WALLET = "2jowceXRayDC3ufU3kRjf67zT3cLv48q4gbcdhA1SNQw";
 const ENTROS_ANCHOR_PROGRAM = "GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2";
@@ -46,7 +47,13 @@ export function IntegratePlayground() {
   const requestId = useRef(0);
 
   async function checkWallet(address: string) {
-    if (!address.trim()) return;
+    const trimmed = address.trim();
+    if (!trimmed) {
+      setError("Enter a Solana wallet address.");
+      setResult(null);
+      setNotFound(false);
+      return;
+    }
     const thisRequest = ++requestId.current;
     setLoading(true);
     setError(null);
@@ -58,7 +65,7 @@ export function IntegratePlayground() {
 
       let pubkey: InstanceType<typeof PublicKey>;
       try {
-        pubkey = new PublicKey(address.trim());
+        pubkey = new PublicKey(trimmed);
       } catch {
         if (requestId.current === thisRequest) {
           setError("Invalid Solana address.");
@@ -101,33 +108,44 @@ export function IntegratePlayground() {
 
   return (
     <div>
-      <div className="border border-border p-6 md:p-8">
+      <div className="bg-surface p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 bg-cyan" aria-hidden />
-            <span className="text-sm font-medium text-foreground/60">
+            <span className="text-sm font-medium text-muted">
               Devnet
             </span>
           </div>
         </div>
 
-        <p className="mt-6 text-sm leading-relaxed text-foreground/65">
+        <p className="mt-6 text-sm leading-relaxed text-foreground/75">
           Check any wallet's verification status on devnet.
         </p>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void checkWallet(wallet);
+          }}
+          noValidate
+          className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end"
+        >
           <div className="flex-1">
             <label
               htmlFor="playground-wallet"
-              className="text-sm font-medium mb-2 block text-foreground/60"
+              className="mb-2 block text-sm font-medium text-muted"
             >
               Wallet Address
             </label>
             <input
               id="playground-wallet"
               type="text"
+              autoComplete="off"
+              spellCheck={false}
               placeholder="Paste a Solana wallet address..."
-              className="w-full border border-border bg-background px-4 py-3 font-mono text-sm text-foreground placeholder:text-foreground/30 transition-colors focus:border-cyan/50 focus:outline-none"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? "playground-wallet-error" : undefined}
+              className={textInputClass}
               value={wallet}
               onChange={(e) => {
                 requestId.current++;
@@ -136,31 +154,34 @@ export function IntegratePlayground() {
                 setNotFound(false);
                 setError(null);
               }}
-              onKeyDown={(e) => e.key === "Enter" && checkWallet(wallet)}
             />
           </div>
           <button
-            onClick={() => checkWallet(wallet)}
-            disabled={loading || !wallet.trim()}
-            className="inline-flex items-center justify-center gap-2 border border-foreground/20 bg-foreground px-6 py-3 font-mono text-sm text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50"
+            type="submit"
+            disabled={loading}
+            className={primaryButtonClass}
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
-              <Search className="h-4 w-4" />
+              <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
             )}
-            Check
+            <span className="[text-box:trim-both_cap_alphabetic]">Check</span>
           </button>
-        </div>
+        </form>
 
-        {error && <p className="mt-4 text-sm text-danger">{error}</p>}
+        {error && (
+          <p id="playground-wallet-error" role="alert" className="mt-4 text-sm text-danger">
+            {error}
+          </p>
+        )}
 
         {notFound && (
-          <div className="mt-8 flex items-center gap-3 border border-border p-5">
-            <XCircle className="h-6 w-6 shrink-0 text-foreground/50" strokeWidth={1.5} />
+          <div className="mt-8 flex items-center gap-3 bg-background p-5 forced-colors:border forced-colors:border-[CanvasText]">
+            <XCircle className="h-6 w-6 shrink-0 text-muted" strokeWidth={1.5} />
             <div>
               <p className="text-sm font-medium text-foreground">Not verified</p>
-              <p className="mt-0.5 text-xs text-foreground/50">
+              <p className="mt-0.5 text-xs text-muted">
                 No Entros Anchor on devnet. No Trust Score,
                 no history.
               </p>
@@ -169,7 +190,7 @@ export function IntegratePlayground() {
         )}
 
         {result && (
-          <div className="mt-8 border border-solana-green/30 bg-solana-green/[0.04] p-6 md:p-8">
+          <div className="mt-8 bg-background p-6 forced-colors:border forced-colors:border-[CanvasText] md:p-8">
             <div className="mb-8 flex items-center gap-3">
               <CheckCircle className="h-5 w-5 shrink-0 text-solana-green" />
               <p className="text-sm font-medium text-foreground">

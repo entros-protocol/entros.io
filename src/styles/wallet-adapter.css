@@ -79,11 +79,10 @@
     margin: 0;
     list-style: none;
     background: #2c2d30;
-    border-radius: 10px;
-    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.6);
+    border-radius: 0;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 200ms ease, transform 200ms ease, visibility 200ms;
+    transition: opacity 180ms ease-out, transform 180ms ease-out, visibility 180ms;
     font-family: 'DM Sans', 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
@@ -123,7 +122,7 @@
 
 .wallet-adapter-modal-collapse-button.wallet-adapter-modal-collapse-button-active svg {
     transform: rotate(180deg);
-    transition: transform ease-in 150ms;
+    transition: transform 150ms ease-out;
 }
 
 .wallet-adapter-modal {
@@ -182,7 +181,7 @@
 .wallet-adapter-modal-container {
     display: flex;
     margin: 3rem;
-    min-height: calc(100vh - 6rem); /* 100vh - 2 * margin */
+    min-height: calc(100svh - 6rem); /* 100svh - 2 * margin */
     align-items: center;
     justify-content: center;
 }
@@ -190,7 +189,7 @@
 @media (max-width: 480px) {
     .wallet-adapter-modal-container {
         margin: 1rem;
-        min-height: calc(100vh - 2rem); /* 100vh - 2 * margin */
+        min-height: calc(100svh - 2rem); /* 100svh - 2 * margin */
     }
 }
 
@@ -202,9 +201,8 @@
     flex-direction: column;
     z-index: 1050;
     max-width: 400px;
-    border-radius: 10px;
+    border-radius: 0;
     background: #10141f;
-    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.6);
     font-family: 'DM Sans', 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     flex: 1;
 }
@@ -268,9 +266,19 @@
 }
 
 .wallet-adapter-modal-list-more svg {
-    transition: all 0.1s ease;
+    transition: transform 150ms ease-out;
     fill: rgba(255, 255, 255, 1);
     margin-left: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wallet-adapter-dropdown-list,
+    .wallet-adapter-modal-collapse-button.wallet-adapter-modal-collapse-button-active svg,
+    .wallet-adapter-modal,
+    .wallet-adapter-modal-button-close svg,
+    .wallet-adapter-modal-list-more svg {
+        transition: none;
+    }
 }
 
 .wallet-adapter-modal-list-more-icon-rotate {

@@ -118,7 +118,7 @@ export function PolicyFlowTemplate({
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span
-              className="font-mono text-xs uppercase tracking-[0.1em]"
+              className="font-mono text-xs"
               style={{ color: palette.accentText }}
             >
               01 Application policy contract
@@ -149,7 +149,6 @@ export function PolicyFlowTemplate({
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {[warmBranch, stepUpBranch].map((branch, index) => {
             const isWarm = branch.id === "warm-reuse";
-            const accentStroke = isWarm ? palette.greenFill : palette.accentFill;
             const accentInk = isWarm ? palette.greenText : palette.accentText;
             return (
               <div
@@ -158,15 +157,13 @@ export function PolicyFlowTemplate({
                 style={{
                   backgroundColor: palette.surfaceAlt,
                   borderColor: palette.border,
-                  borderLeftWidth: 3,
-                  borderLeftColor: accentStroke,
                   borderRadius: 0,
                 }}
               >
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span
-                      className="font-mono text-xs uppercase tracking-[0.08em]"
+                      className="font-mono text-xs font-medium"
                       style={{ color: accentInk }}
                     >
                       {index === 0 ? "02A" : "02B"} {branch.label}
@@ -224,7 +221,7 @@ export function PolicyFlowTemplate({
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span
-              className="font-mono text-xs uppercase tracking-[0.1em]"
+              className="font-mono text-xs"
               style={{ color: palette.accentText }}
             >
               03 Server verification and settlement recheck
@@ -247,7 +244,7 @@ export function PolicyFlowTemplate({
                 }}
               >
                 <span
-                  className="block font-mono text-[11px] uppercase tracking-[0.08em]"
+                  className="block font-mono text-xs font-medium"
                   style={{ color: palette.accentText }}
                 >
                   Check {index + 1}

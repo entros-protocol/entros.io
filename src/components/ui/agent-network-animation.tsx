@@ -126,12 +126,23 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
     const startTime = performance.now();
     let prev = startTime;
 
-    // Read theme-aware cyan color from CSS variable
-    const rawCyan = getComputedStyle(document.documentElement).getPropertyValue("--color-cyan").trim();
-    const cyanRGB = rawCyan.startsWith("#")
-      ? `${parseInt(rawCyan.slice(1, 3), 16)}, ${parseInt(rawCyan.slice(3, 5), 16)}, ${parseInt(rawCyan.slice(5, 7), 16)}`
-      : "34, 211, 230";
-    const hotColor = getComputedStyle(document.documentElement).getPropertyValue("--color-foreground").trim() || "#fff";
+    let cyanRGB = "34, 211, 230";
+    let hotColor = "#fff";
+    const readColors = () => {
+      const style = getComputedStyle(document.documentElement);
+      const rawCyan = style.getPropertyValue("--color-cyan").trim();
+      cyanRGB = rawCyan.startsWith("#")
+        ? `${parseInt(rawCyan.slice(1, 3), 16)}, ${parseInt(rawCyan.slice(3, 5), 16)}, ${parseInt(rawCyan.slice(5, 7), 16)}`
+        : "34, 211, 230";
+      hotColor = style.getPropertyValue("--color-foreground").trim() || "#fff";
+    };
+    readColors();
+    const themeObserver = new MutationObserver(readColors);
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const positions = fibonacciSphere(NODE_COUNT);
     const edges = buildEdges(positions);
@@ -236,7 +247,7 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
       prev = now;
 
       const elapsed = (now - startTime) / 1000;
-      const fadeIn = Math.min(elapsed / FADE_IN_DURATION, 1);
+      const fadeIn = reducedMotion ? 1 : Math.min(elapsed / FADE_IN_DURATION, 1);
 
       angle += ROTATION_SPEED * dt;
       const t = now / 1000;
@@ -327,13 +338,20 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
       }
       svg.innerHTML = html;
       drawSurface(t, fadeIn);
-      raf = requestAnimationFrame(tick);
+      if (!reducedMotion) {
+        raf = requestAnimationFrame(tick);
+      }
     };
 
-    raf = requestAnimationFrame(tick);
+    if (reducedMotion) {
+      tick(startTime);
+    } else {
+      raf = requestAnimationFrame(tick);
+    }
     return () => {
       cancelAnimationFrame(raf);
       resize.disconnect();
+      themeObserver.disconnect();
     };
   }, []);
 

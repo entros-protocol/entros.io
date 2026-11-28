@@ -31,14 +31,14 @@ const signals: { label: string; text: string; Icon: ComponentType<GlyphProps> }[
  */
 export function ProblemSection() {
   return (
-    <section className="border-t border-border">
+    <section>
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <h2 className="max-w-4xl text-balance font-display text-4xl font-normal leading-[1.05] tracking-[-0.02em] text-foreground md:text-[3.5rem]">
           Agents are becoming economic actors<span className="text-cyan">.</span>
         </h2>
 
-        <div className="mt-16 grid grid-cols-1 gap-12 border-t border-border pt-12 md:mt-24 lg:grid-cols-12 lg:gap-16">
-          <p className="text-lg leading-relaxed text-foreground/70 md:text-xl lg:col-span-5">
+        <div className="mt-16 grid grid-cols-1 gap-12 pt-4 md:mt-20 lg:grid-cols-12 lg:gap-16">
+          <p className="max-w-[65ch] text-lg leading-relaxed text-foreground/75 md:text-xl lg:col-span-5">
             Apps need a signal that a person still holds the controls. Entros
             is designed to give that signal, privately, each time you verify.
           </p>

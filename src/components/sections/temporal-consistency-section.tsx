@@ -31,7 +31,7 @@ const HELIX_ROWS = 26;
  */
 export function TemporalConsistencySection() {
   return (
-    <section className="border-t border-border">
+    <section>
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-end lg:gap-16">
           <h2 className="font-display text-3xl font-normal tracking-tight text-foreground md:text-5xl md:leading-[1.05] lg:col-span-6">
@@ -39,7 +39,7 @@ export function TemporalConsistencySection() {
             <span className="text-cyan">.</span>
           </h2>
 
-          <p className="text-base leading-relaxed text-foreground/65 md:text-lg lg:col-span-5 lg:col-start-8">
+          <p className="max-w-[65ch] text-base leading-relaxed text-muted md:text-lg lg:col-span-5 lg:col-start-8">
             Each time you verify, a zero-knowledge proof shows you match
             your last session without revealing either one. Your Trust
             Score grows with the weeks you return.
@@ -63,14 +63,15 @@ export function TemporalConsistencySection() {
           </div>
         </div>
 
-        {/* The cards are positioned for their ticks, so they paint over the
-            section rails; border-x redraws the rails along the grid. */}
-        <div className="relative grid grid-cols-1 gap-px border-x border-y border-border bg-border md:grid-cols-3">
+        <div className="relative grid grid-cols-1 gap-4 md:grid-cols-3">
           {phases.map((phase) => (
-            <div key={phase.day} className="relative bg-background p-8">
+            <div
+              key={phase.day}
+              className="relative bg-surface p-8 forced-colors:border forced-colors:border-[CanvasText]"
+            >
               <span
                 aria-hidden
-                className="absolute -top-10 left-1/2 hidden h-10 w-px bg-gradient-to-b from-transparent to-cyan/50 md:block"
+                className="absolute -top-10 left-1/2 hidden h-10 w-px bg-cyan/40 md:block"
               />
               <span
                 aria-hidden
@@ -82,7 +83,7 @@ export function TemporalConsistencySection() {
               <h3 className="mt-4 font-display text-lg font-medium tracking-tight text-foreground">
                 {phase.title}
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+              <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted">
                 {phase.description}
               </p>
             </div>

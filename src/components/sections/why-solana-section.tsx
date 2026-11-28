@@ -10,7 +10,7 @@ import { solanaStats } from "@/data/stats";
  */
 export function WhySolanaSection() {
   return (
-    <section className="border-t border-border">
+    <section className="bg-surface">
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="relative">
           <AsciiSolana className="pointer-events-none absolute -bottom-10 right-[21%] hidden aspect-[1.35] w-[330px] opacity-90 xl:block 2xl:w-[370px] dark:opacity-85" />
@@ -28,16 +28,13 @@ export function WhySolanaSection() {
           </div>
         </div>
 
-        {/* Hairline grid: bg-border on the outer container shows through
-            the gap-px gaps between cells, giving us auto-responsive
-            dividers at every breakpoint without nth-child gymnastics. */}
-        <div className="mt-16 grid grid-cols-2 gap-px border-y border-border bg-border md:grid-cols-4">
+        <div className="mt-14 grid grid-cols-2 gap-4 md:grid-cols-4">
           {solanaStats.map((stat) => (
             <div
               key={stat.label}
-              className="flex flex-col items-center justify-center bg-background p-8 text-center"
+              className="flex flex-col items-center justify-center bg-background p-8 text-center forced-colors:border forced-colors:border-[CanvasText]"
             >
-              <div className="font-display text-3xl font-medium tracking-tight text-foreground md:text-4xl">
+              <div className="font-display text-3xl font-medium tracking-tight text-foreground tabular-nums md:text-4xl">
                 {stat.numericValue != null ? (
                   <Counter
                     target={stat.numericValue}
@@ -48,7 +45,7 @@ export function WhySolanaSection() {
                   stat.value
                 )}
               </div>
-              <p className="mt-3 text-sm text-foreground/50">{stat.label}</p>
+              <p className="mt-3 text-sm text-muted">{stat.label}</p>
             </div>
           ))}
         </div>

@@ -100,7 +100,7 @@ export function TemplateFrame({
               style={{ backgroundColor: palette.border }}
             />
             <span
-              className="text-xs font-medium uppercase tracking-[0.12em]"
+              className="text-xs font-medium"
               style={{ color: palette.muted }}
             >
               {categoryLabel}
@@ -108,7 +108,7 @@ export function TemplateFrame({
           </div>
 
           <div
-            className="inline-flex items-center gap-2 border px-3 py-1.5 font-mono text-xs uppercase tracking-[0.08em]"
+            className="inline-flex items-center gap-2 border px-3 py-1.5 font-mono text-xs"
             style={{
               backgroundColor: palette.canvas,
               borderColor: palette.border,
@@ -164,7 +164,7 @@ export function TemplateFrame({
           <dl className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2 lg:grid-cols-5">
             <div>
               <dt
-                className="text-[11px] font-medium uppercase tracking-[0.1em]"
+                className="text-xs font-medium"
                 style={{ color: palette.muted }}
               >
                 Subject
@@ -175,7 +175,7 @@ export function TemplateFrame({
             </div>
             <div>
               <dt
-                className="text-[11px] font-medium uppercase tracking-[0.1em]"
+                className="text-xs font-medium"
                 style={{ color: palette.muted }}
               >
                 Source record
@@ -189,7 +189,7 @@ export function TemplateFrame({
             </div>
             <div>
               <dt
-                className="text-[11px] font-medium uppercase tracking-[0.1em]"
+                className="text-xs font-medium"
                 style={{ color: palette.muted }}
               >
                 Capture / version
@@ -203,7 +203,7 @@ export function TemplateFrame({
             </div>
             <div>
               <dt
-                className="text-[11px] font-medium uppercase tracking-[0.1em]"
+                className="text-xs font-medium"
                 style={{ color: palette.muted }}
               >
                 Denominator
@@ -217,7 +217,7 @@ export function TemplateFrame({
             </div>
             <div>
               <dt
-                className="text-[11px] font-medium uppercase tracking-[0.1em]"
+                className="text-xs font-medium"
                 style={{ color: palette.muted }}
               >
                 Recorded
@@ -232,9 +232,9 @@ export function TemplateFrame({
           </dl>
 
           <p
-            className="border-l-2 pl-3 text-xs leading-relaxed"
+            className="px-3 py-2 text-xs leading-relaxed"
             style={{
-              borderColor: palette.accentFill,
+              backgroundColor: palette.canvas,
               color: palette.muted,
             }}
           >

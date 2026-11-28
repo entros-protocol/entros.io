@@ -1,3 +1,5 @@
+import "server-only";
+
 /**
  * Integrator allowlist for the embed/verify-popup route.
  *

@@ -1,15 +1,11 @@
 import { ImageResponse } from "next/og";
 import { Connection } from "@solana/web3.js";
 import { fetchIdentityState } from "@entros/pulse-sdk";
+import { loadOgFonts } from "@/lib/server/og-fonts";
 import { solanaRpcEndpoint } from "@/lib/solana-rpc";
 
-// Node runtime, not Edge: this route bundles next/og's rendering WASM (~1 MB)
-// plus the fonts, which exceeds Vercel's 1 MB Edge Function size cap (deploy
-// fails with "Edge Function size is 1.17 MB"). Node functions have a far larger
-// limit and next/og renders identically there. Fonts live in /public and are
-// fetched over HTTP from the request's own origin at runtime: on Node,
-// fetch(file://) of a bundled asset 500s and fileURLToPath of it throws at
-// build, so the public HTTP asset is the reliable cross-runtime path.
+// Node runtime keeps next/og's rendering WASM and bundled TTF fonts within
+// deployment limits and loads traced font assets directly from disk.
 export const runtime = "nodejs";
 
 const WIDTH = 1200;
@@ -53,32 +49,12 @@ async function readTrustScore(wallet: string): Promise<number | null> {
   }
 }
 
-async function fetchFont(url: string): Promise<ArrayBuffer> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Font request failed with ${response.status}`);
-  return response.arrayBuffer();
-}
-
-// Fetched once and cached so warm instances don't refetch. Loaded lazily
-// inside the handler (not at module scope) so nothing runs during build-time
-// page-data collection. A failed fetch throws and leaves the cache empty.
-let cachedFonts: [ArrayBuffer, ArrayBuffer] | null = null;
-async function loadFonts(origin: string): Promise<[ArrayBuffer, ArrayBuffer]> {
-  if (cachedFonts) return cachedFonts;
-  const [geist, mono] = await Promise.all([
-    fetchFont(`${origin}/fonts/Geist-Regular.ttf`),
-    fetchFont(`${origin}/fonts/JetBrainsMono-Regular.ttf`),
-  ]);
-  cachedFonts = [geist, mono];
-  return cachedFonts;
-}
-
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const requested = parseWallet(url.searchParams.get("wallet"));
 
   const [[geistRegular, jetbrainsMono], score] = await Promise.all([
-    loadFonts(url.origin),
+    loadOgFonts(),
     requested ? readTrustScore(requested) : null,
   ]);
 
@@ -141,9 +117,7 @@ export async function GET(request: Request) {
                 style={{
                   fontFamily: "JetBrainsMono",
                   fontSize: 18,
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                  color: "rgba(232,230,224,0.4)",
+                  color: "rgba(232,230,224,0.65)",
                 }}
               >
                 Verified human
@@ -186,9 +160,7 @@ export async function GET(request: Request) {
                 style={{
                   fontFamily: "JetBrainsMono",
                   fontSize: 18,
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                  color: "rgba(232,230,224,0.4)",
+                  color: "rgba(232,230,224,0.65)",
                 }}
               >
                 Trust Score
@@ -215,9 +187,7 @@ export async function GET(request: Request) {
             alignItems: "baseline",
             fontFamily: "JetBrainsMono",
             fontSize: 18,
-            color: "rgba(232,230,224,0.4)",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
+            color: "rgba(232,230,224,0.65)",
           }}
         >
           <span>Solana devnet · on-chain</span>

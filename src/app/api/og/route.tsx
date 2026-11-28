@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { ImageResponse } from "next/og";
 import {
   OG_CARD_CACHE_CONTROL,
@@ -9,37 +7,19 @@ import {
 } from "@/lib/og-card";
 import { renderOgCardElement } from "@/lib/og-card-renderer";
 import { resolveCanonicalOgCard } from "@/lib/og-routes";
+import { loadOgFonts } from "@/lib/server/og-fonts";
 import { source } from "@/lib/source";
 
 // Node runtime keeps next/og's rendering WASM and bundled TTF fonts within
 // deployment limits and loads traced font assets directly from disk.
 export const runtime = "nodejs";
 
-let cachedFonts: [ArrayBuffer, ArrayBuffer] | null = null;
-
-function toArrayBuffer(buffer: Buffer): ArrayBuffer {
-  const copy = new Uint8Array(buffer.byteLength);
-  copy.set(buffer);
-  return copy.buffer;
-}
-
-async function loadFonts(): Promise<[ArrayBuffer, ArrayBuffer]> {
-  if (cachedFonts) return cachedFonts;
-  const fontsDir = path.join(process.cwd(), "public", "fonts");
-  const [geist, mono] = await Promise.all([
-    readFile(path.join(fontsDir, "Geist-Regular.ttf")),
-    readFile(path.join(fontsDir, "JetBrainsMono-Regular.ttf")),
-  ]);
-  cachedFonts = [toArrayBuffer(geist), toArrayBuffer(mono)];
-  return cachedFonts;
-}
-
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const { matched, card } = resolveCanonicalOgCard(url.searchParams, (slug) =>
     source.getPage(slug),
   );
-  const [geistRegular, jetbrainsMono] = await loadFonts();
+  const [geistRegular, jetbrainsMono] = await loadOgFonts();
 
   return new ImageResponse(renderOgCardElement(card), {
     width: OG_CARD_WIDTH,

@@ -6,10 +6,12 @@ import {
   parseStudyEnrolment,
   studyConsentDocument,
 } from "@/lib/population-study";
+import { readBoundedJsonResponse } from "@/lib/bounded-json";
 import { readBoundedJson } from "@/lib/server/read-bounded-json";
 import { STUDY_INTAKE_OPEN } from "@/lib/study-intake";
 
 const MAX_BODY_BYTES = 2_048;
+const MAX_RESPONSE_BYTES = 64 * 1_024;
 const NO_STORE_HEADERS = { "Cache-Control": "no-store" } as const;
 function noStoreJson(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: NO_STORE_HEADERS });
@@ -17,6 +19,9 @@ function noStoreJson(body: unknown, status = 200) {
 
 export async function POST(request: Request) {
   if (!STUDY_INTAKE_OPEN) return noStoreJson({ error: "Not found" }, 404);
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return noStoreJson({ error: "Content-Type must be application/json" }, 415);
+  }
   let body: Record<string, unknown> | null;
   try {
     body = (await readBoundedJson(request, MAX_BODY_BYTES)) as Record<string, unknown>;
@@ -91,10 +96,16 @@ export async function POST(request: Request) {
       cache: "no-store",
     });
     if (!response.ok) {
-      const responseBody = await response.json().catch(() => null);
+      const responseBody = await readBoundedJsonResponse(
+        response,
+        MAX_RESPONSE_BYTES,
+      ).catch(() => null);
       return noStoreJson(responseBody ?? { error: "Invalid study response" }, response.status);
     }
-    const responseBody = await response.json().catch(() => null);
+    const responseBody = await readBoundedJsonResponse(
+      response,
+      MAX_RESPONSE_BYTES,
+    ).catch(() => null);
     const enrolment = parseStudyEnrolment(responseBody);
     return enrolment
       ? noStoreJson(enrolment)

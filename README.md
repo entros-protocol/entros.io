@@ -2,169 +2,121 @@
 
 <img src="public/logos/wordmark.svg" alt="Entros" height="72" />
 
-**Behavioral proof-of-personhood research and infrastructure on Solana.**
+**Entros: The Live Human-Presence and Consent Firewall for Voice-AI and Autonomous Agents.**
 
-Designed to prove humanness through a behavioral capture. Link AI agents to the wallet that operates them.<br />
-Build Trust. Gate any Solana dApp.
+Real-time zero-retention voice liveness bound to single-use cryptographic action permits and zero-ID Passkey step-up.
 
-[Home](https://entros.io) · [Demo](https://entros.io/verify) · [Paper](https://entros.io/paper) · [Docs](https://entros.io/docs) · [Security](https://entros.io/security)
+[Home](https://entros.io) · [Technology](https://entros.io/technology) · [Docs](https://entros.io/docs) · [Security](https://entros.io/security) · [Paper](https://entros.io/paper)
 
 </div>
 
 ---
 
-## What
+## Overview
 
-Speak a server-issued challenge phrase while tracing its curve. The Pulse SDK captures voice, motion, and touch dynamics, then extracts a 308-feature summary on-device. Audio contributes 170 features, motion contributes 81, and touch contributes 57. SimHash projects the summary into a fingerprint. Poseidon commits to that fingerprint and a salt. The first verification registers the baseline and mints a non-transferable Token-2022 Anchor. Each re-verification proves that the previous and new commitments open correctly and satisfy the circuit's distance range.
+This repository hosts the `entros.io` web application, documentation, research paper, and secondary browser demo routes.
 
-**Raw motion and full-resolution touch never leave the device.** The validation path receives the feature summary, selected F0 and acceleration series, wallet address, phrase audio, capture timing, client signals, a coarse curve outline, commitment data, and receipt intent. The service processes phrase audio in memory without writing the waveform to logs or persistent storage. The wallet flow submits commitments, proofs, public inputs, and encrypted baseline material on-chain when available.
+Entros verifies live human presence and cryptographic consent when a Voice-AI agent or autonomous MCP agent calls a privileged tool. The firewall operates without government IDs, face databases, iris scans, or persistent voiceprint vaults.
 
-## Who
+Entros separates active infrastructure from maintenance surfaces:
 
-- **dApps** gating real humans: airdrops, DAOs, fee discounts, content access
-- **AI agents** linking to the wallet that completed Entros verification on the Solana Agent Registry
-- **Users** wanting one verification readable by every dApp on Solana, with no API keys and no billing relationship
+- **Active product core:** Private real-time voice liveness engine (`entros-validation`), blind red-team evaluation harness (`entros-redteam`), pure-MIT verification SDK (`@entros/verify`), and this website (`entros.io`).
+- **Secondary R&D surface:** One-shot browser paired-liveness capture (`/lab/paired-liveness`, `/verify`, `/embed/verify-popup`, and `@entros/pulse-sdk`).
+- **Maintenance devnet surface:** Solana devnet Anchor contracts, Circom Groth16 circuits, `executor-node`, and the devnet Realms voter-weight plugin. On-chain mainnet deployment stays paused pending customer demand, a multi-party trusted-setup ceremony, and an external security audit.
 
-## How a capture is checked
+## Architecture and Live Posture
 
-Every capture, first or repeat, runs through server-side checks before it reaches your wallet:
+### Active Voice and Consent Firewall
 
-- **Phrase binding.** Audio is transcribed by Whisper and word-distance-matched against the server-issued challenge phrase. A capture that doesn't speak the issued phrase fails the match.
-- **Entropy and variance analysis.** Per-modality Shannon entropy and variance floors reject constant or low-information feature vectors.
-- **Voice synthesis analysis.** The private validator examines acoustic and feature-distribution evidence for synthetic artifacts.
-- **Cross-signal temporal analysis.** The validator measures time-series relationships between speech and motion submitted during one capture. Entros is testing whether they add reliable discrimination across human users, consumer devices, and adaptive synthesis.
-- **Cross-wallet similarity.** The private registry compares submitted fingerprints across wallets. Population-level uniqueness remains an active research question.
-- **Adaptive attack controls.** The private stack limits repeated probing and keeps operational detector policy outside public clients.
+1. **Real-time voice liveness:** The private validator scores raw un-denoised audio in RAM with zero disk persistence and zero default voiceprint database. Live production enforces the pinned `v2 AASIST-L` anti-spoofing stage. The `entros-validation` `develop` branch implements the streaming and REST Firewall API (`/v1/voice/analyze`, `/v1/voice/stream`, Tier-B CPU sidecar). Those endpoints stay unreleased until blind-bank gates pass.
+2. **Action-bound permits (`AgentPermit`):** `@entros/verify@0.7.0` ships pure-MIT `@entros/verify/mcp` (canonical action hashing, atomic `McpNonceStore`, OpenAI Responses and HumanLayer adapters) and `@entros/verify/solana` on npm. The `develop` branches of `entros-validation` and `entros-verify` implement Web2-first `AgentPermit` v2 (Ed25519 JWS, `RFC 8785` JCS, `WebAuthn UV` step-up, `MCP 2026-07-28` MRTR, `SEP-1036`, OpenID CIBA, and `IETF SCITT` `RFC 9943` receipts). Neither npm nor PyPI publishes `v2` yet.
+3. **Privacy boundary:** The voice engine clears audio buffers from RAM after scoring. Audit logs record metadata only (`request_id`, timestamp, `model_version`, verdict, signal quality, latency). In the secondary browser paired-liveness flow, raw motion and full-resolution touch stay on device. Phrase audio leaves transiently for verification and never persists.
 
-T1 through T3: 16,000 adversarial attempts, none passed. T4a paired pre-recorded human voice with procedural motion and moved from a 100% pass counterfactual to 0% across four progressive defense waves. T4b ran real-time synthesized voice across two TTS model families and 58 synthetic voices speaking the issued phrase, and 0% reached the chain across 200 attempts within that frozen generator scope. On held-out unseen neural TTS benchmarks, the pinned anti-spoofing stage does not claim general synthesis rejection. T5 remains open. T6 is blocked on T5 closure. T7 and T8 remain queued.
+### Security Testing and Claims Scope
 
-**Re-verification adds a bounded continuity proof.** Each subsequent capture produces a Poseidon commitment. The Groth16 circuit proves that both commitments open correctly and that their Hamming distance is below the maximum and at or above the replay floor. The circuit proves relationships between supplied fingerprints. It does not prove capture provenance or personhood by itself. Trust Score starts at zero and recalculates from active weekly bins and account age.
+Public aggregate test results cover campaigns T1 through T4b on the browser pipeline. T1 through T3 recorded 0% pass across 16,000+ naive procedural attempts. T4a and T4b tested pre-recorded voice and frozen-scope synthesis on the legacy paired flow. On held-out unseen neural TTS benchmarks, the pinned `v2 AASIST-L` model claims no general synthesis rejection. T5 stays open, and `8 kHz` telephony and live voice-conversion rates stay unmeasured until preregistered blind-bank evaluations finish.
 
-Each campaign targets a defined failure mode. The public [security page](https://entros.io/security) reports scoped aggregate results.
+The public [security page](https://entros.io/security) and [`AUDIT.md`](./AUDIT.md) publish curated posture summaries.
 
-## Economics
+## Repositories
 
-Wallet-connected transactions read `verification_fee` from the on-chain protocol config. Initialization uses a 0.005 SOL default. The authority can update the live value.
+| Repo | Status | Purpose |
+|---|---|---|
+| [`entros.io`](https://github.com/entros-protocol/entros.io) | Active (Public) | Website, documentation, research paper, and secondary `/lab/paired-liveness` routes |
+| [`entros-verify`](https://github.com/entros-protocol/entros-verify) | Active (Public) | Pure-MIT `@entros/verify` SDK (TypeScript on npm, Python `entros-verify` on `develop`) |
+| `entros-validation` | Active (Private) | Voice anti-spoofing ONNX runtime, `AgentPermit` v2 issuer, and Firewall API |
+| `entros-redteam` | Active (Private) | Sealed Adversarial Blind Bank, model distillation, and red-team suites |
+| [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) | Secondary R&D (Public) | Browser paired-liveness capture and proving SDK (`@entros/pulse-sdk` on npm) |
+| [`protocol-core`](https://github.com/entros-protocol/protocol-core) | Maintenance (Public) | Solana devnet Anchor programs (`entros-anchor`, `entros-verifier`, `entros-registry`) |
+| [`circuits`](https://github.com/entros-protocol/circuits) | Maintenance (Public) | Groth16 commitment-opening and bounded Hamming-distance circuit |
+| [`executor-node`](https://github.com/entros-protocol/executor-node) | Maintenance (Public) | Legacy devnet gateway for paired sessions and SAS attestation requests |
+| [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) | Maintenance (Public) | Solana devnet Realms voter-weight plugin |
+| [`token-contracts`](https://github.com/entros-protocol/token-contracts) | Reference (Public) | Factual SPL token and lockup record (`$ENTROS` is decoupled from verification) |
+| [`entros-mobile`](https://github.com/entros-protocol/entros-mobile) | Secondary R&D (Paused) | React Native prototype for mobile capture and native proving |
+| [`entros-mopro`](https://github.com/entros-protocol/entros-mopro) | Secondary R&D (Paused) | Native Groth16 prover bindings for mobile builds |
 
-First verification also funds rent for the Anchor mint, associated token account, and `IdentityState`. Re-verification funds temporary proof accounts. Clients must query the target cluster and show the final wallet transaction before approval.
+## Integrate
 
-Detection decides whether a capture passes. The fee and rate limits only bound request volume.
+### Pure-MIT MCP Verification SDK (`@entros/verify@0.7.0`)
 
-Integrators read verified state from the on-chain Anchor PDA for free. No API keys, no billing relationship, no permission to read. The protocol monetizes the write side; the read side is composable Solana state.
+Install `@entros/verify` with zero GPL dependencies:
 
-$ENTROS is a standard SPL mint launched through a public fair launch on EasyA Kickstart, with mint and freeze authority revoked. It is a standalone mint today, with no coupling to live verification. Validator staking, governance over protocol parameters, and the multi-validator network they would serve are roadmap, not current behaviour.
+```bash
+npm install @entros/verify
+```
 
----
+```ts
+import {
+  createMcpApprovalGate,
+  createInMemoryMcpNonceStore,
+} from "@entros/verify/mcp";
+```
 
-## The stack
+See the [MCP quickstart](https://entros.io/docs/quickstart/mcp-approval) for full examples.
 
-This repo (`entros.io`) is the website, the verification dApp, and the documentation. The full protocol is a multi-repo organization. Every component is open source unless noted.
+### Legacy Devnet Surfaces
 
-### Repositories
+The secondary browser popup (`@entros/verify`), `@entros/pulse-sdk`, and Solana devnet chain readers (`@entros/verify/solana`) remain functional for existing devnet integrators. Wallet-connected devnet verification uses the configurable on-chain SOL fee (default `0.005 SOL`). Read-only chain queries require no transaction and no fee.
 
-| Repo | Purpose |
-|---|---|
-| [`entros.io`](https://github.com/entros-protocol/entros.io) | **This repo**: website, verification dApp, docs, paper |
-| [`protocol-core`](https://github.com/entros-protocol/protocol-core) | Three Anchor programs: identity mint, ZK verifier, registry |
-| [`circuits`](https://github.com/entros-protocol/circuits) | Groth16 commitment-opening and bounded Hamming-distance circuit. Current source is an unpublished successor to deployed artifacts. |
-| [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) | Client SDK: capture → fingerprint → prove → submit. npm [`@entros/pulse-sdk`](https://www.npmjs.com/package/@entros/pulse-sdk) |
-| [`entros-verify`](https://github.com/entros-protocol/entros-verify) | Drop-in popup component. npm [`@entros/verify`](https://www.npmjs.com/package/@entros/verify) |
-| [`executor-node`](https://github.com/entros-protocol/executor-node) | Public gateway: challenges, paired-session authorization, integrator auth, quotas, validator forwarding and SAS requests |
-| [`entros-mobile`](https://github.com/entros-protocol/entros-mobile) | Mobile app, in development: capture, native ZK proving via mopro, on-chain submit via Mobile Wallet Adapter |
-| [`entros-mopro`](https://github.com/entros-protocol/entros-mopro) | Native Groth16 prover bindings consumed by `entros-mobile`. Native proof smoke coverage remains planned. |
-| [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) | Devnet voter-weight program. Realms client integration remains planned. |
-| [`token-contracts`](https://github.com/entros-protocol/token-contracts) | No code. Maps where $ENTROS utility lives; the mint itself comes from a public launchpad. Staking and incentive wiring are roadmap. |
-
-The behavioral validation service and the adversarial test harness are private.
-
-### On-chain
-
-| Program | Program ID |
+| Devnet Program | Program ID |
 |---|---|
 | `entros-anchor` | `GZYwTp2ozeuRA5Gof9vs4ya961aANcJBdUzB7LN6q4b2` |
 | `entros-verifier` | `4F97jNoxQzT2qRbkWpW3ztC3Nz2TtKj3rnKG8ExgnrfV` |
 | `entros-registry` | `6VBs3zr9KrfFPGd6j7aGBPQWwZa5tajVfA7HN6MMV9VW` |
 | `entros-governance-plugin` | `99nwXzcugse3x8kxE9v6mxZiq8T9gHDoznaaG6qcw534` |
 
----
+## Commercial Billing and `$ENTROS` Boundary
 
-## Integrate
+Entros operates on standard B2B API and enterprise billing for the Voice and Consent Firewall, with no mandatory wallets or token requirements.
 
-> Current support is devnet-only. Mainnet remains gated on hardening, a coordinated artifact ceremony, external audit, and operational readiness.
+`$ENTROS` is a standard SPL mint launched on a public launchpad, with mint and freeze authority revoked. It has zero coupling to Entros verification products, API billing, or engineering roadmaps. See [`entros.io/token`](https://entros.io/token) for the factual on-chain lockup record.
 
-Three tiers, depending on how much UX control the integrator wants.
+## Local Development
 
-### Tier 1: drop-in popup
+Use the Node version pinned in `.nvmrc`.
 
-Five lines of JSX.
-
-```tsx
-import { EntrosVerify } from "@entros/verify";
-
-<EntrosVerify
-  integratorKey="my-app"
-  onVerified={(result) => grantAccess(result.walletPubkey)}
-/>
-```
-
-### Tier 2: programmatic SDK
-
-Integrator owns the capture UX, branding, error states. Install the standard Solana peers alongside: `npm install @solana/web3.js @solana/wallet-adapter-base`.
-
-```ts
-import { PulseSDK } from "@entros/pulse-sdk";
-
-const sdk = new PulseSDK({
-  cluster: "devnet",
-  rpcEndpoint: rpcUrl,
-  relayerUrl,
-});
-const result = await sdk.verify(captureDiv, walletAdapter, connection);
-```
-
-### Tier 3: read-only on-chain
-
-No verification flow in the integrator app. Pure PDA read. Free, composable, no API keys.
-
-```ts
-import { verifyEntrosAttestation } from "@entros/pulse-sdk";
-
-const attestation = await verifyEntrosAttestation(walletAddress, connection);
-const isVerified = attestation?.isHuman && !attestation.expired;
-```
-
----
-
-## Integrations
-
-| Integration | What it does | Where |
-|---|---|---|
-| **SAS issuer** | The SDK attempts a wallet-bound SAS attestation after successful verification. Issuance is separate and best-effort. | [`executor-node`](https://github.com/entros-protocol/executor-node) `/attest` |
-| **Agent Operator Permit** | The wallet that owns a registered agent signs a permit for one agent action. The agent presents it with its registered key, and the application checks current ownership and Entros verification. | [`pulse-sdk`](https://github.com/entros-protocol/pulse-sdk) · [`entros-verify`](https://github.com/entros-protocol/entros-verify) · [entros.io/agents](https://entros.io/agents) |
-| **Realms plugin** | On-chain voter-weight prototype deployed on devnet. The Realms JavaScript client and plugin chaining remain planned. | [`entros-governance-plugin`](https://github.com/entros-protocol/entros-governance-plugin) |
-
----
+1. Install dependencies: `npm ci`
+2. Run lint checks: `npm run lint -- --max-warnings 0`
+3. Run type checks: `npm run typecheck`
+4. Run unit tests: `npm test`
+5. Build production output: `npm run build`
 
 ## Documentation
 
 | Surface | URL |
 |---|---|
-| Research paper | [entros.io/paper](https://entros.io/paper) |
-| How it works | [entros.io/technology](https://entros.io/technology) |
-| Integrate | [entros.io/integrate](https://entros.io/integrate) |
+| Home | [entros.io](https://entros.io) |
+| Technology | [entros.io/technology](https://entros.io/technology) |
+| Documentation | [entros.io/docs](https://entros.io/docs) |
 | Security program | [entros.io/security](https://entros.io/security) |
-| Live verification demo | [entros.io/verify](https://entros.io/verify) |
-| On-chain stats | [entros.io/stats](https://entros.io/stats) |
+| Research paper | [entros.io/paper](https://entros.io/paper) |
+| Secondary browser lab | [entros.io/lab/paired-liveness](https://entros.io/lab/paired-liveness) |
 | Public security ledger | [`AUDIT.md`](./AUDIT.md) |
-
----
 
 ## Security
 
-The security taxonomy covers T1 through T8. Public aggregate results currently cover T1 through T4b. T5 remains open. Responsible disclosure: contact@entros.io.
-
----
+Report security vulnerabilities privately to `contact@entros.io`.
 
 ## License
 
-Entros-authored source across public repositories carries the MIT License (`LICENSE`). Compiled `circuits` artifacts include `circomlib` (`GPL-3.0`) templates, and build tooling uses `snarkjs` and `circom` (`GPL-3.0`). `@entros/pulse-sdk` loads `snarkjs` and `pitchfinder` (`GPL-3.0`) via runtime dynamic `import()` without bundling them into `dist/`. `@entros/verify` uses only `MIT` `@noble/curves` and `@noble/hashes` with zero `GPL-3.0` dependencies. The private validation and red-team repositories stay closed.
+Entros-authored source across public repositories carries the MIT License (`LICENSE`). Compiled `circuits` artifacts include `circomlib` (`GPL-3.0`) templates, and circuit build tooling uses `snarkjs` and `circom` (`GPL-3.0`). `@entros/pulse-sdk` loads `snarkjs` and `pitchfinder` (`GPL-3.0`) via runtime dynamic `import()` without bundling them into `dist/`. `@entros/verify` uses strictly permissive MIT dependencies with zero `GPL-3.0` dependencies. The private `entros-validation` and `entros-redteam` repositories stay closed.

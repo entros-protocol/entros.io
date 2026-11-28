@@ -47,4 +47,14 @@ describe("production security headers", () => {
       expect(headers.has("strict-transport-security"), path).toBe(true);
     }
   });
+
+  it("applies bounded cache headers to unversioned font and circuit assets", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    for (const path of ["/fonts/Geist-Regular.ttf", "/circuits/entros.wasm"]) {
+      const headers = await headersFor(path);
+      expect(headers.get("cache-control"), path).toBe(
+        "public, max-age=86400, stale-while-revalidate=604800",
+      );
+    }
+  });
 });

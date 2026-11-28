@@ -175,6 +175,25 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Unversioned paths: bounded TTL with SWR avoids pinning stale binaries or font updates for a year.
+        source: "/fonts/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      {
+        source: "/circuits/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
     ];
   },
 };

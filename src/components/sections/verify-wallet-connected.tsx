@@ -380,16 +380,27 @@ export function VerifyWalletConnected({
   const connectedWallet = connected && publicKey ? publicKey.toBase58() : null;
   const attemptRef = useRef(0);
   const mountedRef = useRef(true);
+  const backstopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const walletIdentityRef = useRef(connectedWallet);
+  function clearBackstopTimer() {
+    if (backstopTimerRef.current !== null) {
+      clearTimeout(backstopTimerRef.current);
+      backstopTimerRef.current = null;
+    }
+  }
   useLayoutEffect(() => {
     if (walletIdentityRef.current !== connectedWallet) {
       walletIdentityRef.current = connectedWallet;
       attemptRef.current++;
+      clearBackstopTimer();
     }
   }, [connectedWallet]);
   useEffect(() => {
-    mountedRef.current=true;
-    return () => {mountedRef.current=false;};
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      clearBackstopTimer();
+    };
   }, []);
   const lastVerification =
     verificationTimestamp?.wallet === connectedWallet
@@ -592,10 +603,12 @@ export function VerifyWalletConnected({
     voicedFramesRef.current = voicedFrames;
     setProcessingStage("Extracting features...");
     dispatch({ type: "CAPTURE_DONE" });
-    const attempt=attemptRef.current;
-    const active=() => mountedRef.current && attemptRef.current === attempt;
+    const attempt = attemptRef.current;
+    const active = () => mountedRef.current && attemptRef.current === attempt;
     settleVerification(
-      finish(resolveCompletionWallet(), connection, stage => {if (active()) setProcessingStage(stage);}),
+      finish(resolveCompletionWallet(), connection, (stage) => {
+        if (active()) setProcessingStage(stage);
+      }),
       active,
     );
   }
@@ -681,8 +694,12 @@ export function VerifyWalletConnected({
     // from the SDK rather than written down, so raising a clock there raises
     // this in step. It should never fire.
     const backstopMs = MAX_VERIFICATION_MS + 30_000;
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(
+    clearBackstopTimer();
+    // Absorb a late rejection if the timeout wins Promise.race first.
+    void proofPromise.catch(() => undefined);
+    let backstopTimer: ReturnType<typeof setTimeout> | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      backstopTimer = setTimeout(
         () =>
           reject(
             new Error(
@@ -690,8 +707,9 @@ export function VerifyWalletConnected({
             ),
           ),
         backstopMs,
-      ),
-    );
+      );
+      backstopTimerRef.current = backstopTimer;
+    });
 
     Promise.race([proofPromise, timeoutPromise])
       .then(async (result) => {
@@ -702,11 +720,6 @@ export function VerifyWalletConnected({
           ).catch(() => undefined);
         }
         dispatch({ type: "PROOF_COMPLETE" });
-        if (result.compositeRiskScore !== undefined) {
-          console.log(
-            `[Entros] Verification telemetry composite risk score: ${result.compositeRiskScore.toFixed(4)}`,
-          );
-        }
         if (result.success) {
           retryBudgetRef.current = { ...EMPTY_RETRY_BUDGET };
           if (connectedWallet && result.txSignature) {
@@ -784,11 +797,20 @@ export function VerifyWalletConnected({
           type: "VERIFICATION_FAILED",
           error: sanitizeErrorMessage(err.message ?? "Unexpected error"),
         });
+      })
+      .finally(() => {
+        if (backstopTimer !== undefined) {
+          clearTimeout(backstopTimer);
+          if (backstopTimerRef.current === backstopTimer) {
+            backstopTimerRef.current = null;
+          }
+        }
       });
   }
 
   function handleReset() {
     attemptRef.current++;
+    clearBackstopTimer();
     sessionRef.current = null;
     // Wipe the retry budget when the user explicitly resets—a fresh
     // session starts at 0 attempts used.
